@@ -283,10 +283,15 @@ def _stage(status: Path) -> str:
     return m.group(1).strip() if m else ""
 
 
-def review_rows(state: dict, done: set[str], watch_rows: list[list[str]], date_notes: list[str]) -> list[list[str]]:
-    """What the user should check before analysis: date corrections and every '未確認・保留事項'."""
-    rows = [[f"{r[0]} {r[1]}", r[2]] for r in watch_rows if "公表日を本文" in r[2] or r[2].startswith("失敗")]
-    rows += [note.split(": ", 1) for note in date_notes]
+def script_findings(watch_rows: list[list[str]], date_notes: list[str]) -> list[list[str]]:
+    """Problems the scripts detected: date corrections / mismatches and failed watch or calendar sources."""
+    rows = [[f"{r[0]} {r[1]}", r[2]] for r in watch_rows if "公表日" in r[2] or r[2].startswith("失敗")]
+    return rows + [note.split(": ", 1) for note in date_notes]
+
+
+def review_rows(state: dict, done: set[str], findings: list[list[str]]) -> list[list[str]]:
+    """What the user should check before analysis: the script findings and every '未確認・保留事項'."""
+    rows = list(findings)
     for task in state["tasks"]:
         for output, _ in task_outputs(task):
             if output in done:
@@ -298,15 +303,18 @@ def review_rows(state: dict, done: set[str], watch_rows: list[list[str]], date_n
 def write_latest() -> None:
     """market/LATEST.md: per market, the newest finished session and the newest document per watch."""
     files, latest_session = [], ""
+    # newest first: collection date, then (several sessions on one day) when status.md was last written
+    sessions = sorted((p for p in SESSIONS.iterdir() if p.is_dir()), reverse=True,
+                      key=lambda p: (p.name[:10], (p / "status.md").stat().st_mtime if (p / "status.md").exists() else 0))
     for market in MARKETS:
-        for session in sorted((p for p in SESSIONS.iterdir() if p.is_dir()), reverse=True):
+        for session in sessions:
             tasks = session / TASKS
             if not tasks.exists() or market not in json.loads(tasks.read_text(encoding="utf-8")).get("markets", []):
                 continue
             if _stage(session / "status.md") != STAGE_DONE:
                 continue
             label = R.MARKET_LABEL[market]
-            latest_session = max(latest_session, session.name)
+            latest_session = latest_session or session.name
             files += [[f"指標（{label}）", R.rel(session / "raw" / f"indicators-{market}.md")],
                       [f"日程・市場指標（{label}）", R.rel(session / "raw" / f"calendar-{market}.md")],
                       [f"文書ダイジェスト（{label} を含む）", R.rel(session / "raw" / "policy-digest.md")],
@@ -356,8 +364,8 @@ def cmd_finalize(args: argparse.Namespace) -> int:
         date_notes += D.apply_published_checks(market, done)
     _digest(session, state)
     status_text = (session / "status.md").read_text(encoding="utf-8")
-    watch_rows = _table_after(status_text, "## 3. 文書監視")
-    review = review_rows(state, done, watch_rows, date_notes)
+    findings = script_findings(_table_after(status_text, "## 3. 文書監視"), date_notes)
+    review = review_rows(state, done, findings)
     scope = out_of_scope(session)
     flat = [f"{f}: {i}" for f, items in issues.items() for i in items]
     ok = not issues and not scope
@@ -367,7 +375,7 @@ def cmd_finalize(args: argparse.Namespace) -> int:
         (session / RUNNING).unlink(missing_ok=True)
         write_latest()
     series_ok, series_failed = _series_counts(status_text)
-    warnings = [f"{r[0]}: {r[1]}" for r in review if "公表日" in r[1] or r[1].startswith("失敗")]
+    warnings = [f"{r[0]}: {r[1]}" for r in findings]
     print(json.dumps({
         "ok": ok, "pending_tasks": pending, "issues": issues, "out_of_scope": scope,
         "series_ok": series_ok, "series_failed": series_failed,
