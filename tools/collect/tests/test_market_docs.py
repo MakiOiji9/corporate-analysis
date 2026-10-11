@@ -192,6 +192,33 @@ def test_pending_items_and_published_check():
     assert D.published_check("**公表日（本文で確認）**:\nヘッダーと同じ\n") == ""
 
 
+def test_fix_published_updates_index_and_header(tmp_path, monkeypatch):
+    import pytest
+
+    import docs as D
+
+    monkeypatch.setattr(D, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(D, "POLICY_DIR", tmp_path / "market" / "policy")
+    raw_rel = "market/policy/japan/raw/2026-10-11_boj-outlook-2026-07-01.md"
+    raw = tmp_path / raw_rel
+    raw.parent.mkdir(parents=True)
+    raw.write_text("# 展望\n**公表日**: 2026-07-01\n**公表日（本文で確認）**:\n2026-07-31（PAGE 1）\n", encoding="utf-8")
+    row = {k: "" for k in W.INDEX_FIELDS}
+    row.update(doc_key="boj-outlook-2026-07-01", watch_key="boj-outlook", layer="C", published="2026-07-01",
+               raw_path=raw_rel, status="done")
+    W.save_index(D.index_path("japan"), [row])
+
+    assert D.fix_published("japan", raw_rel) == {"fixed": raw_rel, "from": "2026-07-01", "to": "2026-07-31"}
+    assert W.load_index(D.index_path("japan"))[0]["published"] == "2026-07-31"
+    text = raw.read_text(encoding="utf-8")
+    assert "**公表日**: 2026-07-31" in text and "2026-07-31（PAGE 1）" in text  # the check line is kept
+    assert D.fix_published("japan", raw_rel, "2026-08-01")["to"] == "2026-08-01"
+    with pytest.raises(SystemExit):
+        D.fix_published("japan", raw_rel, "2026/08/01")
+    with pytest.raises(SystemExit):
+        D.fix_published("japan", "market/policy/japan/raw/missing.md")
+
+
 # ---------------------------------------------------------------- task bundling
 
 def test_batch_doc_tasks_by_count_and_excerpt_size(tmp_path):

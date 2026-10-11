@@ -88,6 +88,16 @@ $PY -I tools/collect/market/market_collect.py reopen --raw market/policy/{market
 
 要旨ファイルを骨組みに戻し、抜粋を現在の catalog の設定で作り直す。次の prepare がタスクを作る。自分の判断では実行しない。
 
+## 公表日の不一致を承認する（ユーザーが指示したときだけ）
+
+finalize の `warnings` に「公表日の不一致 台帳 … / 本文 …」が出て、ユーザーが本文の日付を正しいと判断した場合は、セッションの外で次を実行する。
+
+```
+$PY -I tools/collect/market/market_collect.py fix-date --raw market/policy/{market}/raw/{file}.md [--date YYYY-MM-DD]
+```
+
+`--date` を省くと要旨の「公表日（本文で確認）」の日付を使う。台帳（index.csv）と要旨ヘッダーの「公表日」を更新する（ファイル名・doc_key は変えない）。自分の判断では実行しない。
+
 ---
 
 ## してはいけないこと

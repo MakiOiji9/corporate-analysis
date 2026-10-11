@@ -6,6 +6,7 @@ done (summary validated) / listed (kind=list, no summary needed).
 """
 from __future__ import annotations
 
+import datetime as dt
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -25,6 +26,7 @@ DEFAULT_TEMPLATE = "raw/policy-doc.md"
 MAX_FOLLOW_ATTEMPTS = 3  # candidates tried per watch entry when following into pages
 BODY_DATE_CHARS = 6_000  # HTML texts start with site navigation, so look a little further than page 1
 ISO_DATE = re.compile(r"\b(20\d{2}-\d{2}-\d{2})\b")
+HEADER_PUBLISHED = re.compile(r"^\*\*公表日\*\*: .*$", re.M)
 PUBLISHED_CHECK = re.compile(r"^\*\*公表日（本文で確認）\*\*:[ \t]*\n(.+)$", re.M)
 PENDING_SECTION = re.compile(r"^## \d+\. 未確認・保留事項[ \t]*\n(.*?)(?=^## |\Z)", re.M | re.S)
 NOTHING = ("なし", "—", "")
@@ -272,13 +274,42 @@ def apply_published_checks(market: str, outputs: set[str]) -> list[str]:
         if not checked or checked == r["published"]:
             continue
         if r["published"]:
-            notes.append(f"{r['raw_path']}: 公表日の不一致 台帳 {r['published']} / 本文 {checked}（台帳は変更せず）")
+            notes.append(f"{r['raw_path']}: 公表日の不一致 台帳 {r['published']} / 本文 {checked}（台帳は変更せず。"
+                         f"本文が正しければ market_collect.py fix-date --raw {r['raw_path']}）")
         else:
             notes.append(f"{r['raw_path']}: 公表日を本文の {checked} で補完")
             r["published"], changed = checked, True
     if changed:
         W.save_index(index_path(market), rows)
     return notes
+
+
+def fix_published(market: str, raw_rel: str, date: str = "") -> dict:
+    """Approve a publication date: the given date, or the summary's '公表日（本文で確認）' date.
+
+    Updates index.csv and the summary header's 公表日. doc_key and the file name stay as they are
+    (other files refer to them). Only on the user's explicit request.
+    """
+    rows = W.load_index(index_path(market))
+    row = next((r for r in rows if r["raw_path"] == raw_rel and r["status"] != "listed"), None)
+    if row is None:
+        raise SystemExit(f"index.csv に要旨として載っていない: {raw_rel}")
+    raw = REPO_ROOT / raw_rel
+    if not raw.exists():
+        raise SystemExit(f"要旨ファイルが無い: {raw_rel}")
+    text = raw.read_text(encoding="utf-8")
+    new = date or published_check(text)
+    if not new:
+        raise SystemExit("反映する日付が無い（要旨の「公表日（本文で確認）」が空か「ヘッダーと同じ」。--date で指定する）")
+    try:
+        dt.date.fromisoformat(new)
+    except ValueError:
+        raise SystemExit(f"日付は YYYY-MM-DD で指定する: {new}") from None
+    old = row["published"]
+    row["published"] = new
+    W.save_index(index_path(market), rows)
+    raw.write_text(HEADER_PUBLISHED.sub(f"**公表日**: {new}", text, count=1), encoding="utf-8")
+    return {"fixed": raw_rel, "from": old or "—", "to": new}
 
 
 def _header(text: str, label: str) -> str:

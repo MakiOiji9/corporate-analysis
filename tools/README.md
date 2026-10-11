@@ -58,6 +58,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 | `market_collect.py finalize --session market/sessions/…` | テンプレートとの照合、公表日の確認結果の反映、policy-digest・status（要確認事項つき）・`market/LATEST.md` の作成、範囲外の変更の検出 | 1行の JSON |
 | `market_collect.py validate / abort --session …` | 検証だけ / 実行中の印を外し status を「中断」にする | 1行の JSON |
 | `market_collect.py reopen --raw market/policy/…/raw/….md` | 完成済みの要旨を骨組みに戻し、抜粋を作り直す（ユーザーの指示があるときだけ） | 1行の JSON |
+| `market_collect.py fix-date --raw market/policy/…/raw/….md [--date YYYY-MM-DD]` | 公表日の不一致を承認し、台帳と要旨ヘッダーの公表日を更新する（`--date` 省略時は要旨の「公表日（本文で確認）」） | 1行の JSON |
 | `market_collect.py check-watch --market japan` | catalog の監視設定と確定日程の取得を試す（保存しない） | 標準出力 |
 | `market_collect.py search boj --db CO --word 業況` / `search dashboard --word 失業率` | 系列コードを探す | 標準出力 |
 

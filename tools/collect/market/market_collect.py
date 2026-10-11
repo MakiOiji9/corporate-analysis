@@ -6,6 +6,7 @@ Usage:
   market_collect.py validate --session market/sessions/YYYY-MM-DD_topic
   market_collect.py abort    --session market/sessions/YYYY-MM-DD_topic
   market_collect.py reopen   --raw market/policy/{market}/raw/FILE.md   # redo one summary (user request only)
+  market_collect.py fix-date --raw market/policy/{market}/raw/FILE.md [--date YYYY-MM-DD]  # approve a date
   market_collect.py check-watch --market japan|us            # catalog maintenance (dry run)
   market_collect.py search boj --db CO --word 業況判断         # find BOJ series codes
   market_collect.py search dashboard --word 消費者物価指数      # find e-Stat dashboard codes
@@ -405,15 +406,27 @@ def cmd_abort(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_reopen(args: argparse.Namespace) -> int:
+def _library_raw(arg: str, command: str) -> tuple[str, str]:
+    """(market, repo-relative path) of a summary in the document library; refused while a session runs."""
     running = sorted(p.parent.name for p in SESSIONS.glob(f"*/{RUNNING}"))
     if running:
-        raise SystemExit(f"実行中のセッションがある（{', '.join(running)}）。finalize か abort の後で reopen する")
-    raw = R.rel(Path(args.raw) if Path(args.raw).is_absolute() else REPO_ROOT / args.raw)
+        raise SystemExit(f"実行中のセッションがある（{', '.join(running)}）。finalize か abort の後で {command} する")
+    raw = R.rel(Path(arg) if Path(arg).is_absolute() else REPO_ROOT / arg)
     m = re.match(r"^market/policy/([^/]+)/raw/[^/]+\.md$", raw)
     if not m or m.group(1) not in MARKETS:
-        raise SystemExit(f"market/policy/{{japan,us}}/raw/ の要旨ファイルを指定する: {args.raw}")
-    print(json.dumps(D.reopen_doc(m.group(1), raw, load_catalog(m.group(1))), ensure_ascii=False))
+        raise SystemExit(f"market/policy/{{japan,us}}/raw/ の要旨ファイルを指定する: {arg}")
+    return m.group(1), raw
+
+
+def cmd_reopen(args: argparse.Namespace) -> int:
+    market, raw = _library_raw(args.raw, "reopen")
+    print(json.dumps(D.reopen_doc(market, raw, load_catalog(market)), ensure_ascii=False))
+    return 0
+
+
+def cmd_fix_date(args: argparse.Namespace) -> int:
+    market, raw = _library_raw(args.raw, "fix-date")
+    print(json.dumps(D.fix_published(market, raw, args.date or ""), ensure_ascii=False))
     return 0
 
 
@@ -483,6 +496,9 @@ def main() -> int:
     for name in ("finalize", "validate", "abort"):
         sub.add_parser(name).add_argument("--session", required=True)
     sub.add_parser("reopen").add_argument("--raw", required=True)
+    f = sub.add_parser("fix-date")
+    f.add_argument("--raw", required=True)
+    f.add_argument("--date", help="YYYY-MM-DD。省略時は要旨の「公表日（本文で確認）」の日付")
     sub.add_parser("check-watch").add_argument("--market", choices=MARKETS, required=True)
     s = sub.add_parser("search")
     s.add_argument("source", choices=("boj", "dashboard"))
@@ -490,7 +506,8 @@ def main() -> int:
     s.add_argument("--word", nargs="+", required=True)
     args = ap.parse_args()
     handlers = {"prepare": cmd_prepare, "finalize": cmd_finalize, "validate": cmd_validate, "abort": cmd_abort,
-                "reopen": cmd_reopen, "check-watch": cmd_check_watch, "search": cmd_search}
+                "reopen": cmd_reopen, "fix-date": cmd_fix_date, "check-watch": cmd_check_watch,
+                "search": cmd_search}
     return handlers[args.cmd](args)
 
 
