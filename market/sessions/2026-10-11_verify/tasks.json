@@ -1,0 +1,98 @@
+{
+ "session": "market/sessions/2026-10-11_verify",
+ "collected": "2026-10-11",
+ "markets": [
+  "japan",
+  "us"
+ ],
+ "mode": "update",
+ "tasks": [
+  {
+   "type": "summarize-doc",
+   "docs": [
+    {
+     "market": "japan",
+     "title": "日本銀行 経済・物価情勢の展望（基本的見解）（2026-07-01）",
+     "doc_key": "boj-outlook-2026-07-01",
+     "output": "market/policy/japan/raw/2026-10-11_boj-outlook-2026-07-01.md",
+     "inputs": [
+      "market/policy/japan/sources/2026-10-11/gor2607a.pdf.excerpt.txt"
+     ],
+     "template": ".ai/templates/collect-market-info/raw/monetary-doc.md"
+    },
+    {
+     "market": "japan",
+     "title": "（２）「強い経済」を実現する総合経済対策～日本と日本人の底力で不安を希望に変える～（令和７年11月21日閣議決定） (PDF形式:1.3MB)",
+     "doc_key": "economic-measures-2025-11-21",
+     "output": "market/policy/japan/raw/2026-10-11_economic-measures-2025-11-21.md",
+     "inputs": [
+      "market/policy/japan/sources/2026-10-11/1121_taisaku.pdf.excerpt.txt"
+     ],
+     "template": ".ai/templates/collect-market-info/raw/policy-doc.md"
+    },
+    {
+     "market": "japan",
+     "title": "令和８年度予算",
+     "doc_key": "budget-2025-08-08",
+     "output": "market/policy/japan/raw/2026-10-11_budget-2025-08-08.md",
+     "inputs": [
+      "market/policy/japan/sources/2026-10-11/01.pdf.excerpt.txt"
+     ],
+     "template": ".ai/templates/collect-market-info/raw/policy-doc.md"
+    }
+   ],
+   "allowed_files": [
+    "market/policy/japan/raw/2026-10-11_boj-outlook-2026-07-01.md",
+    "market/policy/japan/raw/2026-10-11_economic-measures-2025-11-21.md",
+    "market/policy/japan/raw/2026-10-11_budget-2025-08-08.md"
+   ],
+   "id": "T01"
+  },
+  {
+   "type": "summarize-doc",
+   "docs": [
+    {
+     "market": "us",
+     "title": "Minutes of the Federal Open Market Committee, September 15-16, 2026",
+     "doc_key": "fomc-minutes-2026-10-07",
+     "output": "market/policy/us/raw/2026-10-11_fomc-minutes-2026-10-07.md",
+     "inputs": [
+      "market/policy/us/sources/2026-10-11/fomcminutes20260916.htm.excerpt.txt"
+     ],
+     "template": ".ai/templates/collect-market-info/raw/monetary-doc.md"
+    }
+   ],
+   "allowed_files": [
+    "market/policy/us/raw/2026-10-11_fomc-minutes-2026-10-07.md"
+   ],
+   "id": "T02"
+  },
+  {
+   "type": "search-calendar",
+   "market": "japan",
+   "title": "政治・イベント日程（日本）",
+   "output": "market/sessions/2026-10-11_verify/raw/calendar-japan.md",
+   "inputs": [],
+   "max_searches": 8,
+   "template": ".ai/templates/collect-market-info/raw/calendar.md",
+   "allowed_files": [
+    "market/sessions/2026-10-11_verify/raw/calendar-japan.md"
+   ],
+   "id": "T03"
+  },
+  {
+   "type": "search-calendar",
+   "market": "us",
+   "title": "政治・イベント日程（米国）",
+   "output": "market/sessions/2026-10-11_verify/raw/calendar-us.md",
+   "inputs": [],
+   "max_searches": 8,
+   "template": ".ai/templates/collect-market-info/raw/calendar.md",
+   "allowed_files": [
+    "market/sessions/2026-10-11_verify/raw/calendar-us.md"
+   ],
+   "id": "T04"
+  }
+ ],
+ "new_docs": []
+}
