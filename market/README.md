@@ -13,23 +13,32 @@
 
 ## ワークフロー
 
-1. `@market-analyst` エージェントを起動
-2. セッションディレクトリを作成: `/new-session market {topic}`
-3. `raw/` に情報を収集・貼り付け
-4. エージェントが `analysis.md` と `outlook.md` を生成
-5. 次回の企業分析前に最新の `outlook.md` を参照する
+1. スキル `collect-market-info` を実行する（例: `/collect-market-info both topic=weekly`）
+   - スクリプトが時系列（日銀・e-Stat・財務省・JPX・FRED・CFTC）を取得し、新しく出た政策文書を `policy/` に取り込む
+   - LLM は文書の要旨化と、政治・イベント日程の検索だけをサブエージェントで並列に行う
+2. `sessions/YYYY-MM-DD_{topic}/status.md` で取得結果を確認する
+3. `raw/` と `policy/` の要旨をもとに `analysis.md` と `outlook.md` を作る（地合い判断）
+4. 次回の企業分析前に最新の `outlook.md` を参照する
 
-## セッションディレクトリ構造
+## ディレクトリ構造
 
 ```
+policy/{japan,us}/                 # 国家方針・財政・金融政策の文書ライブラリ（新しい版だけ追加）
+├── index.csv                      # 資料台帳
+├── sources/                       # 原本（git 管理外。manifest.csv だけコミット）
+└── raw/YYYY-MM-DD_{doc_key}.md    # 文書ごとの要旨
+data/{japan,us}_series.csv         # マクロ指標・需給の時系列
 sessions/YYYY-MM-DD_{topic}/
+├── tasks.json / status.md         # 収集の記録（スクリプトが生成）
 ├── raw/
-│   ├── boj-policy.md        # 日銀・金融政策
-│   ├── fiscal-policy.md     # 政府・財政政策
-│   └── macro-indicators.md  # CPI・GDP・金利・為替
-├── analysis.md              # マクロ要因の統合分析
-└── outlook.md               # 地合い判断（強気/中立/慎重/弱気）
+│   ├── indicators-{market}.md     # マクロ指標・需給の表
+│   ├── calendar-{market}.md       # 政治・イベント日程と市場指標
+│   └── policy-digest.md           # 今回追加された文書と最新版の一覧
+├── analysis.md                    # マクロ要因の統合分析
+└── outlook.md                     # 地合い判断（強気/中立/慎重/弱気）
 ```
+
+収集対象の情報源と追加方法は `.ai/templates/collect-market-info/source-access.md` を参照。
 
 ## 地合い判断の4段階
 

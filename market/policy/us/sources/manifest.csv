@@ -1,0 +1,4 @@
+fetched_date,doc_type,period,published_date,doc_id,url,sha256,local_path,note
+2026-10-11,fomc-statement,,2026-09-16,monetary20260916a,https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm,760be9a5ce2aff70fa78d68fb67cd6395d8f7e26a0d016a1f22af78a655878c2,sources/2026-10-11/monetary20260916a.htm,Federal Reserve issues FOMC statement
+2026-10-11,fomc-minutes,,2026-10-07,fomcminutes20260916,https://www.federalreserve.gov/monetarypolicy/fomcminutes20260916.htm,d3da6347d27846efd3e689034f94b2d68e257556734713f2a7adef2348903b17,sources/2026-10-11/fomcminutes20260916.htm,"Minutes of the Federal Open Market Committee, September 15-16, 2026"
+2026-10-11,beige-book,,2026-08-01,beigebook202608-summary,https://www.federalreserve.gov/monetarypolicy/beigebook202608-summary.htm,11cbd4c670bddda6aa4c22b173367c1d7e2b97e30aa64a00e37a5282fbbbb5e2,sources/2026-10-11/beigebook202608-summary.htm,ベージュブック（Beige Book）（2026-08-01）

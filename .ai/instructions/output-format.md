@@ -51,14 +51,25 @@ companies/{ticker}_{name}/
 ### 地合い分析
 
 ```
-market/sessions/YYYY-MM-DD_{topic}/
-├── raw/                         # 収集した生データ（分析後は変更禁止）
-│   ├── boj-policy.md            # 日銀・金融政策
-│   ├── fiscal-policy.md         # 政府・財政政策
-│   └── macro-indicators.md      # CPI・GDP・金利・為替
-├── analysis.md                  # マクロ要因の統合分析（根拠付き）
-└── outlook.md                   # 地合い判断サマリー（強気/中立/慎重/弱気）
+market/
+├── policy/{japan,us}/           # 国家方針・財政・金融政策の文書ライブラリ（collect-market-info。新しい版だけ追加）
+│   ├── index.csv                # 資料台帳（スクリプトが管理）
+│   ├── sources/                 # 原本・テキスト・抜粋（git 管理外。manifest.csv だけコミット）
+│   └── raw/YYYY-MM-DD_{doc_key}.md  # 文書ごとの要旨（テンプレート policy-doc / monetary-doc）
+├── data/{japan,us}_series.csv   # マクロ指標・需給の時系列（スクリプトのみが書く）
+└── sessions/YYYY-MM-DD_{topic}/
+    ├── tasks.json               # LLM が担当するタスク一覧（prepare が生成）
+    ├── status.md                # 取得結果・検証結果（スクリプトが生成）
+    ├── raw/                     # 収集した生データ（分析後は変更禁止）
+    │   ├── indicators-{market}.md   # マクロ指標・需給の表（スクリプトが生成）
+    │   ├── calendar-{market}.md     # 政治・イベント日程と市場指標（search-calendar が記入）
+    │   └── policy-digest.md         # 今回追加された文書と、監視項目ごとの最新版（スクリプトが生成）
+    ├── analysis.md              # マクロ要因の統合分析（根拠付き）
+    └── outlook.md               # 地合い判断サマリー（強気/中立/慎重/弱気）
 ```
+
+- `raw/` と `policy/*/raw/` は collect-market-info のスクリプトがテンプレート（`.ai/templates/collect-market-info/`）から作る。LLM は `<!-- FILL:... -->` の欄だけを埋める
+- 書き込みのルールは `tools/guard/write_guard.py`（Claude Code の PreToolUse hook）が強制する
 
 ### raw/ の扱い
 

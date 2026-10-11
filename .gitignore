@@ -18,3 +18,12 @@ __pycache__/
 companies/*/sources/**
 !companies/*/sources/
 !companies/*/sources/manifest.csv
+
+# Same for collect-market-info (policy library and sessions)
+market/**/sources/**
+!market/**/sources/
+!market/**/sources/manifest.csv
+
+# Run state of collect-market-info (running marker for the write guard, git baseline)
+market/sessions/*/.running
+market/sessions/*/.baseline.json

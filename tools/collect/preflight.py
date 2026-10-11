@@ -22,6 +22,12 @@ PROBES = {
     "E-IR 文書（eir-parts）": "https://ssl4.eir-parts.net/",
     "EDINET API v2": "https://api.edinet-fsa.go.jp/api/v2/documents.json",
     "IRBANK": "https://irbank.net/",
+    # collect-market-info
+    "日銀 時系列統計 API": "https://www.stat-search.boj.or.jp/api/v1/getDataCode?format=json&lang=jp&db=FM08&code=FXERD01",
+    "e-Stat 統計ダッシュボード API": "https://dashboard.e-stat.go.jp/api/1.0/Json/getIndicatorInfo?Lang=JP&IndicatorCode=0301010000020020010",
+    "財務省 国債金利 CSV": "https://www.mof.go.jp/jgbs/reference/interest_rate/jgbcm.csv",
+    "FRED API": "https://api.stlouisfed.org/fred/series?series_id=DGS10&file_type=json",  # 400 without key = reachable
+    "Federal Reserve RSS": "https://www.federalreserve.gov/feeds/press_monetary.xml",
 }
 PROBE_TIMEOUT_SEC = 10
 
@@ -33,7 +39,7 @@ def check_python() -> tuple[bool, str]:
 
 
 def check_modules() -> tuple[bool, str]:
-    missing = [m for m in ("pypdf", "requests", "certifi") if importlib.util.find_spec(m) is None]
+    missing = [m for m in ("pypdf", "requests", "certifi", "openpyxl") if importlib.util.find_spec(m) is None]
     return not missing, "all installed" if not missing else f"missing: {', '.join(missing)}"
 
 
@@ -42,6 +48,13 @@ def check_edinet_key() -> tuple[bool, str]:
     if os.environ.get("EDINET_API_KEY"):
         return True, "EDINET_API_KEY is set -> Phase 2/3 use edinet.py + xbrl_financials.py"
     return False, "not set -> Phase 2/3 use fetch.py + pdf_text.py + find_pages.py (PDF route)"
+
+
+def check_fred_key() -> tuple[bool, str]:
+    load_env()
+    if os.environ.get("FRED_API_KEY"):
+        return True, "FRED_API_KEY is set -> collect-market-info fetches US series"
+    return False, "not set -> US FRED series are skipped (status.md shows the reason)"
 
 
 def probe(url: str) -> tuple[bool, str]:
@@ -59,7 +72,7 @@ def probe(url: str) -> tuple[bool, str]:
 def main() -> int:
     utf8_stdout()
     rows = [("Python/venv", *check_python()), ("依存ライブラリ", *check_modules()),
-            ("EDINET API キー", *check_edinet_key())]
+            ("EDINET API キー", *check_edinet_key()), ("FRED API キー", *check_fred_key())]
     modules_ok = rows[1][1]
     for label, url in PROBES.items():
         rows.append((label, *(probe(url) if modules_ok else (False, "skipped (modules missing)"))))

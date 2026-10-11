@@ -1,0 +1,101 @@
+# 地合い情報収集スキル（collect-market-info）
+
+地合い分析の INPUT として、国家方針・財政・金融政策の文書、マクロ指標、市場需給、政治・イベント日程を集め、
+`market/` 配下に保存する。
+
+このスキルは**情報収集のみ**を行う。地合い判断（強気/中立/慎重/弱気）や評価は行わない（`analysis.md`・`outlook.md` は別作業）。
+
+収集作業の大部分は Python スクリプト（`tools/collect/market/market_collect.py`）が行う。LLM が受け持つのは、スクリプトが作ったタスク（文書の要旨化・日程の web 検索）だけ。
+手順は **準備 → タスク実行 → 仕上げ** の3段に固定されており、それ以外の作業はしない。
+
+---
+
+## 前提として読むファイル
+
+- `.ai/instructions/role.md`
+- `.ai/instructions/policy.md`
+- `.ai/instructions/output-format.md`
+
+情報源の一覧と追加方法は `.ai/templates/collect-market-info/source-access.md` にある（catalog を直すときだけ読めばよい）。
+
+---
+
+## 引数
+
+| 引数 | 内容 | 省略時 |
+|---|---|---|
+| `market` | `japan` / `us` / `both` | `both` |
+| `topic` | セッション名（半角英小文字・数字・ハイフン） | `weekly` |
+| `mode` | `full`（初回。時系列を10年分取る）/ `update`（3年分） | `market/data/` が無ければ `full`、あれば `update` |
+
+省略した引数を推定した場合は、その旨をユーザーに伝える。
+
+---
+
+## 実行手順
+
+Python は `.venv` のものを使う（Windows: `.venv\Scripts\python.exe`、macOS/Linux: `.venv/bin/python`）。以下 `$PY` と書く。
+`.venv` が無い場合は `tools/README.md` の初回セットアップを案内して止まる。
+
+### 1. 準備（スクリプト）
+
+```
+$PY -I tools/collect/market/market_collect.py prepare --market {market} --topic {topic} --mode {mode}
+```
+
+- 標準出力は1行の JSON（`session`・`tasks_file`・`tasks`・`new_docs`・`series_failed`・`watch_failed`）。これだけを読む
+- このコマンドが、時系列の取得 → `raw/indicators-*.md` の生成、新しい政策文書の検出 → 原本・抜粋・要旨の骨組みの作成、`tasks.json` の作成までを行う
+- 実行中の印（`.running`）が付き、これ以降は `tasks.json` の `allowed_files` 以外のファイルを書けなくなる（`tools/guard/write_guard.py` がブロックする）
+
+### 2. タスク実行（LLM）
+
+`tasks_file` を Read し、各タスクを実行する。タスクの種類と手順書:
+
+| type | 内容 | 手順書 | サブエージェント |
+|---|---|---|---|
+| `summarize-doc` | 文書の抜粋を読み、要旨ファイルの FILL 欄を埋める | `.ai/agents/summarize-doc.md` | `summarize-doc` |
+| `search-calendar` | web 検索で政治・イベント日程と市場指標の欄を埋める | `.ai/agents/search-calendar.md` | `search-calendar` |
+
+- **並列モード**（Claude Code。サブエージェントが使える環境）: Agent ツールで、タスクごとに `subagent_type` = タスクの type を指定し、**1つのメッセージ内で全タスクを同時に起動**する（10件を超える場合は10件ずつ）。プロンプトにはタスクの JSON をそのまま渡し、「手順は `.ai/agents/{type}.md`。編集してよいのは allowed_files だけ」と添える
+- **逐次モード**（GitHub Copilot など）: 手順書を読み、tasks.json の順に自分で実行する。hook が無い環境なので、ファイルを編集する前に毎回 `$PY -I tools/guard/write_guard.py --check <path>` を実行し、`BLOCKED` なら編集しない
+
+サブエージェントの報告は `.ai/templates/collect-market-info/agent-report.md` の形式（数行）で返ってくる。報告の中身を確かめるために要旨ファイルを読み直さない（検証は finalize が行う）。
+
+### 3. 仕上げ（スクリプト）
+
+```
+$PY -I tools/collect/market/market_collect.py finalize --session {session}
+```
+
+- 標準出力は1行の JSON（`ok`・`pending_tasks`・`issues`・`out_of_scope`・`status`）
+- `ok: true` → 完了。実行中の印が外れる
+- `pending_tasks` がある → そのタスクだけを `issues` の指摘と一緒にもう一度実行し、再び finalize（再実行は2回まで。それでも残れば未完了として報告）
+- `out_of_scope` がある → スキルの範囲外のファイルが変更されている。**自分で戻さず**、一覧をユーザーに報告して指示を仰ぐ
+- 途中でやめる場合は `$PY -I tools/collect/market/market_collect.py abort --session {session}`（実行中の印を外す）
+
+---
+
+## してはいけないこと
+
+- 上の3段以外の作業（追加の web 検索、原本や CSV の閲覧、手作業での数値収集）をしない
+- `tasks.json` の `allowed_files` 以外のファイルを作成・編集しない（hook がブロックする。ブロックされたら回避策を探さず、そのことを報告する）
+- スクリプトが生成したファイル（`raw/indicators-*.md`・`raw/policy-digest.md`・`status.md`・`market/data/`・`index.csv`・`sources/`）を手で直さない
+- 取得に失敗した系列や監視項目を、web 検索などで補わない。`status.md` に理由が残るので、報告に含める
+- 評価・判定・投資判断を書かない
+
+---
+
+## 完了報告（ユーザー向け）
+
+次の形式で短く報告する。
+
+```
+## 地合い情報の収集結果 — {session}
+- 時系列: 取得 {n} 系列 / 失敗 {m} 系列（失敗の主な理由）
+- 新しい文書: {件数}（{文書名を列挙}）
+- タスク: {完了数}/{総数}（未完了があれば ID と理由）
+- 範囲外の変更: なし / {一覧}
+- 次にやること: {例: FRED_API_KEY を .env に設定すると米国の時系列が取れる}
+```
+
+詳細は `{session}/status.md` と `{session}/raw/policy-digest.md` を案内する。

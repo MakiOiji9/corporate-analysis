@@ -1,6 +1,6 @@
 # tools/ — 情報収集スクリプト
 
-スキル `collect-company-info`（`.ai/skills/collect-company-info.md`）から呼び出す Python スクリプト群。
+スキル `collect-company-info`（`.ai/skills/collect-company-info.md`）と `collect-market-info`（`.ai/skills/collect-market-info.md`）から呼び出す Python スクリプト群。
 設定はすべてこのリポジトリ内で完結し、ユーザー環境（`~/.claude` 等）には依存しない。
 
 ## 初回セットアップ（環境ごとに1回）
@@ -11,7 +11,9 @@ sh tools/setup.sh         # macOS / Linux / Git Bash
 ```
 
 1. リポジトリ直下に `.venv` を作り、`tools/requirements.txt` をインストールする
-2. `.env` が無ければ `.env.example` からコピーする → 必要なら `EDINET_API_KEY` を記入する（[EDINET API の利用登録](https://api.edinet-fsa.go.jp/api/auth/index.aspx?mode=1)、無料）
+2. `.env` が無ければ `.env.example` からコピーする → 必要なら次のキーを記入する（どちらも無料）
+   - `EDINET_API_KEY`: 有報の XBRL 取得（[EDINET API の利用登録](https://api.edinet-fsa.go.jp/api/auth/index.aspx?mode=1)）
+   - `FRED_API_KEY`: 米国のマクロ指標（[FRED API key](https://fred.stlouisfed.org/docs/api/api_key.html)）。未設定でも日本の時系列と米国の文書・CFTC は取れる
 3. 最後に `preflight.py` が走り、使える取得経路を表示する
 
 `.venv/`・`.env`・`.cache/`・`companies/*/sources/`（原本）は `.gitignore` 済み。
@@ -45,6 +47,28 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 | `xbrl_financials.py` | EDINET XBRL→CSV から財務を抽出 | `data/financials.csv` |
 | `tdnet_summary.py` | 決算短信 iXBRL から実績・予想・配当・株式数を抽出 | `data/tdnet_facts.csv` |
 | `render_tables.py` | data の CSV から Markdown 表を出力 | 標準出力 |
+
+### 地合い用（`tools/collect/market/`）
+
+入口は `market_collect.py` だけ。収集対象は `catalog/{japan,us}.json` で定義する（書き方は `.ai/templates/collect-market-info/source-access.md`）。
+
+| コマンド | 用途 | 主な出力 |
+|---|---|---|
+| `market_collect.py prepare --market both --topic weekly` | 時系列の取得、新しい政策文書の検出・保存・抜粋、要旨の骨組みと tasks.json の作成 | `market/data/`、`market/policy/`、`market/sessions/…/` |
+| `market_collect.py finalize --session market/sessions/…` | テンプレートとの照合、policy-digest・status の作成、範囲外の変更の検出 | 1行の JSON |
+| `market_collect.py validate / abort --session …` | 検証だけ / 実行中の印を外す | 1行の JSON |
+| `market_collect.py check-watch --market japan` | catalog の監視設定を試す（保存しない） | 標準出力 |
+| `market_collect.py search boj --db CO --word 業況` / `search dashboard --word 失業率` | 系列コードを探す | 標準出力 |
+
+モジュール: `series.py`（取得・パース）、`store.py`（時系列 CSV と前回・前年比）、`watch.py`（新着検出）、`docs.py`（文書ライブラリ）、`excerpt.py`（抜粋）、`render.py`（テンプレート）、`validate.py`（書式検証）。
+
+### 書き込みガード（`tools/guard/write_guard.py`）
+
+`.claude/settings.json` の PreToolUse hook として、Write / Edit の前に毎回実行される（標準ライブラリだけで動く。PATH 上の `python` を使う）。
+
+- スクリプト専用のファイル（`data/`・`sources/`・`index.csv`・`tasks.json`・`status.md`・生成された表）の手書きをブロック
+- `market/**/raw/*.md` は FILL 欄が残っている間だけ Edit を許可。`companies/*/raw/` の過去日付のファイルは変更禁止
+- collect-market-info の実行中（`market/sessions/*/.running`）は、tasks.json の `allowed_files` 以外への書き込みをブロック
 
 ## 例（3798 ULSグループ）
 
