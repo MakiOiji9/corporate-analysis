@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(.ai/**)",
+      "Read(企業分析フレームワーク.md)",
+      "Read(market/**)",
+      "Read(companies/**)",
+      "Write(market/sessions/**)",
+      "Write(companies/**)"
+    ]
+  }
+}
