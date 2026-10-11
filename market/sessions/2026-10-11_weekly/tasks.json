@@ -1,0 +1,263 @@
+{
+ "session": "market/sessions/2026-10-11_weekly",
+ "collected": "2026-10-11",
+ "markets": [
+  "japan",
+  "us"
+ ],
+ "mode": "update",
+ "tasks": [
+  {
+   "type": "summarize-doc",
+   "market": "japan",
+   "title": "第２２２回国会における高市内閣総理大臣所信表明演説 令和8年10月5日",
+   "doc_key": "pm-speech-2026-10-05",
+   "output": "market/policy/japan/raw/2026-10-11_pm-speech-2026-10-05.md",
+   "inputs": [
+    "market/policy/japan/sources/2026-10-11/1005shoshinhyomei.html.excerpt.txt"
+   ],
+   "template": ".ai/templates/collect-market-info/raw/policy-doc.md",
+   "allowed_files": [
+    "market/policy/japan/raw/2026-10-11_pm-speech-2026-10-05.md"
+   ],
+   "id": "T01"
+  },
+  {
+   "type": "summarize-doc",
+   "market": "japan",
+   "title": "新しい資本主義のグランドデザイン及び実行計画2025年改訂版",
+   "doc_key": "new-capitalism-2026-10-11",
+   "output": "market/policy/japan/raw/2026-10-11_new-capitalism-2026-10-11.md",
+   "inputs": [
+    "market/policy/japan/sources/2026-10-11/ap2025.pdf.excerpt.txt"
+   ],
+   "template": ".ai/templates/collect-market-info/raw/policy-doc.md",
+   "allowed_files": [
+    "market/policy/japan/raw/2026-10-11_new-capitalism-2026-10-11.md"
+   ],
+   "id": "T02"
+  },
+  {
+   "type": "summarize-doc",
+   "market": "japan",
+   "title": "第7次エネルギー基本計画（PDF形式：690KB）",
+   "doc_key": "energy-plan-2025-02-18",
+   "output": "market/policy/japan/raw/2026-10-11_energy-plan-2025-02-18.md",
+   "inputs": [
+    "market/policy/japan/sources/2026-10-11/20250218_01.pdf.excerpt.txt"
+   ],
+   "template": ".ai/templates/collect-market-info/raw/policy-doc.md",
+   "allowed_files": [
+    "market/policy/japan/raw/2026-10-11_energy-plan-2025-02-18.md"
+   ],
+   "id": "T03"
+  },
+  {
+   "type": "summarize-doc",
+   "market": "japan",
+   "title": "日本銀行 金融政策決定会合 公表文（2026-09-18）",
+   "doc_key": "boj-statement-2026-09-18",
+   "output": "market/policy/japan/raw/2026-10-11_boj-statement-2026-09-18.md",
+   "inputs": [
+    "market/policy/japan/sources/2026-10-11/k260918a.pdf.excerpt.txt"
+   ],
+   "template": ".ai/templates/collect-market-info/raw/monetary-doc.md",
+   "allowed_files": [
+    "market/policy/japan/raw/2026-10-11_boj-statement-2026-09-18.md"
+   ],
+   "id": "T04"
+  },
+  {
+   "type": "summarize-doc",
+   "market": "japan",
+   "title": "日本銀行 経済・物価情勢の展望（基本的見解）（2026-07-01）",
+   "doc_key": "boj-outlook-2026-07-01",
+   "output": "market/policy/japan/raw/2026-10-11_boj-outlook-2026-07-01.md",
+   "inputs": [
+    "market/policy/japan/sources/2026-10-11/gor2607a.pdf.excerpt.txt"
+   ],
+   "template": ".ai/templates/collect-market-info/raw/monetary-doc.md",
+   "allowed_files": [
+    "market/policy/japan/raw/2026-10-11_boj-outlook-2026-07-01.md"
+   ],
+   "id": "T05"
+  },
+  {
+   "type": "summarize-doc",
+   "market": "japan",
+   "title": "金融政策決定会合における主な意見（9月17、18日開催分）",
+   "doc_key": "boj-opinions-2026-10-01",
+   "output": "market/policy/japan/raw/2026-10-11_boj-opinions-2026-10-01.md",
+   "inputs": [
+    "market/policy/japan/sources/2026-10-11/opi260918.pdf.excerpt.txt"
+   ],
+   "template": ".ai/templates/collect-market-info/raw/monetary-doc.md",
+   "allowed_files": [
+    "market/policy/japan/raw/2026-10-11_boj-opinions-2026-10-01.md"
+   ],
+   "id": "T06"
+  },
+  {
+   "type": "summarize-doc",
+   "market": "japan",
+   "title": "金融政策決定会合議事要旨（7月30、31日開催分）",
+   "doc_key": "boj-minutes-2026-09-28",
+   "output": "market/policy/japan/raw/2026-10-11_boj-minutes-2026-09-28.md",
+   "inputs": [
+    "market/policy/japan/sources/2026-10-11/g260731.pdf.excerpt.txt"
+   ],
+   "template": ".ai/templates/collect-market-info/raw/monetary-doc.md",
+   "allowed_files": [
+    "market/policy/japan/raw/2026-10-11_boj-minutes-2026-09-28.md"
+   ],
+   "id": "T07"
+  },
+  {
+   "type": "summarize-doc",
+   "market": "japan",
+   "title": "経済財政運営と改革の基本方針2026 「責任ある積極財政」元年 ～日本の挑戦を起動する！～（令和８年７月21日閣議決定）",
+   "doc_key": "honebuto-2026-07-21",
+   "output": "market/policy/japan/raw/2026-10-11_honebuto-2026-07-21.md",
+   "inputs": [
+    "market/policy/japan/sources/2026-10-11/2026_basicpolicies_ja.pdf.excerpt.txt"
+   ],
+   "template": ".ai/templates/collect-market-info/raw/policy-doc.md",
+   "allowed_files": [
+    "market/policy/japan/raw/2026-10-11_honebuto-2026-07-21.md"
+   ],
+   "id": "T08"
+  },
+  {
+   "type": "summarize-doc",
+   "market": "japan",
+   "title": "（２）「強い経済」を実現する総合経済対策～日本と日本人の底力で不安を希望に変える～（令和７年11月21日閣議決定） (PDF形式:1.3MB)",
+   "doc_key": "economic-measures-2025-11-21",
+   "output": "market/policy/japan/raw/2026-10-11_economic-measures-2025-11-21.md",
+   "inputs": [
+    "market/policy/japan/sources/2026-10-11/1121_taisaku.pdf.excerpt.txt"
+   ],
+   "template": ".ai/templates/collect-market-info/raw/policy-doc.md",
+   "allowed_files": [
+    "market/policy/japan/raw/2026-10-11_economic-measures-2025-11-21.md"
+   ],
+   "id": "T09"
+  },
+  {
+   "type": "summarize-doc",
+   "market": "japan",
+   "title": "税制改正の大綱（2025-12-26）",
+   "doc_key": "tax-reform-2025-12-26",
+   "output": "market/policy/japan/raw/2026-10-11_tax-reform-2025-12-26.md",
+   "inputs": [
+    "market/policy/japan/sources/2026-10-11/20251226taikou.pdf.excerpt.txt"
+   ],
+   "template": ".ai/templates/collect-market-info/raw/policy-doc.md",
+   "allowed_files": [
+    "market/policy/japan/raw/2026-10-11_tax-reform-2025-12-26.md"
+   ],
+   "id": "T10"
+  },
+  {
+   "type": "summarize-doc",
+   "market": "japan",
+   "title": "令和８年度予算",
+   "doc_key": "budget-2025-08-08",
+   "output": "market/policy/japan/raw/2026-10-11_budget-2025-08-08.md",
+   "inputs": [
+    "market/policy/japan/sources/2026-10-11/01.pdf.excerpt.txt"
+   ],
+   "template": ".ai/templates/collect-market-info/raw/policy-doc.md",
+   "allowed_files": [
+    "market/policy/japan/raw/2026-10-11_budget-2025-08-08.md"
+   ],
+   "id": "T11"
+  },
+  {
+   "type": "summarize-doc",
+   "market": "japan",
+   "title": "「中長期の経済財政に関する試算」（令和８年１月22日公表）（PDF形式：1,219KB）",
+   "doc_key": "fiscal-projection-2026-01-22",
+   "output": "market/policy/japan/raw/2026-10-11_fiscal-projection-2026-01-22.md",
+   "inputs": [
+    "market/policy/japan/sources/2026-10-11/r8chuuchouki2601.pdf.excerpt.txt"
+   ],
+   "template": ".ai/templates/collect-market-info/raw/policy-doc.md",
+   "allowed_files": [
+    "market/policy/japan/raw/2026-10-11_fiscal-projection-2026-01-22.md"
+   ],
+   "id": "T12"
+  },
+  {
+   "type": "summarize-doc",
+   "market": "japan",
+   "title": "月例経済報告（2026-09-29）",
+   "doc_key": "monthly-report-2026-09-29",
+   "output": "market/policy/japan/raw/2026-10-11_monthly-report-2026-09-29.md",
+   "inputs": [
+    "market/policy/japan/sources/2026-10-11/main.pdf.excerpt.txt"
+   ],
+   "template": ".ai/templates/collect-market-info/raw/policy-doc.md",
+   "allowed_files": [
+    "market/policy/japan/raw/2026-10-11_monthly-report-2026-09-29.md"
+   ],
+   "id": "T13"
+  },
+  {
+   "type": "search-calendar",
+   "market": "japan",
+   "title": "政治・イベント日程（日本）",
+   "output": "market/sessions/2026-10-11_weekly/raw/calendar-japan.md",
+   "inputs": [],
+   "max_searches": 8,
+   "template": ".ai/templates/collect-market-info/raw/calendar.md",
+   "allowed_files": [
+    "market/sessions/2026-10-11_weekly/raw/calendar-japan.md"
+   ],
+   "id": "T14"
+  },
+  {
+   "type": "summarize-doc",
+   "market": "us",
+   "title": "Minutes of the Federal Open Market Committee, September 15-16, 2026",
+   "doc_key": "fomc-minutes-2026-10-07",
+   "output": "market/policy/us/raw/2026-10-11_fomc-minutes-2026-10-07.md",
+   "inputs": [
+    "market/policy/us/sources/2026-10-11/fomcminutes20260916.htm.excerpt.txt"
+   ],
+   "template": ".ai/templates/collect-market-info/raw/monetary-doc.md",
+   "allowed_files": [
+    "market/policy/us/raw/2026-10-11_fomc-minutes-2026-10-07.md"
+   ],
+   "id": "T15"
+  },
+  {
+   "type": "summarize-doc",
+   "market": "us",
+   "title": "ベージュブック（Beige Book）（2026-08-01）",
+   "doc_key": "beige-book-2026-08-01",
+   "output": "market/policy/us/raw/2026-10-11_beige-book-2026-08-01.md",
+   "inputs": [
+    "market/policy/us/sources/2026-10-11/beigebook202608-summary.htm.excerpt.txt"
+   ],
+   "template": ".ai/templates/collect-market-info/raw/monetary-doc.md",
+   "allowed_files": [
+    "market/policy/us/raw/2026-10-11_beige-book-2026-08-01.md"
+   ],
+   "id": "T16"
+  },
+  {
+   "type": "search-calendar",
+   "market": "us",
+   "title": "政治・イベント日程（米国）",
+   "output": "market/sessions/2026-10-11_weekly/raw/calendar-us.md",
+   "inputs": [],
+   "max_searches": 8,
+   "template": ".ai/templates/collect-market-info/raw/calendar.md",
+   "allowed_files": [
+    "market/sessions/2026-10-11_weekly/raw/calendar-us.md"
+   ],
+   "id": "T17"
+  }
+ ],
+ "new_docs": []
+}
