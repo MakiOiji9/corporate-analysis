@@ -13,6 +13,7 @@
 ## スキル
 
 スキルの実体は `.ai/skills/` にあり、`.claude/skills/` はそれを参照するエントリーポイントです。
+サブエージェントも同様に、実体は `.ai/agents/`、エントリーポイントは `.claude/agents/` です（collect-company-info の並列収集担当 `collect-ir` / `collect-filings` / `collect-market` / `collect-peers-valuation`）。
 
 | スキル | 用途 | 依頼に含める情報 |
 |---|---|---|

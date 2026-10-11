@@ -6,3 +6,5 @@ description: 企業情報収集スキル。対象企業のホームページURL�
 `.ai/skills/collect-company-info.md` を読み、その手順に厳密に従って実行する。
 
 引数（ticker・name・url・market・mode）はユーザーの依頼文から読み取る。URL だけの場合や不足している場合は、収集を始める前に推定値をユーザーに確認する。
+
+GitHub Copilot では手順書の**逐次モード**で実行する（`.ai/agents/collect-*.md` の4担当を ir → filings → market → peers-valuation の順に自分で実行する）。

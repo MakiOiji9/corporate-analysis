@@ -9,6 +9,10 @@ __pycache__/
 # Tool caches (EDINET daily lists etc.)
 .cache/
 
+# Lock / temp files of tools/collect (parallel sub-agents)
+*.lock
+*.tmp
+
 # Original documents downloaded by tools/collect/fetch.py.
 # Only the manifest is committed; originals can be re-fetched from its URLs.
 companies/*/sources/**

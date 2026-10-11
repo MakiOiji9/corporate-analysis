@@ -31,6 +31,8 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 
 ## スクリプト
 
+並列モード（collect-company-info の4担当がサブエージェントとして同時に動く）でも安全なように、共有ファイル（`sources/manifest.csv`、`data/*.csv`、`.cache/edinet/`）への書き込みはロック（`<file>.lock`）と一時ファイル→置き換えで保護している。共有ファイルは手で編集しないこと。
+
 実行は `.venv` の Python で `python -I tools/collect/<script>.py ...`（Windows は `.venv\Scripts\python.exe`）。各スクリプトは `--help` で使い方を表示する。
 
 | スクリプト | 用途 | 主な出力 |

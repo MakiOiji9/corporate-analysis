@@ -9,7 +9,6 @@ Values are normalised: JPY -> 百万円, Pure -> %, JPYPerShares -> 円, Shares 
 from __future__ import annotations
 
 import argparse
-import csv
 import html
 import re
 import sys
@@ -17,7 +16,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # scripts run with python -I
-from common import company_dir, utf8_stdout  # noqa: E402
+from common import company_dir, file_lock, read_csv_rows, utf8_stdout, write_csv_atomic  # noqa: E402
 
 FACT_FIELDS = ["doc_id", "document", "filing_date", "fiscal_year_end",
                "context", "element", "value", "unit"]
@@ -102,17 +101,11 @@ def to_rows(facts: list[Fact], meta: dict, doc_id: str) -> list[dict]:
 
 
 def upsert_rows(csv_path: Path, rows: list[dict]) -> int:
-    """Replace rows of the same doc_id, keep others. Returns number written."""
+    """Replace rows of the same doc_id, keep others (process-safe). Returns number written."""
     doc_ids = {r["doc_id"] for r in rows}
-    kept = []
-    if csv_path.exists():
-        with csv_path.open(encoding="utf-8", newline="") as f:
-            kept = [r for r in csv.DictReader(f) if r["doc_id"] not in doc_ids]
-    csv_path.parent.mkdir(parents=True, exist_ok=True)
-    with csv_path.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=FACT_FIELDS)
-        writer.writeheader()
-        writer.writerows(kept + rows)
+    with file_lock(csv_path):
+        kept = [r for r in read_csv_rows(csv_path) if r["doc_id"] not in doc_ids]
+        write_csv_atomic(csv_path, FACT_FIELDS, kept + rows)
     return len(rows)
 
 

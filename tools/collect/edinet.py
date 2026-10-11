@@ -23,7 +23,9 @@ import zipfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # scripts run with python -I
-from common import CACHE_DIR, company_dir, http_get, load_env, store_document, utf8_stdout  # noqa: E402
+from common import (  # noqa: E402
+    CACHE_DIR, atomic_write_text, company_dir, http_get, load_env, store_document, utf8_stdout,
+)
 
 API = "https://api.edinet-fsa.go.jp/api/v2"
 DOC_TYPES = {"120": "有価証券報告書", "130": "訂正有価証券報告書", "140": "四半期報告書",
@@ -53,8 +55,7 @@ def daily_list(day: dt.date, key: str) -> list[dict]:
                     params={"date": day.isoformat(), "type": "2", "Subscription-Key": key})
     results = resp.json().get("results") or []
     if day < dt.date.today():
-        cache.parent.mkdir(parents=True, exist_ok=True)
-        cache.write_text(json.dumps(results, ensure_ascii=False), encoding="utf-8")
+        atomic_write_text(cache, json.dumps(results, ensure_ascii=False))
     time.sleep(REQUEST_INTERVAL_SEC)
     return results
 

@@ -34,6 +34,36 @@
 
 ---
 
+## 実行モード
+
+収集は4つの担当に分かれている。担当ごとの手順は `.ai/agents/` にある。
+
+| 担当 | 手順 | 内容（Phase） | 書いてよいファイル |
+|---|---|---|---|
+| collect-ir | `.ai/agents/collect-ir.md` | 企業サイト・IR・プレスリリース（1） | `raw/ir/*_business-overview.md`, `*_mid-term-plan.md`, `*_ir-materials-index.md`, `raw/news/*_press-releases.md` |
+| collect-filings | `.ai/agents/collect-filings.md` | 有報・財務時系列・会社計画・四半期（2・3） | `raw/filings/*`, `raw/ir/*_financials-historical.md`, `data/*` |
+| collect-market | `.ai/agents/collect-market.md` | 業界・市場（4） | `raw/market/*_industry-overview.md` |
+| collect-peers-valuation | `.ai/agents/collect-peers-valuation.md` | 競合・自社の株価指標（5・6） | `raw/market/*_competitors.md`, `raw/ir/*_valuation-data.md` |
+
+全担当とも `fetch.py` / `edinet.py fetch` 経由で `sources/` に原本を保存してよい。`status.md`・`overview.md`・`summaries/` は**親（このスキルを実行しているエージェント）だけ**が書く。
+
+- **並列モード**（Claude Code。サブエージェント `collect-ir` 等が使える環境）: 準備 → 4担当を Agent ツールで**1つのメッセージ内で同時に起動** → 集約
+- **逐次モード**（GitHub Copilot、またはサブエージェントが使えない環境）: 準備 → 4担当の手順を ir → filings → market → peers-valuation の順に自分で実行 → 集約。各担当の報告（agent-report.md の形式）は自分用のメモとして作り、集約に使う
+
+---
+
+## 同時実行のルール
+
+並列モードでは4担当が同時にファイルを書くため、次を守る。
+
+- 共有ファイル（`sources/manifest.csv`、`data/*.csv`）は**スクリプト経由でのみ**書く。スクリプトはロック（`<file>.lock`）と原子的な置き換えで保護されている。手で編集しない
+- 担当は分担表の「書いてよいファイル」以外を書かない
+- 他の担当が保存する原本を自分も必要とする場合は、同じ URL を `fetch.py` で取得すればよい（同一内容は DUPLICATE として既存のパスが返り、二重保存されない）
+- `data/*.csv` は読んでよい（書き込みは原子的なので、途中の壊れた状態は見えない）
+- サブエージェントはユーザーに質問しない。判断を保留した点は報告の6章に書き、親がまとめて確認する
+
+---
+
 ## 保存ルール
 
 - 保存先ルート: `companies/{ticker}_{name}/`
@@ -72,16 +102,16 @@
 
 ## 実行手順（mode=full）
 
-### Phase −1: 事前チェック
+### 準備（親）
 
+#### Phase −1: 事前チェック
 1. `tools/collect/preflight.py` を実行する。`.venv` が無い・ライブラリ不足の場合は、ユーザーに `tools/setup.ps1`（Windows）または `tools/setup.sh` の実行を依頼して止まる
 2. 出力から、この環境で使える経路を確定する
-   - `EDINET_API_KEY` あり → Phase 2/3 は EDINET 経路、なし → PDF 経路
+   - `EDINET_API_KEY` あり → collect-filings は EDINET 経路、なし → PDF 経路
    - Playwright（ブラウザ MCP）が使えるツール一覧にある場合のみ、`browser_navigate` を1回試す。エラーなら以降ブラウザは使わない
-3. 確定した経路を1行でユーザーに伝える
+3. 確定した経路と実行モード（並列 / 逐次）を1行でユーザーに伝える
 
-### Phase 0: ディレクトリ準備
-
+#### Phase 0: ディレクトリ準備
 `companies/{ticker}_{name}/` が存在しなければ、以下を作成する。既に存在する場合は、不足しているサブディレクトリのみ作成する。既存ファイルには触れない。
 
 ```
@@ -100,118 +130,29 @@ companies/{ticker}_{name}/
 └── reports/
 ```
 
-### Phase 1: 企業ホームページからの収集（起点: ユーザー指定URL）
+### 収集（4担当）
 
-指定URLを起点に、会社概要・事業紹介・IR・ニュースのページをたどって収集する。
+**並列モード**: 次の4つを Agent ツールで**1つのメッセージの中で同時に**起動する（`subagent_type` は `collect-ir` / `collect-filings` / `collect-market` / `collect-peers-valuation`）。それぞれのプロンプトに次の入力を書く。
 
-- 静的ページは WebFetch で読む
-- IR資料一覧・ニュース一覧が **JavaScript で描画されるウィジェット**（HTML に `eir-parts.net`、`data-area-name` 等がある）の場合は、スクリプトの解析を**試みない**。`source-access.md` の「IR一覧の代替経路」に進む
-- 決算説明会資料・質疑応答は `fetch.py --text` で原本を保存し、KPI（顧客数、上位顧客比率、リピート率、人員数、採用、単価・稼働率など会社が開示している指標）を拾う
+```
+ticker: {ticker} / name: {name} / url: {url} / market: {market} / mode: full
+企業ディレクトリ: companies/{ticker}_{name}
+収集日: YYYY-MM-DD（全担当で同じ日付を使う）
+取得経路: EDINET API {あり/なし}、ブラウザ {可/不可}
+Python: {.venv の python のパス}
+```
 
-| 収集対象 | 保存先（雛形 raw/） |
-|---|---|
-| 事業内容、主力製品・サービス、セグメント構成、顧客層、主要KPI | `raw/ir/YYYY-MM-DD_business-overview.md`（business-overview.md） |
-| 中期経営計画（目標値・重点施策・資本政策・株主還元方針）。**無い場合は有報の該当文言を引用して「策定・公表なし」と書き、代わりの開示（方針・単年度予想）を記録** | `raw/ir/YYYY-MM-DD_mid-term-plan.md`（mid-term-plan.md） |
-| 決算説明資料・決算短信・有報・統合報告書などのIR資料一覧（資料名・対象期間・URL・原本の保存パス） | `raw/ir/YYYY-MM-DD_ir-materials-index.md`（ir-materials-index.md） |
-| 直近1年程度のプレスリリース・重要ニュース（日付・見出し・要旨・URL） | `raw/news/YYYY-MM-DD_press-releases.md`（press-releases.md） |
+**逐次モード**: 4担当の手順書を順番に読み、自分で実行する。
 
-### Phase 2: 公式開示書類の収集
+### 集約（親）
 
-- 日本株: 有価証券報告書の最新版
-  - EDINET 経路: `edinet.py list --code {ticker} --fy-end-month {決算月} --years 1` → `edinet.py fetch --doc-id {docID} --company {dir} --kind csv`（数値用）と `--kind pdf`（定性情報用）
-  - PDF 経路: IR資料一覧・EDINET DB で有報 PDF の URL（例 `ssl4.eir-parts.net/doc/{code}/yuho_pdf/{書類番号}/00.pdf`）を見つけ、`fetch.py --type yuho --text`
-  - どちらも `find_pages.py cover` で**表紙の【事業年度】を確認して期を判定**し、`toc` で各項目のページを特定してから、そのページだけを読む
-- 米国株: 10-K（SEC EDGAR）の最新版を `fetch.py --type 10k --text` で保存し、同様に必要箇所だけ読む
+#### 報告の照合
+- 4担当の報告（`.ai/templates/collect-company-info/agent-report.md` の形式）を読む
+- **主力事業の判定**が担当間で食い違う場合は、collect-filings の判定（有報のセグメント情報）を採用し、食い違いを完了報告に書く。collect-market / collect-peers-valuation の前提が大きく違う場合は、その担当だけ正しい前提で再実行する
+- 担当が失敗・中断した場合は、その担当だけ再実行する（他担当の成果物はそのまま使う）
+- 各担当の「ユーザーに確認したい点」があれば、まとめて1回でユーザーに確認する
 
-以下の項目を抽出する（雛形 `raw/yuho.md`）。
-
-| 抽出項目 | 備考 |
-|---|---|
-| セグメント情報 | セグメント別の売上高・営業利益（利益構成比が分かる形で）。単一セグメントの場合は収益の分解（製品別・契約形態別など）を記録 |
-| 主要な販売先 | 売上高の10%以上を占める顧客と比率 |
-| 事業等のリスク | 記載されているリスク項目の要旨 |
-| 主要な原材料・調達先 | 記載がある場合（サービス業は外注費・人員など、それに相当するもの） |
-| 研究開発・特許・許認可 | 主要な特許や事業に必要な許認可の記載 |
-| 従業員数・設備投資の状況 | 直近期 |
-| 財務3表 | 損益計算書・貸借対照表・キャッシュ・フロー計算書の主要項目（`find_pages.py fin` または `xbrl_financials.py`） |
-| 特別利益・特別損失 | 内訳と金額 |
-| 発行済株式数・自己株式数 | 期末時点 |
-
-保存先: `raw/filings/YYYY-MM-DD_{決算期}_{書類種別}.md`（例: `2026-10-11_2026-03_yuho.md`, `2026-10-11_fy2025_10k.md`）
-
-### Phase 3: 財務データの時系列収集（5〜10年分）
-
-1. **年次財務**
-   - EDINET 経路: 過去の有報（5年おきで10年分をカバーできる。例: 最新期と5期前）を `edinet.py fetch --kind csv` → `xbrl_financials.py {展開先} --company {dir}` を**古い順に**実行し `data/financials.csv` を作る
-   - PDF 経路: 過去の有報 PDF を `fetch.py --text` → `find_pages.py fin` で主要行だけ抜き出して転記する（2期分ずつ載っている）
-   - どちらでも取れない年度だけ IRBANK・株探など二次情報で補い、確度を「二次」と明記する
-2. **会社計画（期初予想）と実績**
-   - 各期の決算短信（本決算）の「次期の業績予想」が期初予想。iXBRL（.htm）があれば `fetch.py` → `tdnet_summary.py --company {dir}` で `data/tdnet_facts.csv` に追記する
-   - 期中の修正は「業績予想の修正に関するお知らせ」の開示から取る。iXBRL が無い古い年度は短信 PDF・株探の決算記事で補い、確度を明記する
-3. **直近四半期**: 最新の四半期（中間）決算短信も同様に `tdnet_summary.py` で取り込む
-4. `render_tables.py financials / forecasts / quarterly` の出力を raw に貼る
-
-| 区分 | 項目 |
-|---|---|
-| 損益 | 売上高、売上原価、販管費、営業利益、経常利益（日本株）、当期純利益、EPS |
-| 貸借 | 総資産、自己資本（純資産）、有利子負債、現金及び現金同等物、流動資産、流動負債、売上債権、棚卸資産、BPS |
-| CF | 営業CF、投資CF、財務CF、減価償却費、設備投資額、子会社株式取得による支出 |
-| 株主還元 | 配当総額、1株配当、自社株買い額 |
-| 比率 | ROE、営業利益率、自己資本比率（取得できる場合。取得できなければ計算せず `—`） |
-| 会社計画 | 各年度の期初業績予想（売上高・営業利益・純利益）、期中修正、実績 |
-| 四半期 | 直近の四半期累計の実績と、通期予想の修正有無 |
-
-保存先: `raw/ir/YYYY-MM-DD_financials-historical.md`（雛形 financials-historical.md）
-
-### Phase 4: 市場・業界情報の収集（web検索）
-
-主力事業（セグメント情報で営業利益構成比が最大のもの。単一セグメントなら全社）の業界について検索する。
-業界団体の統計、調査会社のレポート、官公庁の統計、競合のIR資料を優先する。**各値に確度（一次 / 二次 / 検索要約）を付ける**。
-
-| 収集対象 |
-|---|
-| 市場規模と成長率（過去実績・将来予測。予測は出典と予測主体を明記） |
-| 上位企業とシェア分布、シェアの推移 |
-| 参入に必要な条件（初期投資規模、許認可、技術・ブランド）、過去5年の主な新規参入 |
-| 代替製品・代替手段とその普及状況 |
-| 顧客の購買決定要因（価格・品質・性能・サポート・ブランドなど） |
-| 原材料・部品の調達構造、過去の原材料価格高騰の事例 |
-| 業界全体の利益率の推移 |
-| 技術革新・規制変更・特許切れなど、業界構造を変えうる要因 |
-
-保存先: `raw/market/YYYY-MM-DD_industry-overview.md`（雛形 industry-overview.md）
-
-### Phase 5: 競合情報の収集
-
-主力事業が近く、規模が極端に違わない同業他社を2〜3社選ぶ。選定理由（事業の類似点・規模）を記載する。
-数値は可能なら各社の決算短信（`tdnet_summary.py`）で一次確認し、IRBANK 等の二次情報だけの値は確度を「二次」とする。
-
-| 項目 |
-|---|
-| 売上高・営業利益・営業利益率（直近と5年推移） |
-| 市場シェア |
-| 売上高の3年CAGR計算に必要な売上高（3年前と直近） |
-| ROE、自己資本比率 |
-| PER・PBR・EV/EBITDA（直近値） |
-| 主力製品と強み（競合のIR資料で本人が主張しているもの） |
-
-保存先: `raw/market/YYYY-MM-DD_competitors.md`（雛形 competitors.md）
-
-### Phase 6: 株価・バリュエーションデータの収集
-
-| 項目 |
-|---|
-| 現在株価（取得日時を明記）、時価総額、発行済株式数（自己株式を除く） |
-| EPS（実績・会社予想）、BPS |
-| PER・PBR・EV/EBITDA の過去5〜10年の推移（年次の最高・最低・平均） |
-| アナリスト予想のEPS成長率（入手できる場合のみ） |
-
-- **期末後のコーポレートアクション**（株式分割・株式交換・自己株式の取得/消却・新株予約権の行使）をプレスリリースから確認し、株式数・1株指標への影響を注記する。`status.md` の3章にも記録する
-
-保存先: `raw/ir/YYYY-MM-DD_valuation-data.md`（雛形 valuation-data.md）
-
-### Phase 7: 要約の作成
-
+#### Phase 7: 要約の作成
 今回収集した raw ファイルと `data/*.csv` を読み、`summaries/` に要約を作成する（既存の要約は今回の内容で上書きしてよい）。
 雛形は `.ai/templates/collect-company-info/summaries/`。要約は raw の内容を整理するもので、評価・判定は書かない。
 すべての記述に元となる raw ファイル名を付記する。
@@ -222,10 +163,9 @@ companies/{ticker}_{name}/
 | `summaries/financials.md` | 財務主要項目の時系列表（損益・貸借・CF・株主還元）、会社計画と実績の対比表、同業他社との主要指標比較表 |
 | `summaries/valuation.md` | 現在の株価・各指標値、各指標の過去レンジ、同業他社の各指標 |
 
-### Phase 8: overview.md・status.md の更新と完了報告
-
+#### Phase 8: overview.md・status.md の更新と完了報告
 1. `overview.md` の「基本情報」の主力事業を記入し、「情報収集履歴」に1行追記する（収集日・モード・財務データの対象期間・同業比較対象の企業名）
-2. `status.md` を上書きする（各データの時点・取得日・次回更新トリガー、未取得項目と次回の取得方法、期末後のコーポレートアクション）。次回決算発表予定日は IR カレンダーまたは決算短信から取る
+2. `status.md` を上書きする。各担当の報告の3章（未取得項目）・5章（データの時点・次回決算発表予定日・コーポレートアクション）をここに集約する
 3. `sources/manifest.csv` に今回取得した原本が登録されていることを確認する（WebFetch だけで読んだページは原本が無いので不要）
 4. `.ai/templates/collect-company-info/final-report.md` の形式でユーザーに報告する
    - 作成・追加したファイルの一覧
@@ -241,14 +181,19 @@ companies/{ticker}_{name}/
 
 1. **Phase −1** を実行する
 2. `status.md` と `sources/manifest.csv` を読み、前回の収集日・各データの時点・未取得項目を確認する
-3. 前回の収集日以降の開示を調べる（IRBANK 適時開示一覧、EDINET `list --from {前回収集日} --to {今日}`、企業サイトのニュース）。新しい開示が無ければ、株価（Phase 6）だけ更新して手順6へ
-4. 新しい開示がある区分だけ、full の該当 Phase を実行する
-   - 原本は `fetch.py` / `edinet.py fetch` で保存（同一内容は自動でスキップされる）
-   - 財務は `xbrl_financials.py` / `tdnet_summary.py` で `data/*.csv` に追記し、`render_tables.py` で表を作り直す
+3. 前回の収集日以降の開示を調べる（IRBANK 適時開示一覧、EDINET `list --from {前回収集日} --to {今日}`、企業サイトのニュース）
+4. 差分がある担当だけを起動する（並列モードなら同時に）。プロンプトには `mode: update`、前回収集日、担当の範囲を書く
+
+| 新しく出たもの | 起動する担当 |
+|---|---|
+| 決算短信・有報・業績予想の修正 | collect-filings（＋ collect-ir の IR資料一覧） |
+| プレスリリース・説明会資料 | collect-ir |
+| 何も無い | collect-peers-valuation（範囲: 株価のみ） |
+| status.md の更新トリガーに達した業界・競合 | collect-market / collect-peers-valuation（範囲: 競合も） |
+
    - raw は**新しい日付のファイル**として追加する（前回の raw は変更しない）。差分だけのファイルでよいが、冒頭に「前回ファイル: raw/.../YYYY-MM-DD_xxx.md からの差分」と書く
-   - `status.md` の未取得項目は、今回の手段で取れるものを優先して再挑戦する
-5. 業界・競合（Phase 4・5）は、`status.md` の更新トリガーに達している場合のみ更新する
-6. Phase 7（要約は上書き）、Phase 8（status.md 上書き、overview.md に履歴を1行追記、完了報告。報告には前回からの差分を明記）
+   - `status.md` の未取得項目は、今回の手段で取れるものを該当担当のプロンプトに含めて再挑戦させる
+5. 集約（Phase 7 の要約は上書き、Phase 8 で status.md 上書き・overview.md に履歴1行・完了報告。報告には前回からの差分を明記）
 
 ---
 
