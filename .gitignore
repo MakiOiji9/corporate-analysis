@@ -1,0 +1,16 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Secrets
+.env
+
+# Tool caches (EDINET daily lists etc.)
+.cache/
+
+# Original documents downloaded by tools/collect/fetch.py.
+# Only the manifest is committed; originals can be re-fetched from its URLs.
+companies/*/sources/**
+!companies/*/sources/
+!companies/*/sources/manifest.csv

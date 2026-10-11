@@ -8,23 +8,28 @@
 
 ## 企業ディレクトリの構造
 
-`/new-company {ticker} {name}` で以下の雛形が自動生成されます。
+スキル `collect-company-info` を実行すると、以下の構成が作成されます（詳細は `.ai/instructions/output-format.md`）。
+2回目以降は `mode=update` で、前回以降の差分だけを追加します。
 
 ```
 {ticker}_{name}/
-├── overview.md          # 企業概要・投資テーゼ・ウォッチリスト状態
+├── overview.md          # 企業概要・投資テーゼ・現在の判断
+├── status.md            # データ鮮度・未取得項目・次回更新トリガー
+├── sources/             # ダウンロードした原本（git 管理外。manifest.csv だけコミット）
+├── data/                # スクリプト生成の構造化データ（financials.csv, tdnet_facts.csv）
 ├── raw/                 # 生データ（収集後は変更禁止）
-│   ├── ir/              # 決算資料・IR資料・中期経営計画
+│   ├── ir/              # 事業概要・中期経営計画・IR資料一覧・財務時系列・株価指標
 │   ├── filings/         # 有価証券報告書(EDINET) / 10-K(SEC EDGAR)
-│   └── news/            # ニュース・プレスリリース
+│   ├── news/            # ニュース・プレスリリース
+│   └── market/          # 業界・市場データ・競合情報
+├── summaries/           # raw/ の要約（business / financials / valuation）
 ├── sessions/            # 日付付き分析セッション
 │   └── YYYY-MM-DD_{topic}/
-│       ├── step1/       # STEP1: 事業・競争環境分析
-│       ├── step2/       # STEP2: 財務分析
-│       ├── step3/       # STEP3: バリュエーション
 │       └── judgment-sheet.md
 └── reports/             # 完成した投資レポート
 ```
+
+原本は git で管理しないため、別の環境では `sources/manifest.csv` の URL から再取得できます。
 
 ## 3STEP分析フロー
 

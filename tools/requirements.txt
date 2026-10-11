@@ -1,0 +1,4 @@
+pypdf>=4.0
+requests>=2.31
+certifi>=2024.2.2
+pytest>=8.0

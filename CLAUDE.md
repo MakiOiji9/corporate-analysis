@@ -16,7 +16,12 @@
 
 | スキル | 用途 | 依頼に含める情報 |
 |---|---|---|
-| `collect-company-info` | 企業情報収集（生データと要約の保存） | 銘柄コード・企業名（英語）・ホームページURL・市場（japan / us） |
+| `collect-company-info` | 企業情報収集（原本・構造化データ・生データ・要約の保存、`mode=update` で差分更新） | 銘柄コード・企業名（英語）・ホームページURL・市場（japan / us）。URL だけでも可 |
+
+## ツールと初回セットアップ
+
+情報収集用の Python スクリプトは `tools/collect/` にある。使い方とセットアップは `tools/README.md` を参照。
+設定はすべてこのリポジトリ内で完結する（`.venv`、`.env`、`.claude/settings.json`）。
 
 ## 言語ポリシー
 

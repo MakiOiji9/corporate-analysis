@@ -23,6 +23,13 @@
 ```
 companies/{ticker}_{name}/
 ├── overview.md                  # 企業概要・投資テーゼ・現在の判断・次回見直し日
+├── status.md                    # データ鮮度・未取得項目・次回更新トリガー（収集のたびに上書き）
+├── sources/                     # ダウンロードした原本（git 管理外）
+│   ├── manifest.csv             # 原本の台帳（URL・書類ID・取得日・sha256）※これだけコミット
+│   └── YYYY-MM-DD/              # 取得日ごとの原本（PDF/HTML/ZIP）とテキスト化したもの
+├── data/                        # スクリプトが生成する構造化データ（手で編集しない）
+│   ├── financials.csv           # 年次財務（xbrl_financials.py）
+│   └── tdnet_facts.csv          # 決算短信のサマリー（tdnet_summary.py）
 ├── raw/                         # 収集した生データ（分析後は変更禁止）
 │   ├── ir/                      # IR資料・決算資料・中期経営計画
 │   ├── filings/                 # 有価証券報告書(EDINET) / 10-K(SEC EDGAR)
