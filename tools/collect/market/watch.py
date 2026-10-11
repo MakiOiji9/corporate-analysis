@@ -31,7 +31,13 @@ REIWA = re.compile(r"令和\s*(\d+|元)\s*年\s*(\d+)\s*月\s*(\d+)\s*日")
 SEIREKI = re.compile(r"(20\d{2})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日")
 URL_DATE = re.compile(r"/(20\d{2})/(\d{2})(\d{2})")
 URL_COMPACT_DATE = re.compile(r"(20\d{2})(0[1-9]|1[0-2])([0-2]\d|3[01])[^/]*$")
+MONTHS = ("January", "February", "March", "April", "May", "June", "July", "August", "September",
+          "October", "November", "December")
+EN_DATE = re.compile(r"\b(" + "|".join(MONTHS) + r")\s+(\d{1,2}),\s*(20\d{2})\b")
 REIWA_BASE = 2018
+# Where Candidate.published came from. Dates that are only a guess are checked against the
+# document text after download (docs.refine_published).
+DATE_EXACT, DATE_MONTH_ONLY, DATE_FROM_PAGE = "exact", "month", "page"
 
 
 @dataclass(frozen=True)
@@ -43,6 +49,7 @@ class Candidate:
     url: str
     published: str
     page_url: str = ""
+    date_source: str = DATE_EXACT
 
 
 def clean(text: str) -> str:
@@ -59,6 +66,8 @@ def find_date(*texts: str) -> str:
             return f"{year}-{int(m.group(2)):02d}-{int(m.group(3)):02d}"
         if m := SEIREKI.search(text):
             return f"{m.group(1)}-{int(m.group(2)):02d}-{int(m.group(3)):02d}"
+        if m := EN_DATE.search(text):
+            return f"{m.group(3)}-{MONTHS.index(m.group(1)) + 1:02d}-{int(m.group(2)):02d}"
         if m := URL_DATE.search(text) or URL_COMPACT_DATE.search(text):
             return f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
         try:
@@ -139,12 +148,14 @@ def list_candidates(entry: dict, get, variables: dict) -> list[Candidate]:
     for link, title, date in items:
         if not _matches(entry, link, title):
             continue
-        if entry.get("date_pattern"):
-            date = date_from_pattern(entry["date_pattern"], link) or date
+        source = DATE_EXACT
+        if entry.get("date_pattern") and (by_pattern := date_from_pattern(entry["date_pattern"], link)):
+            date = by_pattern
+            source = DATE_EXACT if "(?P<d>" in entry["date_pattern"] else DATE_MONTH_ONLY
         date = date or find_date(title, link)
         if entry.get("use_entry_title"):  # link text is only 'PDF' / '9月' on some pages
             title = f"{entry['title']}（{date or title}）"
-        out.append(Candidate(key, layer, kind, title, link, date))
+        out.append(Candidate(key, layer, kind, title, link, date, date_source=source))
     if out and all(c.published for c in out):  # some pages list oldest first; pick_new needs newest first
         out.sort(key=lambda c: c.published, reverse=True)
     return out
@@ -157,15 +168,16 @@ def follow(candidate: Candidate, rules: dict | list[dict], get) -> Candidate | N
     Returns None when a step finds no matching link (e.g. next year's budget page before
     the PDF is posted), so the caller can move on to the next candidate.
     """
-    url, published = candidate.url, candidate.published
+    url, published, source = candidate.url, candidate.published, candidate.date_source
     for rule in rules if isinstance(rules, list) else [rules]:
         html = get(url).content.decode("utf-8", errors="replace")
         hit = next((link for link, label in extract_links(html, url) if _matches(rule, link, label)), None)
         if hit is None:
             return None
-        published = published or find_date(hit, clean(html)[:3000])
+        if not published:  # the first date on an index page is often another document's
+            published, source = find_date(hit, clean(html)[:3000]), DATE_FROM_PAGE
         url = hit
-    return replace(candidate, url=url, page_url=candidate.url, published=published)
+    return replace(candidate, url=url, page_url=candidate.url, published=published, date_source=source)
 
 
 def load_index(index_csv: Path) -> list[dict]:

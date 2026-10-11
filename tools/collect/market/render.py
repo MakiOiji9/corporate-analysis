@@ -96,9 +96,16 @@ def bullets(items: list[str], empty: str = "なし") -> str:
 
 def render_status(session: str, updated: str, stage: str, summary_rows: list[list[object]],
                   series_rows: list[list[object]], watch_rows: list[list[object]],
-                  task_rows: list[list[object]], validation: list[str], out_of_scope: list[str]) -> str:
+                  task_rows: list[list[object]], validation: list[str], out_of_scope: list[str],
+                  review_rows: list[list[object]] | None = None) -> str:
     return render_template("status.md", session=session, updated=updated, stage=stage,
                            summary_rows=table(summary_rows, 2), series_rows=table(series_rows, 4),
                            watch_rows=table(watch_rows, 3), task_rows=table(task_rows, 4),
                            validation=bullets(validation, "問題なし"),
-                           out_of_scope=bullets(out_of_scope, "なし"))
+                           out_of_scope=bullets(out_of_scope, "なし"),
+                           review_rows=table(review_rows or [], 2))
+
+
+def render_latest(session: str, updated: str, files: list[list[object]], latest_rows: list[list[object]]) -> str:
+    return render_template("latest.md", session=session, updated=updated, file_rows=table(files, 2),
+                           latest_rows=table(latest_rows, 6))

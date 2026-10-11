@@ -16,13 +16,17 @@
 1. スキル `collect-market-info` を実行する（例: `/collect-market-info both topic=weekly`）
    - スクリプトが時系列（日銀・e-Stat・財務省・JPX・FRED・CFTC）を取得し、新しく出た政策文書を `policy/` に取り込む
    - LLM は文書の要旨化と、政治・イベント日程の検索だけをサブエージェントで並列に行う
-2. `sessions/YYYY-MM-DD_{topic}/status.md` で取得結果を確認する
+2. `LATEST.md`（最新の完了セッションと文書種別ごとの最新版への入口）と、そこから辿れる `status.md` の「7. 要確認事項」を確認する
 3. `raw/` と `policy/` の要旨をもとに `analysis.md` と `outlook.md` を作る（地合い判断）
 4. 次回の企業分析前に最新の `outlook.md` を参照する
+
+情報の鮮度: 時系列（`data/`）は毎回上書き更新、文書（`policy/`）は新しい版だけ追加、日程（`sessions/…/raw/calendar-*`）はセッションごとに作り直す。
+どれが最新かは `LATEST.md` を見る。要旨を作り直すときは `market_collect.py reopen`（`tools/README.md`）。
 
 ## ディレクトリ構造
 
 ```
+LATEST.md                          # 最新の状態への入口（finalize が生成）
 policy/{japan,us}/                 # 国家方針・財政・金融政策の文書ライブラリ（新しい版だけ追加）
 ├── index.csv                      # 資料台帳
 ├── sources/                       # 原本（git 管理外。manifest.csv だけコミット）

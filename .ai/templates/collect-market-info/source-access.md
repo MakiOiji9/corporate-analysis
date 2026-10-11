@@ -58,12 +58,31 @@
 | `kind` | `summarize`（原本を保存して要旨化タスクを作る）/ `list`（新着の一覧だけを残す） |
 | `link_pattern` / `title_pattern` | リンク URL / リンク文字に対する正規表現 |
 | `follow` | 候補ページを開き、その中の本文 PDF などに差し替える（見つからない候補は飛ばす） |
-| `date_pattern` | URL から日付を読む正規表現（名前付きグループ `y` `m` `d`） |
+| `date_pattern` | URL から日付を読む正規表現（名前付きグループ `y` `m` `d`。`d` が無いと「月だけ」扱いになり、本文の同じ月の日付で補正される） |
 | `use_entry_title` | リンク文字が「PDF」だけのページで、`title`＋日付を表題にする |
 | `max_new` / `max_chars` | 1回に取り込む件数 / 要旨化に渡す抜粋の上限文字数 |
+| `keywords` / `must_include` | 抜粋で優先するページ・段落の語（catalog 直下の `excerpt_keywords` に追加）/ 必ず含めたい箇所の正規表現（決定事項・採決・金額など。キーワードより先に採る） |
 | `vars`（catalog 直下） | URL の `{名前}` を、別ページから正規表現で読んだ値で置き換える（内閣番号・年ごとのページなど） |
 
 新着の判定: 一覧を新しい順に見て、`index.csv` に登録済みの URL に当たったところで止める（古い版を後から拾わない）。全候補に日付があれば日付の新しい順に並べ替えてから判定する。
+
+公表日: リンク文字・RSS の日付はそのまま使う。月だけの日付・索引ページから拾った日付・日付なしは、本文冒頭の日付で補正する（確認できない索引ページの日付は空欄にする）。要旨担当が本文で確かめた日付（`公表日（本文で確認）`）は、台帳の公表日が空欄なら finalize が補完し、食い違えば status.md の要確認事項に出す（台帳は変えない）。
+
+抜粋: 先頭に `=====COVERAGE: 収録ページ … / 全 n ページ=====` が付く。要旨が肝心の数値を落としているときは、その watch の `must_include` か `max_chars` を足してから `market_collect.py reopen` で作り直す。
+
+## catalog: calendar（日程）
+
+```json
+"calendar": {"max_searches": 8,
+  "fixed_sources": [{"type": "fomc", "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"},
+                    {"type": "fred_release", "release_id": 10, "name": "CPI（消費者物価指数）"}],
+  "event_hint": "…", "recent_hint": "…", "sentiment_items": ["…"]}
+```
+
+| キー | 意味 |
+|---|---|
+| `fixed_sources` | スクリプトが公式サイトから取る確定日程。`fomc`（FRB の会合日程ページ）/ `boj_mpm`（日銀の決定会合日程ページ）/ `fred_release`（FRED のリリース日程。`release_id` は https://fred.stlouisfed.org/releases で確認。FRED_API_KEY 必須） |
+| `event_hint` / `recent_hint` / `sentiment_items` | search-calendar が web 検索で埋める項目。`fixed_sources` で取れる日程はここに書かない |
 
 ## 自動化していない情報源（必要なら catalog に追加）
 

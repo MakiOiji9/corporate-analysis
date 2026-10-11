@@ -79,11 +79,14 @@
     {"key": "fomc-statement", "layer": "C", "kind": "summarize", "type": "rss",
      "title": "FOMC 声明（FOMC statement）",
      "url": "https://www.federalreserve.gov/feeds/press_monetary.xml",
-     "title_pattern": "FOMC statement", "max_new": 1, "max_chars": 8000},
+     "title_pattern": "FOMC statement", "max_new": 1, "max_chars": 8000,
+     "must_include": ["federal funds rate", "Voting for", "Voting against", "\\d+\\s*[–-]\\s*\\d+ vote", "decided to"]},
     {"key": "fomc-minutes", "layer": "C", "kind": "summarize", "type": "rss",
      "title": "FOMC 議事要旨（Minutes）",
      "url": "https://www.federalreserve.gov/feeds/press_monetary.xml",
-     "title_pattern": "^Minutes of the Federal Open Market Committee", "max_new": 1,
+     "title_pattern": "^Minutes of the Federal Open Market Committee", "max_new": 1, "max_chars": 22000,
+     "must_include": ["Committee Policy Action", "Voting for", "Voting against", "consideration of monetary policy",
+                      "outlook for monetary policy", "balance sheet policy"],
      "follow": {"link_pattern": "fomcminutes\\d{8}\\.htm$"}},
     {"key": "beige-book", "layer": "C", "kind": "summarize", "type": "html_links",
      "title": "ベージュブック（Beige Book）",
@@ -93,7 +96,14 @@
   ],
   "calendar": {
     "max_searches": 8,
-    "event_hint": "FOMC と議長会見、議会の歳出法案・債務上限・政府閉鎖の期限、2026-11-03 中間選挙と関連日程、雇用統計・CPI・GDP の公表日、関税措置の発効日・期限、最高裁の主要判決",
+    "fixed_sources": [
+      {"type": "fomc", "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"},
+      {"type": "fred_release", "release_id": 10, "name": "CPI（消費者物価指数）"},
+      {"type": "fred_release", "release_id": 50, "name": "雇用統計（Employment Situation）"},
+      {"type": "fred_release", "release_id": 53, "name": "GDP（実質GDP 速報）"},
+      {"type": "fred_release", "release_id": 54, "name": "個人所得・支出（PCE 価格指数）"}
+    ],
+    "event_hint": "議会の歳出法案・債務上限・政府閉鎖の期限、中間選挙（2026-11-03）と関連日程、関税措置の発効日・期限、最高裁の主要判決",
     "recent_hint": "大統領令・関税措置の発表、議会の主要法案、大統領支持率（主要世論調査）、FRB 高官の発言として報道されたもの",
     "sentiment_items": ["S&P500 予想PER（FactSet Earnings Insight）", "S&P500 予想EPS（今期・来期）", "AAII センチメント調査（Bullish / Bearish の比率）"]
   }

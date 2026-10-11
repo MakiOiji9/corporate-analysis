@@ -54,10 +54,11 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 
 | コマンド | 用途 | 主な出力 |
 |---|---|---|
-| `market_collect.py prepare --market both --topic weekly` | 時系列の取得、新しい政策文書の検出・保存・抜粋、要旨の骨組みと tasks.json の作成 | `market/data/`、`market/policy/`、`market/sessions/…/` |
-| `market_collect.py finalize --session market/sessions/…` | テンプレートとの照合、policy-digest・status の作成、範囲外の変更の検出 | 1行の JSON |
-| `market_collect.py validate / abort --session …` | 検証だけ / 実行中の印を外す | 1行の JSON |
-| `market_collect.py check-watch --market japan` | catalog の監視設定を試す（保存しない） | 標準出力 |
+| `market_collect.py prepare --market both --topic weekly` | 台帳の整合、時系列の取得（`--mode auto` が既定: 初回 10 年・以降 3 年）、新しい政策文書の検出・保存・抜粋・公表日の本文照合、確定日程の取得、要旨の骨組みと tasks.json（要旨化は 1〜3 文書ずつ束ねる）の作成 | `market/data/`、`market/policy/`、`market/sessions/…/` |
+| `market_collect.py finalize --session market/sessions/…` | テンプレートとの照合、公表日の確認結果の反映、policy-digest・status（要確認事項つき）・`market/LATEST.md` の作成、範囲外の変更の検出 | 1行の JSON |
+| `market_collect.py validate / abort --session …` | 検証だけ / 実行中の印を外し status を「中断」にする | 1行の JSON |
+| `market_collect.py reopen --raw market/policy/…/raw/….md` | 完成済みの要旨を骨組みに戻し、抜粋を作り直す（ユーザーの指示があるときだけ） | 1行の JSON |
+| `market_collect.py check-watch --market japan` | catalog の監視設定と確定日程の取得を試す（保存しない） | 標準出力 |
 | `market_collect.py search boj --db CO --word 業況` / `search dashboard --word 失業率` | 系列コードを探す | 標準出力 |
 
 モジュール: `series.py`（取得・パース）、`store.py`（時系列 CSV と前回・前年比）、`watch.py`（新着検出）、`docs.py`（文書ライブラリ）、`excerpt.py`（抜粋）、`render.py`（テンプレート）、`validate.py`（書式検証）。

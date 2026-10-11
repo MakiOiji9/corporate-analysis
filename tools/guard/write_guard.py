@@ -8,7 +8,9 @@ Rules (paths relative to the repository; writes outside it are not checked):
   1. Script-only files (data CSVs, sources/, index.csv, tasks.json, status.md, generated
      raw tables) are never written by hand.
   2. market/**/raw/*.md: the scripts create them. Only an existing file that still has
-     <!-- FILL:... --> markers may be changed, and only with Edit (not overwritten).
+     <!-- FILL:... --> markers may be changed, and only with Edit (not overwritten). While a
+     session runs, its allowed_files stay editable after the last FILL is gone, so a summariser
+     can correct its own output; afterwards the file is immutable (market_collect.py reopen).
   3. companies/*/raw/**: files collected on an earlier day are immutable.
   4. While a market session is running (market/sessions/*/.running), only the files listed
      in that session's tasks.json "allowed_files" may be written.
@@ -28,6 +30,7 @@ RAW_DATE = re.compile(r"^(\d{4}-\d{2}-\d{2})_")
 SCRIPT_ONLY = [
     re.compile(p) for p in (
         r"^market/data/",
+        r"^market/LATEST\.md$",
         r"^market/.*/sources/",
         r"^market/policy/[^/]+/index\.csv$",
         r"^market/sessions/[^/]+/(tasks\.json|status\.md|\.running|\.baseline\.json)$",
@@ -73,18 +76,19 @@ def decide(tool: str, rel: str | None, root: Path, today: str) -> str | None:
     target = root / rel
     if any(p.search(rel) for p in SCRIPT_ONLY):
         return f"{rel} はスクリプトだけが書くファイル。手で編集しない（tools/collect の該当スクリプトを再実行する）。"
+    sessions, allowed = running_allowed(root)
     if MARKET_RAW.match(rel):
         if not target.exists():
             return f"{rel}: market の raw はスクリプトが骨組みを作る。新しいファイルを作らない。"
-        if not FILL.search(target.read_text(encoding="utf-8", errors="replace")):
-            return f"{rel} は完成済みの raw なので変更禁止（再収集は新しいセッションで行う）。"
         if tool == "Write":
-            return f"{rel} は上書きしない。Edit で <!-- FILL:... --> の行だけを置き換える。"
+            return f"{rel} は上書きしない。Edit で <!-- FILL:... --> の行（実行中なら自分の担当ファイルの誤り）だけを直す。"
+        if rel not in allowed and not FILL.search(target.read_text(encoding="utf-8", errors="replace")):
+            return (f"{rel} は完成済みの raw なので変更禁止。作り直すときはユーザーの指示で "
+                    f"market_collect.py reopen --raw {rel} を実行する。")
     if COMPANY_RAW.match(rel) and target.exists():
         m = RAW_DATE.match(target.name)
         if m and m.group(1) < today:
             return f"{rel} は過去の収集日の raw なので変更禁止。再収集は新しい日付のファイルとして追加する。"
-    sessions, allowed = running_allowed(root)
     if sessions and rel not in allowed:
         return (f"collect-market-info の実行中（{', '.join(sessions)}）。書けるのは tasks.json の allowed_files "
                 f"に載ったファイルだけで、{rel} は対象外。{ABORT_HINT}")

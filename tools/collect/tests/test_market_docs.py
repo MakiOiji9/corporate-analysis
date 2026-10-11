@@ -111,6 +111,106 @@ def test_excerpt_single_page_trims_to_keyword_paragraphs():
     assert "投資を強化する" in text and len(text) < 600
 
 
+def _minutes_like() -> str:
+    nav = ["Skip to main content", "Board Members", "Careers"] * 20
+    early = [f"The staff review paragraph {i} discussed inflation and the labor market in detail." * 3
+             for i in range(40)]
+    tail = ["Committee Policy Actions",
+            "In support of the Committee's goals, all members agreed to raise the target range.",
+            "Voting for this action: A, B, C.", "Voting against this action: None."]
+    return "\n".join(nav + early + tail)
+
+
+def test_excerpt_single_page_keeps_must_include_at_the_end_and_drops_navigation():
+    text = X.build_excerpt({1: _minutes_like()}, ["inflation"], max_chars=3000,
+                           must_include=["Committee Policy Action", "Voting (for|against)"])
+    assert "Committee Policy Actions" in text and "Voting for this action" in text
+    assert text.count("Board Members") <= 1  # only the first lines (the page title) are kept unconditionally
+    assert text.startswith("=====COVERAGE:") and "=====PAGE 1=====" in text
+    assert 2000 < len(text) < 3300  # filled up to the limit, not just the keyword lines
+
+
+def test_excerpt_single_page_kept_whole_when_short():
+    body = "\n".join(f"段落{i}" for i in range(50))
+    assert body in X.build_excerpt({1: body}, [], max_chars=len(body))
+
+
+def test_excerpt_pages_must_include_first_and_coverage_line():
+    pages = {1: "表紙", 2: "目次", 3: "投資 投資 投資 投資" * 30, 4: "一般会計総額 115兆円", 5: "投資"}
+    text = X.build_excerpt(pages, ["投資"], max_chars=200, must_include=["一般会計"])
+    assert "=====PAGE 4=====" in text and "=====PAGE 3=====" not in text
+    assert "収録ページ 1-2,4-5 / 全 5 ページ" in text
+
+
+def test_page_ranges():
+    assert X.page_ranges([1, 2, 5, 6, 7, 9]) == "1-2,5-7,9"
+    assert X.page_ranges([]) == ""
+
+
+# ---------------------------------------------------------------- publication dates
+
+def test_find_date_english_month():
+    assert W.find_date("For release at 2:00 p.m. EDT September 16, 2026") == "2026-09-16"
+
+
+def test_month_only_date_pattern_is_marked_and_follow_marks_page_dates():
+    html = '<a href="/outlook/gor2607a.pdf">PDF</a>'
+    entry = {"key": "boj-outlook", "type": "html_links", "title": "展望", "url": "https://b/o.htm",
+             "link_pattern": r"gor\d{4}a\.pdf$", "date_pattern": r"gor(?P<y>\d{2})(?P<m>\d{2})a\.pdf"}
+    cand = W.list_candidates(entry, _get({"https://b/o.htm": html}), {})[0]
+    assert (cand.published, cand.date_source) == ("2026-07-01", W.DATE_MONTH_ONLY)
+    page = '<p>令和7年8月8日 概算要求</p><a href="/fy2026/point.pdf">予算のポイント</a>'
+    bare = W.Candidate("budget", "B", "summarize", "令和8年度予算", "https://m/fy2026/index.html", "")
+    hit = W.follow(bare, {"link_pattern": r"\.pdf$"}, _get({"https://m/fy2026/index.html": page}))
+    assert (hit.published, hit.date_source) == ("2025-08-08", W.DATE_FROM_PAGE)
+
+
+def test_refine_published_rules():
+    import docs as D
+
+    body = "=====PAGE 1=====\n経済・物価情勢の展望\n2026年7月31日\n日本銀行"
+    assert D.refine_published("2026-07-01", W.DATE_MONTH_ONLY, body, "2026-10-11")[0] == "2026-07-31"
+    assert D.refine_published("2026-06-01", W.DATE_MONTH_ONLY, body, "2026-10-11")[0] == "2026-06-01"
+    assert D.refine_published("2026-07-30", W.DATE_EXACT, body, "2026-10-11") == ("2026-07-30", "")
+    assert D.refine_published("2025-08-08", W.DATE_FROM_PAGE, body, "2026-10-11")[0] == "2026-07-31"
+    assert D.refine_published("", W.DATE_EXACT, body, "2026-10-11")[0] == "2026-07-31"
+    assert D.refine_published("", W.DATE_EXACT, body, "2026-07-01") == ("", "")  # body date after collection
+    no_date = "=====PAGE 1=====\n令和８年度予算のポイント"
+    assert D.refine_published("2025-08-08", W.DATE_FROM_PAGE, no_date, "2026-10-11")[0] == ""
+    assert D.refine_published("2025-08-08", W.DATE_EXACT, no_date, "2026-10-11") == ("2025-08-08", "")
+
+
+def test_pending_items_and_published_check():
+    import docs as D
+
+    doc = ("# T\n**公表日（本文で確認）**:\n2026-07-31（PAGE 1）\n\n## 5. 未確認・保留事項\n\n"
+           "- p.6 が抜粋に無い\n- 図表が読めない\n")
+    assert D.pending_items(doc) == ["p.6 が抜粋に無い", "図表が読めない"]
+    assert D.published_check(doc) == "2026-07-31"
+    assert D.pending_items("## 6. 未確認・保留事項\n\nなし\n") == []
+    assert D.pending_items("## 5. 未確認・保留事項\n\n- なし。\n") == []
+    assert D.published_check("**公表日（本文で確認）**:\nヘッダーと同じ\n") == ""
+
+
+# ---------------------------------------------------------------- task bundling
+
+def test_batch_doc_tasks_by_count_and_excerpt_size(tmp_path):
+    import market_collect as M
+
+    def doc(i: int, chars: int) -> dict:
+        excerpt = tmp_path / f"e{i}.txt"
+        excerpt.write_text("x" * chars, encoding="utf-8")
+        return {"type": "summarize-doc", "market": "japan", "title": f"t{i}", "doc_key": f"k{i}",
+                "output": f"market/policy/japan/raw/{i}.md", "inputs": [str(excerpt)], "template": "tpl",
+                "allowed_files": [f"market/policy/japan/raw/{i}.md"]}
+
+    batches = M.batch_doc_tasks([doc(1, 10), doc(2, 10), doc(3, 10), doc(4, 10), doc(5, 40_000), doc(6, 10_000)])
+    assert [len(b["docs"]) for b in batches] == [3, 2, 1]  # 4+5 fit in 45,000 chars, 6 does not
+    assert batches[1]["allowed_files"] == ["market/policy/japan/raw/4.md", "market/policy/japan/raw/5.md"]
+    assert M.task_outputs(batches[0])[0] == ("market/policy/japan/raw/1.md", "tpl")
+    assert M.task_outputs({"output": "c.md", "template": "cal"}) == [("c.md", "cal")]
+
+
 # ---------------------------------------------------------------- render + validate
 
 def _filled_policy_doc() -> str:
@@ -118,6 +218,7 @@ def _filled_policy_doc() -> str:
                                      url="https://x", source_path="s.pdf", layer="A", published="2026-07-21",
                                      excerpt_path="s.excerpt.txt", previous="なし")
     replacements = {
+        "published_check": "ヘッダーと同じ",
         "summary": "成長投資を進める方針を示した。",
         "measures": "| 成長投資 | 官民で投資を拡大 | — （記載なし） | p.3 |",
         "sectors": "| 半導体 | 国内生産拠点の整備 | p.5 |",

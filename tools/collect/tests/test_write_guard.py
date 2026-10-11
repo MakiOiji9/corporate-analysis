@@ -51,6 +51,20 @@ def test_market_raw_only_editable_while_fill_remains(tmp_path):
     assert "新しいファイル" in decide("Write", "market/sessions/2026-10-11_weekly/raw/new.md", root, TODAY)
 
 
+def test_running_session_may_correct_its_finished_files_with_edit_only(tmp_path):
+    root = _repo(tmp_path)
+    done = "market/sessions/2026-10-11_weekly/raw/done.md"
+    _start_run(root, [done])
+    assert decide("Edit", done, root, TODAY) is None
+    assert "上書き" in decide("Write", done, root, TODAY)
+    (root / "market" / "sessions" / "2026-10-11_weekly" / ".running").unlink()
+    assert "reopen" in decide("Edit", done, root, TODAY)
+
+
+def test_latest_is_script_only(tmp_path):
+    assert decide("Edit", "market/LATEST.md", _repo(tmp_path), TODAY)
+
+
 def test_company_raw_from_earlier_day_is_immutable(tmp_path):
     root = _repo(tmp_path)
     assert decide("Edit", "companies/7203_toyota/raw/ir/2026-10-01_business-overview.md", root, TODAY)

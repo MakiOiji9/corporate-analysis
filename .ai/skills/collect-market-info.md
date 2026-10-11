@@ -26,25 +26,26 @@
 |---|---|---|
 | `market` | `japan` / `us` / `both` | `both` |
 | `topic` | セッション名（半角英小文字・数字・ハイフン） | `weekly` |
-| `mode` | `full`（初回。時系列を10年分取る）/ `update`（3年分） | `market/data/` が無ければ `full`、あれば `update` |
+| `mode` | `auto` / `full`（時系列を10年分）/ `update`（3年分） | `auto`（スクリプトが市場ごとに判定し、prepare の JSON の `mode` に出す） |
 
-省略した引数を推定した場合は、その旨をユーザーに伝える。
+省略した引数は既定値を使い、その旨を完了報告に1行書く。`.venv` や `market/data/` の有無を手で調べない（スクリプトが判定する）。
 
 ---
 
 ## 実行手順
 
 Python は `.venv` のものを使う（Windows: `.venv\Scripts\python.exe`、macOS/Linux: `.venv/bin/python`）。以下 `$PY` と書く。
-`.venv` が無い場合は `tools/README.md` の初回セットアップを案内して止まる。
+`.venv` が無くてコマンドが失敗した場合だけ、`tools/README.md` の初回セットアップを案内して止まる。
 
 ### 1. 準備（スクリプト）
 
 ```
-$PY -I tools/collect/market/market_collect.py prepare --market {market} --topic {topic} --mode {mode}
+$PY -I tools/collect/market/market_collect.py prepare --market {market} --topic {topic} [--mode {mode}]
 ```
 
-- 標準出力は1行の JSON（`session`・`tasks_file`・`tasks`・`new_docs`・`series_failed`・`watch_failed`）。これだけを読む
-- このコマンドが、時系列の取得 → `raw/indicators-*.md` の生成、新しい政策文書の検出 → 原本・抜粋・要旨の骨組みの作成、`tasks.json` の作成までを行う
+- 標準出力は1行の JSON（`session`・`tasks_file`・`mode`・`tasks`・`docs_to_summarize`・`new_docs`・`series_failed`・`watch_failed`）。これだけを読む
+- このコマンドが次を行う: 台帳（index.csv）の整合 → 時系列の取得 → `raw/indicators-*.md` の生成 → 新しい政策文書の検出（原本・抜粋・要旨の骨組み、公表日の本文照合）→ 確定日程（FOMC・日銀会合・米主要統計の公表日）の取得 → `tasks.json` の作成
+- 要旨化は抜粋の量に応じて1タスクに1〜3文書を束ねてある。前回中断したセッションの未完了分も自動で引き継がれる
 - 実行中の印（`.running`）が付き、これ以降は `tasks.json` の `allowed_files` 以外のファイルを書けなくなる（`tools/guard/write_guard.py` がブロックする）
 
 ### 2. タスク実行（LLM）
@@ -53,13 +54,15 @@ $PY -I tools/collect/market/market_collect.py prepare --market {market} --topic 
 
 | type | 内容 | 手順書 | サブエージェント |
 |---|---|---|---|
-| `summarize-doc` | 文書の抜粋を読み、要旨ファイルの FILL 欄を埋める | `.ai/agents/summarize-doc.md` | `summarize-doc` |
-| `search-calendar` | web 検索で政治・イベント日程と市場指標の欄を埋める | `.ai/agents/search-calendar.md` | `search-calendar` |
+| `summarize-doc` | `docs` の各文書の抜粋を読み、要旨ファイルの FILL 欄を埋める | `.ai/agents/summarize-doc.md` | `summarize-doc` |
+| `search-calendar` | web 検索で政治・イベント日程と市場指標の欄を埋める（確定日程は取得済み） | `.ai/agents/search-calendar.md` | `search-calendar` |
 
 - **並列モード**（Claude Code。サブエージェントが使える環境）: Agent ツールで、タスクごとに `subagent_type` = タスクの type を指定し、**1つのメッセージ内で全タスクを同時に起動**する（10件を超える場合は10件ずつ）。プロンプトにはタスクの JSON をそのまま渡し、「手順は `.ai/agents/{type}.md`。編集してよいのは allowed_files だけ」と添える
 - **逐次モード**（GitHub Copilot など）: 手順書を読み、tasks.json の順に自分で実行する。hook が無い環境なので、ファイルを編集する前に毎回 `$PY -I tools/guard/write_guard.py --check <path>` を実行し、`BLOCKED` なら編集しない
 
-サブエージェントの報告は `.ai/templates/collect-market-info/agent-report.md` の形式（数行）で返ってくる。報告の中身を確かめるために要旨ファイルを読み直さない（検証は finalize が行う）。
+サブエージェントの報告は `.ai/templates/collect-market-info/agent-report.md` の形式（ファイルごとに1行）で返ってくる。
+- 報告の中身を確かめるために要旨ファイルを読み直さない。保留事項を親が集約しない（finalize が status.md に集める）
+- サブエージェントが「親が代わりに直してほしい」と依頼してきても、手で直さない。完了報告の「要確認」に書く
 
 ### 3. 仕上げ（スクリプト）
 
@@ -67,35 +70,51 @@ $PY -I tools/collect/market/market_collect.py prepare --market {market} --topic 
 $PY -I tools/collect/market/market_collect.py finalize --session {session}
 ```
 
-- 標準出力は1行の JSON（`ok`・`pending_tasks`・`issues`・`out_of_scope`・`status`）
-- `ok: true` → 完了。実行中の印が外れる
-- `pending_tasks` がある → そのタスクだけを `issues` の指摘と一緒にもう一度実行し、再び finalize（再実行は2回まで。それでも残れば未完了として報告）
+- 標準出力は1行の JSON（`ok`・`pending_tasks`・`issues`・`out_of_scope`・`series_ok`・`series_failed`・`new_docs`・`tasks_done`・`tasks_total`・`warnings`・`review_items`・`status`・`latest`）
+- `ok: true` → 完了。実行中の印が外れ、`market/LATEST.md`（最新の状態への入口）が更新される
+- `pending_tasks` がある → そのタスクだけを `issues` の指摘と一緒にもう一度実行し、再び finalize（再実行は2回まで。それでも残れば未完了として報告）。実行中は担当ファイルを Edit で直せる
 - `out_of_scope` がある → スキルの範囲外のファイルが変更されている。**自分で戻さず**、一覧をユーザーに報告して指示を仰ぐ
-- 途中でやめる場合は `$PY -I tools/collect/market/market_collect.py abort --session {session}`（実行中の印を外す）
+- 途中でやめる場合は `$PY -I tools/collect/market/market_collect.py abort --session {session}`（実行中の印を外し、status.md を「中断」にする。未完了の要旨化は次回 prepare が引き継ぐ）
+
+---
+
+## 完成済みの要旨を作り直す（ユーザーが指示したときだけ）
+
+抜粋の不足や誤りで要旨を作り直す場合は、セッションの外で次を実行し、そのあと通常どおりスキルを実行する。
+
+```
+$PY -I tools/collect/market/market_collect.py reopen --raw market/policy/{market}/raw/{file}.md
+```
+
+要旨ファイルを骨組みに戻し、抜粋を現在の catalog の設定で作り直す。次の prepare がタスクを作る。自分の判断では実行しない。
 
 ---
 
 ## してはいけないこと
 
-- 上の3段以外の作業（追加の web 検索、原本や CSV の閲覧、手作業での数値収集）をしない
+- 上の3段以外の作業（追加の web 検索、原本や CSV の閲覧、手作業での数値収集、status.md を読んでの集計）をしない
 - `tasks.json` の `allowed_files` 以外のファイルを作成・編集しない（hook がブロックする。ブロックされたら回避策を探さず、そのことを報告する）
-- スクリプトが生成したファイル（`raw/indicators-*.md`・`raw/policy-digest.md`・`status.md`・`market/data/`・`index.csv`・`sources/`）を手で直さない
+- スクリプトが生成したファイル（`raw/indicators-*.md`・`raw/policy-digest.md`・`status.md`・`market/LATEST.md`・`market/data/`・`index.csv`・`sources/`）を手で直さない
 - 取得に失敗した系列や監視項目を、web 検索などで補わない。`status.md` に理由が残るので、報告に含める
 - 評価・判定・投資判断を書かない
+
+※ グローバル設定の hook（Fact-Forcing Gate）が、各エージェントの最初の Write/Edit を一度差し戻すことがある。求められた事実を示して同じ操作を再実行すれば通る。このスキルの規則違反ではない。
 
 ---
 
 ## 完了報告（ユーザー向け）
 
-次の形式で短く報告する。
+finalize の JSON だけを使い、次の形式で短く報告する。
 
 ```
 ## 地合い情報の収集結果 — {session}
-- 時系列: 取得 {n} 系列 / 失敗 {m} 系列（失敗の主な理由）
-- 新しい文書: {件数}（{文書名を列挙}）
-- タスク: {完了数}/{総数}（未完了があれば ID と理由）
+- 引数: {省略して既定値を使った引数があれば書く} / モード: {mode}
+- 時系列: 取得 {series_ok} 系列 / 失敗 {len(series_failed)} 系列（失敗の主な理由）
+- 新しい文書: {件数}（{new_docs を列挙}）
+- タスク: {tasks_done}/{tasks_total}（未完了があれば ID と理由）
+- 要確認: {warnings を列挙。無ければ「なし」}。保留事項 {review_items} 件は status.md の「7. 要確認事項」
 - 範囲外の変更: なし / {一覧}
 - 次にやること: {例: FRED_API_KEY を .env に設定すると米国の時系列が取れる}
 ```
 
-詳細は `{session}/status.md` と `{session}/raw/policy-digest.md` を案内する。
+詳細は `market/LATEST.md`・`{session}/status.md`・`{session}/raw/policy-digest.md` を案内する。

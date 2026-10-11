@@ -111,11 +111,13 @@
     {"key": "energy-plan", "layer": "A", "kind": "summarize", "type": "html_links",
      "title": "エネルギー基本計画",
      "url": "https://www.enecho.meti.go.jp/category/others/basic_plan/",
-     "link_pattern": "\\.pdf$", "title_pattern": "^第\\d+次エネルギー基本計画（", "max_new": 1, "max_chars": 16000},
+     "link_pattern": "\\.pdf$", "title_pattern": "^第\\d+次エネルギー基本計画（", "max_new": 1, "max_chars": 16000,
+     "must_include": ["電源構成", "\\d{4}年度.{0,20}(見通し|目標)", "GW|kWh"]},
     {"key": "economic-measures", "layer": "B", "kind": "summarize", "type": "html_links",
      "title": "経済対策（閣議決定）",
      "url": "https://www5.cao.go.jp/keizai1/keizaitaisaku/keizaitaisaku.html",
-     "link_pattern": "_taisaku\\.pdf$", "title_pattern": "経済対策", "max_new": 1},
+     "link_pattern": "_taisaku\\.pdf$", "title_pattern": "経済対策", "max_new": 1,
+     "must_include": ["事業規模", "財政支出", "国費"]},
     {"key": "tax-reform", "layer": "B", "kind": "summarize", "type": "html_links",
      "title": "税制改正の大綱",
      "url": "https://www.mof.go.jp/tax_policy/tax_reform/outline/index.html",
@@ -125,7 +127,8 @@
      "url": "https://www.mof.go.jp/policy/budget/budger_workflow/budget/index.html",
      "link_pattern": "budget/fy\\d{4}/", "title_pattern": "予算",
      "follow": [{"link_pattern": "seifuan\\d{4}/index\\.html?$", "title_pattern": "政府案"},
-                {"link_pattern": "\\.pdf$", "title_pattern": "ポイント"}], "max_new": 1},
+                {"link_pattern": "\\.pdf$", "title_pattern": "ポイント"}], "max_new": 1,
+     "must_include": ["一般会計", "総額", "公債", "歳出"]},
     {"key": "fiscal-projection", "layer": "B", "kind": "summarize", "type": "html_links",
      "title": "中長期の経済財政に関する試算",
      "url": "https://www5.cao.go.jp/keizai3/econome.html",
@@ -154,7 +157,10 @@
   ],
   "calendar": {
     "max_searches": 8,
-    "event_hint": "国会の会期・重要法案の採決、選挙・与党総裁選、日銀 金融政策決定会合と展望レポート、主要統計（GDP・短観・CPI・雇用）の公表日、政府の経済対策・予算編成・税制改正の日程",
+    "fixed_sources": [
+      {"type": "boj_mpm", "url": "https://www.boj.or.jp/mopo/mpmsche_minu/index.htm"}
+    ],
+    "event_hint": "国会の会期・重要法案の採決、選挙・与党総裁選、主要統計（GDP・短観・CPI・雇用）の公表日、政府の経済対策・予算編成・税制改正の日程",
     "recent_hint": "内閣支持率（主要世論調査）、政局・連立の動き、経済対策・予算・税制で決まったこと、日銀総裁・副総裁の発言として報道されたもの",
     "sentiment_items": ["日経平均 予想PER", "日経平均 予想EPS", "TOPIX 予想PER", "裁定買い残（直近週）"]
   }
