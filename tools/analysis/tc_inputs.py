@@ -6,6 +6,7 @@ only the list of inputs differs. Headings come from .ai/templates/collect-compan
 from __future__ import annotations
 
 from ff_inputs import Found, Spec, collect_requests, gather, raw_files  # noqa: F401  (re-exported)
+from ff_inputs import newer_trigger_files as ff_newer_trigger_files
 
 SPECS = (
     Spec("segment", "有報: 事業の内容・セグメント情報", "yuho", "事業の内容", "collect-filings", True),
@@ -38,7 +39,5 @@ def gather_3c(company) -> dict[str, Found]:
 
 
 def newer_trigger_files(company, since: str, used: tuple[str, ...] | list[str] = ()) -> list[str]:
-    """Raw files of the trigger kinds collected after the analysis date, or on that date but not among the
-    inputs the analysis used (collected later the same day). Without a list of used inputs only the date counts."""
-    return [company.rel(p) for kind in TRIGGER_KINDS for d, p in raw_files(company, kind)
-            if d > since or (d == since and used and company.rel(p) not in used)]
+    """ff_inputs.newer_trigger_files with the 3C trigger kinds."""
+    return ff_newer_trigger_files(company, since, used, TRIGGER_KINDS)

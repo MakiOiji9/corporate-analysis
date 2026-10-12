@@ -64,7 +64,7 @@ def evaluate(company: P.Company, today: str) -> dict:
                            "json": company.rel(company.file(date, P.JSON_SUFFIX)),
                            "attractiveness": result.get("attractiveness"), "total": result.get("total"),
                            "valid_until": result.get("valid_until") or P.valid_until(date)}
-        state["newer_raw"] = I.newer_trigger_files(company, date)
+        state["newer_raw"] = I.newer_trigger_files(company, date, result.get("inputs") or ())
     if draft and (not latest or draft[0] >= latest[0]):
         state.update(result="draft", reason=f"作成途中の {company.rel(draft[1])} がある（続きから書く）")
     elif not latest:

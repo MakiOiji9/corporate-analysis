@@ -195,6 +195,9 @@ def summary_main_business(company: Company) -> str:
     return found[1].strip() if found else ""
 
 
-def newer_trigger_files(company: Company, since: str) -> list[str]:
-    """Raw files of the trigger kinds collected after the analysis date."""
-    return [company.rel(p) for kind in TRIGGER_KINDS for d, p in raw_files(company, kind) if d > since]
+def newer_trigger_files(company: Company, since: str, used: tuple[str, ...] | list[str] = (),
+                        kinds: tuple[str, ...] = TRIGGER_KINDS) -> list[str]:
+    """Raw files of the trigger kinds collected after the analysis date, or on that date but not among the
+    inputs the analysis used (collected later the same day). Without a list of used inputs only the date counts."""
+    return [company.rel(p) for kind in kinds for d, p in raw_files(company, kind)
+            if d > since or (d == since and used and company.rel(p) not in used)]

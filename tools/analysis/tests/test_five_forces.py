@@ -300,6 +300,19 @@ def test_full_cycle_then_fresh_triggered_expired(repo, capsys):
     assert out["result"] == "triggered" and len(out["newer_raw"]) == 3
 
 
+def test_raw_collected_later_on_the_analysis_day_triggers(repo, capsys):
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    fill(repo / out["md"], ALL_MID)
+    run(repo, "build", "--company", "7203", capsys=capsys)
+    _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["result"] == "fresh"  # the analysis used every raw there is
+    market = repo / "companies" / "7203_toyota" / "raw" / "market"
+    (market / f"{DAY}_competitors.md").write_text(
+        (market / "2026-10-01_competitors.md").read_text(encoding="utf-8"), encoding="utf-8")
+    _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["result"] == "triggered" and out["newer_raw"] == [f"companies/7203_toyota/raw/market/{DAY}_competitors.md"]
+
+
 def test_second_analysis_shows_previous_and_requires_change_reason(repo, capsys):
     _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
     fill(repo / out["md"], ALL_MID)
@@ -427,6 +440,7 @@ def test_buyer_basis_shows_change_from_previous_year(tmp_path):
 @pytest.mark.parametrize("cell, yen", [
     ("140億2,433万円", 140e8 + 2433e4), ("7.93億円", 7.93e8), ("7,367百万円", 7367e6), ("500", 500.0),
     ("△1,000百万円", -1000e6), ("—（経常利益32億円予想との報道）", None), ("—", None),
+    ("23,831百万円（前期比 -9.4%）", 23831e6),  # a note after the amount is dropped
 ])
 def test_yen_reads_japanese_amounts(cell, yen):
     assert X._yen(cell) == pytest.approx(yen) if yen is not None else X._yen(cell) is None
