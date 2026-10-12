@@ -89,7 +89,18 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 | `five_forces.py prepare --company X [--redo]` | raw から必要な節を抜き出して執筆の材料にし、数値で決まる基準（最大顧客比率と前期からの変化・粗利率の最大低下）の判定候補と前回の評価を入れた骨組み（FILL 欄）を作る。材料には自社の粗利率・営業利益率の時系列と、競合の営業利益率の推移（売上高・営業利益から計算）も入る。作成途中の md は残す | `{日付}_brief.md`・`{日付}_five-forces.md` |
 | `five_forces.py build --company X [--date …]` | md を検証（構造・FILL・評価の語・根拠の確度の語・評価が変わる条件・判定候補/前回との差の理由・禁止表現）し、点数・合計・魅力度を書き込む。「迷った:」の要因と確度が参考の要因を返す | `{日付}_five-forces.json` |
 
-モジュール: `ff_paths.py`（企業の解決・結果の鮮度・有効期間）、`ff_inputs.py`（raw の節の抽出・欠損の判定）、`ff_metrics.py`（判定候補の計算）、`ff_brief.py`（材料）、`ff_doc.py`（骨組み・検証・採点。`report/outlook.py` の禁止表現と `collect/market/validate.py` を再利用）。テンプレートは `.ai/templates/five-forces/`。
+モジュール: `an_common.py`（企業の解決・日付つき結果ファイル・有効期間・地合いの参照。three-c と共有）、`ff_paths.py`（ファイブフォースの結果の場所と鮮度）、`ff_inputs.py`（raw の節の抽出・欠損の判定）、`ff_metrics.py`（判定候補の計算）、`ff_brief.py`（材料）、`ff_doc.py`（骨組み・検証・採点。`report/outlook.py` の禁止表現と `collect/market/validate.py` を再利用）。テンプレートは `.ai/templates/five-forces/`。
+
+スキル `three-c`（`.ai/skills/three-c.md`）からは `three_c.py` を呼び出す。出力は `companies/{ticker}_{name}/analysis/three-c/{分析日}_*`。
+
+| コマンド | 用途 | 主な出力 |
+|---|---|---|
+| `three_c.py list` | `companies/` の企業と、3C分析の状態（none / fresh / expired / triggered / draft）・結論・ファイブフォースの状態 | 1行の JSON |
+| `three_c.py check --company X` | 結果が有効か（180日以内で、分析後に新しい有報・事業概要・業界・競合の raw や新しいファイブフォース分析が無いか）、ファイブフォースが有効か（無効なら `next: five_forces`）、必須の材料が raw にあるか（無ければ担当の collect-* を返す）、地合い判断の古さ（参照だけ）。`next` に次の作業 | 1行の JSON |
+| `three_c.py prepare --company X [--redo]` | raw から必要な節を抜き出して執筆の材料にし、比較表（対象企業と競合最大3社の売上高・営業利益率・シェア・売上高3年CAGR）、成長性と競合との比較の判定候補、競合の凡例、前回の評価を入れた骨組み（FILL 欄）を作る。作成途中の md は残す | `{日付}_brief.md`・`{日付}_three-c.md` |
+| `three_c.py build --company X [--date …]` | md を検証（構造・FILL・評価の語・根拠の確度・KBF 表と1章の一致・○△×？の記号・判定候補/前回との差の理由・禁止表現）し、勝てる理由の結論（明確 / あいまい / なし）を判定して書き込む | `{日付}_three-c.json` |
+
+モジュール: `tc_paths.py`（3C の結果の場所と鮮度）、`tc_inputs.py`（3C の入力一覧。抽出は `ff_inputs.py` を再利用）、`tc_metrics.py`（比較表・判定候補）、`tc_brief.py`（材料）、`tc_doc.py`（骨組み・検証・結論の判定）。テンプレートは `.ai/templates/three-c/`。
 
 ### 書き込みガード（`tools/guard/write_guard.py`）
 
@@ -99,7 +110,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 - `market/**/raw/*.md` は FILL 欄が残っている間だけ Edit を許可。`companies/*/raw/` の過去日付のファイルは変更禁止
 - collect-market-info の実行中（`market/sessions/*/.running`）は、tasks.json の `allowed_files` 以外への書き込みをブロック
 - `market/report/` の facts.json・brief.md・HTML は手書き禁止。outlook.md は Edit のみ（新規作成・上書き不可）で、過去の週の完成済みのものは変更禁止
-- `companies/*/analysis/five-forces/` の brief.md・json は手書き禁止。five-forces.md は Edit のみで、過去の日付の build 済み（json がある）ものは変更禁止
+- `companies/*/analysis/five-forces/`・`three-c/` の brief.md・json は手書き禁止。five-forces.md・three-c.md は Edit のみで、過去の日付の build 済み（json がある）ものは変更禁止
 
 ## 例（3798 ULSグループ）
 

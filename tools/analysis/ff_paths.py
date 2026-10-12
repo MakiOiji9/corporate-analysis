@@ -3,38 +3,22 @@
 A result lives in companies/{ticker}_{name}/analysis/five-forces/ as
   {date}_brief.md (script), {date}_five-forces.md (skeleton by script, FILL by the LLM,
   scores by build) and {date}_five-forces.json (build). {date} is the analysis day.
+The generic parts are in an_common (shared with three-c).
 """
 from __future__ import annotations
 
-import datetime as dt
-import json
-import re
-from dataclasses import dataclass
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-FILL = re.compile(r"<!--\s*FILL:\w")  # same as tools/collect/market/validate.FILL
-DATED = re.compile(r"^(\d{4}-\d{2}-\d{2})_(.+)$")
-TITLE = re.compile(r"^#\s+(.+?)\s*$", re.M)
+import an_common as A
+from an_common import DATED, FILL, REPO_ROOT, TITLE, company_dirs, dated_files, is_draft, load_result  # noqa: F401
+
 VALID_DAYS = 365
-OUTLOOK_MAX_AGE_DAYS = 35
+OUTLOOK_MAX_AGE_DAYS = A.OUTLOOK_MAX_AGE_DAYS
 ANALYSIS_SUBDIR = ("analysis", "five-forces")
 MD_SUFFIX, JSON_SUFFIX, BRIEF_SUFFIX = "_five-forces.md", "_five-forces.json", "_brief.md"
 
 
-@dataclass(frozen=True)
-class Company:
-    root: Path  # repository root
-    path: Path  # companies/{ticker}_{name}
-
-    @property
-    def dirname(self) -> str:
-        return self.path.name
-
-    @property
-    def ticker(self) -> str:
-        return self.dirname.split("_", 1)[0]
-
+class Company(A.Company):
     @property
     def analysis_dir(self) -> Path:
         return self.path.joinpath(*ANALYSIS_SUBDIR)
@@ -42,98 +26,22 @@ class Company:
     def file(self, date: str, suffix: str) -> Path:
         return self.analysis_dir / f"{date}{suffix}"
 
-    def rel(self, path: Path) -> str:
-        try:
-            return path.resolve().relative_to(self.root.resolve()).as_posix()
-        except ValueError:
-            return path.as_posix()
-
-    def display_name(self) -> str:
-        overview = self.path / "overview.md"
-        if overview.exists():
-            m = TITLE.search(overview.read_text(encoding="utf-8"))
-            if m:
-                return m.group(1)
-        return self.dirname
-
-
-def company_dirs(root: Path) -> list[Path]:
-    base = root / "companies"
-    if not base.exists():
-        return []
-    return sorted(p for p in base.iterdir() if p.is_dir() and "_" in p.name and not p.name.startswith("."))
-
 
 def resolve_company(root: Path, arg: str) -> tuple[Company | None, list[str]]:
-    """(company, candidates). Accepts '3798', '3798_uls-group', 'companies/3798_uls-group' or part of
-    the name. Returns (None, candidates) when nothing or more than one directory matches."""
-    key = arg.strip().replace("\\", "/").rstrip("/").split("/")[-1].lower()
-    dirs = company_dirs(root)
-    for rule in (lambda d: d.name.lower() == key,
-                 lambda d: d.name.lower().split("_", 1)[0] == key,
-                 lambda d: key in d.name.lower()):
-        hits = [d for d in dirs if rule(d)]
-        if len(hits) == 1:
-            return Company(root, hits[0]), []
-        if hits:
-            return None, [d.name for d in hits]
-    return None, []
-
-
-def dated_files(directory: Path, suffix: str) -> list[tuple[str, Path]]:
-    """(date, path) of {date}{suffix} files, oldest first."""
-    if not directory.exists():
-        return []
-    out = []
-    for p in directory.glob(f"*{suffix}"):
-        m = DATED.match(p.name)
-        if m and p.name == f"{m.group(1)}{suffix}":
-            out.append((m.group(1), p))
-    return sorted(out)
-
-
-def is_draft(path: Path) -> bool:
-    return bool(FILL.search(path.read_text(encoding="utf-8")))
-
-
-def load_result(path: Path) -> dict | None:
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return None
+    return A.resolve_company(root, arg, Company)
 
 
 def latest_result(company: Company, before: str | None = None) -> tuple[str, dict] | None:
-    """(date, result) of the newest finished analysis (json written by build), optionally before a date."""
-    for date, path in reversed(dated_files(company.analysis_dir, JSON_SUFFIX)):
-        if before and date >= before:
-            continue
-        md = company.file(date, MD_SUFFIX)
-        result = load_result(path)
-        if result and md.exists() and not is_draft(md):
-            return date, result
-    return None
+    return A.latest_result(company.analysis_dir, MD_SUFFIX, JSON_SUFFIX, before)
 
 
 def latest_draft(company: Company) -> tuple[str, Path] | None:
-    """Newest five-forces.md that still has FILL markers."""
-    for date, path in reversed(dated_files(company.analysis_dir, MD_SUFFIX)):
-        if is_draft(path):
-            return date, path
-    return None
+    return A.latest_draft(company.analysis_dir, MD_SUFFIX)
 
 
 def valid_until(date: str) -> str:
-    return (dt.date.fromisoformat(date) + dt.timedelta(days=VALID_DAYS)).isoformat()
+    return A.valid_until(date, VALID_DAYS)
 
 
 def latest_outlook(root: Path, today: str) -> dict:
-    """Newest finished market/report/{week}_outlook.md and how old it is."""
-    report = root / "market" / "report"
-    done = [(d, p) for d, p in dated_files(report, "_outlook.md") if not is_draft(p)]
-    if not done:
-        return {"path": None, "week": None, "age_days": None, "stale": True}
-    week, path = done[-1]
-    age = (dt.date.fromisoformat(today) - dt.date.fromisoformat(week)).days
-    return {"path": path.relative_to(root).as_posix(), "week": week, "age_days": age,
-            "stale": age > OUTLOOK_MAX_AGE_DAYS}
+    return A.latest_outlook(root, today)

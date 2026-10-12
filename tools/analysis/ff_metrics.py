@@ -238,7 +238,7 @@ def _peer_rows(table: list[list[str]]) -> list[dict]:
         sales, profit = _yen(row[cols[0]]), _yen(row[cols[1]])
         if sales and profit is not None:
             out.append({"year": f"{m.group(1)}-{int(m.group(2)):02d}", "margin": round(profit / sales * 100, 1),
-                        "forecast": bool(FORECAST.search(row[0]))})
+                        "sales": sales, "forecast": bool(FORECAST.search(row[0]))})
     return out
 
 

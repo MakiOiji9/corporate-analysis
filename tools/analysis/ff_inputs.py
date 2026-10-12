@@ -113,9 +113,9 @@ def find(company: Company, spec: Spec, unavailable: list[str]) -> Found:
     return blank or Found(spec, "missing")
 
 
-def gather(company: Company) -> dict[str, Found]:
+def gather(company: Company, specs: tuple[Spec, ...] = SPECS) -> dict[str, Found]:
     unavailable = unavailable_items(company)
-    return {spec.key: find(company, spec, unavailable) for spec in SPECS}
+    return {spec.key: find(company, spec, unavailable) for spec in specs}
 
 
 def collect_requests(found: dict[str, Found]) -> list[dict]:

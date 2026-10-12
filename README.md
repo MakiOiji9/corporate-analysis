@@ -11,7 +11,7 @@ AI エージェント（Claude Code / GitHub Copilot）が「スキル」とし�
 ```
 地合い:  collect-market-info ──▶ market-report ──▶ market/report/{週}_outlook.md
                                                           │ 参照
-企業:    collect-company-info ──▶ five-forces ──▶ （以降 STEP 1〜3 の分析）
+企業:    collect-company-info ──▶ five-forces ──▶ three-c ──▶ （以降 STEP 1〜3 の分析）
 ```
 
 企業分析は次の 3STEP で進めます。STEP 1 か 2 で C 判定になったら、その時点で終了します。
@@ -49,15 +49,16 @@ Claude Code でこのリポジトリを開き、スラッシュコマンドで�
 | `collect-market-info` | 地合い情報の収集（国家方針・財政・金融政策の文書、マクロ指標・需給の時系列、政治・イベント日程） | `/collect-market-info both topic=weekly` |
 | `market-report` | 週次の地合いレポート（プレゼン形式の HTML と、地合い判断 `outlook.md`）。今週の収集が無ければ先に収集を行う | `/market-report` |
 | `five-forces` | ファイブフォース分析（業界の魅力度 高/中/低）。結果は365日有効。材料が足りなければ先に収集を行う | `/five-forces 3798` |
+| `three-c` | 3C分析（顧客・競合・自社から、勝てる理由 明確/あいまい/なし）。結果は180日有効。ファイブフォースが未実施なら先に実行し、材料が足りなければ先に収集を行う | `/three-c 3798` |
 
 - `collect-company-info` に渡す情報: 銘柄コード・企業名（英語）・ホームページURL・市場（japan / us）。URL だけでも構いません
-- `five-forces` は銘柄コード・企業ディレクトリ名・社名の一部のどれでも指定できます。省略すると一覧から選べます
+- `five-forces`・`three-c` は銘柄コード・企業ディレクトリ名・社名の一部のどれでも指定できます。省略すると一覧から選べます
 
 ### おすすめの手順
 
 1. `/collect-market-info` → `/market-report` で今週の地合いを確認する（週1回）
 2. 分析したい企業を `/collect-company-info` で収集する
-3. `/five-forces` で STEP 1 の業界分析を始める
+3. `/five-forces` で STEP 1 の業界分析を始め、`/three-c` で会社の立ち位置（勝てる理由）を分析する（`/three-c` だけでも、ファイブフォースが未実施なら先に実行される）
 4. 結果は `companies/{ticker}_{name}/analysis/` に、地合いは `market/report/` に出力されます
 
 ## ディレクトリ構成
