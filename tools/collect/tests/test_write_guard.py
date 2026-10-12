@@ -86,6 +86,24 @@ def test_report_outlook_edit_only_and_past_finished_weeks_immutable(tmp_path):
     assert decide("Edit", current, root, TODAY) is None  # this week's finished outlook can still be fixed
 
 
+def test_five_forces_files(tmp_path):
+    root = _repo(tmp_path)
+    ff = root / "companies" / "7203_toyota" / "analysis" / "five-forces"
+    ff.mkdir(parents=True)
+    (ff / "2026-10-01_five-forces.md").write_text("| 評価 | 中 |\n", encoding="utf-8")
+    (ff / "2026-10-01_five-forces.json").write_text("{}", encoding="utf-8")
+    (ff / "2026-10-11_five-forces.md").write_text("| 評価 | <!-- FILL:entry-rating --> |\n", encoding="utf-8")
+    base = "companies/7203_toyota/analysis/five-forces"
+    for kind in ("brief.md", "five-forces.json"):
+        assert "スクリプト" in decide("Edit", f"{base}/2026-10-11_{kind}", root, TODAY), kind
+    assert decide("Edit", f"{base}/2026-10-11_five-forces.md", root, TODAY) is None
+    assert "上書き" in decide("Write", f"{base}/2026-10-11_five-forces.md", root, TODAY)
+    assert "prepare" in decide("Edit", f"{base}/2026-10-12_five-forces.md", root, TODAY)
+    assert "--redo" in decide("Edit", f"{base}/2026-10-01_five-forces.md", root, TODAY)
+    (ff / "2026-10-01_five-forces.json").unlink()  # build never succeeded: still fixable
+    assert decide("Edit", f"{base}/2026-10-01_five-forces.md", root, TODAY) is None
+
+
 def test_company_raw_from_earlier_day_is_immutable(tmp_path):
     root = _repo(tmp_path)
     assert decide("Edit", "companies/7203_toyota/raw/ir/2026-10-01_business-overview.md", root, TODAY)

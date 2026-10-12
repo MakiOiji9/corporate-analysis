@@ -39,6 +39,11 @@ companies/{ticker}_{name}/
 │   ├── business.md              # 事業・市場・競合の要約
 │   ├── financials.md            # 財務主要項目の時系列・同業比較
 │   └── valuation.md             # 株価指標の現在値・過去レンジ・同業比較
+├── analysis/                    # 有効期間を持つ分析（種類ごと。スキル定義に従う）
+│   └── five-forces/             # ファイブフォース分析（five-forces。365日有効）
+│       ├── YYYY-MM-DD_brief.md          # 執筆の材料（スクリプトが生成）
+│       ├── YYYY-MM-DD_five-forces.md    # 分析結果（業界の魅力度）。レポートはこれを参照する
+│       └── YYYY-MM-DD_five-forces.json  # 同じ結果の機械可読版（スクリプトが生成）
 ├── sessions/
 │   └── YYYY-MM-DD_{topic}/      # 分析セッション（1回の分析につき1ディレクトリ）
 │       ├── {分析ファイル群}      # 各フェーズの分析結果（スキル定義に従う）

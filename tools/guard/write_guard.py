@@ -17,6 +17,9 @@ Rules (paths relative to the repository; writes outside it are not checked):
   5. market/report/: facts.json, brief.md and the HTML are script-only. {week}_outlook.md is
      created by market_report.py prepare and only edited (not overwritten); once an earlier
      week's outlook is finished (no FILL left) it is immutable.
+  6. companies/*/analysis/five-forces/: {date}_brief.md and {date}_five-forces.json are script-only.
+     {date}_five-forces.md is created by five_forces.py prepare and only edited (not overwritten);
+     once an earlier day's analysis is built (its json exists) it is immutable.
 """
 from __future__ import annotations
 
@@ -41,8 +44,10 @@ SCRIPT_ONLY = [
         r"^companies/[^/]+/sources/",
         r"^companies/[^/]+/data/",
         r"^market/report/[^/]+_(facts\.json|brief\.md|market-report\.html)$",
+        r"^companies/[^/]+/analysis/five-forces/[^/]+_(brief\.md|five-forces\.json)$",
     )
 ]
+FIVE_FORCES_MD = re.compile(r"^companies/[^/]+/analysis/five-forces/(\d{4}-\d{2}-\d{2})_five-forces\.md$")
 MARKET_RAW = re.compile(r"^market/(policy/[^/]+|sessions/[^/]+)/raw/[^/]+\.md$")
 COMPANY_RAW = re.compile(r"^companies/[^/]+/raw/")
 REPORT_OUTLOOK = re.compile(r"^market/report/(\d{4}-\d{2}-\d{2})_outlook\.md$")
@@ -87,6 +92,17 @@ def outlook_reason(tool: str, rel: str, target: Path, week: str, today: str) -> 
     return None
 
 
+def five_forces_reason(tool: str, rel: str, target: Path, date: str, today: str) -> str | None:
+    if not target.exists():
+        return f"{rel} は five_forces.py prepare が骨組みを作る。新しいファイルを作らない。"
+    if tool == "Write":
+        return f"{rel} は上書きしない。Edit で <!-- FILL:... --> の部分（build の指摘箇所）だけを直す。"
+    if date < today and target.with_name(f"{date}_five-forces.json").exists():
+        return (f"{rel} は過去の日付の完成済みファイブフォース分析なので変更禁止。作り直すときはユーザーの指示で "
+                "five_forces.py prepare --redo を実行する。")
+    return None
+
+
 def decide(tool: str, rel: str | None, root: Path, today: str) -> str | None:
     """Reason to block, or None to allow."""
     if tool not in WRITE_TOOLS or rel is None:
@@ -106,6 +122,11 @@ def decide(tool: str, rel: str | None, root: Path, today: str) -> str | None:
     outlook = REPORT_OUTLOOK.match(rel)
     if outlook:
         reason = outlook_reason(tool, rel, target, outlook.group(1), today)
+        if reason:
+            return reason
+    five_forces = FIVE_FORCES_MD.match(rel)
+    if five_forces:
+        reason = five_forces_reason(tool, rel, target, five_forces.group(1), today)
         if reason:
             return reason
     if COMPANY_RAW.match(rel) and target.exists():

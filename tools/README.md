@@ -78,6 +78,19 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 
 モジュール: `state.py`（週・鮮度）、`facts.py`（数値・系列・日程の集計。`collect/market/store.py` を再利用）、`brief.py`（材料と骨組み）、`outlook.py`（検証。`collect/market/validate.py` を再利用）、`charts.py`（インライン SVG）、`slides.py`（HTML）。テンプレートは `.ai/templates/market-report/`。
 
+### 企業分析用（`tools/analysis/`）
+
+スキル `five-forces`（`.ai/skills/five-forces.md`）から呼び出す。入口は `five_forces.py` だけ。出力はすべて `companies/{ticker}_{name}/analysis/five-forces/{分析日}_*`。`--company` は銘柄コード・ディレクトリ名・社名の一部のどれでもよい。
+
+| コマンド | 用途 | 主な出力 |
+|---|---|---|
+| `five_forces.py list` | `companies/` の企業と、ファイブフォース分析の状態（none / fresh / expired / triggered / draft） | 1行の JSON |
+| `five_forces.py check --company X` | 結果が有効か（365日以内で、分析後に新しい有報・業界・競合の raw が無いか）、必須の材料が raw にあるか（無ければ担当の collect-* を返す）、地合い判断が35日以内か。`next` に次の作業 | 1行の JSON |
+| `five_forces.py prepare --company X [--redo]` | raw から必要な節を抜き出して執筆の材料にし、数値で決まる基準（最大顧客比率・粗利率の最大低下）の判定候補と前回の評価を入れた骨組み（FILL 欄）を作る。作成途中の md は残す | `{日付}_brief.md`・`{日付}_five-forces.md` |
+| `five_forces.py build --company X [--date …]` | md を検証（構造・FILL・評価の語・判定候補/前回との差の理由・禁止表現）し、点数・合計・魅力度を書き込む | `{日付}_five-forces.json` |
+
+モジュール: `ff_paths.py`（企業の解決・結果の鮮度・有効期間）、`ff_inputs.py`（raw の節の抽出・欠損の判定）、`ff_metrics.py`（判定候補の計算）、`ff_brief.py`（材料）、`ff_doc.py`（骨組み・検証・採点。`report/outlook.py` の禁止表現と `collect/market/validate.py` を再利用）。テンプレートは `.ai/templates/five-forces/`。
+
 ### 書き込みガード（`tools/guard/write_guard.py`）
 
 `.claude/settings.json` の PreToolUse hook として、Write / Edit の前に毎回実行される（標準ライブラリだけで動く。PATH 上の `python` を使う）。
@@ -86,6 +99,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 - `market/**/raw/*.md` は FILL 欄が残っている間だけ Edit を許可。`companies/*/raw/` の過去日付のファイルは変更禁止
 - collect-market-info の実行中（`market/sessions/*/.running`）は、tasks.json の `allowed_files` 以外への書き込みをブロック
 - `market/report/` の facts.json・brief.md・HTML は手書き禁止。outlook.md は Edit のみ（新規作成・上書き不可）で、過去の週の完成済みのものは変更禁止
+- `companies/*/analysis/five-forces/` の brief.md・json は手書き禁止。five-forces.md は Edit のみで、過去の日付の build 済み（json がある）ものは変更禁止
 
 ## 例（3798 ULSグループ）
 
@@ -103,5 +117,5 @@ $py = ".\.venv\Scripts\python.exe"
 ## テスト
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest tools/collect/tests -q
+.\.venv\Scripts\python.exe -m pytest tools/collect/tests tools/report/tests tools/analysis/tests -q
 ```
