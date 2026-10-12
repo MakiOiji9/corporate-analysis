@@ -39,6 +39,7 @@ LATEST = f"""# 地合い情報の最新版 — {SESSION}
 |---|---|---|---|---|---|
 | 日本 | C | boj-statement | 2026-09-18 | 日銀 公表文 | market/policy/japan/raw/2026-10-11_boj-statement.md |
 | 米国 | A | presidential-actions | 2026-10-08 | Executive Order <b>X</b> | market/policy/us/raw/missing.md |
+| 日本 | A | honebuto | 2025-07-21 | 骨太の方針 | market/policy/japan/raw/2026-10-11_honebuto.md |
 """
 
 CALENDAR_US = """# 政治・政策イベント — 米国
@@ -61,6 +62,7 @@ CALENDAR_US = """# 政治・政策イベント — 米国
 
 | 日付 | 出来事 | 内容 | 出典 | 確度 |
 |---|---|---|---|---|
+| —（検索上限内で未確認） | 関税措置の発表 | 直近1か月の新規発表は確認できず | — | 検索要約 |
 | 2026-09-02 | 暫定予算法の署名 | 12-11 まで | https://example.com | 検索要約 |
 
 ## 4. スクリプトで取得できない市場指標
@@ -68,6 +70,8 @@ CALENDAR_US = """# 政治・政策イベント — 米国
 | 指標 | 値 | 時点 | 出典 | 確度 |
 |---|---|---|---|---|
 | S&P500 予想PER（12か月先） | 19.0 | 2026-10-02 版 | https://example.com | 一次 |
+| S&P500 予想EPS（来期） | —（PDF が読み取れず未確認） | — | — | 検索要約 |
+| AAII センチメント | Bullish 32.7%（前週 30.1%） | 2026-09-23 週 | https://example.com | 検索要約 |
 
 ## 5. 未確認・保留事項
 
@@ -122,6 +126,23 @@ DOC = """# 日銀 公表文
 ## 4. リスク要因として挙げられた事項
 
 - 中東情勢（p.4）
+
+## 5. 前回からの表現の変化
+
+— （前回版なし）
+"""
+
+OLD_DOC = """# 骨太の方針
+
+## 1. 要旨
+
+責任ある積極財政を掲げた（p.6）。
+
+## 2. 主要な施策・方針
+
+| 分野 | 記述の要点 | 数値目標・予算・期限 | 記載箇所 |
+|---|---|---|---|
+| 財政 | 投資枠の創設 | — | p.30 |
 """
 
 
@@ -162,6 +183,7 @@ def repo(tmp_path: Path) -> Path:
     (session / "status.md").write_text(STATUS, encoding="utf-8")
     (market / "policy" / "japan" / "raw").mkdir(parents=True)
     (market / "policy" / "japan" / "raw" / "2026-10-11_boj-statement.md").write_text(DOC, encoding="utf-8")
+    (market / "policy" / "japan" / "raw" / "2026-10-11_honebuto.md").write_text(OLD_DOC, encoding="utf-8")
     (market / "LATEST.md").write_text(LATEST, encoding="utf-8")
     return tmp_path
 
@@ -242,7 +264,57 @@ def test_calendar_window_docs_and_gaps(repo):
     assert facts["extras"][0]["value"] == "19.0"
     assert facts["series_failed"] == [{"market": "us", "name": "S&P500", "reason": "FRED_API_KEY 未設定"}]
     assert [r["content"] for r in facts["review_items"]] == ["AAII の直近週は未確認"]  # shared status read once
-    assert [d["watch"] for d in facts["docs"]] == ["boj-statement", "presidential-actions"]
+    assert [d["watch"] for d in facts["docs"]] == ["boj-statement", "presidential-actions", "honebuto"]
+
+
+def test_unconfirmed_calendar_rows_leave_the_lists(repo):
+    facts = _facts(repo)
+    assert [p["event"] for p in facts["politics"]] == ["暫定予算法の署名"]
+    assert [u["event"] for u in facts["unconfirmed"]] == ["関税措置の発表"]
+    eps, aaii = facts["extras"][1], facts["extras"][2]
+    assert (eps["value"], eps["note"]) == ("—", "PDF が読み取れず未確認")
+    assert (aaii["value"], aaii["note"]) == ("Bullish 32.7%", "前週 30.1%")
+    assert facts["extras"][0]["note"] == ""
+
+
+def test_stale_indicators_are_flagged():
+    catalogs = {"A": {"market": "us", "name": "月次", "frequency": "monthly"},
+                "B": {"market": "us", "name": "月次（遅い）", "frequency": "monthly", "max_age_days": 60},
+                "C": {"market": "us", "name": "日次", "frequency": "daily"}}
+    series = {"A": [("2026-06-01", 1.0), ("2026-07-01", 2.0)], "B": [("2026-07-01", 1.0), ("2026-08-01", 2.0)],
+              "C": [("2026-09-01", 1.0), ("2026-09-25", 2.0)], "D": [("2026-05-01", 1.0), ("2026-06-01", 2.0)]}
+    catalogs["D"] = {"market": "us", "name": "月次（欠落）", "frequency": "monthly"}
+    rows = {r["id"]: r for r in F.build_indicators(catalogs, series, "2026-10-12")["us"]}
+    assert rows["A"]["stale"] is False            # 103 days: July data before the August release is normal
+    assert rows["D"]["stale"] is True             # 133 days: a release is missing
+    assert rows["B"]["stale"] is True             # catalog override
+    assert rows["C"]["stale"] is True             # 17 days for a daily series
+
+
+def test_streak_counts_the_last_run():
+    assert F.streak([("a", 1), ("b", 2), ("c", 3), ("d", 2), ("e", 1)]) == -2
+    assert F.streak([("a", 1), ("b", 2), ("c", 3)]) == 2
+    assert F.streak([("a", 1), ("b", 1)]) == 0
+    assert F.streak([("a", 1)]) == 0
+
+
+def test_kpi_distance_from_high_and_streak(repo):
+    kpis = {k["id"]: k for k in _facts(repo)["kpis"]}
+    usdjpy = kpis["JP_USDJPY"]
+    assert usdjpy["from_high"] == pytest.approx(0.0)        # rising series: the latest is the high
+    assert usdjpy["streak"] == len(usdjpy["spark"]) - 1
+    assert kpis["JP_NIKKEI225"]["from_high"] is None and kpis["JP_NIKKEI225"]["streak"] == 0
+
+
+def test_brief_is_lean_and_lists_gaps(repo, capsys):
+    code, out = _run(repo, "prepare", "--week", "2026-10-12", capsys=capsys)
+    brief = (repo / out["brief"]).read_text(encoding="utf-8")
+    assert "前回版なし" not in brief
+    assert "責任ある積極財政を掲げた" in brief and "投資枠の創設" not in brief   # old doc: summary only
+    assert "1年高値比" in brief and "連続" in brief
+    assert "関税措置の発表" in brief.split("## 9.")[1]
+    outlook = (repo / out["outlook"]).read_text(encoding="utf-8")
+    assert "関税措置の発表" in outlook and "S&P500 予想EPS（来期）" in outlook
 
 
 def test_event_span():
@@ -319,7 +391,21 @@ def test_build_reports_issues_then_renders(repo, capsys):
     assert "<strong>FOMC</strong>" in html
     assert html.count('<section class="slide') == 13
     assert "${" not in html
+    assert "関税措置の発表" not in html.split('id="s-fiscal"')[1].split("</section>")[0]
+    assert "PDF が読み取れず未確認" in html
     assert outlook_state(outlook) == "done"
+
+
+def test_build_warns_on_long_cells(repo, capsys):
+    _run(repo, "prepare", "--week", "2026-10-12", capsys=capsys)
+    outlook = repo / "market" / "report" / "2026-10-12_outlook.md"
+    text = _fill(outlook.read_text(encoding="utf-8"))
+    long_text = "あ" * 200
+    text = text.replace("記述 <script>alert(1)</script>", long_text, 1)  # first FILL = 日本の判断の要約
+    outlook.write_text(text, encoding="utf-8")
+    code, out = _run(repo, "build", "--week", "2026-10-12", capsys=capsys)
+    assert code == 0
+    assert any("判断の要約" in w and "200" in w for w in out["warnings"])
 
 
 def test_calendar_slide_groups_dated_text_and_joins_points():

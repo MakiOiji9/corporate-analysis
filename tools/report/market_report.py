@@ -98,6 +98,7 @@ def cmd_build(args: argparse.Namespace, paths: Paths) -> int:
         warnings.append(f"outlook.md の骨組みは facts.json（{facts['session']}）より前の収集から作られた。"
                         "6章の日程・7章の欠損が古い可能性がある（作り直しはユーザーの指示で prepare --redo）")
     parsed = O.parse(text)
+    warnings += O.length_warnings(parsed)
     html = S.render(facts, parsed, (paths.template_dir / "report.html").read_text(encoding="utf-8"))
     html_path = paths.report_file(week, "market-report.html")
     atomic_write_text(html_path, html)

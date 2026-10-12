@@ -42,6 +42,7 @@
 - `frequency`: `daily` / `weekly` / `monthly` / `quarterly`（`daily` の「前回」は約1か月前）
 - `transform`: `level`（そのまま）/ `yoy_pct`（前年同期比を計算）/ `diff`（前回差を計算）
 - 日付の正規化: 月次は月初、四半期は期首月の1日（例: 2026年7-9月期 = 2026-07-01）
+- `max_age_days`（任意）: market-report が最新の時点を「古い」とみなす日数（レポート週の月曜から数える）。省略時は頻度ごとの既定値（daily 10 / weekly 21 / monthly 115 / quarterly 240。通常の公表の遅れが収まる日数）。提供元の公開が遅れる系列（例: FRED のミシガン大学指数は1か月遅れ）にだけ付ける
 
 ## catalog: watch（文書の監視）
 

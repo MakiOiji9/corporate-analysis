@@ -24,6 +24,10 @@ PRICE_TARGET = re.compile(r"\d[\d,.]*\s*(?:円|ドル|ポイント|%)\s*(?:に|�
                           r"(?:する|す|だろう|見込み|と予想|と予測)")
 MARKET_KEY = {"日本": "japan", "米国": "us"}
 MARKETS = (("japan", "日本"), ("us", "米国"))
+# characters a slide can show without crowding (warnings only; the template states the same numbers)
+LIMIT_SUMMARY, LIMIT_MESSAGE, LIMIT_SEEN, LIMIT_CONCLUSION, LIMIT_OUTLOOK = 80, 100, 120, 60, 60
+OUTLOOK_FIELDS = (("scenario", "基本シナリオ"), ("upside", "上振れ要因"), ("downside", "下振れ要因"),
+                  ("watch", "確認する指標・イベント"))
 
 
 def parse(text: str) -> dict:
@@ -99,6 +103,41 @@ def _check_words(text: str) -> list[str]:
     found = sorted({w for w in FORBIDDEN if w in body})
     issues = [f"推奨・推測の表現が含まれる: {', '.join(found)}"] if found else []
     return issues + [f"水準の予想に読める表現: 「{m.group(0)}」" for m in PRICE_TARGET.finditer(body)]
+
+
+def _length(text: str) -> int:
+    return len(text.replace("**", "").strip())
+
+
+def _cells(parsed: dict) -> list[tuple[str, int, str, int]]:
+    """(category, limit, location, length) for every cell the slides show as running text."""
+    label = dict(MARKETS)
+    out = [("1. 判断の要約", LIMIT_SUMMARY, label[m], _length(j.get("summary", "")))
+           for m, j in parsed["judgments"].items()]
+    out += [("2. キーメッセージ", LIMIT_MESSAGE, f"{i}項目め", _length(msg))
+            for i, msg in enumerate(parsed["key_messages"], start=1)]
+    for number, topic in parsed["trends"].items():
+        for m, name in MARKETS:
+            row = topic.get(m) or {}
+            out.append(("3. 見たもの", LIMIT_SEEN, f"{number} {name}", _length(row.get("seen", ""))))
+            out.append(("3. 結論", LIMIT_CONCLUSION, f"{number} {name}", _length(row.get("conclusion", ""))))
+    out += [("4. 展望の各欄", LIMIT_OUTLOOK, f"{r['period']}・{label.get(r['market'], '')} {name}",
+             _length(r[key])) for r in parsed["outlook"] for key, name in OUTLOOK_FIELDS]
+    return out
+
+
+def length_warnings(parsed: dict) -> list[str]:
+    """One line per category whose cells run over the slide budget (the build still succeeds)."""
+    over: dict[tuple[str, int], list[tuple[str, int]]] = {}
+    for category, limit, where, size in _cells(parsed):
+        if size > limit:
+            over.setdefault((category, limit), []).append((where, size))
+    warnings = []
+    for (category, limit), cells in over.items():
+        where, size = max(cells, key=lambda c: c[1])
+        warnings.append(f"{category}: {len(cells)} か所が目安 {limit} 字を超える（最長 {where} {size} 字）。"
+                        "スライドが読みにくくなる")
+    return warnings
 
 
 def validate(text: str, template_text: str) -> list[str]:

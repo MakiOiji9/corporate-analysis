@@ -199,7 +199,8 @@ def indicator_table(facts: dict, market: str, groups: tuple[str, ...]) -> str:
             last_group = r["group"]
             rows.append([f'<b>{esc(r["group"])}</b>', "", "", "", ""])
         d = r["decimals"]
-        rows.append([f'{esc(r["name"])} <span class="muted small">{esc(r["unit"])}</span>', esc(r["date"] or "—"),
+        date = esc(r["date"] or "—") + ('<div class="muted small">古い</div>' if r.get("stale") else "")
+        rows.append([f'{esc(r["name"])} <span class="muted small">{esc(r["unit"])}</span>', date,
                      C.fmt(r["value"], d), C.fmt(r["prev"], d), C.fmt(r["year"], d)])
     return table(["指標", "時点", "値", "前回", "1年前"], rows, right=frozenset({2, 3, 4}), nowrap=frozenset({1}))
 
@@ -236,8 +237,9 @@ def fiscal(facts: dict, parsed: dict) -> str:
 
 
 def flows(facts: dict, parsed: dict) -> str:
-    extras = [[tag(e["market"]), esc(e["indicator"]), esc(e["value"]), esc(e["date"]), esc(e["certainty"])]
-              for e in facts["extras"]]
+    extras = [[tag(e["market"]), esc(e["indicator"]),
+               esc(e["value"]) + (f'<div class="muted small">{esc(e["note"])}</div>' if e.get("note") else ""),
+               esc(e["date"]), esc(e["certainty"])] for e in facts["extras"]]
     flow_rows = [[esc(r["name"].replace("投資部門別売買 ", "")), esc(r["date"] or "—"), C.fmt(r["value"], 0),
                   C.fmt(r["prev"], 0)] for r in facts["indicators"]["japan"] if r["group"] == "需給"]
     return (f'<div class="grid cols-2"><div class="stack">{findings(parsed, "3.1")}</div>'

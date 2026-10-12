@@ -61,6 +61,7 @@
      "source": "米商務省（FRED）", "source_url": "https://fred.stlouisfed.org/"},
     {"id": "US_UMCSENT", "name": "ミシガン大学 消費者信頼感指数", "group": "景気", "provider": "fred",
      "params": {"id": "UMCSENT"}, "frequency": "monthly", "transform": "level", "unit": "指数", "decimals": 1,
+     "max_age_days": 60,
      "source": "ミシガン大学（FRED）", "source_url": "https://fred.stlouisfed.org/"},
     {"id": "US_VIX", "name": "VIX 指数", "group": "需給", "provider": "fred",
      "params": {"id": "VIXCLS"}, "frequency": "daily", "transform": "level", "unit": "ポイント", "decimals": 1,

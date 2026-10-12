@@ -21,8 +21,13 @@ LABEL_MARKET = {v: k for k, v in MARKET_LABEL.items()}
 CALENDAR_DAYS = 84            # timeline: 12 weeks from the report Monday
 SPARK_DAYS = 365
 CHANGE_DAYS = {"1w": 7, "1m": 30}
+# a latest point older than this (days before the report Monday) is flagged "古い"; the normal
+# publication lag fits inside (a monthly figure dated the 1st can be ~3.5 months old just before the
+# next release, a quarterly GDP ~7.5 months). A catalog entry can override it with "max_age_days".
+MAX_AGE_DAYS = {"daily": 10, "weekly": 21, "monthly": 115, "quarterly": 240}
 DATE_FULL = re.compile(r"(\d{4}-\d{2}-\d{2})")
 DATE_MONTH = re.compile(r"(\d{4}-\d{2})")
+VALUE_NOTE = re.compile(r"^(.*?)\s*（(.*)）$")  # "—（理由）" / "19.1倍（前週 19.0倍）"
 LATEST_KINDS = {"指標": "indicators", "日程・市場指標": "calendar", "収集ステータス": "status"}
 
 
@@ -141,6 +146,24 @@ def change(points: Points, base_date: str, kind: str) -> dict | None:
     return {"base_date": base_on, "base": base, "delta": delta}
 
 
+def streak(points: Points) -> int:
+    """Length of the last run of rises (+n) or falls (−n); an unchanged step ends the run."""
+    run = 0
+    for (_, before), (_, after) in reversed(list(zip(points, points[1:]))):
+        step = (after > before) - (after < before)
+        if step == 0 or (run and step != (run > 0) - (run < 0)):
+            break
+        run += step
+    return run
+
+
+def from_high(value: float, high: float, kind: str) -> float | None:
+    """Distance of the latest value from the 1-year high (% for pct, difference for abs)."""
+    if kind == "pct":
+        return (value / high - 1) * 100 if high else None
+    return value - high
+
+
 def build_kpis(catalogs: dict[str, dict], series: dict[str, Points]) -> list[dict]:
     kpis = []
     for spec in KPIS:
@@ -149,31 +172,43 @@ def build_kpis(catalogs: dict[str, dict], series: dict[str, Points]) -> list[dic
         kpi = {"id": spec.sid, "label": spec.label, "market": entry.get("market", ""),
                "unit": entry.get("unit", ""), "decimals": entry.get("decimals", 2), "change": spec.change,
                "source": entry.get("source", ""), "date": None, "value": None, "changes": {}, "spark": [],
-               "high_1y": None, "low_1y": None}
+               "high_1y": None, "low_1y": None, "from_high": None, "streak": 0}
         if points:
             last_date = points[-1][0]
             year = since(points, last_date, SPARK_DAYS)
             bases = {k: (dt.date.fromisoformat(last_date) - dt.timedelta(days=d)).isoformat()
                      for k, d in CHANGE_DAYS.items()}
             bases["1y"] = store._shift(last_date, years=-1)
-            kpi.update(date=last_date, value=points[-1][1], spark=weekly(year),
+            high = max(year, key=lambda p: p[1])
+            spark = weekly(year)
+            kpi.update(date=last_date, value=points[-1][1], spark=spark,
                        changes={k: change(points, b, spec.change) for k, b in bases.items()},
-                       high_1y=list(max(year, key=lambda p: p[1])), low_1y=list(min(year, key=lambda p: p[1])))
+                       high_1y=list(high), low_1y=list(min(year, key=lambda p: p[1])),
+                       from_high=from_high(points[-1][1], high[1], spec.change), streak=streak(spark))
         kpis.append(kpi)
     return kpis
 
 
-def build_indicators(catalogs: dict[str, dict], series: dict[str, Points]) -> dict[str, list[dict]]:
+def is_stale(latest: str | None, entry: dict, week: str) -> bool:
+    if not latest:
+        return False
+    limit = entry.get("max_age_days", MAX_AGE_DAYS.get(entry.get("frequency", "monthly"), MAX_AGE_DAYS["monthly"]))
+    return (dt.date.fromisoformat(week) - dt.date.fromisoformat(latest)).days > limit
+
+
+def build_indicators(catalogs: dict[str, dict], series: dict[str, Points], week: str) -> dict[str, list[dict]]:
     out: dict[str, list[dict]] = {m: [] for m in MARKETS}
     for sid, entry in catalogs.items():
         summary = store.summarize(series.get(sid, []), entry.get("transform", "level"),
                                   entry.get("frequency", "monthly"))
         row = {"id": sid, "group": entry.get("group", ""), "name": entry["name"], "unit": entry.get("unit", ""),
                "decimals": entry.get("decimals", 1), "source": entry.get("source", ""),
-               "date": None, "value": None, "prev_date": None, "prev": None, "year_date": None, "year": None}
+               "date": None, "value": None, "prev_date": None, "prev": None, "year_date": None, "year": None,
+               "stale": False}
         if summary:
             row.update(date=summary.latest_date, value=summary.latest, prev_date=summary.prev_date,
-                       prev=summary.prev, year_date=summary.year_date, year=summary.year)
+                       prev=summary.prev, year_date=summary.year_date, year=summary.year,
+                       stale=is_stale(summary.latest_date, entry, week))
         out[entry["market"]].append(row)
     return out
 
@@ -253,12 +288,25 @@ def calendar_rows(text: str, number: str, market: str, kind: str) -> list[dict]:
     return rows
 
 
+def split_note(value: str) -> tuple[str, str]:
+    """'—（PDF が読めず）' -> ('—', 'PDF が読めず'); a value without a trailing note is kept whole."""
+    m = VALUE_NOTE.match(value.strip())
+    if not m or not m.group(1):
+        return value.strip(), ""
+    return m.group(1), m.group(2)
+
+
 def parse_calendar(text: str, market: str) -> dict[str, list]:
-    extras = [{"market": market, "indicator": v[0], "value": v[1], "date": v[2], "source": v[3], "certainty": v[4]}
-              for v in (list(r.values()) for r in M.table_dicts(M.section(text, "4.")))
-              if len(v) >= 5 and not M.is_blank(v[0])]
+    extras = []
+    for v in (list(r.values()) for r in M.table_dicts(M.section(text, "4."))):
+        if len(v) >= 5 and not M.is_blank(v[0]):
+            value, note = split_note(v[1])
+            extras.append({"market": market, "indicator": v[0], "value": value, "note": note, "date": v[2],
+                           "source": v[3], "certainty": v[4]})
+    recent = calendar_rows(text, "3.", market, "動き")
     return {"events": calendar_rows(text, "1.", market, "確定") + calendar_rows(text, "2.", market, "検索"),
-            "politics": calendar_rows(text, "3.", market, "動き"),
+            "politics": [p for p in recent if event_span(p["date"])],
+            "unconfirmed": [p for p in recent if not event_span(p["date"])],
             "extras": extras}
 
 
@@ -304,12 +352,13 @@ def read_rel(paths: Paths, rel: str) -> str:
 def build_facts(paths: Paths, week: str, session: str, today: str) -> dict:
     catalogs, series = load_catalogs(paths), load_series(paths)
     files = latest_files(paths)
-    events, politics, extras, failed, review = [], [], [], [], []
+    events, politics, unconfirmed, extras, failed, review = [], [], [], [], [], []
     seen_status: set[str] = set()
     for market in MARKETS:
         cal = parse_calendar(read_rel(paths, files[market].get("calendar", "")), market)
         events += cal["events"]
         politics += cal["politics"]
+        unconfirmed += cal["unconfirmed"]
         extras += cal["extras"]
         failed += parse_failed(read_rel(paths, files[market].get("indicators", "")), market)
         status = files[market].get("status", "")
@@ -322,10 +371,11 @@ def build_facts(paths: Paths, week: str, session: str, today: str) -> dict:
         "session": session,
         "files": files,
         "kpis": build_kpis(catalogs, series),
-        "indicators": build_indicators(catalogs, series),
+        "indicators": build_indicators(catalogs, series, week),
         "charts": build_charts(catalogs, series),
         "events": upcoming(events, week),
         "politics": sorted(politics, key=lambda p: p["date"], reverse=True),
+        "unconfirmed": unconfirmed,
         "extras": extras,
         "docs": latest_docs(paths),
         "series_failed": failed,
