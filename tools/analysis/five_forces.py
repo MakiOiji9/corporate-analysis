@@ -10,7 +10,7 @@ Usage:
 list:    companies under companies/ with the state of their five-forces result (for choosing one).
 check:   is the latest result still valid (365 days, no newer yuho / industry / competitors raw)?
          Which required inputs are missing (and which collect-company-info 担当 gets them)?
-         Is the market outlook recent enough? -> "next" says what the skill does next.
+         How old is the market outlook (header reference only; never blocks)? -> "next" says what to do.
 prepare: analysis/five-forces/{date}_brief.md (what the writer reads) and the {date}_five-forces.md
          skeleton (FILL markers). A draft (FILL left) is kept unless --redo; a valid result needs --redo.
 build:   check the filled md, write the points / attractiveness into it and {date}_five-forces.json.
@@ -124,14 +124,12 @@ def cmd_check(args: argparse.Namespace, root: Path) -> int:
         next_step = "report_existing"
     elif not _has_raw(company) or requests:
         next_step = "collect"
-    elif outlook["stale"]:
-        next_step = "market_report"
     else:
-        next_step = "prepare"
+        next_step = "prepare"  # an old outlook is only noted (header reference), never a reason to collect
     return emit({"ok": True, "company": company.dirname, "name": company.display_name(), **state,
                  "needs_full_collect": not _has_raw(company), "missing_inputs": requests,
                  "unavailable": [f.spec.label for f in found.values() if f.status == "unavailable"],
-                 "outlook": outlook, "next": next_step})
+                 "outlook": outlook, "outlook_stale": outlook["stale"], "next": next_step})
 
 
 def _values(company: P.Company, date: str, found: dict, outlook: dict) -> dict:
@@ -139,7 +137,8 @@ def _values(company: P.Company, date: str, found: dict, outlook: dict) -> dict:
     return {"company": company.display_name(), "date": date,
             "brief": company.rel(company.file(date, P.BRIEF_SUFFIX)),
             "inputs": ", ".join(inputs) or "—", "valid_until": P.valid_until(date),
-            "outlook": outlook["path"] or "—（完成済みの outlook.md なし）"}
+            "outlook": (f"{outlook['path']}（{outlook['age_days']} 日前の週）" if outlook["path"]
+                        else "—（完成済みの outlook.md なし）")}
 
 
 def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
@@ -185,11 +184,18 @@ def _target(company: P.Company, date: str | None) -> tuple[str, Path] | None:
     return files[-1] if files else None
 
 
+def _outlook_path(header: str) -> str | None:
+    """'market/report/X_outlook.md（3 日前の週）' -> the path; None for '—（…なし）'."""
+    path = header.split("（")[0].strip()
+    return None if M.is_blank(path) else path
+
+
 def result_json(company: P.Company, date: str, text: str, parsed: dict, scored: dict) -> dict:
     found = I.gather(company)
     outlook = OUTLOOK_HEADER.search(text)
     previous = P.latest_result(company, before=date)
-    keep = ("key", "name", "rating", "points", "seen", "source", "reason", "candidate", "previous")
+    keep = ("key", "name", "rating", "points", "seen", "source", "confidence", "triggers", "reason",
+            "tie_break", "candidate", "previous")
     return {
         "company": company.dirname, "name": company.display_name(), "date": date,
         "valid_until": P.valid_until(date), "industry": parsed["industry"],
@@ -200,7 +206,7 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, scored: 
         "unknown_count": scored["unknown_count"], "downgraded": scored["downgraded"],
         "swot_threats": scored["swot_threats"], "changes": parsed["changes"], "gaps": parsed["gaps"],
         "inputs": sorted({company.rel(f.path) for f in found.values() if f.path is not None}),
-        "outlook": outlook.group(1).strip() if outlook else None,
+        "outlook": _outlook_path(outlook.group(1)) if outlook else None,
         "previous": {"date": previous[0], "attractiveness": previous[1].get("attractiveness")} if previous else None,
         "md": company.rel(company.file(date, P.MD_SUFFIX)),
     }
@@ -237,7 +243,9 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
         "unknown_count": scored["unknown_count"], "downgraded": scored["downgraded"],
         "swot_threats": scored["swot_threats"], "valid_until": result["valid_until"],
         "previous": result["previous"],
-        "gaps": [g for g in parsed["gaps"] if not M.is_blank(g) and g != "なし"][:3],
+        "tie_breaks": [f["name"] for f in scored["factors"] if f["tie_break"]],
+        "low_confidence": [f["name"] for f in scored["factors"] if f["confidence"] == D.LOW_CONFIDENCE],
+        "gaps": [g for g in parsed["gaps"] if not M.is_blank(g) and g != "なし"],
     })
 
 

@@ -85,9 +85,9 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 | コマンド | 用途 | 主な出力 |
 |---|---|---|
 | `five_forces.py list` | `companies/` の企業と、ファイブフォース分析の状態（none / fresh / expired / triggered / draft） | 1行の JSON |
-| `five_forces.py check --company X` | 結果が有効か（365日以内で、分析後に新しい有報・業界・競合の raw が無いか）、必須の材料が raw にあるか（無ければ担当の collect-* を返す）、地合い判断が35日以内か。`next` に次の作業 | 1行の JSON |
-| `five_forces.py prepare --company X [--redo]` | raw から必要な節を抜き出して執筆の材料にし、数値で決まる基準（最大顧客比率・粗利率の最大低下）の判定候補と前回の評価を入れた骨組み（FILL 欄）を作る。作成途中の md は残す | `{日付}_brief.md`・`{日付}_five-forces.md` |
-| `five_forces.py build --company X [--date …]` | md を検証（構造・FILL・評価の語・判定候補/前回との差の理由・禁止表現）し、点数・合計・魅力度を書き込む | `{日付}_five-forces.json` |
+| `five_forces.py check --company X` | 結果が有効か（365日以内で、分析後に新しい有報・業界・競合の raw が無いか）、必須の材料が raw にあるか（無ければ担当の collect-* を返す）、地合い判断の古さ（`outlook_stale`。参照だけなので次の作業は止めない）。`next` に次の作業 | 1行の JSON |
+| `five_forces.py prepare --company X [--redo]` | raw から必要な節を抜き出して執筆の材料にし、数値で決まる基準（最大顧客比率と前期からの変化・粗利率の最大低下）の判定候補と前回の評価を入れた骨組み（FILL 欄）を作る。材料には自社の粗利率・営業利益率の時系列と、競合の営業利益率の推移（売上高・営業利益から計算）も入る。作成途中の md は残す | `{日付}_brief.md`・`{日付}_five-forces.md` |
+| `five_forces.py build --company X [--date …]` | md を検証（構造・FILL・評価の語・根拠の確度の語・評価が変わる条件・判定候補/前回との差の理由・禁止表現）し、点数・合計・魅力度を書き込む。「迷った:」の要因と確度が参考の要因を返す | `{日付}_five-forces.json` |
 
 モジュール: `ff_paths.py`（企業の解決・結果の鮮度・有効期間）、`ff_inputs.py`（raw の節の抽出・欠損の判定）、`ff_metrics.py`（判定候補の計算）、`ff_brief.py`（材料）、`ff_doc.py`（骨組み・検証・採点。`report/outlook.py` の禁止表現と `collect/market/validate.py` を再利用）。テンプレートは `.ai/templates/five-forces/`。
 

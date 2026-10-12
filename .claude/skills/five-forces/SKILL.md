@@ -10,8 +10,7 @@ argument-hint: "[{銘柄コード|企業ディレクトリ名|社名の一部}] 
 
 ## Claude Code での実行方法
 
-- 手順 0（企業の選択）は AskUserQuestion で選択肢を出す。選択肢は最大4つなので、企業が5社以上あるときは `five_forces` が `fresh` 以外の企業を優先し、その中で分析日が古い順（未分析が先）に4社を出す（ほかの企業は「その他」で入力してもらう）。各選択肢の説明に状態・分析日・魅力度・最終収集日を書く
+- 手順 0（企業の選択）は AskUserQuestion で選択肢を出す。選択肢は最大4つなので、企業が5社以上あるときは `five_forces` が `fresh` 以外の企業を優先し、その中で分析日が古い順（未分析が先）に4社を出す（ほかの企業は「その他」で入力してもらう）。各選択肢の説明に状態・分析日・魅力度・最終収集日を書く。企業が1社だけなら AskUserQuestion を出さずにその企業で進む（AskUserQuestion は選択肢が2つ以上要る）
 - 手順 1 で `collect` のときは、Skill ツールで `collect-company-info` を起動する。引数は `{ticker} mode=update 担当={missing_inputs の agent をカンマ区切り} 項目={items}`（`needs_full_collect` なら `mode=full`）。その手順書（並列モード）を最後の完了報告まで実行してから、このスキルの手順 1 に戻る
-- 手順 1 で `market_report` のときは、Skill ツールで `market-report` を引数なしで起動し、その手順書を最後まで実行してから、このスキルの手順 1 に戻る
-- 執筆（手順 3）はサブエージェントに任せず、自分で brief.md を読んで five-forces.md を Edit する（5要因を一人の書き手が通して書く）
+- 執筆（手順 3）はサブエージェントに任せず、自分で brief.md を読んで five-forces.md を Edit する（5要因を一人の書き手が通して書く）。Edit は要因ごとに1回（その要因の表の FILL 行をまとめて置き換える）
 - 書き込みは `tools/guard/write_guard.py`（PreToolUse hook）が監視する。ブロックされたら回避策を探さず、指摘に従う

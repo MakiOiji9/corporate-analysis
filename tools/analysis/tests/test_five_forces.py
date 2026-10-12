@@ -144,8 +144,9 @@ def run(root: Path, *argv: str, capsys) -> tuple[int, dict]:
     return code, json.loads(capsys.readouterr().out.strip().splitlines()[-1])
 
 
-def fill(md: Path, ratings: dict[str, str], reasons: dict[str, str] | None = None) -> None:
-    reasons = reasons or {}
+def fill(md: Path, ratings: dict[str, str], reasons: dict[str, str] | None = None,
+         confidences: dict[str, str] | None = None) -> None:
+    reasons, confidences = reasons or {}, confidences or {}
 
     def answer(m: re.Match) -> str:
         key = m.group(1)
@@ -156,6 +157,10 @@ def fill(md: Path, ratings: dict[str, str], reasons: dict[str, str] | None = Non
             return ratings[factor]
         if field == "reason":
             return reasons.get(factor, "判断基準の中に当たる")
+        if field == "confidence":
+            return confidences.get(factor, "一次")
+        if field == "triggers":
+            return "最大顧客比率が20%以上になれば強"
         return "brief.md 2." if field == "source" else "数値と時点"
 
     md.write_text(FILL_ANY.sub(answer, md.read_text(encoding="utf-8")), encoding="utf-8")
@@ -252,14 +257,14 @@ def test_check_new_company_goes_to_prepare(repo, capsys):
     assert code == 0 and out["result"] == "none" and out["next"] == "prepare"
 
 
-def test_check_requests_collect_and_market_report(tmp_path, capsys):
+def test_check_requests_collect_but_never_market_report(tmp_path, capsys):
     _templates(tmp_path)
     _company(tmp_path, share="—")
     _, out = run(tmp_path, "check", "--company", "7203", "--date", DAY, capsys=capsys)
     assert out["next"] == "collect" and out["missing_inputs"][0]["agent"] == "collect-market"
-    _company(tmp_path)  # share collected now
+    _company(tmp_path)  # share collected now; no outlook at all
     _, out = run(tmp_path, "check", "--company", "7203", "--date", DAY, capsys=capsys)
-    assert out["next"] == "market_report" and out["outlook"]["stale"]
+    assert out["next"] == "prepare" and out["outlook_stale"]
 
 
 def test_check_unknown_company(repo, capsys):
@@ -269,7 +274,7 @@ def test_check_unknown_company(repo, capsys):
 
 def test_full_cycle_then_fresh_triggered_expired(repo, capsys):
     code, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
-    assert code == 0 and out["fill"] == 24 and out["candidates"]["buyers"] == "中"
+    assert code == 0 and out["fill"] == 34 and out["candidates"]["buyers"] == "中"
     md = repo / out["md"]
     code, out = run(repo, "build", "--company", "7203", capsys=capsys)
     assert code == 1 and any("FILL" in i for i in out["issues"])
@@ -288,7 +293,7 @@ def test_full_cycle_then_fresh_triggered_expired(repo, capsys):
     code, out = run(repo, "prepare", "--company", "7203", "--date", "2026-12-01", capsys=capsys)
     assert code == 1 and "--redo" in out["error"]
     _, out = run(repo, "check", "--company", "7203", "--date", "2027-10-13", capsys=capsys)
-    assert out["result"] == "expired" and out["next"] == "market_report"  # the outlook is a year old too
+    assert out["result"] == "expired" and out["next"] == "prepare" and out["outlook_stale"]
 
     _company(repo, collected="2026-11-01")  # a newer yuho / industry / competitors
     _, out = run(repo, "check", "--company", "7203", "--date", "2026-12-01", capsys=capsys)
@@ -409,6 +414,84 @@ def test_same_day_redo_after_build_is_refused(repo, capsys):
 
 def test_replace_section_without_trailing_newline():
     assert D.replace_section("## 3. x", "3.", "body") == "## 3. x\nbody\n\n"
+
+
+# ---------- improvements after the first run (2026-10-12) ----------
+
+def test_buyer_basis_shows_change_from_previous_year(tmp_path):
+    company = P.Company(tmp_path, _company(tmp_path, ratio="12.0%"))
+    cand = X.buyer(I.gather(company)["customers"])
+    assert cand["previous_value"] == 9.0 and "前期 9.0% から +3.0pt" in cand["basis"]
+
+
+@pytest.mark.parametrize("cell, yen", [
+    ("140億2,433万円", 140e8 + 2433e4), ("7.93億円", 7.93e8), ("7,367百万円", 7367e6), ("500", 500.0),
+    ("△1,000百万円", -1000e6), ("—（経常利益32億円予想との報道）", None), ("—", None),
+])
+def test_yen_reads_japanese_amounts(cell, yen):
+    assert X._yen(cell) == pytest.approx(yen) if yen is not None else X._yen(cell) is None
+
+
+def test_peer_margins_per_company_with_forecast():
+    body = ("### A社（1111）\n\n| 年度 | 売上高 | 営業利益 | 営業利益率 |\n|---|---|---|---|\n"
+            "| 2025/03 | 100億円 | 10億円 | — |\n| 2026/03 | 120億円 | 18億円 | — |\n"
+            "| 2027/03（会社予想） | 130億円 | 13億円 | — |\n\n"
+            "### B社（2222）\n\n| 年度 | 売上高 | 営業利益 |\n|---|---|---|\n| 2026/02 | 84億2,118万円 | 17億320万円 |\n")
+    peers = X.peer_margins(_found("peers", body))
+    assert [p["name"] for p in peers] == ["A社（1111）", "B社（2222）"]
+    assert [s["margin"] for s in peers[0]["series"]] == [10.0, 15.0, 10.0]
+    line = X.peer_margin_line(peers[0])
+    assert "2026-03 15.0%（最新実績の前年差 +5.0pt）" in line and "2027-03 予想 10.0%" in line
+    assert X.peer_margin_line(peers[1]) == "B社（2222）: 2026-02 20.2%"
+
+
+def test_operating_margin_from_pl_table():
+    table = [["項目（百万円）", "2025年3月期", "2026年3月期"], ["売上高", "1,000", "2,000"],
+             ["営業利益", "100", "300"], ["営業利益率", "10%", "15%"]]
+    assert X._margins_from_table(table, "operating") == {"2025-03": 10.0, "2026-03": 15.0}
+
+
+def test_brief_has_margins_and_no_outlook_table(repo, capsys):
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    brief = (repo / out["brief"]).read_text(encoding="utf-8")
+    assert "| 年度末 | 粗利率 | 営業利益率 |" in brief and "| 2026-03 | 36.0% | — |" in brief
+    assert "営業利益率の推移" in brief and "2026-03 10.0%" in brief  # COMPETITORS: 50 / 500
+    assert "| 市場 | 地合い判断 |" not in brief and "7 日前の週" in brief
+    md = (repo / out["md"]).read_text(encoding="utf-8")
+    assert "**地合い**: market/report/2026-10-05_outlook.md（7 日前の週）" in md
+
+
+def test_build_reports_all_gaps_tie_breaks_and_low_confidence(repo, capsys):
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    md = repo / out["md"]
+    fill(md, dict(ALL_MID, entry="強"), {"entry": "迷った: 中と強で迷い不利な方を採った"}, {"substitutes": "参考"})
+    md.write_text(md.read_text(encoding="utf-8").replace(
+        "## 6. 判定に効く欠損\n\n- なし", "## 6. 判定に効く欠損\n\n- 一\n- 二\n- 三\n- 四"), encoding="utf-8")
+    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 0 and len(out["gaps"]) == 4
+    assert out["tie_breaks"] == ["新規参入の脅威"] and out["low_confidence"] == ["代替品の脅威"]
+    factor = json.loads((repo / out["json"]).read_text(encoding="utf-8"))["factors"][0]
+    assert factor["tie_break"] and factor["confidence"] == "一次" and factor["triggers"]
+
+
+def test_build_rejects_bad_confidence_and_blank_triggers(repo, capsys):
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    md = repo / out["md"]
+    fill(md, ALL_MID, confidences={"buyers": "高い"})
+    md.write_text(md.read_text(encoding="utf-8").replace(
+        "| 評価が変わる条件 | 最大顧客比率が20%以上になれば強 |", "| 評価が変わる条件 | — |", 1), encoding="utf-8")
+    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 1 and any("根拠の確度" in i for i in out["issues"])
+    assert any("評価が変わる条件が空" in i for i in out["issues"])
+
+
+def test_result_made_before_new_rows_still_parses():
+    row = "| 項目 | 内容 |\n|---|---|\n| 見たもの | x |\n| 情報源 | y |\n| 評価 | 中 |\n| 理由 | z |\n"
+    text = "## 1. 業界の定義\n\n| 項目 | 内容 |\n|---|---|\n| 業界の定義 | a |\n\n## 2. 5つの要因\n\n" + "".join(
+        f"### {number} {name}\n\n{row}\n" for _, number, name in D.FACTORS) + "## 5. 変更\n\n- なし\n\n## 6. 欠損\n\n- なし\n"
+    parsed = D.parse(text)
+    assert all(f["confidence"] is None and f["triggers"] is None for f in parsed["factors"])
+    assert not [i for f in parsed["factors"] for i in D._check_factor(f)]
 
 
 # ---------- scoring ----------

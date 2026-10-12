@@ -20,6 +20,9 @@ POINTS = {"弱": 2, "中": 1, "強": 0, "不明": 1}
 LEVELS = ((7, "高"), (4, "中"), (0, "低"))
 DOWNGRADE = {"高": "中", "中": "低", "低": "低"}
 UNKNOWN_DOWNGRADE = 2
+CONFIDENCE = ("一次", "二次", "参考")  # 有報・会社資料・官公庁統計 / 調査会社の記事経由 / ブログ・比較サイト
+LOW_CONFIDENCE = "参考"
+TIE_BREAK = "迷った"  # the writer picked the less favourable of two ratings (policy 行動指針6)
 DIFFERS_FROM_CANDIDATE = "候補と異なる理由"
 CHANGED_FROM_PREVIOUS = "前回から変更"
 PENDING = "（build が記入）"
@@ -72,9 +75,14 @@ def parse(text: str) -> dict:
     for key, number, name in FACTORS:
         row = _kv(M.section(text, number, level=3))
         cand = row.get("スクリプトの判定候補", "")
+        reason = row.get("理由", "")
         factors.append({
             "key": key, "name": name, "rating": row.get("評価", "").strip(),
-            "seen": row.get("見たもの", ""), "source": row.get("情報源", ""), "reason": row.get("理由", ""),
+            "seen": row.get("見たもの", ""), "source": row.get("情報源", ""), "reason": reason,
+            # None = the row is absent (results made before these rows existed)
+            "confidence": row["根拠の確度"].strip() if "根拠の確度" in row else None,
+            "triggers": row.get("評価が変わる条件"),
+            "tie_break": TIE_BREAK in reason,
             "candidate": _rating_in(cand), "candidate_fixed": FIXED_MARK in cand,
             "previous": _rating_in(row.get("前回の評価", "")),
         })
@@ -95,6 +103,11 @@ def _check_factor(f: dict) -> list[str]:
         issues.append(f"{where}: 情報源が空（根拠が書けないなら評価を「不明」にする）")
     if M.is_blank(f["reason"]):
         issues.append(f"{where}: 理由が空")
+    unknown_without_basis = f["rating"] == "不明" and M.is_blank(f["confidence"])
+    if f["confidence"] is not None and f["confidence"] not in CONFIDENCE and not unknown_without_basis:
+        issues.append(f"{where}: 根拠の確度は {'/'.join(CONFIDENCE)} の1語: 「{f['confidence']}」")
+    if f["triggers"] is not None and M.is_blank(f["triggers"]):
+        issues.append(f"{where}: 評価が変わる条件が空")
     return issues
 
 

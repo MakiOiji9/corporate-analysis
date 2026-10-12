@@ -10,10 +10,10 @@ description: ファイブフォース分析スキル。企業分析フレーム�
 ## GitHub Copilot での実行方法
 
 - コマンドはターミナルで実行する。Python は `.venv\Scripts\python.exe`（Windows）/ `.venv/bin/python`（macOS・Linux）
-- 手順 0（企業の選択）は、`list` の結果を番号付きの一覧（番号・企業名・ディレクトリ・状態・分析日・魅力度・最終収集日）にしてチャットに出し、ユーザーが番号か企業名で答えるのを待つ。答えが来るまで先に進まない
+- 手順 0（企業の選択）は、`list` の結果を番号付きの一覧（番号・企業名・ディレクトリ・状態・分析日・魅力度・最終収集日）にしてチャットに出し、ユーザーが番号か企業名で答えるのを待つ。答えが来るまで先に進まない。企業が1社だけなら一覧を出さずにその企業で進む
 - 手順 1 で `collect` のときは、`.github/skills/collect-company-info/SKILL.md` と `.ai/skills/collect-company-info.md` を読み、collect-company-info を**逐次モード**で実行する（`mode=update`、`needs_full_collect` なら `mode=full`）。担当は `missing_inputs` の `agent` だけ、範囲はその `items` に絞る。完了報告まで終えてから、このスキルの手順 1 に戻る
-- 手順 1 で `market_report` のときは、`.github/skills/market-report/SKILL.md` と `.ai/skills/market-report.md` を読み、market-report を最後まで実行してから、このスキルの手順 1 に戻る
-- 収集・地合いレポートの作業で読んだ raw・抜粋・検索結果は、ファイブフォースの執筆に持ち込まない（執筆は brief.md だけを根拠にする）
+- 収集の作業で読んだ raw・抜粋・検索結果は、ファイブフォースの執筆に持ち込まない（執筆は brief.md だけを根拠にする）
+- 執筆の編集は要因ごとに1回（その要因の表の FILL 行をまとめて置き換える）
 
 ## 書き込みガード（Copilot では手動で確認する）
 
