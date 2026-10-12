@@ -533,6 +533,7 @@ def test_thin_input_listed_in_status_is_unavailable_not_recollected(tmp_path, ca
     (THIN_KBF, True),
     ("| 会社 | 主張 | 出典 |\n|---|---|---|\n| A社 | 品質 | x |\n| B社 | —（記載なし） | — |", True),  # an empty company row
     ("| 会社 | 顧客数 | 出典 |\n|---|---|---|\n| A社 | —（開示なし） | 説明会資料 |", False),  # searched, source named
+    ("| 会社 | 顧客数 | 出典 |\n|---|---|---|\n| A社 | 100社 | 説明資料。継続率は確認できず |", False),  # caveat in a cell
 ])
 def test_is_thin_section(body, thin):
     assert F.is_thin_section(body) is thin

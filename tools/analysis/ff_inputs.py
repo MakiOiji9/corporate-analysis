@@ -96,11 +96,13 @@ def _empty_cell(cell: str) -> bool:
 
 
 def is_thin_section(body: str) -> bool:
-    """True when the section says the data was not found, or a table row has nothing but its first cell."""
+    """Tables: thin when a row has nothing but its first cell (a company with no data); caveats in cells are fine.
+    Prose only: thin when it says the data was not found."""
     text = COMMENT.sub("", body)
-    if any(w in text for w in THIN_WORDS):
-        return True
-    return any(len(row) > 1 and all(_empty_cell(c) for c in row[1:]) for table in M.tables(text) for row in table[1:])
+    rows = [row for table in M.tables(text) for row in table[1:]]
+    if rows:
+        return any(len(row) > 1 and all(_empty_cell(c) for c in row[1:]) for row in rows)
+    return any(w in text for w in THIN_WORDS)
 
 
 def unavailable_items(company: Company) -> list[str]:
