@@ -31,6 +31,7 @@ PEER_COLUMNS = ("売上高", "営業利益")
 FORECAST = re.compile(r"予想|予測|計画")
 AMOUNT = re.compile(r"([\d,]+(?:\.\d+)?)(兆|億|百万|千|万)?")
 AMOUNT_CELL = re.compile(r"-?(?:[\d,]+(?:\.\d+)?(?:兆|億|百万|千|万)?)+")
+TRAILING_NOTE = re.compile(r"[（(].*$")
 PEER_YEAR = re.compile(r"(\d{4})\s*[/年]\s*(\d{1,2})")
 UNIT_YEN = {"兆": 1e12, "億": 1e8, "百万": 1e6, "万": 1e4, "千": 1e3, None: 1.0}
 
@@ -216,8 +217,12 @@ def market_growth(found: Found) -> list[str]:
 
 
 def _yen(cell: str) -> float | None:
-    """'140億2,433万円' / '7.93億円' / '7,367百万円' / '500' -> yen (unitless numbers as they are)."""
+    """'140億2,433万円' / '7.93億円' / '7,367百万円' / '500' -> yen (unitless numbers as they are).
+    A note after the amount is dropped: '23,831百万円（前期比 -9.4%）' -> 23,831百万円."""
     text = re.sub(r"[\s円]", "", cell.replace("△", "-").replace("▲", "-"))
+    note = TRAILING_NOTE.search(text)
+    if note and note.start() > 0:
+        text = text[:note.start()]
     if not AMOUNT_CELL.fullmatch(text):
         return None
     total = sum(float(n.replace(",", "")) * UNIT_YEN[u or None] for n, u in AMOUNT.findall(text.lstrip("-")))

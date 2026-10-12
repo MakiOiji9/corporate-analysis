@@ -70,7 +70,7 @@ def evaluate(company: P.Company, today: str) -> dict:
         state["latest"] = {"date": date, "md": company.rel(company.file(date, P.MD_SUFFIX)),
                            "json": company.rel(company.file(date, P.JSON_SUFFIX)),
                            "verdict": result.get("verdict"), "valid_until": result.get("valid_until") or P.valid_until(date)}
-        state["newer_raw"] = I.newer_trigger_files(company, date)
+        state["newer_raw"] = I.newer_trigger_files(company, date, result.get("inputs") or ())
         ff = FP.latest_result(_ff_company(company))
         if ff and ff[0] > date:
             state["newer_raw"].append(company.rel(_ff_company(company).file(ff[0], FP.JSON_SUFFIX)))

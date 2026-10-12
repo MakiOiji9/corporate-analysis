@@ -12,6 +12,7 @@ sys.path[:0] = [str(ANALYSIS), str(REPO / "tools" / "report"), str(REPO / "tools
                 str(REPO / "tools" / "collect")]
 
 import ff_inputs as F  # noqa: E402
+import ff_metrics as FM  # noqa: E402
 import tc_doc as D  # noqa: E402
 import tc_inputs as I  # noqa: E402
 import tc_metrics as X  # noqa: E402
@@ -367,6 +368,19 @@ def test_newer_business_overview_triggers(repo, capsys):
         "companies/7203_toyota/raw/ir/2026-11-01_business-overview.md"]
 
 
+def test_raw_collected_later_on_the_analysis_day_triggers(repo, capsys):
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    fill(repo / out["md"])
+    run(repo, "build", "--company", "7203", capsys=capsys)
+    _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["result"] == "fresh"  # the analysis used every raw there is
+    market = repo / "companies" / "7203_toyota" / "raw" / "market"
+    (market / f"{DAY}_competitors.md").write_text(
+        (market / "2026-10-01_competitors.md").read_text(encoding="utf-8"), encoding="utf-8")
+    _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["result"] == "triggered" and out["newer_raw"] == [f"companies/7203_toyota/raw/market/{DAY}_competitors.md"]
+
+
 @pytest.mark.parametrize("top, a, competitor, win, verdict", [
     ("○", "△", "優位", None, "明確"),
     ("○", "△", "同等", None, "あいまい"),
@@ -545,6 +559,14 @@ def test_five_forces_inputs_ignore_thinness(repo):
     path.write_text(INDUSTRY.format(cagr="5.0%", kbf=THIN_KBF), encoding="utf-8")
     assert F.find(company, F.SPEC["kbf"], []).status == "ok"  # thin_check is off for five-forces
     assert I.gather_3c(company)["kbf"].status == "thin"
+
+
+def test_peer_amounts_with_a_trailing_note_are_read(tmp_path):
+    body = ("### アルファ社（1111）\n\n| 年度 | 売上高 | 営業利益 | 営業利益率 | 確度 |\n|---|---|---|---|---|\n"
+            "| 2025/03 | 262億9,359万円 | 56億3,891万円 | — | 二次 |\n"
+            "| 2026/03 | 23,831百万円（前期比 -9.4%） | 6,064百万円（同 +7.6%） | 25.4% | 一次 |\n")
+    series = FM.peer_margins(_found("peers", body))[0]["series"]
+    assert [(s["year"], s["margin"]) for s in series] == [("2025-03", 21.4), ("2026-03", 25.4)]
 
 
 def test_competitor_basis_shows_peer_average():
