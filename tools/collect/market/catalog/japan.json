@@ -8,6 +8,9 @@
                        "目標", "兆円", "億円", "エネルギー", "電力", "原子力", "半導体", "AI", "GX", "DX", "防衛",
                        "経済安全保障", "金利", "金融政策", "為替", "景気", "設備投資", "個人消費"],
   "series": [
+    {"id": "JP_NIKKEI225", "name": "日経平均株価", "group": "株価", "provider": "fred",
+     "params": {"id": "NIKKEI225"}, "frequency": "daily", "transform": "level", "unit": "円", "decimals": 0,
+     "source": "日本経済新聞社（FRED）", "source_url": "https://fred.stlouisfed.org/series/NIKKEI225"},
     {"id": "JP_CALL", "name": "無担保コールO/N物レート（平均）", "group": "金利・為替", "provider": "boj",
      "params": {"db": "FM01", "code": "STRDCLUCON"}, "frequency": "daily", "transform": "level",
      "unit": "%", "decimals": 3, "source": "日本銀行 時系列統計", "source_url": "https://www.stat-search.boj.or.jp/"},

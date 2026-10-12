@@ -65,6 +65,27 @@ def test_latest_is_script_only(tmp_path):
     assert decide("Edit", "market/LATEST.md", _repo(tmp_path), TODAY)
 
 
+def test_report_generated_files_are_script_only(tmp_path):
+    root = _repo(tmp_path)
+    for kind in ("facts.json", "brief.md", "market-report.html"):
+        assert "スクリプト" in decide("Write", f"market/report/2026-10-05_{kind}", root, TODAY), kind
+
+
+def test_report_outlook_edit_only_and_past_finished_weeks_immutable(tmp_path):
+    root = _repo(tmp_path)
+    report = root / "market" / "report"
+    report.mkdir(parents=True)
+    (report / "2026-10-05_outlook.md").write_text("| 日本 | <!-- FILL:judgment-japan --> |\n", encoding="utf-8")
+    (report / "2026-09-28_outlook.md").write_text("| 日本 | 中立 |\n", encoding="utf-8")
+    current = "market/report/2026-10-05_outlook.md"  # TODAY (2026-10-11, Sunday) is in the 10-05 week
+    assert decide("Edit", current, root, TODAY) is None
+    assert "上書き" in decide("Write", current, root, TODAY)
+    assert "prepare" in decide("Write", "market/report/2026-10-12_outlook.md", root, TODAY)
+    assert "--redo" in decide("Edit", "market/report/2026-09-28_outlook.md", root, TODAY)
+    (report / "2026-10-05_outlook.md").write_text("| 日本 | 慎重 |\n", encoding="utf-8")
+    assert decide("Edit", current, root, TODAY) is None  # this week's finished outlook can still be fixed
+
+
 def test_company_raw_from_earlier_day_is_immutable(tmp_path):
     root = _repo(tmp_path)
     assert decide("Edit", "companies/7203_toyota/raw/ir/2026-10-01_business-overview.md", root, TODAY)

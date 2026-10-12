@@ -5,6 +5,12 @@
                        "growth", "energy", "Energy", "semiconductor", "AI", "defense", "federal funds", "policy rate",
                        "employment", "labor market", "deficit", "debt", "trade", "Trade", "uncertainty", "risk"],
   "series": [
+    {"id": "US_SP500", "name": "S&P500", "group": "株価", "provider": "fred",
+     "params": {"id": "SP500"}, "frequency": "daily", "transform": "level", "unit": "ポイント", "decimals": 0,
+     "source": "S&P Dow Jones Indices（FRED）", "source_url": "https://fred.stlouisfed.org/series/SP500"},
+    {"id": "US_NASDAQ", "name": "NASDAQ総合指数", "group": "株価", "provider": "fred",
+     "params": {"id": "NASDAQCOM"}, "frequency": "daily", "transform": "level", "unit": "ポイント", "decimals": 0,
+     "source": "Nasdaq（FRED）", "source_url": "https://fred.stlouisfed.org/series/NASDAQCOM"},
     {"id": "US_FFR_UPPER", "name": "FF金利 誘導目標上限", "group": "金利・為替", "provider": "fred",
      "params": {"id": "DFEDTARU"}, "frequency": "daily", "transform": "level", "unit": "%", "decimals": 2,
      "source": "FRB（FRED）", "source_url": "https://fred.stlouisfed.org/"},

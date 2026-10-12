@@ -64,9 +64,14 @@ market/
     │   ├── indicators-{market}.md   # マクロ指標・需給の表（スクリプトが生成）
     │   ├── calendar-{market}.md     # 政治・イベント日程と市場指標（search-calendar が記入）
     │   └── policy-digest.md         # 今回追加された文書と、監視項目ごとの最新版（スクリプトが生成）
-    ├── analysis.md              # マクロ要因の統合分析（根拠付き）
-    └── outlook.md               # 地合い判断サマリー（強気/中立/慎重/弱気）
+└── report/                      # 週次の地合いレポート（market-report。{週} は出力週の月曜日）
+    ├── {週}_facts.json          # レポートの数値・チャート系列・日程（スクリプトが生成）
+    ├── {週}_brief.md            # 執筆の材料を1ファイルに集約したもの（スクリプトが生成）
+    ├── {週}_outlook.md          # 地合い判断（強気/中立/慎重/弱気）と短期・中期・長期の展望。企業分析はこれを参照する
+    └── {週}_market-report.html  # プレゼンテーション形式の単一 HTML（スクリプトが outlook.md と facts.json から生成）
 ```
+
+- 地合い判断は `market/report/` の最新の `{週}_outlook.md`（FILL が残っていないもの）。過去の週の完成済み outlook.md は変更しない
 
 - `raw/` と `policy/*/raw/` は collect-market-info のスクリプトがテンプレート（`.ai/templates/collect-market-info/`）から作る。LLM は `<!-- FILL:... -->` の欄だけを埋める
 - 書き込みのルールは `tools/guard/write_guard.py`（Claude Code の PreToolUse hook）が強制する
@@ -86,7 +91,7 @@ market/
 
 **分析日**: YYYY-MM-DD
 **参照資料**: {主な参照資料と期・URL}
-**地合い**: {参照した outlook.md のセッション名}（地合い分析ファイルは不要）
+**地合い**: {参照した outlook.md のファイル名（例: market/report/2026-10-12_outlook.md）}（地合い分析ファイルは不要）
 ```
 
 ## 評価の記述形式

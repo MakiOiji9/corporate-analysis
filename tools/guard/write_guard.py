@@ -14,6 +14,9 @@ Rules (paths relative to the repository; writes outside it are not checked):
   3. companies/*/raw/**: files collected on an earlier day are immutable.
   4. While a market session is running (market/sessions/*/.running), only the files listed
      in that session's tasks.json "allowed_files" may be written.
+  5. market/report/: facts.json, brief.md and the HTML are script-only. {week}_outlook.md is
+     created by market_report.py prepare and only edited (not overwritten); once an earlier
+     week's outlook is finished (no FILL left) it is immutable.
 """
 from __future__ import annotations
 
@@ -37,10 +40,12 @@ SCRIPT_ONLY = [
         r"^market/sessions/[^/]+/raw/(indicators-[^/]+|policy-digest)\.md$",
         r"^companies/[^/]+/sources/",
         r"^companies/[^/]+/data/",
+        r"^market/report/[^/]+_(facts\.json|brief\.md|market-report\.html)$",
     )
 ]
 MARKET_RAW = re.compile(r"^market/(policy/[^/]+|sessions/[^/]+)/raw/[^/]+\.md$")
 COMPANY_RAW = re.compile(r"^companies/[^/]+/raw/")
+REPORT_OUTLOOK = re.compile(r"^market/report/(\d{4}-\d{2}-\d{2})_outlook\.md$")
 ABORT_HINT = "スキルを中断するには: python -I tools/collect/market/market_collect.py abort --session <session>"
 
 
@@ -69,6 +74,19 @@ def running_allowed(root: Path) -> tuple[list[str], set[str]]:
     return sessions, allowed
 
 
+def outlook_reason(tool: str, rel: str, target: Path, week: str, today: str) -> str | None:
+    if not target.exists():
+        return f"{rel} は market_report.py prepare が骨組みを作る。新しいファイルを作らない。"
+    if tool == "Write":
+        return f"{rel} は上書きしない。Edit で <!-- FILL:... --> の部分（build の指摘箇所）だけを直す。"
+    day = dt.date.fromisoformat(today)
+    this_monday = (day - dt.timedelta(days=day.weekday())).isoformat()
+    if week < this_monday and not FILL.search(target.read_text(encoding="utf-8", errors="replace")):
+        return (f"{rel} は過去の週の完成済み地合い判断なので変更禁止。作り直すときはユーザーの指示で "
+                f"market_report.py prepare --week {week} --redo を実行する。")
+    return None
+
+
 def decide(tool: str, rel: str | None, root: Path, today: str) -> str | None:
     """Reason to block, or None to allow."""
     if tool not in WRITE_TOOLS or rel is None:
@@ -85,6 +103,11 @@ def decide(tool: str, rel: str | None, root: Path, today: str) -> str | None:
         if rel not in allowed and not FILL.search(target.read_text(encoding="utf-8", errors="replace")):
             return (f"{rel} は完成済みの raw なので変更禁止。作り直すときはユーザーの指示で "
                     f"market_collect.py reopen --raw {rel} を実行する。")
+    outlook = REPORT_OUTLOOK.match(rel)
+    if outlook:
+        reason = outlook_reason(tool, rel, target, outlook.group(1), today)
+        if reason:
+            return reason
     if COMPANY_RAW.match(rel) and target.exists():
         m = RAW_DATE.match(target.name)
         if m and m.group(1) < today:

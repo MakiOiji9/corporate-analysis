@@ -17,8 +17,9 @@
    - スクリプトが時系列（日銀・e-Stat・財務省・JPX・FRED・CFTC）を取得し、新しく出た政策文書を `policy/` に取り込む
    - LLM は文書の要旨化と、政治・イベント日程の検索だけをサブエージェントで並列に行う
 2. `LATEST.md`（最新の完了セッションと文書種別ごとの最新版への入口）と、そこから辿れる `status.md` の「7. 要確認事項」を確認する
-3. `raw/` と `policy/` の要旨をもとに `analysis.md` と `outlook.md` を作る（地合い判断）
-4. 次回の企業分析前に最新の `outlook.md` を参照する
+3. スキル `market-report` を実行する（例: `/market-report`）。今週の収集が無ければ先に 1. を自動で実行し、
+   `report/{週の月曜}_market-report.html`（プレゼン形式の単一 HTML）と `report/{週の月曜}_outlook.md`（地合い判断と短期・中期・長期の展望）を作る
+4. 次回の企業分析前に `report/` の最新の `outlook.md` を参照する
 
 情報の鮮度: 時系列（`data/`）は毎回上書き更新、文書（`policy/`）は新しい版だけ追加、日程（`sessions/…/raw/calendar-*`）はセッションごとに作り直す。
 どれが最新かは `LATEST.md` を見る。要旨を作り直すときは `market_collect.py reopen`（`tools/README.md`）。
@@ -38,8 +39,10 @@ sessions/YYYY-MM-DD_{topic}/
 │   ├── indicators-{market}.md     # マクロ指標・需給の表
 │   ├── calendar-{market}.md       # 政治・イベント日程と市場指標
 │   └── policy-digest.md           # 今回追加された文書と最新版の一覧
-├── analysis.md                    # マクロ要因の統合分析
-└── outlook.md                     # 地合い判断（強気/中立/慎重/弱気）
+report/                            # 週次の地合いレポート（market-report。{週} は出力週の月曜日）
+├── {週}_facts.json / {週}_brief.md # レポートの数値と執筆の材料（スクリプトが生成）
+├── {週}_outlook.md                # 地合い判断（強気/中立/慎重/弱気）と短期・中期・長期の展望
+└── {週}_market-report.html        # プレゼンテーション形式の単一 HTML
 ```
 
 収集対象の情報源と追加方法は `.ai/templates/collect-market-info/source-access.md` を参照。

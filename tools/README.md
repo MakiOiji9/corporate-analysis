@@ -64,6 +64,20 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 
 モジュール: `series.py`（取得・パース）、`store.py`（時系列 CSV と前回・前年比）、`watch.py`（新着検出）、`docs.py`（文書ライブラリ）、`excerpt.py`（抜粋）、`render.py`（テンプレート）、`validate.py`（書式検証）。
 
+株価指数（日経平均・S&P500・NASDAQ総合）は FRED から取るため、`FRED_API_KEY` が無いと日本の日経平均も取得失敗になる（レポートでは「—」）。
+
+### 地合いレポート用（`tools/report/`）
+
+スキル `market-report`（`.ai/skills/market-report.md`）から呼び出す。入口は `market_report.py` だけ。出力はすべて `market/report/{週の月曜}_*`。
+
+| コマンド | 用途 | 主な出力 |
+|---|---|---|
+| `market_report.py check [--week YYYY-MM-DD]` | 今週の収集があるか（LATEST.md の最新セッションの日付 ≥ 週の月曜）、収集が実行中か、この週の outlook.md の状態 | 1行の JSON |
+| `market_report.py prepare [--week …] [--redo] [--allow-stale]` | 数値・チャート系列・日程・文書の要点を集め、執筆の材料と outlook.md の骨組み（FILL 欄）を作る。作成途中の outlook.md は残す | `{週}_facts.json`・`{週}_brief.md`・`{週}_outlook.md` |
+| `market_report.py build [--week …]` | outlook.md を検証（構造・FILL・判断の語・禁止表現）し、単一 HTML を出力 | `{週}_market-report.html` |
+
+モジュール: `state.py`（週・鮮度）、`facts.py`（数値・系列・日程の集計。`collect/market/store.py` を再利用）、`brief.py`（材料と骨組み）、`outlook.py`（検証。`collect/market/validate.py` を再利用）、`charts.py`（インライン SVG）、`slides.py`（HTML）。テンプレートは `.ai/templates/market-report/`。
+
 ### 書き込みガード（`tools/guard/write_guard.py`）
 
 `.claude/settings.json` の PreToolUse hook として、Write / Edit の前に毎回実行される（標準ライブラリだけで動く。PATH 上の `python` を使う）。
@@ -71,6 +85,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 - スクリプト専用のファイル（`data/`・`sources/`・`index.csv`・`tasks.json`・`status.md`・生成された表）の手書きをブロック
 - `market/**/raw/*.md` は FILL 欄が残っている間だけ Edit を許可。`companies/*/raw/` の過去日付のファイルは変更禁止
 - collect-market-info の実行中（`market/sessions/*/.running`）は、tasks.json の `allowed_files` 以外への書き込みをブロック
+- `market/report/` の facts.json・brief.md・HTML は手書き禁止。outlook.md は Edit のみ（新規作成・上書き不可）で、過去の週の完成済みのものは変更禁止
 
 ## 例（3798 ULSグループ）
 
