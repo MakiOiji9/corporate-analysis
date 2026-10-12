@@ -1,6 +1,6 @@
-# 地合い情報の最新版 — 2026-10-11_verify
+# 地合い情報の最新版 — 2026-10-12_weekly
 
-**更新日時**: 2026-10-11T23:36
+**更新日時**: 2026-10-12T13:27
 
 > market_collect.py finalize が、セッションが完了するたびに上書きする。手で編集しない。
 > 地合い分析はここから始める。時系列は `market/data/`、文書の要旨は `market/policy/` が常に最新で、日程と指標表は下のセッションが最新。
@@ -9,15 +9,15 @@
 
 | 種類 | ファイル |
 |---|---|
-| 指標（日本） | market/sessions/2026-10-11_verify/raw/indicators-japan.md |
-| 日程・市場指標（日本） | market/sessions/2026-10-11_verify/raw/calendar-japan.md |
-| 文書ダイジェスト（日本 を含む） | market/sessions/2026-10-11_verify/raw/policy-digest.md |
-| 収集ステータス（日本） | market/sessions/2026-10-11_verify/status.md |
+| 指標（日本） | market/sessions/2026-10-12_weekly/raw/indicators-japan.md |
+| 日程・市場指標（日本） | market/sessions/2026-10-12_weekly/raw/calendar-japan.md |
+| 文書ダイジェスト（日本 を含む） | market/sessions/2026-10-12_weekly/raw/policy-digest.md |
+| 収集ステータス（日本） | market/sessions/2026-10-12_weekly/status.md |
 | 時系列 CSV（日本） | market/data/japan_series.csv |
-| 指標（米国） | market/sessions/2026-10-11_verify/raw/indicators-us.md |
-| 日程・市場指標（米国） | market/sessions/2026-10-11_verify/raw/calendar-us.md |
-| 文書ダイジェスト（米国 を含む） | market/sessions/2026-10-11_verify/raw/policy-digest.md |
-| 収集ステータス（米国） | market/sessions/2026-10-11_verify/status.md |
+| 指標（米国） | market/sessions/2026-10-12_weekly/raw/indicators-us.md |
+| 日程・市場指標（米国） | market/sessions/2026-10-12_weekly/raw/calendar-us.md |
+| 文書ダイジェスト（米国 を含む） | market/sessions/2026-10-12_weekly/raw/policy-digest.md |
+| 収集ステータス（米国） | market/sessions/2026-10-12_weekly/status.md |
 | 時系列 CSV（米国） | market/data/us_series.csv |
 
 ## 2. 監視項目ごとの最新の文書
@@ -26,7 +26,7 @@
 |---|---|---|---|---|---|
 | 日本 | C | boj-minutes | 2026-09-28 | 金融政策決定会合議事要旨（7月30、31日開催分） | market/policy/japan/raw/2026-10-11_boj-minutes-2026-09-28.md |
 | 日本 | C | boj-opinions | 2026-10-01 | 金融政策決定会合における主な意見（9月17、18日開催分） | market/policy/japan/raw/2026-10-11_boj-opinions-2026-10-01.md |
-| 日本 | C | boj-outlook | 2026-07-01 | 日本銀行 経済・物価情勢の展望（基本的見解）（2026-07-01） | market/policy/japan/raw/2026-10-11_boj-outlook-2026-07-01.md |
+| 日本 | C | boj-outlook | 2026-07-31 | 日本銀行 経済・物価情勢の展望（基本的見解）（2026-07-01） | market/policy/japan/raw/2026-10-11_boj-outlook-2026-07-01.md |
 | 日本 | C | boj-statement | 2026-09-18 | 日本銀行 金融政策決定会合 公表文（2026-09-18） | market/policy/japan/raw/2026-10-11_boj-statement-2026-09-18.md |
 | 日本 | B | budget | 2025-08-08 | 令和８年度予算 | market/policy/japan/raw/2026-10-11_budget-2025-08-08.md |
 | 日本 | B | economic-measures | 2025-11-21 | （２）「強い経済」を実現する総合経済対策～日本と日本人の底力で不安を希望に変える～（令和７年11月21日閣議決定） (PDF形式:1.3MB) | market/policy/japan/raw/2026-10-11_economic-measures-2025-11-21.md |

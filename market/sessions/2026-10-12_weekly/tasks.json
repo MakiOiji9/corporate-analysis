@@ -1,0 +1,38 @@
+{
+ "session": "market/sessions/2026-10-12_weekly",
+ "collected": "2026-10-12",
+ "markets": [
+  "japan",
+  "us"
+ ],
+ "mode": "update",
+ "tasks": [
+  {
+   "type": "search-calendar",
+   "market": "japan",
+   "title": "政治・イベント日程（日本）",
+   "output": "market/sessions/2026-10-12_weekly/raw/calendar-japan.md",
+   "inputs": [],
+   "max_searches": 8,
+   "template": ".ai/templates/collect-market-info/raw/calendar.md",
+   "allowed_files": [
+    "market/sessions/2026-10-12_weekly/raw/calendar-japan.md"
+   ],
+   "id": "T01"
+  },
+  {
+   "type": "search-calendar",
+   "market": "us",
+   "title": "政治・イベント日程（米国）",
+   "output": "market/sessions/2026-10-12_weekly/raw/calendar-us.md",
+   "inputs": [],
+   "max_searches": 8,
+   "template": ".ai/templates/collect-market-info/raw/calendar.md",
+   "allowed_files": [
+    "market/sessions/2026-10-12_weekly/raw/calendar-us.md"
+   ],
+   "id": "T02"
+  }
+ ],
+ "new_docs": []
+}
