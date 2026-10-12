@@ -22,6 +22,7 @@
 | `market-report` | 週次の地合いレポート（日米の市場動向と短期・中期・長期の展望。単一 HTML と outlook.md を `market/report/` に出力。材料が古ければ先に collect-market-info を実行） | 出力週（YYYY-MM-DD）。省略可 |
 | `five-forces` | ファイブフォース分析（業界の魅力度 高/中/低。`companies/{ticker}_{name}/analysis/five-forces/` に md と json。365日有効で期間内は再分析しない。材料が足りなければ collect-company-info を先に実行。地合いの outlook.md は参照するだけ） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
 | `three-c` | 3C分析（顧客・競合・自社から勝てる理由 明確/あいまい/なし（材料不足なら判定保留）。`companies/{ticker}_{name}/analysis/three-c/` に md と json。180日有効で期間内は再分析しない。ファイブフォースが未実施なら先に five-forces、材料が足りなければ collect-company-info を実行。地合いの outlook.md は参照するだけ） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
+| `moat` | モート分析（5種のモートの該当、営業利益率の同業比較とシェアの推移による裏付け、崩しうる要因から モート 広い/狭い/なし（材料不足なら判定保留）。`companies/{ticker}_{name}/analysis/moat/` に md と json。180日有効で期間内は再分析しない。3Cが未実施なら先に three-c（3Cの結論では止めない）、材料が足りなければ collect-company-info を実行。地合いの outlook.md は参照するだけ） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
 
 ## ツールと初回セットアップ
 

@@ -190,6 +190,7 @@ Python: {.venv の python のパス}
 | プレスリリース・説明会資料 | collect-ir |
 | 何も無い | collect-peers-valuation（範囲: 株価のみ） |
 | status.md の更新トリガーに達した業界・競合 | collect-market / collect-peers-valuation（範囲: 競合も） |
+| 分析スキル（five-forces・three-c・moat）が `担当=`・`項目=` で不足を指定した | 指定された担当だけ（範囲: 指定された項目。雛形のその節を新しい日付の raw に書く） |
 
    - raw は**新しい日付のファイル**として追加する（前回の raw は変更しない）。差分だけのファイルでよいが、冒頭に「前回ファイル: raw/.../YYYY-MM-DD_xxx.md からの差分」と書く
    - `status.md` の未取得項目は、今回の手段で取れるものを該当担当のプロンプトに含めて再挑戦させる

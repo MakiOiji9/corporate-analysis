@@ -102,6 +102,17 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 
 モジュール: `tc_paths.py`（3C の結果の場所と鮮度）、`tc_inputs.py`（3C の入力一覧。抽出は `ff_inputs.py` を再利用）、`tc_metrics.py`（比較表・判定候補）、`tc_brief.py`（材料）、`tc_doc.py`（骨組み・検証・結論の判定）。テンプレートは `.ai/templates/three-c/`。
 
+スキル `moat`（`.ai/skills/moat.md`）からは `moat.py` を呼び出す。出力は `companies/{ticker}_{name}/analysis/moat/{分析日}_*`。
+
+| コマンド | 用途 | 主な出力 |
+|---|---|---|
+| `moat.py list` | `companies/` の企業と、モート分析の状態（none / fresh / expired / triggered / draft）・結論・3C分析の状態 | 1行の JSON |
+| `moat.py check --company X` | 結果が有効か（180日以内で、分析後に新しい有報・財務時系列・事業概要・業界・競合の raw や新しい3C分析が無いか）、3Cが有効か（無効なら `next: three_c`。3Cの結論では止めない）、必須の材料が raw にあるか（無ければ担当の collect-* を返す）、地合い判断の古さ（参照だけ）。`next` に次の作業 | 1行の JSON |
+| `moat.py prepare --company X [--redo]` | raw から必要な節を抜き出して執筆の材料にし、営業利益率の同業比較（自社の最大10年と競合最大3社の単純平均を決算期6か月以内で突き合わせ、連続で上回った年数から 強い/弱い/なし の判定候補）、コスト構造の表、3Cの結論、前回の判定を入れた骨組み（FILL 欄）を作る。作成途中の md は残す | `{日付}_brief.md`・`{日付}_moat.md` |
+| `moat.py build --company X [--date …]` | md を検証（構造・FILL・モート5種の行と判定の語・根拠の確度・シェアの推移・崩しうる要因の時期・前回との差の理由・禁止表現）し、数字の裏付け（強い / 弱い / なし / 不明）とモートの強さ（広い / 狭い / なし / 判定保留）を判定して書き込む。裏付けなしなら「該当」を「該当なし」に修正 | `{日付}_moat.json` |
+
+モジュール: `mt_paths.py`（モートの結果の場所と鮮度）、`mt_inputs.py`（モートの入力一覧。抽出は `ff_inputs.py` を再利用）、`mt_metrics.py`（営業利益率の同業比較・判定候補・コスト構造）、`mt_brief.py`（材料）、`mt_doc.py`（骨組み・検証・結論の判定）。テンプレートは `.ai/templates/moat/`。
+
 ### 書き込みガード（`tools/guard/write_guard.py`）
 
 `.claude/settings.json` の PreToolUse hook として、Write / Edit の前に毎回実行される（標準ライブラリだけで動く。PATH 上の `python` を使う）。
@@ -110,7 +121,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 - `market/**/raw/*.md` は FILL 欄が残っている間だけ Edit を許可。`companies/*/raw/` の過去日付のファイルは変更禁止
 - collect-market-info の実行中（`market/sessions/*/.running`）は、tasks.json の `allowed_files` 以外への書き込みをブロック
 - `market/report/` の facts.json・brief.md・HTML は手書き禁止。outlook.md は Edit のみ（新規作成・上書き不可）で、過去の週の完成済みのものは変更禁止
-- `companies/*/analysis/five-forces/`・`three-c/` の brief.md・json は手書き禁止。five-forces.md・three-c.md は Edit のみで、過去の日付の build 済み（json がある）ものは変更禁止
+- `companies/*/analysis/five-forces/`・`three-c/`・`moat/` の brief.md・json は手書き禁止。five-forces.md・three-c.md・moat.md は Edit のみで、過去の日付の build 済み（json がある）ものは変更禁止
 
 ## 例（3798 ULSグループ）
 
