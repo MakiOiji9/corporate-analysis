@@ -20,7 +20,7 @@
 | `collect-market-info` | 地合い情報収集（国家方針・財政・金融政策の文書、マクロ指標・需給の時系列、政治・イベント日程） | 市場（japan / us / both）。省略可 |
 | `market-report` | 週次の地合いレポート（日米の市場動向と短期・中期・長期の展望。単一 HTML と outlook.md を `market/report/` に出力。材料が古ければ先に collect-market-info を実行） | 出力週（YYYY-MM-DD）。省略可 |
 | `five-forces` | ファイブフォース分析（業界の魅力度 高/中/低。`companies/{ticker}_{name}/analysis/five-forces/` に md と json。365日有効で期間内は再分析しない。材料が足りなければ collect-company-info を先に実行。地合いの outlook.md は参照するだけ） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
-| `three-c` | 3C分析（顧客・競合・自社から勝てる理由 明確/あいまい/なし。`companies/{ticker}_{name}/analysis/three-c/` に md と json。180日有効で期間内は再分析しない。ファイブフォースが未実施なら先に five-forces、材料が足りなければ collect-company-info を実行。地合いの outlook.md は参照するだけ） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
+| `three-c` | 3C分析（顧客・競合・自社から勝てる理由 明確/あいまい/なし（材料不足なら判定保留）。`companies/{ticker}_{name}/analysis/three-c/` に md と json。180日有効で期間内は再分析しない。ファイブフォースが未実施なら先に five-forces、材料が足りなければ collect-company-info を実行。地合いの outlook.md は参照するだけ） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
 
 ## ツールと初回セットアップ
 

@@ -17,13 +17,16 @@ SPECS = (
     Spec("market_size", "業界: 市場規模と成長率", "industry-overview", "市場規模", "collect-market", True),
     Spec("share", "業界: 上位企業とシェア", "industry-overview", "シェア", "collect-market", False, ("シェア",)),
     Spec("kbf", "業界: 購買決定要因", "industry-overview", "購買決定要因", "collect-market", True,
-         ("購買決定要因",)),
+         ("購買決定要因",), thin_check=True),
     Spec("peer_selection", "競合: 選定した同業他社", "competitors", "選定", "collect-peers-valuation", True),
     Spec("peers", "競合: 売上高・営業利益の推移", "competitors", "売上高・営業利益", "collect-peers-valuation",
          True),
     Spec("peer_share", "競合: 市場シェア", "competitors", "市場シェア", "collect-peers-valuation", False,
          ("シェア",)),
-    Spec("peer_claims", "競合: 主力製品と強み", "competitors", "強み", "collect-peers-valuation", True),
+    Spec("peer_kpi", "競合: 顧客・人員の KPI と第三者評価", "competitors", "顧客・人員", "collect-peers-valuation",
+         True, ("顧客・人員",), thin_check=True),
+    Spec("peer_claims", "競合: 主力製品と強み", "competitors", "強み", "collect-peers-valuation", True,
+         ("強み",), thin_check=True),
 )
 SPEC = {s.key: s for s in SPECS}
 # a newer file of these kinds re-opens a valid result

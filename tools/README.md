@@ -98,7 +98,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 | `three_c.py list` | `companies/` の企業と、3C分析の状態（none / fresh / expired / triggered / draft）・結論・ファイブフォースの状態 | 1行の JSON |
 | `three_c.py check --company X` | 結果が有効か（180日以内で、分析後に新しい有報・事業概要・業界・競合の raw や新しいファイブフォース分析が無いか）、ファイブフォースが有効か（無効なら `next: five_forces`）、必須の材料が raw にあるか（無ければ担当の collect-* を返す）、地合い判断の古さ（参照だけ）。`next` に次の作業 | 1行の JSON |
 | `three_c.py prepare --company X [--redo]` | raw から必要な節を抜き出して執筆の材料にし、比較表（対象企業と競合最大3社の売上高・営業利益率・シェア・売上高3年CAGR）、成長性と競合との比較の判定候補、競合の凡例、前回の評価を入れた骨組み（FILL 欄）を作る。作成途中の md は残す | `{日付}_brief.md`・`{日付}_three-c.md` |
-| `three_c.py build --company X [--date …]` | md を検証（構造・FILL・評価の語・根拠の確度・KBF 表と1章の一致・○△×？の記号・判定候補/前回との差の理由・禁止表現）し、勝てる理由の結論（明確 / あいまい / なし）を判定して書き込む | `{日付}_three-c.json` |
+| `three_c.py build --company X [--date …]` | md を検証（構造・FILL・評価の語・根拠の確度・KBF 表と1章の一致・○△×？の記号・判定候補/前回との差の理由・禁止表現）し、勝てる理由の結論（明確 / あいまい / なし / 判定保留）を判定して書き込む | `{日付}_three-c.json` |
 
 モジュール: `tc_paths.py`（3C の結果の場所と鮮度）、`tc_inputs.py`（3C の入力一覧。抽出は `ff_inputs.py` を再利用）、`tc_metrics.py`（比較表・判定候補）、`tc_brief.py`（材料）、`tc_doc.py`（骨組み・検証・結論の判定）。テンプレートは `.ai/templates/three-c/`。
 

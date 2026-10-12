@@ -11,6 +11,7 @@ REPO = ANALYSIS.parents[1]
 sys.path[:0] = [str(ANALYSIS), str(REPO / "tools" / "report"), str(REPO / "tools" / "collect" / "market"),
                 str(REPO / "tools" / "collect")]
 
+import ff_inputs as F  # noqa: E402
 import tc_doc as D  # noqa: E402
 import tc_inputs as I  # noqa: E402
 import tc_metrics as X  # noqa: E402
@@ -95,14 +96,21 @@ COMPETITORS = """# 競合情報 — テスト
 | 会社 | 主張 | 出典 |
 |---|---|---|
 | アルファ社 | 品質 | x |
+
+## 8. 顧客・人員の KPI と第三者評価
+
+{kpi}
 """
+
+KPI = ("| 会社 | 年度 | 顧客数 | 出典・確度 |\n|---|---|---|---|\n| トヨタ | 2026/03 | 100社 | 説明会資料 |\n"
+       "| アルファ社 | 2026/03 | 80社 | 説明会資料 |")
 
 SHARES = "| 会社 | シェア |\n|---|---|\n| トヨタ | {self_share} |\n| アルファ社 | 20% |\n| ベータ社 | 10% |"
 NO_SHARES = "| 会社 | シェア |\n|---|---|\n| 全社 | —（公表値なし） |"
 
 OUTLOOK = "# 地合い判断\n\n## 1. 総合判断\n\n- 中立\n"
 
-KBF_ROWS = "| 品質 | {top} | {a} | × | — | 有報 p.5 |\n| 価格 | △ | △ | △ | — | 価格表 |"
+KBF_ROWS = "| 品質 | {top} | {a} | {b} | — | 有報 p.5 |\n| 価格 | △ | △ | △ | — | 価格表 |"
 ANSWERS = {
     "segment": "自動車（単一セグメント）", "customers": "個人顧客が中心", "kbf": "品質、価格",
     "kbf-basis": "brief.md 2.", "market-seen": "国内自動車 CAGR 5.0%", "market-source": "brief.md 2.",
@@ -118,13 +126,14 @@ ANSWERS = {
 
 def _company(root: Path, cagr: str = "5.0%", kbf: str = "- 品質と価格が重視される（業界団体調査）",
              shares: str = SHARES.format(self_share="30%"), alpha_profit: str = "6億円",
-             collected: str = "2026-10-01") -> Path:
+             collected: str = "2026-10-01", kpi: str = KPI) -> Path:
     company = root / "companies" / "7203_toyota"
+    competitors = COMPETITORS.format(shares=shares, alpha_profit=alpha_profit, kpi=kpi)
     for sub, name, text in (
             ("filings", f"{collected}_2026-03_yuho.md", YUHO),
             ("ir", f"{collected}_business-overview.md", BUSINESS),
             ("market", f"{collected}_industry-overview.md", INDUSTRY.format(cagr=cagr, kbf=kbf)),
-            ("market", f"{collected}_competitors.md", COMPETITORS.format(shares=shares, alpha_profit=alpha_profit))):
+            ("market", f"{collected}_competitors.md", competitors)):
         (company / "raw" / sub).mkdir(parents=True, exist_ok=True)
         (company / "raw" / sub / name).write_text(text, encoding="utf-8")
     (company / "overview.md").write_text("# トヨタ（7203）\n", encoding="utf-8")
@@ -160,9 +169,9 @@ def run(root: Path, *argv: str, capsys) -> tuple[int, dict]:
     return code, json.loads(capsys.readouterr().out.strip().splitlines()[-1])
 
 
-def fill(md: Path, top: str = "○", a: str = "△", **answers: str) -> None:
+def fill(md: Path, top: str = "○", a: str = "△", b: str = "×", **answers: str) -> None:
     values = dict(ANSWERS, **{k.replace("_", "-"): v for k, v in answers.items()})
-    values["kbf-rows"] = KBF_ROWS.format(top=top, a=a)
+    values["kbf-rows"] = KBF_ROWS.format(top=top, a=a, b=b)
     md.write_text(FILL_ANY.sub(lambda m: values[m.group(1)], md.read_text(encoding="utf-8")), encoding="utf-8")
 
 
@@ -379,6 +388,26 @@ def test_verdict(repo, capsys, top, a, competitor, win, verdict):
     assert out["verdict"] == verdict
 
 
+@pytest.mark.parametrize("top, a, b, competitor, win, verdict", [
+    ("？", "△", "×", "同等", "なし（材料不足）", "判定保留"),       # the target cannot be compared
+    ("○", "？", "？", "同等", None, "判定保留"),                 # every compared peer is unknown
+    ("？", "？", "？", "劣位", "なし（材料不足）", "なし"),        # a proven 劣位 outranks missing material
+    ("○", "？", "×", "同等", "なし（埋まらない）", "なし"),        # comparable (B is ×): なし stays なし
+])
+def test_pending_when_the_top_kbf_cannot_be_compared(repo, capsys, top, a, b, competitor, win, verdict):
+    _company(repo, shares=NO_SHARES)  # free candidate (同等, not fixed) so 劣位 can be written
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    extra = {"win_reason": win} if win else {}
+    reason = "迷った: 下位寄り" if competitor == "劣位" else "中位"
+    fill(repo / out["md"], top=top, a=a, b=b, competitor_rating=competitor, competitor_reason=reason, **extra)
+    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 0, out
+    assert out["verdict"] == verdict
+    if verdict == "判定保留":
+        assert "材料" in out["verdict_reason"] and "| 勝てる理由 | **判定保留**:" in (repo / out["md"]).read_text(
+            encoding="utf-8")
+
+
 def test_kbf_table_must_match_chapter_one(repo, capsys):
     _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
     fill(repo / out["md"], kbf="価格、品質")
@@ -470,6 +499,74 @@ def test_build_recomputes_candidate_so_edited_cells_cannot_bypass(tmp_path, caps
     fill(md)
     code, out = run(tmp_path, "build", "--company", "7203", capsys=capsys)
     assert code == 1 and any("確定" in i for i in out["issues"])
+
+
+THIN_KBF = "—（選定要因を定量的に示す調査は見つからなかった）\n\n参考:\n- 解説記事では実績・料金が評価軸"
+
+
+def test_thin_kbf_and_missing_peer_kpi_request_collect(tmp_path, capsys):
+    _templates(tmp_path)
+    company = _company(tmp_path, kbf=THIN_KBF)
+    _five_forces(tmp_path)
+    raw = next((company / "raw" / "market").glob("*_competitors.md"))
+    raw.write_text(raw.read_text(encoding="utf-8").split("## 8.")[0], encoding="utf-8")  # an older raw without 8.
+    _, out = run(tmp_path, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["next"] == "collect"
+    assert out["missing_inputs"] == [
+        {"agent": "collect-market", "items": ["業界: 購買決定要因"]},
+        {"agent": "collect-peers-valuation", "items": ["競合: 顧客・人員の KPI と第三者評価"]}]
+
+
+def test_thin_input_listed_in_status_is_unavailable_not_recollected(tmp_path, capsys):
+    _templates(tmp_path)
+    company = _company(tmp_path, kbf=THIN_KBF)
+    _five_forces(tmp_path)
+    (company / "status.md").write_text(
+        "# 状態\n\n## 2. 未取得項目\n\n| 項目 | 理由 | 次回 |\n|---|---|---|\n| 購買決定要因の定量データ | 無い | — |\n",
+        encoding="utf-8")
+    _, out = run(tmp_path, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["next"] == "prepare" and out["unavailable"] == ["業界: 購買決定要因"]
+
+
+@pytest.mark.parametrize("body, thin", [
+    ("- 品質と価格が重視される（業界団体調査）", False),
+    (THIN_KBF, True),
+    ("| 会社 | 主張 | 出典 |\n|---|---|---|\n| A社 | 品質 | x |\n| B社 | —（記載なし） | — |", True),  # an empty company row
+    ("| 会社 | 顧客数 | 出典 |\n|---|---|---|\n| A社 | —（開示なし） | 説明会資料 |", False),  # searched, source named
+])
+def test_is_thin_section(body, thin):
+    assert F.is_thin_section(body) is thin
+
+
+def test_five_forces_inputs_ignore_thinness(repo):
+    company = company_obj(repo)
+    path = next((company.path / "raw" / "market").glob("*_industry-overview.md"))
+    path.write_text(INDUSTRY.format(cagr="5.0%", kbf=THIN_KBF), encoding="utf-8")
+    assert F.find(company, F.SPEC["kbf"], []).status == "ok"  # thin_check is off for five-forces
+    assert I.gather_3c(company)["kbf"].status == "thin"
+
+
+def test_competitor_basis_shows_peer_average():
+    rows = [{"name": "自社", "self": True, "margin": 18.3, "share": None, "year": "2026-03"},
+            {"name": "A", "self": False, "margin": 25.4, "share": None, "year": "2026-03"},
+            {"name": "B", "self": False, "margin": 3.3, "share": None, "year": "2026-07"}]
+    cand = X.competitor(rows)
+    assert cand["peer_margin_avg"] == 14.3 and "競合の単純平均 14.3%" in cand["basis"]
+
+
+def test_brief_has_source_notes_peer_kpi_and_no_repeated_customer_prose(repo, capsys):
+    company = repo / "companies" / "7203_toyota"
+    yuho = next((company / "raw" / "filings").glob("*_yuho.md"))
+    yuho.write_text(YUHO.replace("# 有価証券報告書 抜粋 — テスト\n",
+                                 "# 有価証券報告書 抜粋 — テスト\n\n**収集日**: 2026-10-01\n**情報源**: 有報 第1期\n\n"
+                                 "> 注意: 数値は記載値の転記\n\n---\n")
+                    .replace("- 該当事項なし", "| 相手先 | 比率 |\n|---|---|\n| A社 | 12% |\n\n- 顧客層（原文）: 大企業"),
+                    encoding="utf-8")
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    brief = (repo / out["brief"]).read_text(encoding="utf-8")
+    assert "raw の情報源と注意" in brief and "**情報源**: 有報 第1期 > 注意: 数値は記載値の転記" in brief
+    assert "### 競合: 顧客・人員の KPI と第三者評価" in brief and "| アルファ社 | 2026/03 | 80社 |" in brief
+    assert "| A社 | 12% |" in brief and "顧客層（原文）" not in brief
 
 
 def test_split_kbf():

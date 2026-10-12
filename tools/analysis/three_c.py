@@ -13,7 +13,7 @@ check:   is the latest 3C result still valid (180 days, no newer yuho / business
          first)? Which required inputs are missing? How old is the outlook (header only)? -> "next".
 prepare: analysis/three-c/{date}_brief.md (what the writer reads) and the {date}_three-c.md skeleton
          (FILL markers, the computed comparison table and the script candidates).
-build:   check the filled md, write the conclusion (勝てる理由 明確/あいまい/なし) and {date}_three-c.json.
+build:   check the filled md, write the conclusion (勝てる理由 明確/あいまい/なし/判定保留) and {date}_three-c.json.
 stdout is one JSON line so the calling agent spends few tokens. Exit 1 when not ok.
 """
 from __future__ import annotations

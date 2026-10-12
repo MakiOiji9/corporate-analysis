@@ -1,8 +1,10 @@
-"""{date}_three-c.md: skeleton, parse, checks and the conclusion (勝てる理由 明確/あいまい/なし).
+"""{date}_three-c.md: skeleton, parse, checks and the conclusion (勝てる理由 明確/あいまい/なし/判定保留).
 
-Conclusion follows 企業分析フレームワーク.md 1-2 手順4, decided here (not by the writer):
+Conclusion follows 企業分析フレームワーク.md 1-2 手順4, decided here (not by the writer), first match wins:
+  なし: 競合との比較が 劣位（数値の裏付けがある不利は材料不足より優先）
+  判定保留: 最重要KBF の比較が成立しない（自社が ？、または比較した競合が全員 ？）。「なし」と区別する
+  なし: 勝てる理由が「なし」
   明確: 最重要KBF で自社が ○ かつ比較した競合が全員 △/×（○・？ が無い）、かつ 競合との比較が 優位
-  なし: 勝てる理由が「なし」、または 競合との比較が 劣位
   あいまい: それ以外（競合との比較が 不明 の場合も 明確 にしない）
 """
 from __future__ import annotations
@@ -25,6 +27,8 @@ KBF_SPLIT = re.compile(r"[、,，]")
 KBF_COUNT = (2, 5)
 KBF_COLUMNS = 2 + MAX_PEERS + 1  # KBF, 自社, 競合A-C, 根拠
 NO_REASON = "なし"
+UNKNOWN_MARK = "？"
+PENDING = "判定保留"
 
 
 # ---------- skeleton ----------
@@ -196,14 +200,23 @@ def check_reference(parsed: dict, cands: dict, previous: tuple[str, dict] | None
 
 # ---------- conclusion ----------
 
+def not_comparable(self_mark: str, peers: list[str]) -> bool:
+    """The top KBF cannot be compared: the target is ？, or every compared peer is ？ (or there is none)."""
+    return self_mark == UNKNOWN_MARK or not peers or all(m == UNKNOWN_MARK for m in peers)
+
+
 def judge(parsed: dict, peer_count: int) -> dict:
-    top = parsed["kbf_rows"][0] if parsed["kbf_rows"] else {"kbf": "", "self": "？", "peers": []}
+    top = parsed["kbf_rows"][0] if parsed["kbf_rows"] else {"kbf": "", "self": UNKNOWN_MARK, "peers": []}
     peers = top["peers"][:peer_count]
     top_win = top["self"] == "○" and bool(peers) and all(m in ("△", "×") for m in peers)
     comp = parsed["competitor"]["rating"]
     no_reason = parsed["win_reason"].strip().startswith(NO_REASON)
-    if no_reason or comp == "劣位":
-        verdict, why = "なし", "勝てる理由が書けない" if no_reason else "競合との比較が「劣位」"
+    if comp == "劣位":
+        verdict, why = "なし", "競合との比較が「劣位」"
+    elif not_comparable(top["self"], peers):
+        verdict, why = PENDING, "最重要KBFで自社と競合を比べる材料が無い（材料不足。勝てる理由が無いという意味ではない）"
+    elif no_reason:
+        verdict, why = "なし", "勝てる理由が書けない"
     elif top_win and comp == "優位":
         verdict, why = "明確", "最重要KBFで自社が ○（競合に ○・？ なし）、かつ競合との比較が「優位」"
     else:
@@ -234,4 +247,5 @@ def flags(parsed: dict) -> dict:
              ("競合との比較", parsed["competitor"]["reason"], parsed["competitor"]["confidence"]))
     return {"tie_breaks": [name for name, reason, _ in parts if TIE_BREAK in reason],
             "low_confidence": [name for name, _, conf in parts if conf == LOW_CONFIDENCE],
-            "unknown_kbf": [r["kbf"] for r in parsed["kbf_rows"] if r["self"] == "？" or "？" in r["peers"]]}
+            "unknown_kbf": [r["kbf"] for r in parsed["kbf_rows"]
+                            if r["self"] == UNKNOWN_MARK or UNKNOWN_MARK in r["peers"]]}

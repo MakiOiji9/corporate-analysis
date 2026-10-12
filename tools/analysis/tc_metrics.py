@@ -177,15 +177,22 @@ def _years_apart(rows: list[dict]) -> list[str]:
     return [f"{r['name']}（{r['year']}）" for r in rows if r.get("year") and _months_apart(r["year"], newest) > 12]
 
 
+def peer_average(rows: list[dict], key: str) -> float | None:
+    """Simple average over the peers (target excluded) that have the value: the framework's 業界平均."""
+    values = [r[key] for r in rows if not r["self"] and r.get(key) is not None]
+    return round(sum(values) / len(values), 1) if values else None
+
+
 def competitor(rows: list[dict]) -> dict:
     margin_pos, m_rank, m_count = _position(rows, "margin")
     share_pos, s_rank, s_count = _position(rows, "share")
     target = rows[0] if rows and rows[0]["self"] else {}
     if margin_pos is None:
         return {"rating": None, "fixed": False, "margin_position": None, "share_position": share_pos,
-                "basis": "自社または競合の営業利益率がそろわない（比較表を作れない）"}
+                "peer_margin_avg": None, "basis": "自社または競合の営業利益率がそろわない（比較表を作れない）"}
     stale = _years_apart(rows)
-    parts = [f"営業利益率 {target['margin']:.1f}%（{m_count}社中 {m_rank}位: {margin_pos}）"]
+    avg = peer_average(rows, "margin")
+    parts = [f"営業利益率 {target['margin']:.1f}%（{m_count}社中 {m_rank}位: {margin_pos}。競合の単純平均 {avg:.1f}%）"]
     if share_pos:
         parts.append(f"シェア {target['share']:.1f}%（{s_count}社中 {s_rank}位: {share_pos}）")
         if margin_pos == share_pos == "上位":
@@ -203,7 +210,7 @@ def competitor(rows: list[dict]) -> dict:
         parts.append(f"年度が1年以上古い会社あり: {', '.join(stale)}")
     basis = "、".join(parts) + "。目安: 両方上位 優位 / 片方上位・中位 同等 / 両方下位 劣位"
     return {"rating": rating, "fixed": fixed, "margin_position": margin_pos, "share_position": share_pos,
-            "basis": basis}
+            "peer_margin_avg": avg, "basis": basis}
 
 
 # ---------- formatting ----------

@@ -14,8 +14,10 @@ import mdparse as M
 from ff_paths import DATED, Company
 
 EXCERPT_LIMIT = 3000  # characters per section in the brief
+HEADER_NOTE_LIMIT = 600  # characters of a raw file's 情報源・注意 header shown in the brief
 COMMENT = re.compile(r"<!--.*?-->", re.S)
 MEANINGLESS = re.compile(r"[\s|—\-:：（）()・]")
+THIN_WORDS = ("見つからなかった", "見つからない", "見つけられなかった", "確認できず", "確認できなかった", "未取得")
 
 
 @dataclass(frozen=True)
@@ -27,6 +29,7 @@ class Spec:
     agent: str  # collect-company-info 担当 that collects it
     required: bool
     unavailable_words: tuple[str, ...] = ()  # words in status.md 未取得項目 meaning "tried, not obtainable"
+    thin_check: bool = False  # a section saying "not found" or with an empty company row is not enough
 
 
 SPECS = (
@@ -58,7 +61,7 @@ TRIGGER_KINDS = ("yuho", "industry-overview", "competitors")  # a newer file re-
 @dataclass(frozen=True)
 class Found:
     spec: Spec
-    status: str  # ok / blank / missing / unavailable
+    status: str  # ok / thin / blank / missing / unavailable
     path: Path | None = None
     heading: str = ""
     body: str = ""
@@ -87,6 +90,19 @@ def is_blank_section(body: str) -> bool:
     return not any(MEANINGLESS.sub("", line.lstrip("-*> #")) for line in prose)
 
 
+def _empty_cell(cell: str) -> bool:
+    """'' / '—' / '—（公表値なし）': a dash with at most a note in brackets."""
+    return M.is_blank(cell) or cell.strip().startswith("—")
+
+
+def is_thin_section(body: str) -> bool:
+    """True when the section says the data was not found, or a table row has nothing but its first cell."""
+    text = COMMENT.sub("", body)
+    if any(w in text for w in THIN_WORDS):
+        return True
+    return any(len(row) > 1 and all(_empty_cell(c) for c in row[1:]) for table in M.tables(text) for row in table[1:])
+
+
 def unavailable_items(company: Company) -> list[str]:
     """項目 column of status.md 未取得項目 (things collect tried and could not get)."""
     status = company.path / "status.md"
@@ -97,20 +113,25 @@ def unavailable_items(company: Company) -> list[str]:
 
 
 def find(company: Company, spec: Spec, unavailable: list[str]) -> Found:
-    blank: Found | None = None
+    """Newest section with content wins; a thin one (thin_check specs) only when nothing better exists."""
+    weak: Found | None = None  # the newest thin section, else the newest blank one
     for _, path in raw_files(company, spec.kind):
         hit = M.section_by_title(path.read_text(encoding="utf-8"), spec.keyword)
         if not hit:
             continue
         heading, body = hit
-        if not is_blank_section(body):
+        if is_blank_section(body):
+            weak = weak or Found(spec, "blank", path, heading, body)
+        elif spec.thin_check and is_thin_section(body):
+            if weak is None or weak.status == "blank":
+                weak = Found(spec, "thin", path, heading, body)
+        else:
             return Found(spec, "ok", path, heading, body)
-        blank = blank or Found(spec, "blank", path, heading, body)
     if any(w in item for w in spec.unavailable_words for item in unavailable):
-        if blank:
-            return Found(spec, "unavailable", blank.path, blank.heading, blank.body)
+        if weak:
+            return Found(spec, "unavailable", weak.path, weak.heading, weak.body)
         return Found(spec, "unavailable")
-    return blank or Found(spec, "missing")
+    return weak or Found(spec, "missing")
 
 
 def gather(company: Company, specs: tuple[Spec, ...] = SPECS) -> dict[str, Found]:
@@ -119,12 +140,25 @@ def gather(company: Company, specs: tuple[Spec, ...] = SPECS) -> dict[str, Found
 
 
 def collect_requests(found: dict[str, Found]) -> list[dict]:
-    """Required inputs that are missing or blank, grouped by the collect-company-info 担当."""
+    """Required inputs that are missing, blank or thin, grouped by the collect-company-info 担当."""
     by_agent: dict[str, list[str]] = {}
     for f in found.values():
-        if f.spec.required and f.status in ("missing", "blank"):
+        if f.spec.required and f.status in ("missing", "blank", "thin"):
             by_agent.setdefault(f.spec.agent, []).append(f.spec.label)
     return [{"agent": agent, "items": items} for agent, items in by_agent.items()]
+
+
+def header_notes(path: Path) -> str:
+    """情報源・注意 lines above a raw file's first section (title and 収集日 dropped), capped."""
+    lines = []
+    for line in COMMENT.sub("", path.read_text(encoding="utf-8")).splitlines():
+        if line.startswith("## ") or line.strip() == "---":
+            break
+        if line.startswith("# ") or line.startswith("**収集日**") or not line.strip() or line.strip() == ">":
+            continue
+        lines.append(line.strip())
+    text = " ".join(lines)
+    return text if len(text) <= HEADER_NOTE_LIMIT else text[:HEADER_NOTE_LIMIT].rstrip() + "…（以下略）"
 
 
 def excerpt(f: Found, company: Company) -> str:
@@ -136,7 +170,8 @@ def excerpt(f: Found, company: Company) -> str:
     body = re.sub(r"^#{1,6}\s+(.+)$", r"**\1**", body, flags=re.M)  # keep the brief's own heading levels
     if len(body) > EXCERPT_LIMIT:
         body = body[:EXCERPT_LIMIT].rstrip() + "\n\n（以下略。上限で切り詰めた）"
-    note = {"blank": "（節はあるが中身が空）", "unavailable": "（status.md の未取得項目に記載あり）"}.get(f.status, "")
+    note = {"blank": "（節はあるが中身が空）", "thin": "（中身が薄い: 見つからなかった旨の記載、または空の行がある）",
+            "unavailable": "（status.md の未取得項目に記載あり）"}.get(f.status, "")
     return f"出典: {company.rel(f.path)} 「{f.heading}」{note}\n\n{body}"
 
 

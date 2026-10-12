@@ -1,6 +1,6 @@
 ---
 name: three-c
-description: 3C分析スキル。企業分析フレームワーク.md の STEP 1-2（顧客・競合・自社を分析し、顧客の KBF・市場の成長性・競合との比較 優位/同等/劣位・KBF ごとの自社と競合の比較から、勝てる理由 明確/あいまい/なし を判定）を、collect-company-info・collect-market-info・market-report が集めた材料とファイブフォースの結果から行い、companies/{ticker}_{name}/analysis/three-c/ に Markdown と JSON で保存する。結果は180日有効で、期間内は再分析しない（新しい有報・事業概要・業界・競合の収集や新しいファイブフォース分析があれば再分析）。ファイブフォースが未実施なら先に five-forces、材料が足りなければ収集スキルを実行する。会社の立ち位置・勝てる理由・3C を分析したいときに使う。
+description: 3C分析スキル。企業分析フレームワーク.md の STEP 1-2（顧客・競合・自社を分析し、顧客の KBF・市場の成長性・競合との比較 優位/同等/劣位・KBF ごとの自社と競合の比較から、勝てる理由 明確/あいまい/なし（材料不足なら判定保留） を判定）を、collect-company-info・collect-market-info・market-report が集めた材料とファイブフォースの結果から行い、companies/{ticker}_{name}/analysis/three-c/ に Markdown と JSON で保存する。結果は180日有効で、期間内は再分析しない（新しい有報・事業概要・業界・競合の収集や新しいファイブフォース分析があれば再分析）。ファイブフォースが未実施なら先に five-forces、材料が足りなければ収集スキルを実行する。会社の立ち位置・勝てる理由・3C を分析したいときに使う。
 argument-hint: "[{銘柄コード|企業ディレクトリ名|社名の一部}] [redo]  ※省略時は companies/ から選択"
 ---
 
