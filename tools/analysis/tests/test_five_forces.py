@@ -282,6 +282,44 @@ def test_is_blank_section_treats_carried_over_notes_as_blank(body, blank):
     assert I.is_blank_section(body) is blank
 
 
+SELECTION = "## 1. 選定した同業他社と選定理由\n\n{body}\n\n"
+PEER_TABLE = "| 会社 | コード・市場 | 決算期 | 選定理由 |\n|---|---|---|---|\n| {name} | 1111 | 3月 | 事業が近い |"
+
+
+def _with_selection(name: str) -> str:
+    return COMPETITORS.replace("# 競合情報 — テスト\n", "# 競合情報 — テスト\n\n" + SELECTION.format(
+        body=PEER_TABLE.format(name=name)))
+
+
+def test_competitors_older_than_the_newest_peer_selection_are_not_used(repo):
+    company = company_obj(repo)
+    market = company.path / "raw" / "market"
+    (market / "2026-10-01_competitors.md").write_text(_with_selection("旧A社"), encoding="utf-8")
+    (market / "2026-10-05_competitors.md").write_text(
+        "# 競合情報 — テスト\n\n" + SELECTION.format(body=PEER_TABLE.format(name="新B社")), encoding="utf-8")
+    assert [p.name for _, p in I.raw_files(company, "competitors")] == ["2026-10-05_competitors.md"]
+    assert I.find(company, I.SPEC["peers"], []).status == "missing"  # the old peers' numbers are not reused
+
+
+def test_a_carried_over_peer_selection_keeps_the_earlier_sections(repo):
+    company = company_obj(repo)
+    market = company.path / "raw" / "market"
+    (market / "2026-10-01_competitors.md").write_text(_with_selection("A社"), encoding="utf-8")
+    (market / "2026-10-05_competitors.md").write_text(
+        "# 差分\n\n" + SELECTION.format(body="前回ファイルから変更なし（今回の範囲外）。")
+        + "## 4. 市場シェア\n\n| 会社 | シェア | 出典 |\n|---|---|---|\n| A社 | 10% | x |\n", encoding="utf-8")
+    assert [p.name for _, p in I.raw_files(company, "competitors")] == [
+        "2026-10-05_competitors.md", "2026-10-01_competitors.md"]
+    assert I.find(company, I.SPEC["peers"], []).path.name == "2026-10-01_competitors.md"
+
+
+def test_peer_selection_cutoff_applies_only_to_competitors(repo):
+    company = company_obj(repo)
+    (company.path / "raw" / "market" / "2026-10-05_industry-overview.md").write_text(
+        "# 業界\n\n" + SELECTION.format(body="- 選定の話") + "## 1. 市場規模と成長率\n\n- 1兆円\n", encoding="utf-8")
+    assert len(I.raw_files(company, "industry-overview")) == 2
+
+
 # ---------- check / prepare / build ----------
 
 def test_check_new_company_goes_to_prepare(repo, capsys):

@@ -21,6 +21,8 @@ COMMENT = re.compile(r"<!--.*?-->", re.S)
 MEANINGLESS = re.compile(r"[\s|—\-:：（）()・]")
 THIN_WORDS = ("見つからなかった", "見つからない", "見つけられなかった", "確認できず", "確認できなかった", "未取得")
 CARRIED_OVER_WORDS = ("前回ファイルから変更なし", "今回の範囲外")  # a diff file's note for a section it did not collect
+PEER_KIND = "competitors"
+PEER_SELECTION_KEYWORD = "選定"  # competitors.md「1. 選定した同業他社と選定理由」
 
 
 @dataclass(frozen=True)
@@ -71,7 +73,9 @@ class Found:
 
 
 def raw_files(company: Company, kind: str) -> list[tuple[str, Path]]:
-    """(date, path) of raw/**/YYYY-MM-DD_*{kind}.md, newest first."""
+    """(date, path) of raw/**/YYYY-MM-DD_*{kind}.md, newest first.
+    competitors: files older than the newest one with a 選定 section are dropped (a new peer set rewrites every
+    section, so an older file's numbers belong to the old peers)."""
     raw = company.path / "raw"
     if not raw.exists():
         return []
@@ -80,7 +84,16 @@ def raw_files(company: Company, kind: str) -> list[tuple[str, Path]]:
         m = DATED.match(p.name)
         if m:
             out.append((m.group(1), p))
-    return sorted(out, reverse=True)
+    out = sorted(out, reverse=True)
+    return _since_peer_selection(out) if kind == PEER_KIND else out
+
+
+def _since_peer_selection(files: list[tuple[str, Path]]) -> list[tuple[str, Path]]:
+    for i, (_, path) in enumerate(files):
+        hit = M.section_by_title(path.read_text(encoding="utf-8"), PEER_SELECTION_KEYWORD)
+        if hit and not is_blank_section(hit[1]):
+            return files[:i + 1]
+    return files
 
 
 def is_blank_section(body: str) -> bool:
