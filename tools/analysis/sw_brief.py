@@ -11,6 +11,8 @@ from pathlib import Path
 
 import mdparse as M
 from ff_inputs import Found, excerpt, header_notes
+from sw_inputs import not_applicable
+from sw_metrics import candidate_rows, impact_candidates
 from sw_paths import Company
 
 # brief chapter: (title, input keys). Every raw section once.
@@ -63,7 +65,31 @@ def _three_c_lines(three_c: tuple[str, dict] | None) -> list[str]:
     return [f"- 3C分析（1-2）: {date}（勝てる理由 {r.get('verdict', '—')}: {_cut(r.get('verdict_reason'))}）",
             f"  - 勝てる理由の文: {_cut(r.get('win_reason'))}",
             f"  - SWOT の強み候補: {_cut(handoff.get('strengths'))}",
-            f"  - SWOT の弱み候補: {_cut(handoff.get('weaknesses'))}"]
+            f"  - SWOT の弱み候補: {_cut(handoff.get('weaknesses'))}"] + _three_c_evidence(r)
+
+
+def _evidence(label: str, item: dict | None) -> list[str]:
+    """'  - 根拠（label）: seen（出典 source、確度 confidence）' from an upstream {seen/basis, source, confidence}."""
+    item = item or {}
+    text = item.get("seen") or item.get("basis")
+    if not text:
+        return []
+    source = f"出典 {_cut(item['source'], 150)}" if item.get("source") else "出典の記載なし"
+    confidence = f"、確度 {item['confidence']}" if item.get("confidence") else ""
+    return [f"  - 根拠（{label}）: {_cut(text)}（{source}{confidence}）"]
+
+
+def _three_c_evidence(r: dict) -> list[str]:
+    """The figures behind the 3C handoff, with their sources (the SWOT writer cites these, not the 3C md)."""
+    lines = _evidence("顧客", r.get("customer")) + _evidence("競合", r.get("competitor"))
+    peers = [f"{c.get('name')} {c.get('year')} 営業利益率 {c.get('margin', '—')}%・売上高3年CAGR {c.get('cagr', '—')}%"
+             for c in r.get("comparison", []) if c.get("name")]
+    sources = sorted({c["source"] for c in r.get("comparison", []) if c.get("source")})
+    if peers:
+        lines.append(f"  - 根拠（同業比較）: {'、'.join(peers)}（出典 {_cut('、'.join(sources), 150) or '記載なし'}）")
+    lines += [f"  - 根拠（KBF {k.get('kbf')}）: {_cut(k.get('basis'))}" for k in r.get("kbf_table", [])
+              if k.get("kbf") and k.get("basis")]
+    return lines
 
 
 def _moat_lines(moat: tuple[str, dict] | None) -> list[str]:
@@ -77,7 +103,18 @@ def _moat_lines(moat: tuple[str, dict] | None) -> list[str]:
             f"  - 崩しうる要因: {_cut(risks)}",
             f"  - 持続の見込み: {_cut(r.get('durability'))}",
             f"  - SWOT の強み候補: {_cut(handoff.get('strengths'))}",
-            f"  - SWOT の脅威候補: {_cut(handoff.get('threats'))}"]
+            f"  - SWOT の脅威候補: {_cut(handoff.get('threats'))}"] + _moat_evidence(r)
+
+
+def _moat_evidence(r: dict) -> list[str]:
+    """Each moat type's rating and the basis of each eroding factor, with their sources."""
+    lines = [f"  - モート {m.get('type')}（{m.get('rating', '—')}）: {_cut(m.get('basis'))}"
+             f"（出典 {_cut(m.get('source'), 150) if m.get('source') else '記載なし'}）"
+             for m in r.get("moats", []) if m.get("type") and m.get("basis")]
+    lines += [f"  - 崩しうる要因 {x.get('factor')}: {_cut(x.get('basis'))}"
+              f"（出典 {_cut(x.get('source'), 150) if x.get('source') else '記載なし'}）"
+              for x in r.get("risks", []) if x.get("factor") and x.get("basis")]
+    return lines + _evidence("営業利益率の同業比較", r.get("margin"))
 
 
 def _source_lines(found: dict[str, Found], company: Company) -> list[str]:
@@ -129,14 +166,30 @@ def outlook_section(root: Path, outlook: dict, market: str) -> list[str]:
 # ---------- brief ----------
 
 def _gaps(found: dict[str, Found]) -> list[str]:
+    skip = not_applicable(found)
     rows = [f"- {f.spec.label}: {STATUS_LABEL[f.status]}{'（必須）' if f.spec.required else ''}"
-            for f in found.values() if f.status != "ok"]
+            for key, f in found.items() if f.status != "ok" and key not in skip]
     return rows or ["- なし"]
+
+
+def _section(key: str, found: dict[str, Found], company: Company, shown: dict, skip: set[str]) -> str:
+    """The section's excerpt; a raw section already shown under another label (one heading matching two
+    keywords) and a section the company cannot have (mid-term plan) take one line."""
+    f = found[key]
+    if key in skip:
+        reason = "中期経営計画を策定・公表していない" if key != "mtp_alt" else "中期経営計画がある"
+        return f"（{f.spec.label}: 該当なし（{reason}）。欠損ではない）"
+    where = (f.path, f.heading) if f.path is not None else None
+    if where in shown:
+        return f"（上の「{shown[where]}」と同じ節: {company.rel(f.path)} 「{f.heading}」）"
+    if where:
+        shown[where] = f.spec.label
+    return excerpt(f, company)
 
 
 def render_brief(company: Company, date: str, valid_until: str, found: dict[str, Found],
                  upstream: dict[str, tuple[str, dict] | None], previous: tuple[str, dict] | None,
-                 outlook: dict) -> str:
+                 outlook: dict, scale: dict | None = None) -> str:
     market = market_label(company)
     out = [f"# SWOT分析の材料 — {company.display_name()}", "",
            f"**作成日**: {date}（swot.py prepare が生成。手で直さない）", "",
@@ -146,10 +199,15 @@ def render_brief(company: Company, date: str, valid_until: str, found: dict[str,
            "", "## 0. 前提（上流の分析の結論）", "", f"- 分析日: {date} / 有効期限: {valid_until} / 市場: {market}"]
     out += (_previous_lines(previous) + _five_forces_lines(upstream["five_forces"])
             + _three_c_lines(upstream["three_c"]) + _moat_lines(upstream["moat"]) + _source_lines(found, company))
+    shown: dict = {}
+    skip = not_applicable(found)
     for number, (title, keys) in enumerate(CHAPTERS, start=1):
         out += ["", f"## {number}. {title}"]
         for key in keys:
-            out += ["", f"### {found[key].spec.label}", "", excerpt(found[key], company)]
+            out += ["", f"### {found[key].spec.label}", "", _section(key, found, company, shown, skip)]
+        if number == 1:
+            candidates = impact_candidates([found[k] for k in keys], scale)
+            out += ["", "### 影響度の候補（スクリプトが md の3章の目安と比較）", ""] + candidate_rows(candidates, scale)
     out += ["", f"## {len(CHAPTERS) + 1}. 地合い（機会・脅威）", ""] + outlook_section(company.root, outlook, market)
     out += ["", f"## {len(CHAPTERS) + 2}. 取れていない材料", ""] + _gaps(found)
     return "\n".join(out).rstrip() + "\n"

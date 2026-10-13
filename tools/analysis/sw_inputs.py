@@ -7,8 +7,15 @@ disclosure (方針・目標とする経営指標) under a heading of its own.
 """
 from __future__ import annotations
 
-from ff_inputs import (Found, Spec, changed_input_files, collect_requests, gather, input_digests,  # noqa: F401
-                       raw_files, unavailable_items)  # (re-exported)
+import re
+
+from ff_inputs import (COMMENT, Found, Spec, changed_input_files, collect_requests, gather,  # noqa: F401
+                       input_digests, raw_files, unavailable_items)  # (re-exported)
+
+# 中期経営計画の有無 saying the company has no plan (有報の定型文、raw テンプレートの「—（策定・公表なし）」)
+NO_PLAN = re.compile(r"策定[・･]?公表(は|を)?(行って(おり|い)ません|していない|しておりません|なし)")
+PLAN_SECTIONS = ("mtp_targets", "mtp_actions", "mtp_review")  # only a company with a plan has these
+NO_PLAN_SECTIONS = ("mtp_alt",)  # only a company without a plan has this
 
 SPECS = (
     Spec("segment", "有報: 事業の内容・セグメント情報", "yuho", "事業の内容", "collect-filings", True),
@@ -30,3 +37,17 @@ SPEC = {s.key: s for s in SPECS}
 
 def gather_swot(company) -> dict[str, Found]:
     return gather(company, SPECS)
+
+
+def has_no_plan(found: dict[str, Found]) -> bool:
+    f = found["mtp"]
+    return f.status == "ok" and bool(NO_PLAN.search(COMMENT.sub("", f.body)))
+
+
+def not_applicable(found: dict[str, Found]) -> set[str]:
+    """Mid-term plan sections that cannot exist for this company (not a gap): a company without a plan has no
+    targets, measures or review of a previous plan; a company with one has no substitute disclosure."""
+    if found["mtp"].status != "ok":
+        return set()
+    keys = PLAN_SECTIONS if has_no_plan(found) else NO_PLAN_SECTIONS
+    return {k for k in keys if found[k].status != "ok"}

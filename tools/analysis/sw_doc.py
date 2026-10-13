@@ -33,6 +33,7 @@ PENDING = "判定保留"
 NONE = "なし"
 ROW_COLUMNS = 8
 DETAIL_LIMIT = 120  # characters of an upstream reason shown in 1.1
+DIGIT = re.compile(r"[0-9０-９]")
 
 
 # ---------- 必ず記載する項目 ----------
@@ -138,6 +139,9 @@ def _check_row(quadrant: str, row: dict, seen: set[str]) -> list[str]:
         issues.append(f"{where}: 根拠の確度は {'/'.join(CONFIDENCE)} の1語: 「{row['confidence']}」")
     if row["impact"] not in IMPACTS:
         issues.append(f"{where}: 影響度は {'/'.join(IMPACTS)} の1語: 「{row['impact']}」")
+    elif row["impact"] in (LARGE, MEDIUM) and not DIGIT.search(row["impact_reason"]):
+        issues.append(f"{where}: 影響度「{row['impact']}」の理由に、影響する金額か比率（数値）と3章の目安を書く。"
+                      "書けなければ「不明」にする")
     return issues
 
 

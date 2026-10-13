@@ -122,7 +122,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 | `swot.py prepare --company X [--redo] [--skip-collect] [--skip-market-report]` | raw から必要な節と地合いの該当市場の行を抜き出して執筆の材料にし、上流3分析の結論、必ず記載する項目（ファイブフォースの「強」→ 脅威、残ったモート → 強み）、影響度の目安（直近の売上高・営業利益と 20%・5% の金額）、前回の判定を入れた骨組み（FILL 欄）を作る。作成途中の md は残す | `{日付}_brief.md`・`{日付}_swot.md` |
 | `swot.py build --company X [--date …]` | md を検証（構造・FILL・4象限の番号・由来・確度・影響度の語・必ず記載する項目・最大の強み/脅威が影響度の規則に合うか・判定と結論の文の形・前回との差の理由・禁止表現）し、SWOT の結論（Yes / 条件付き / No / 判定保留）を判定して書き込む | `{日付}_swot.json` |
 
-モジュール: `sw_paths.py`（SWOT の結果の場所と鮮度）、`sw_inputs.py`（SWOT の入力一覧。抽出は `ff_inputs.py` を再利用）、`sw_metrics.py`（影響度の目安）、`sw_brief.py`（材料。上流3分析の json と outlook.md の抜粋を含む）、`sw_doc.py`（骨組み・検証・結論の判定）。テンプレートは `.ai/templates/swot/`。
+モジュール: `sw_paths.py`（SWOT の結果の場所と鮮度）、`sw_inputs.py`（SWOT の入力一覧。抽出は `ff_inputs.py` を再利用）、`sw_metrics.py`（影響度の目安と、raw の表の金額を目安と比べた影響度の候補）、`sw_brief.py`（材料。上流3分析の json の結論と根拠・出典、outlook.md の抜粋を含む。同じ raw の節は1回だけ載せ、中計が無い会社の中計の節は「該当なし」にする）、`sw_doc.py`（骨組み・検証・結論の判定）。テンプレートは `.ai/templates/swot/`。
 
 ### 書き込みガード（`tools/guard/write_guard.py`）
 

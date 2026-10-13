@@ -251,10 +251,11 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     ups = upstream(company)
     items = D.required_items(ups["five_forces"], ups["moat"])
     brief_path, md_path = company.file(date, P.BRIEF_SUFFIX), company.file(date, P.MD_SUFFIX)
-    brief = B.render_brief(company, date, P.valid_until(date), found, ups, previous, outlook)
+    scale = X.scale(company)
+    brief = B.render_brief(company, date, P.valid_until(date), found, ups, previous, outlook, scale)
     if not kept:
         skeleton = D.render_skeleton(_template(root), _values(company, date, found, ups, outlook), items,
-                                     X.scale(company), previous)
+                                     scale, previous)
         atomic_write_text(md_path, skeleton)
         brief = A.mark_skeleton(brief, skeleton)
     atomic_write_text(brief_path, brief)

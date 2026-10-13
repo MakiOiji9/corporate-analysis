@@ -9,8 +9,10 @@ writer reads the main segment's figures in the brief instead (a single segment e
 """
 from __future__ import annotations
 
+import re
+
 import mdparse as M
-from ff_inputs import raw_files
+from ff_inputs import COMMENT, Found, header_notes, raw_files
 from ff_metrics import FORECAST, _peer_rows
 from mt_metrics import SKIP_SECTION, _sections
 from tc_metrics import _series_from_data
@@ -18,6 +20,15 @@ from tc_metrics import _series_from_data
 LARGE, MEDIUM = 0.20, 0.05  # 大 / 中 lower bounds
 MILLION = 1e6
 YEN_LIKE = 1e8  # raw cells without a unit: values this large are taken as yen, smaller ones keep the table's unit
+
+# 影響度の候補: amount columns of the raw tables (sales-like, newest period last), not ratios, profit or assets
+AMOUNT_HEADER = re.compile(r"売上|金額|収益|\d{4}年|期")
+NOT_AMOUNT_HEADER = re.compile(r"比率|構成比|%|％|率|増減|前年|比$|利益|資産|人数|名|議決権|株")
+AMOUNT_CELL = re.compile(r"^(?P<num>[△▲-]?[\d,]+(?:\.\d+)?)\s*(?P<unit>百万円|億円)?$")
+UNIT_SCALE = {"百万円": 1.0, "億円": 100.0}  # to 百万円
+TOTAL_ROW = re.compile(r"^(合計|計|総計)$")
+UNIT_NOISE = re.compile(r"[\s:：は（）()\[\]【】、,]")  # 「単位は百万円」「（単位：百万円）」 -> 単位百万円
+CANDIDATE_LIMIT = 20
 
 
 def _from_raw(company) -> dict | None:
@@ -70,6 +81,68 @@ def scale_rows(s: dict | None) -> str:
         rows.append(f"| {label} | {s['year']} | {_amount(value, s['yen'])} | {_amount(value * LARGE, s['yen'])} | "
                     f"{_amount(value * MEDIUM, s['yen'])} | {s['source']} |")
     return "\n".join(rows)
+
+
+def _amount_column(header: list[str]) -> int | None:
+    """Rightmost sales-like amount column (the newest period comes last in the raw tables)."""
+    cols = [i for i, h in enumerate(header) if i > 0 and AMOUNT_HEADER.search(h) and not NOT_AMOUNT_HEADER.search(h)]
+    return cols[-1] if cols else None
+
+
+def _million(cell: str, default_unit: str | None) -> float | None:
+    m = AMOUNT_CELL.match(cell.replace("*", "").replace(" ", "").strip())
+    unit = (m.group("unit") or default_unit) if m else None
+    if not m or unit is None:
+        return None
+    number = float(m.group("num").replace(",", "").replace("△", "-").replace("▲", "-"))
+    return number * UNIT_SCALE[unit]
+
+
+def _default_unit(f: Found) -> str | None:
+    """The unit of cells without one: stated in the section or in the raw file's header (単位は百万円 etc.)."""
+    text = UNIT_NOISE.sub("", f.body + " " + (header_notes(f.path) if f.path is not None else ""))
+    return next((u for u in UNIT_SCALE if f"単位{u}" in text or f"特記なき限り{u}" in text), None)
+
+
+def _band(ratio: float) -> str:
+    return "大" if ratio >= LARGE else "中" if ratio >= MEDIUM else "小"
+
+
+def impact_candidates(found: list[Found], s: dict | None) -> list[dict]:
+    """Amounts in the raw tables of the given sections, banded against the sales yardstick (no new figures for the
+    writer to compute). Only when the yardstick is in yen and the table's unit is known."""
+    if not s or not s.get("yen") or s["sales"] <= 0:
+        return []
+    sales = s["sales"] / MILLION
+    out = []
+    for f in found:
+        if f.status != "ok":
+            continue
+        unit = _default_unit(f)
+        for table in M.tables(COMMENT.sub("", f.body)):
+            col = _amount_column(table[0])
+            if col is None:
+                continue
+            for row in table[1:]:
+                if col >= len(row) or not row[0].strip() or TOTAL_ROW.match(row[0].strip()):
+                    continue
+                value = _million(row[col], unit)
+                if value is None or value <= 0:
+                    continue
+                out.append({"section": f.spec.label, "column": table[0][col].strip(), "row": row[0].strip(),
+                            "amount": value, "band": _band(value / sales)})
+    return out[:CANDIDATE_LIMIT]
+
+
+def candidate_rows(candidates: list[dict], s: dict | None) -> list[str]:
+    if not candidates:
+        return ["（候補なし: 売上高の目安が無いか、brief の表に単位の分かる金額が無い）"]
+    head = (f"売上高 {_amount(s['sales'], True)}（{s['year']}）の目安（大 = 20%以上 / 中 = 5〜20% / 小 = 5%未満）と"
+            "比べた区分。金額の大きさだけの区分で、その項目が金額のどれだけに影響するかは執筆者が判断する")
+    lines = [head, "", "| 出典の節 | 列 | 行 | 金額 | 区分 |", "|---|---|---|---|---|"]
+    lines += [f"| {c['section']} | {c['column']} | {c['row'].replace('|', '／')} | {c['amount']:,.0f}百万円 | {c['band']} |"
+              for c in candidates]
+    return lines
 
 
 def scale_note(s: dict | None) -> str:

@@ -174,7 +174,7 @@ def run(root: Path, *argv: str, capsys) -> tuple[int, dict]:
     return code, json.loads(capsys.readouterr().out.strip().splitlines()[-1])
 
 
-S_ROW = "| S1 | 1-3 スイッチングコスト | 継続率が高い | 継続率 93%（2026/03） | brief 1. | 一次 | 大 | 売上の大半に関わる |"
+S_ROW = "| S1 | 1-3 スイッチングコスト | 継続率が高い | 継続率 93%（2026/03） | brief 1. | 一次 | 大 | 売上の80%に関わる |"
 W_ROW = "| W1 | リスク 顧客の集中 | 上位1社の比率が高い | 12.0% | brief 1. | 一次 | 中 | 売上の12% |"
 O_ROW = "| O1 | 業界 市場成長 | 市場が伸びる | 年5% | brief 4. | 二次 | 中 | 売上 +5% |"
 T_ROW = "| T1 | 1-1 新規参入の脅威 | 参入が続く | 上場2件 | brief 0. | 二次 | 大 | 単価下落で利益の20%超 |"
@@ -394,7 +394,7 @@ def test_required_rows_follow_the_upstream_results(tmp_path, capsys):
 
 
 def test_flags(repo, capsys):
-    fill(prepared(repo, capsys), w=W_ROW.replace("売上の12%", "迷った: 中と小").replace("| 一次 |", "| 参考 |"))
+    fill(prepared(repo, capsys), w=W_ROW.replace("売上の12%", "迷った: 中と小。売上の12%").replace("| 一次 |", "| 参考 |"))
     _, out = build(repo, capsys)
     assert out["tie_breaks"] == ["W1"] and out["low_confidence"] == ["W1"] and out["unknown"] == []
 
@@ -515,3 +515,98 @@ def test_required_items_unit():
     moat = ("2026-10-02", {"effective_moats": ["ブランド"], "moats": [{"type": "ブランド", "basis": "b"}]})
     items = D.required_items(ff, moat)
     assert [(i["quadrant"], i["tag"], i["name"]) for i in items] == [("T", "1-1", "業界内の競争"), ("S", "1-3", "ブランド")]
+
+
+# ---------- run review follow-ups (3798, 2026-10-13) ----------
+
+NO_PLAN_MTP = """# 中期経営計画 — テスト
+
+## 1. 中期経営計画の有無
+
+**中期経営計画: —（会社が策定・公表していない）**
+
+## 2. 中期経営計画に代わる開示（目標値・方針の記載があるもの）
+
+- 利益は前期比平均20-30%台の成長
+"""
+
+UNIT_YUHO = YUHO.replace("# 有価証券報告書 抜粋 — テスト\n", "# 有価証券報告書 抜粋 — テスト\n\n> 単位は特記なき限り百万円。\n") \
+    .replace("- 自動車事業の単一セグメント\n", "- 自動車事業の単一セグメント\n\n| 契約形態 | 2025年3月期 | 2026年3月期 |\n"
+             "|---|---|---|\n| 準委任契約 | 10,973 | 13,793 |\n| 請負契約 | 2,230 | 400 |\n| 合計 | 13,203 | 14,193 |\n")
+
+
+def _brief_of(root: Path, capsys) -> str:
+    return (prepared(root, capsys).parent / f"{DAY}_brief.md").read_text(encoding="utf-8")
+
+
+def test_brief_shows_a_raw_section_once_and_no_plan_sections_are_not_gaps(tmp_path, capsys):
+    _templates(tmp_path)
+    _outlook(tmp_path)
+    _company(tmp_path, mtp=NO_PLAN_MTP)
+    _upstream(tmp_path)
+    brief = _brief_of(tmp_path, capsys)
+    assert brief.count("利益は前期比平均20-30%台の成長") == 1
+    assert "上の「中計: 中期経営計画に代わる開示」と同じ節" in brief
+    assert "中計: 重点施策: 該当なし（中期経営計画を策定・公表していない）" in brief
+    gaps = brief.split("取れていない材料", 1)[1]
+    assert "重点施策" not in gaps and "達成状況" not in gaps
+
+
+def test_company_with_a_plan_has_no_substitute_gap(repo, capsys):
+    brief = _brief_of(repo, capsys)
+    assert "中計: 中期経営計画に代わる開示: 該当なし（中期経営計画がある）" in brief
+    assert "代わる開示" not in brief.split("取れていない材料", 1)[1]
+
+
+def test_brief_banded_impact_candidates(tmp_path, capsys):
+    _templates(tmp_path)
+    _outlook(tmp_path)
+    company = _company(tmp_path)
+    (company / "raw" / "filings" / f"{COLLECTED}_2026-03_yuho.md").write_text(UNIT_YUHO, encoding="utf-8")
+    _upstream(tmp_path)
+    brief = _brief_of(tmp_path, capsys)
+    candidates = brief.split("影響度の候補", 1)[1].split("## 2.", 1)[0]
+    assert "| 有報: 事業の内容・セグメント情報 | 2026年3月期 | 準委任契約 | 13,793百万円 | 大 |" in candidates
+    assert "| 請負契約 | 400百万円 | 小 |" in candidates
+    assert "| 有報: 主要な販売先 | 金額 | A社 | 2,000百万円 | 中 |" in candidates
+    assert "| 合計 |" not in candidates
+
+
+def test_impact_candidates_need_a_known_unit_and_yen_scale():
+    from ff_inputs import Found, Spec
+    spec = Spec("customers", "有報: 主要な販売先", "yuho", "主要な販売先", "collect-filings", False)
+    s = {"year": "2026-03", "sales": 16_600e6, "profit": 3_046e6, "yen": True}
+    no_unit = Found(spec, "ok", None, "3. 主要な販売先", "| 相手先 | 金額 |\n|---|---|\n| A社 | 2,000 |\n")
+    assert X.impact_candidates([no_unit], s) == []
+    oku = Found(spec, "ok", None, "3. 主要な販売先", "| 相手先 | 金額 |\n|---|---|\n| A社 | 20億円 |\n")
+    assert [(c["row"], c["amount"], c["band"]) for c in X.impact_candidates([oku], s)] == [("A社", 2000.0, "中")]
+    assert X.impact_candidates([oku], dict(s, yen=False)) == []
+
+
+def test_brief_carries_upstream_evidence_with_sources(tmp_path, capsys):
+    _templates(tmp_path)
+    _outlook(tmp_path)
+    _company(tmp_path)
+    _upstream(tmp_path)
+    _result(tmp_path, "three-c", TC_DAY, {
+        "verdict": "明確", "verdict_reason": "理由", "win_reason": "品質", "valid_until": "2099-01-01", "inputs": [],
+        "handoff": {"strengths": "品質", "weaknesses": "集中"},
+        "customer": {"seen": "顧客 167社", "source": "business-overview.md「3.」", "confidence": "一次"},
+        "comparison": [{"name": "自社", "year": "2026-03", "margin": 18.3, "cagr": 24.9, "source": "competitors.md「2.」"}]})
+    _result(tmp_path, "moat", MOAT_DAY, {
+        "verdict": "狭い", "verdict_reason": "1つ", "valid_until": "2099-01-01", "inputs": [],
+        "effective_moats": ["スイッチングコスト"],
+        "moats": [{"type": "スイッチングコスト", "rating": "該当", "basis": "リピート率 89%", "source": "説明会資料 p.8"}],
+        "risks": [{"factor": "人材", "timing": "5年以内", "basis": "採用費 +92.7%", "source": "有報 p.18"}],
+        "handoff": {"strengths": "x", "threats": "y"}})
+    brief = _brief_of(tmp_path, capsys)
+    assert "根拠（顧客）: 顧客 167社（出典 business-overview.md「3.」、確度 一次）" in brief
+    assert "自社 2026-03 営業利益率 18.3%・売上高3年CAGR 24.9%（出典 competitors.md「2.」）" in brief
+    assert "モート スイッチングコスト（該当）: リピート率 89%（出典 説明会資料 p.8）" in brief
+    assert "崩しうる要因 人材: 採用費 +92.7%（出典 有報 p.18）" in brief
+
+
+def test_large_or_medium_impact_needs_a_figure(repo, capsys):
+    fill(prepared(repo, capsys), w=W_ROW.replace("売上の12%", "売上の一部"))
+    code, out = build(repo, capsys)
+    assert code == 1 and any("W1: 影響度「中」の理由に" in issue for issue in out["issues"]), out
