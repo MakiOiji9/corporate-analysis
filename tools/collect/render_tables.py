@@ -21,6 +21,7 @@ ITEM_LABELS = {
     "summary.net_sales": "売上高", "cost_of_sales": "売上原価", "sga": "販売費及び一般管理費",
     "operating_income": "営業利益", "summary.ordinary_income": "経常利益",
     "extraordinary_income": "特別利益", "extraordinary_loss": "特別損失",
+    "research_and_development": "研究開発費",
     "summary.net_income": "親会社株主に帰属する当期純利益", "summary.eps": "EPS（円）",
     "summary.total_assets": "総資産", "summary.net_assets": "純資産",
     "summary.equity_ratio": "自己資本比率（%）", "summary.bps": "BPS（円）",
@@ -57,15 +58,23 @@ def _fmt(value: str) -> str:
     return f"{number:,.0f}" if abs(number) >= 1000 or number == int(number) else f"{number:,.2f}"
 
 
+def money_unit(rows: list[dict]) -> str:
+    """'百万円' (EDINET) or '百万ドル' (EDGAR): the unit of the amount rows, 百万円 when none says otherwise."""
+    return "百万ドル" if any(r.get("unit") == "百万ドル" for r in rows) else "百万円"
+
+
 def financials_table(rows: list[dict], years: int) -> str:
     grid: dict[str, dict[str, str]] = defaultdict(dict)
     for r in rows:
         grid[r["item"]][r["period_end"]] = r["value"]
     periods = sorted({r["period_end"] for r in rows})[-years:]
-    lines = ["| 項目（百万円） | " + " | ".join(p[:7] for p in periods) + " |",
+    unit = money_unit(rows)
+    lines = [f"| 項目（{unit}） | " + " | ".join(p[:7] for p in periods) + " |",
              "|---|" + "---|" * len(periods)]
     for item, label in ITEM_LABELS.items():
         if item in grid:
+            if unit == "百万ドル":
+                label = label.replace("（円）", "（ドル）")
             lines.append(f"| {label} | " + " | ".join(_fmt(grid[item].get(p, "")) for p in periods) + " |")
     return "\n".join(lines)
 

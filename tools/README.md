@@ -11,9 +11,10 @@ sh tools/setup.sh         # macOS / Linux / Git Bash
 ```
 
 1. リポジトリ直下に `.venv` を作り、`tools/requirements.txt` をインストールする
-2. `.env` が無ければ `.env.example` からコピーする → 必要なら次のキーを記入する（どちらも無料）
+2. `.env` が無ければ `.env.example` からコピーする → 必要なら次のキーを記入する（いずれも無料）
    - `EDINET_API_KEY`: 有報の XBRL 取得（[EDINET API の利用登録](https://api.edinet-fsa.go.jp/api/auth/index.aspx?mode=1)）
    - `FRED_API_KEY`: 米国のマクロ指標（[FRED API key](https://fred.stlouisfed.org/docs/api/api_key.html)）。未設定でも日本の時系列と米国の文書・CFTC は取れる
+   - `SEC_USER_AGENT`: 米国株の SEC EDGAR 取得（`fetch.py`・`edgar.py`）。登録は不要で、`名前 メールアドレス` の形式で書く（[SEC のアクセス規約](https://www.sec.gov/os/accessing-edgar-data)）。未設定だと sec.gov は 403 を返す
 3. 最後に `preflight.py` が走り、使える取得経路を表示する
 
 `.venv/`・`.env`・`.cache/`・`companies/*/sources/`（原本）は `.gitignore` 済み。
@@ -46,7 +47,9 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 | `edinet.py` | EDINET API v2 の書類一覧・取得（要 `EDINET_API_KEY`） | `sources/`、`.cache/edinet/` |
 | `xbrl_financials.py` | EDINET XBRL→CSV から財務を抽出 | `data/financials.csv` |
 | `tdnet_summary.py` | 決算短信 iXBRL から実績・予想・配当・株式数を抽出 | `data/tdnet_facts.csv` |
+| `edgar.py` | SEC EDGAR の提出書類一覧（`list`）、companyfacts から年次財務を抽出（`facts`。米国株。要 `SEC_USER_AGENT`） | 標準出力、`data/financials.csv` |
 | `render_tables.py` | data の CSV から Markdown 表を出力 | 標準出力 |
+| `sources_admin.py` | manifest の誤登録行を除去（`remove`。原本は `sources/_removed/` へ移動） | `sources/manifest.csv` |
 
 ### 地合い用（`tools/collect/market/`）
 

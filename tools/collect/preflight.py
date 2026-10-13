@@ -15,7 +15,9 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # scripts run with python -I
-from common import REPO_ROOT, load_env, utf8_stdout  # noqa: E402
+from common import REPO_ROOT, http_get, load_env, utf8_stdout  # noqa: E402
+
+SEC_PROBE_URL = "https://data.sec.gov/submissions/CIK0000320193.json"  # Apple: always present
 
 PROBES = {
     "TDnet/JPX 開示PDF": "https://www2.jpx.co.jp/",
@@ -57,6 +59,18 @@ def check_fred_key() -> tuple[bool, str]:
     return False, "not set -> US FRED series are skipped (status.md shows the reason)"
 
 
+def check_sec() -> tuple[bool, str]:
+    """US stocks: EDGAR answers 403 unless the User-Agent carries a contact (SEC_USER_AGENT)."""
+    load_env()
+    if not os.environ.get("SEC_USER_AGENT"):
+        return False, "SEC_USER_AGENT not set -> US filings cannot be saved (fetch.py/edgar.py fail on sec.gov)"
+    try:
+        http_get(SEC_PROBE_URL)
+        return True, "SEC_USER_AGENT is set and EDGAR answered -> US route: edgar.py + fetch.py"
+    except Exception as exc:  # noqa: BLE001 - any failure means route unavailable
+        return False, f"EDGAR request failed: {exc}"
+
+
 def probe(url: str) -> tuple[bool, str]:
     try:
         import certifi
@@ -76,6 +90,7 @@ def main() -> int:
     modules_ok = rows[1][1]
     for label, url in PROBES.items():
         rows.append((label, *(probe(url) if modules_ok else (False, "skipped (modules missing)"))))
+    rows.append(("SEC EDGAR（米国株）", *(check_sec() if modules_ok else (False, "skipped (modules missing)"))))
 
     print(f"repo: {REPO_ROOT}")
     print("| check | ok | detail |\n|---|---|---|")

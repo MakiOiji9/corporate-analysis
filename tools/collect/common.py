@@ -11,6 +11,8 @@ import sys
 import time
 from pathlib import Path
 from typing import Iterator
+from urllib.parse import urlparse
+from urllib.parse import urlparse
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CACHE_DIR = REPO_ROOT / ".cache"
@@ -130,12 +132,29 @@ def company_dir(arg: str) -> Path:
     return path
 
 
+def is_sec_url(url: str) -> bool:
+    host = (urlparse(url).hostname or "").lower()
+    return host == "sec.gov" or host.endswith(".sec.gov")
+
+
+def user_agent_for(url: str) -> str:
+    """SEC EDGAR rejects browser-like agents (403) and requires '<name> <email>' (SEC fair access policy)."""
+    if not is_sec_url(url):
+        return USER_AGENT
+    load_env()
+    agent = os.environ.get("SEC_USER_AGENT", "").strip()
+    if not agent:
+        raise RuntimeError("SEC_USER_AGENT is not set: add 'SEC_USER_AGENT=<name> <email>' to .env "
+                           "(SEC EDGAR returns 403 without a contact User-Agent)")
+    return agent
+
+
 def http_get(url: str, referer: str | None = None, params: dict | None = None):
-    """GET with browser-like headers and certifi CA bundle. Raises on HTTP error."""
+    """GET with browser-like headers (contact agent for SEC) and certifi CA bundle. Raises on HTTP error."""
     import certifi
     import requests
 
-    headers = {"User-Agent": USER_AGENT}
+    headers = {"User-Agent": user_agent_for(url)}
     if referer:
         headers["Referer"] = referer
     resp = requests.get(url, headers=headers, params=params,
