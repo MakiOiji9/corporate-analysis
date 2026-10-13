@@ -4,10 +4,10 @@ The writer reads only this file and the skeleton; raw files, PDFs and CSVs stay 
 """
 from __future__ import annotations
 
+from dataclasses import replace
+
 from ff_doc import candidate_cell
 from ff_inputs import Found, excerpt, header_notes
-from ff_metrics import peer_margin_line
-from mt_metrics import cost_table_rows, margin_table_rows
 from mt_paths import Company
 
 # brief chapter: (title, input keys). The comparison numbers come first (chapter 1); every raw section once.
@@ -22,6 +22,8 @@ CHAPTERS = (
 STATUS_LABEL = {"missing": "raw に無い", "blank": "節はあるが空", "thin": "中身が薄い（見つからなかった旨の記載・空の行）",
                 "unavailable": "取得を試みたが取れていない（status.md）"}
 FF_FACTORS_SHOWN = ("entry", "substitutes")  # five-forces factors that threaten a moat
+# the peers' KPI table is wide (3C compares every column); the moat criteria need these columns only
+NARROW_COLUMNS = {"peer_kpi": ("会社", "年度", "継続率", "単価", "第三者評価", "出典")}
 
 
 def _previous_lines(previous: tuple[str, dict] | None) -> list[str]:
@@ -72,18 +74,30 @@ def _source_lines(found: dict[str, Found], company: Company) -> list[str]:
     return ["- raw の情報源と注意（根拠の確度はこれで判断する）:"] + lines if lines else []
 
 
-def _peer_lines(cands: dict) -> list[str]:
-    by_peer: dict[str, dict[str, float]] = {}
-    for row in cands["rows"]:
-        for m in row["peers"]:
-            by_peer.setdefault(m["name"], {})[m["year"]] = m["margin"]
-    if not by_peer:
-        return []
-    lines = []
-    for name, series in by_peer.items():
-        peer = {"name": name, "series": [{"year": y, "margin": v, "forecast": False} for y, v in sorted(series.items())]}
-        lines.append(f"- {peer_margin_line(peer)}")
-    return ["", "比較に使った競合の営業利益率（実績。スクリプトが計算）:", ""] + lines
+def _cells(line: str) -> list[str]:
+    return [c.strip() for c in line.strip().strip("|").split("|")]
+
+
+def narrow_tables(body: str, keep: tuple[str, ...]) -> str:
+    """Keep only the columns whose header contains one of the words (tables with fewer matches stay whole)."""
+    out: list[str] = []
+    columns: list[int] | None = None
+    for line in body.splitlines():
+        if not line.lstrip().startswith("|"):
+            columns = None
+            out.append(line)
+            continue
+        cells = _cells(line)
+        if columns is None:  # header row
+            picked = [i for i, h in enumerate(cells) if any(w in h for w in keep)]
+            columns = picked if len(picked) >= 2 else list(range(len(cells)))
+        out.append("| " + " | ".join(cells[i] if i < len(cells) else "" for i in columns) + " |")
+    return "\n".join(out)
+
+
+def _section(f: Found, company: Company) -> str:
+    keep = NARROW_COLUMNS.get(f.spec.key)
+    return excerpt(replace(f, body=narrow_tables(f.body, keep)) if keep and f.body else f, company)
 
 
 def _gaps(found: dict[str, Found]) -> list[str]:
@@ -94,26 +108,25 @@ def _gaps(found: dict[str, Found]) -> list[str]:
 
 def render_brief(company: Company, date: str, valid_until: str, found: dict[str, Found], cands: dict,
                  previous: tuple[str, dict] | None, three_c: tuple[str, dict] | None,
-                 five_forces: tuple[str, dict] | None, outlook: dict) -> str:
+                 five_forces: tuple[str, dict] | None, outlook: dict, warnings: list[str] = ()) -> str:
     out = [f"# モート分析の材料 — {company.display_name()}", "",
            f"**作成日**: {date}（moat.py prepare が生成。手で直さない）", "",
-           "> 執筆はこのファイルだけを根拠にする（raw・PDF・CSV を開かない）。数値は転記だけで、新しい計算をしない。",
-           "> 数字の裏付け（営業利益率の同業比較）はスクリプトが計算し、build がシェアの推移と合わせて判定する。",
-           "", "## 0. 前提", "", f"- 分析日: {date} / 有効期限: {valid_until}"]
+           "> 執筆はこのファイルと md だけを根拠にする（raw・PDF・CSV を開かない）。数値は転記だけで、新しい計算をしない。",
+           "> 数字の裏付け（営業利益率の同業比較）はスクリプトが計算し、build がシェアの推移と合わせて判定する。"]
+    if warnings:
+        out += ["", "## 警告（スクリプトが raw を読み違えた可能性。執筆の前に確かめ、完了報告に書く）", ""]
+        out += [f"- {w}" for w in warnings]
+    out += ["", "## 0. 前提", "", f"- 分析日: {date} / 有効期限: {valid_until}"]
     out += (_previous_lines(previous) + _three_c_lines(three_c) + _five_forces_lines(five_forces)
             + [_outlook_line(outlook)] + _source_lines(found, company))
     out += ["", "## 1. 数字の裏付け（スクリプトが計算）", "",
             f"- 営業利益率の側の判定候補: {candidate_cell(cands['margin'])}",
-            f"- 自社の数値の出典: {'、'.join(cands['sources']) or '—'}", "",
-            "| 年度 | 自社 | 同業平均 | 差 | 比較した競合（決算期） |", "|---|---|---|---|---|",
-            margin_table_rows(cands["rows"])]
-    out += _peer_lines(cands)
-    out += ["", "コスト構造（competitors.md「コスト構造」から抜粋。平均はスクリプトが計算）:", "",
-            "| 会社 | 年度 | 売上原価率 | 販管費率 | 営業利益率 | 出典 |", "|---|---|---|---|---|---|",
-            cost_table_rows(cands["costs"])]
+            f"- 自社の数値の出典: {'、'.join(cands['sources']) or '—'}",
+            "- 年度ごとの比較（自社・同業平均・差・比較した競合）は md の 3.1、コスト構造と競合の単純平均は md の 3.2 を見る"
+            "（同じ表をここには載せない）"]
     for number, (title, keys) in enumerate(CHAPTERS, start=2):
         out += ["", f"## {number}. {title}"]
         for key in keys:
-            out += ["", f"### {found[key].spec.label}", "", excerpt(found[key], company)]
+            out += ["", f"### {found[key].spec.label}", "", _section(found[key], company)]
     out += ["", f"## {len(CHAPTERS) + 2}. 取れていない材料", ""] + _gaps(found)
     return "\n".join(out).rstrip() + "\n"

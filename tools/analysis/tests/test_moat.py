@@ -414,7 +414,7 @@ def test_newer_financials_triggers(repo, capsys):
     fill(md)
     run(repo, "build", "--company", "7203", capsys=capsys)
     (repo / "companies" / "7203_toyota" / "raw" / "ir" / "2026-10-15_financials-historical.md").write_text(
-        "# 差分\n", encoding="utf-8")
+        FINANCIALS.format(rows=_rows(range(2017, 2028), 3, SELF_MARGIN)), encoding="utf-8")  # a new fiscal year
     _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-16", capsys=capsys)
     assert out["result"] == "triggered"
 
@@ -534,3 +534,118 @@ def test_write_guard_protects_moat_files(repo, capsys):
     run(repo, "build", "--company", "7203", capsys=capsys)
     tomorrow = (dt.date.fromisoformat(DAY) + dt.timedelta(days=1)).isoformat()
     assert "完成済み分析（moat）" in G.decide("Edit", rel, repo, tomorrow)
+
+
+# ---------- improvements after the 3798 run (2026-10-13) ----------
+
+def _raw(root: Path, sub: str, name: str, text: str) -> Path:
+    path = root / "companies" / "7203_toyota" / "raw" / sub / name
+    path.write_text(text, encoding="utf-8")
+    return path
+
+
+def test_prepare_refuses_until_three_c_is_fresh(repo, capsys):
+    shutil.rmtree(repo / "companies" / "7203_toyota" / "analysis" / "three-c")
+    code, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert code == 1 and out["next"] == "three_c"
+    assert not (repo / "companies" / "7203_toyota" / "analysis" / "moat").exists()
+
+
+def test_prepare_refuses_missing_inputs_unless_collection_was_given_up(tmp_path, capsys):
+    _templates(tmp_path)
+    _company(tmp_path, retention="")
+    _three_c(tmp_path)
+    code, out = run(tmp_path, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert code == 1 and out["next"] == "collect"
+    code, out = run(tmp_path, "prepare", "--company", "7203", "--date", DAY, "--skip-collect", capsys=capsys)
+    assert code == 0 and out["skipped_collect"] == [
+        {"agent": "collect-ir", "items": ["事業概要: 継続率・解約率・ストック型売上の比率"]}]
+
+
+def test_untouched_skeleton_is_regenerated_without_redo(repo, capsys):
+    md = prepared(repo, capsys)
+    assert "| 70.0% | 20.0% |" in md.read_text(encoding="utf-8")
+    _raw(repo, "market", "2026-10-11_competitors.md",
+         COST.replace("| 70.0% | 20.0% |", "| 71.0% | 19.0% |"))
+    _three_c(repo, date="2026-10-11")  # the 3C has seen the new raw
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert not out["kept"] and out["regenerated"]
+    assert "| 71.0% | 19.0% |" in md.read_text(encoding="utf-8")
+
+
+def test_short_peer_history_requests_collection_once(tmp_path, capsys):
+    company = _company(tmp_path, alpha_years=range(2022, 2027), beta_years=range(2022, 2027))
+    _three_c(tmp_path)
+    _, out = run(tmp_path, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["next"] == "collect"
+    assert out["missing_inputs"] == [{"agent": "collect-peers-valuation", "items": [X.HISTORY_ITEM]}]
+    (company / "status.md").write_text(
+        "# 収集状況\n\n## 3. 未取得項目\n\n| 項目 | 理由 | 試した経路 |\n|---|---|---|\n"
+        "| 営業利益率の長期推移（アルファ社、5年分のみ） | IRBANK も5年 | IRBANK |\n", encoding="utf-8")
+    _, out = run(tmp_path, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["next"] == "prepare"
+
+
+def test_only_changed_sections_that_the_analysis_used_trigger(repo, capsys):
+    md = prepared(repo, capsys)
+    fill(md)
+    run(repo, "build", "--company", "7203", capsys=capsys)
+    assert "input_digests" in json.loads((md.parent / f"{DAY}_moat.json").read_text(encoding="utf-8"))
+    _raw(repo, "market", "2026-10-15_competitors.md",
+         "# 差分\n\n## 6. PER・PBR\n\n| 会社 | PER |\n|---|---|\n| トヨタ | 10 |\n\n" + COST)
+    _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-16", capsys=capsys)
+    assert out["result"] == "fresh", out  # unused section + identical cost table
+    changed = _raw(repo, "market", "2026-10-16_competitors.md", COST.replace("70.0%", "69.0%"))
+    _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-17", capsys=capsys)
+    assert out["result"] == "triggered" and out["newer_raw"] == [changed.relative_to(repo).as_posix()]
+
+
+def test_new_fiscal_year_outside_the_read_sections_still_triggers(repo, capsys):
+    md = prepared(repo, capsys)
+    fill(md)
+    run(repo, "build", "--company", "7203", capsys=capsys)
+    _raw(repo, "filings", "2026-10-15_2027-03_yuho.md", YUHO + "\n## 1. 主要な経営指標等の推移\n\n"
+         "| 年度 | 売上高 | 営業利益 |\n|---|---|---|\n| 2027/03 | 100 | 12 |\n")
+    _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-16", capsys=capsys)
+    assert out["result"] == "triggered" and any("営業利益率" in p for p in out["newer_raw"]), out
+
+
+def test_resuming_a_started_draft_is_not_gated(tmp_path, capsys):
+    _templates(tmp_path)
+    _company(tmp_path, retention="")
+    _three_c(tmp_path)
+    _, out = run(tmp_path, "prepare", "--company", "7203", "--date", DAY, "--skip-collect", capsys=capsys)
+    md = tmp_path / out["md"]
+    md.write_text(md.read_text(encoding="utf-8").replace("<!-- FILL:strength", "品質 <!-- FILL:strength"),
+                  encoding="utf-8")
+    shutil.rmtree(tmp_path / "companies" / "7203_toyota" / "analysis" / "three-c")  # upstream gone mid-draft
+    code, out = run(tmp_path, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert code == 0 and out["kept"]
+
+
+@pytest.mark.parametrize("year", ["2026/03", "2026/3", "2026年3月期"])
+def test_mismatch_warning_reads_year_forms(year):
+    cands = {"rows": [{"year": "2026-03", "self": 10.0}],
+             "costs": [{"name": "トヨタ", "self": True, "year": year, "cost": 70.0, "sga": 20.0, "margin": 10.5}]}
+    assert any("2026-03" in w for w in X.warnings(cands))
+
+
+def test_no_margin_column_is_not_a_warning():
+    cands = {"rows": [], "costs": [{"name": "a", "self": False, "year": "2026/03", "cost": 70.0, "sga": 20.0,
+                                    "margin": None}]}
+    assert X.warnings(cands) == []
+
+
+def test_brief_is_lighter_and_warns(tmp_path, capsys):
+    _templates(tmp_path)
+    cost = (COST.replace("| 販管費率 |", "| 販管費 |").replace("| 20.0% |", "| 2,000 |")
+            .replace("| 15.0% |", "| 1,500 |").replace("| 10.0% | 有報（一次） |", "| 10.5% | 有報（一次） |"))
+    _company(tmp_path, cost=cost)  # amounts only (no 販管費率), self margin 10.5% vs 10.0% in 3.1
+    _three_c(tmp_path)
+    code, out = run(tmp_path, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert code == 0
+    brief = (tmp_path / out["brief"]).read_text(encoding="utf-8")
+    assert "| 年度 | 自社 | 同業平均 |" not in brief and "md の 3.1" in brief
+    assert any("販管費率" in w for w in out["warnings"])
+    assert any("2026-03" in w and "10.0%" in w and "10.5%" in w for w in out["warnings"])
+    assert "## 警告" in brief

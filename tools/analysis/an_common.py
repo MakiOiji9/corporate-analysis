@@ -9,6 +9,7 @@ Company with their analysis_dir and wrap the result helpers with their suffixes.
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import json
 import re
 from dataclasses import dataclass
@@ -118,6 +119,40 @@ def latest_draft(directory: Path, md_suffix: str) -> tuple[str, Path] | None:
         if is_draft(path):
             return date, path
     return None
+
+
+def digest(text: str) -> str:
+    return hashlib.sha1(text.encode("utf-8")).hexdigest()
+
+
+SKELETON_MARK = re.compile(r"<!-- skeleton-sha1: ([0-9a-f]{40}) -->")
+
+
+def mark_skeleton(brief_text: str, skeleton_text: str) -> str:
+    """The brief with the digest of the skeleton written alongside it: the next prepare regenerates an untouched one."""
+    return brief_text.rstrip() + f"\n\n<!-- skeleton-sha1: {digest(skeleton_text)} -->\n"
+
+
+def is_untouched(brief: Path, md: Path) -> bool:
+    """True when the md is still exactly the skeleton the last prepare wrote (nobody has written into it)."""
+    if not brief.exists() or not md.exists():
+        return False
+    m = SKELETON_MARK.search(brief.read_text(encoding="utf-8"))
+    return bool(m) and m.group(1) == digest(md.read_text(encoding="utf-8"))
+
+
+UPSTREAM_SKILLS = {"three_c": "three-c", "five_forces": "five-forces"}
+
+
+def prepare_gate(next_step: str, has_raw: bool, skip_collect: bool) -> str | None:
+    """Why prepare must not run yet (check's next is not prepare), or None. A collection that was tried once and
+    did not bring everything is passed over with --skip-collect; a missing upstream analysis never is."""
+    if next_step == "prepare" or (next_step == "collect" and has_raw and skip_collect):
+        return None
+    if next_step == "collect":
+        return ("材料が足りない（missing_inputs）。collect-company-info で収集してから prepare する"
+                "（収集を1回試しても取れなかったときだけ --skip-collect）")
+    return f"先に {UPSTREAM_SKILLS.get(next_step, next_step)} を最後まで実行する（check の next が {next_step}）"
 
 
 def valid_until(date: str, days: int) -> str:

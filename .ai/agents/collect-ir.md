@@ -15,6 +15,7 @@ ticker, name, url, market, mode, 企業ディレクトリ, 収集日, 取得経�
 - `raw/news/{収集日}_press-releases.md`
 - `fetch.py` 経由の `sources/`
 - **書かない**: `status.md`, `overview.md`, `summaries/`, `data/`, 他担当の raw
+- mode=update の差分ファイルは、今回の範囲の章だけを書く。範囲外の章は見出しごと書かない（「変更なし」と書かない。前回の値を再掲しない。collect-company-info.md の保存ルール）
 
 ## 手順
 1. 指定URLを起点に、会社概要・事業紹介・IR・ニュースのページを WebFetch で読む

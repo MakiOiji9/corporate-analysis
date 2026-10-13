@@ -327,22 +327,61 @@ def test_full_cycle_then_fresh_triggered_expired(repo, capsys):
     _, out = run(repo, "check", "--company", "7203", "--date", "2027-10-13", capsys=capsys)
     assert out["result"] == "expired" and out["next"] == "prepare" and out["outlook_stale"]
 
-    _company(repo, collected="2026-11-01")  # a newer yuho / industry / competitors
+    _company(repo, collected="2026-11-01")  # the same yuho / industry / competitors again
     _, out = run(repo, "check", "--company", "7203", "--date", "2026-12-01", capsys=capsys)
-    assert out["result"] == "triggered" and len(out["newer_raw"]) == 3
+    assert out["result"] == "fresh", out
+    _company(repo, ratio="25.0%", collected="2026-11-02")  # a newer yuho with another customer ratio
+    _, out = run(repo, "check", "--company", "7203", "--date", "2026-12-01", capsys=capsys)
+    assert out["result"] == "triggered" and out["newer_raw"] == [
+        "companies/7203_toyota/raw/filings/2026-11-02_2026-03_yuho.md"]
 
 
-def test_raw_collected_later_on_the_analysis_day_triggers(repo, capsys):
+def test_same_values_again_do_not_trigger_but_changed_values_do(repo, capsys):
     _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
     fill(repo / out["md"], ALL_MID)
     run(repo, "build", "--company", "7203", capsys=capsys)
     _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
     assert out["result"] == "fresh"  # the analysis used every raw there is
     market = repo / "companies" / "7203_toyota" / "raw" / "market"
-    (market / f"{DAY}_competitors.md").write_text(
-        (market / "2026-10-01_competitors.md").read_text(encoding="utf-8"), encoding="utf-8")
+    (market / f"{DAY}_competitors.md").write_text(COMPETITORS, encoding="utf-8")
+    _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["result"] == "fresh"
+    (market / f"{DAY}_competitors.md").write_text(COMPETITORS.replace("| 500 | 50 |", "| 520 | 60 |"), encoding="utf-8")
     _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
     assert out["result"] == "triggered" and out["newer_raw"] == [f"companies/7203_toyota/raw/market/{DAY}_competitors.md"]
+
+
+def test_a_section_without_usable_content_does_not_trigger(repo, capsys):
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    fill(repo / out["md"], ALL_MID)
+    run(repo, "build", "--company", "7203", capsys=capsys)
+    market = repo / "companies" / "7203_toyota" / "raw" / "market"
+    (market / "2026-10-20_industry-overview.md").write_text(
+        "# 差分\n\n## 5. 顧客の購買決定要因\n\n—\n\n## 7. 業界全体の利益率の推移\n\n| 年 | 利益率 |\n|---|---|\n| — | — |\n",
+        encoding="utf-8")
+    _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-21", capsys=capsys)
+    assert out["result"] == "fresh", out  # optional sections went from missing to blank: nothing new to read
+
+
+def test_prepare_refuses_missing_inputs_unless_collection_was_given_up(tmp_path, capsys):
+    _templates(tmp_path)
+    _company(tmp_path, share="—")
+    code, out = run(tmp_path, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert code == 1 and out["next"] == "collect"
+    code, out = run(tmp_path, "prepare", "--company", "7203", "--date", DAY, "--skip-collect", capsys=capsys)
+    assert code == 0 and out["skipped_collect"][0]["agent"] == "collect-market"
+
+
+def test_untouched_skeleton_is_regenerated_without_redo(repo, capsys):
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    md = repo / out["md"]
+    _company(repo, ratio="15.0%", collected="2026-10-11")
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert not out["kept"] and out["regenerated"] and "15.0%" in md.read_text(encoding="utf-8")
+    md.write_text(md.read_text(encoding="utf-8").replace("<!-- FILL:industry ", "自動車 <!-- FILL:industry "),
+                  encoding="utf-8")
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["kept"] and not out["regenerated"]
 
 
 def test_second_analysis_shows_previous_and_requires_change_reason(repo, capsys):

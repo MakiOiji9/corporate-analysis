@@ -362,23 +362,37 @@ def test_newer_business_overview_triggers(repo, capsys):
     fill(repo / out["md"])
     run(repo, "build", "--company", "7203", capsys=capsys)
     path = repo / "companies" / "7203_toyota" / "raw" / "ir" / "2026-11-01_business-overview.md"
-    path.write_text(BUSINESS, encoding="utf-8")
+    path.write_text(BUSINESS.replace("個人顧客が中心", "法人顧客が中心"), encoding="utf-8")
     _, out = run(repo, "check", "--company", "7203", "--date", "2026-12-01", capsys=capsys)
     assert out["result"] == "triggered" and out["newer_raw"] == [
         "companies/7203_toyota/raw/ir/2026-11-01_business-overview.md"]
 
 
-def test_raw_collected_later_on_the_analysis_day_triggers(repo, capsys):
+def test_same_values_again_do_not_trigger_but_changed_values_do(repo, capsys):
     _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
     fill(repo / out["md"])
     run(repo, "build", "--company", "7203", capsys=capsys)
     _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
     assert out["result"] == "fresh"  # the analysis used every raw there is
     market = repo / "companies" / "7203_toyota" / "raw" / "market"
+    original = (market / "2026-10-01_competitors.md").read_text(encoding="utf-8")
+    peer_figures = "## 2." + original.split("## 2.", 1)[1].split("## 4.", 1)[0]
     (market / f"{DAY}_competitors.md").write_text(
-        (market / "2026-10-01_competitors.md").read_text(encoding="utf-8"), encoding="utf-8")
+        "# 差分\n\n## 9. 売上原価率・販管費率（コスト構造の比較）\n\n| 会社 | 原価率 |\n|---|---|\n| トヨタ | 70% |\n\n"
+        + peer_figures, encoding="utf-8")
+    _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["result"] == "fresh", out  # a section 3C does not read + the same peer figures again
+    (market / f"{DAY}_competitors.md").write_text(original.replace("| 50億円 | 2億円 |", "| 55億円 | 3億円 |"),
+                                                 encoding="utf-8")
     _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
     assert out["result"] == "triggered" and out["newer_raw"] == [f"companies/7203_toyota/raw/market/{DAY}_competitors.md"]
+
+
+def test_prepare_refuses_until_five_forces_is_fresh(tmp_path, capsys):
+    _templates(tmp_path)
+    _company(tmp_path)
+    code, out = run(tmp_path, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert code == 1 and out["next"] == "five_forces" and "five-forces" in out["error"]
 
 
 @pytest.mark.parametrize("top, a, competitor, win, verdict", [

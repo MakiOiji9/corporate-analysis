@@ -8,7 +8,7 @@ collect-company-info・collect-market-info・market-report が集めた材料か
 - `.../{日付}_brief.md` — 執筆の材料（raw から必要な節だけを抜き出したもの）
 
 `{日付}` は分析日。業界の構造は頻繁に変わらないため、結果は **365日有効**で、期間内は再実行しても既存の結果を返すだけにする。
-ただし期限前でも、分析後に新しい有報・業界概要・競合の raw が収集されたら再分析する。
+ただし期限前でも、分析が使った節（有報・業界概要・競合）の中身が新しい raw で変わったら再分析する。分析が使わない節だけを足した raw（モート用のコスト構造など）や、同じ値を再掲した raw では再分析しない。
 
 抽出・数値の判定・採点・検証はスクリプト（`tools/analysis/five_forces.py`）が行う。
 LLM が受け持つのは five-forces.md の FILL 欄（各要因の評価と根拠の文章）だけ。手順は **企業の選択 → 鮮度確認 → 準備 → 執筆 → ビルド** に固定されている。
@@ -67,18 +67,20 @@ $PY -I tools/analysis/five_forces.py check --company {company}
 | `prepare`（`none` / `expired` / `triggered` / `draft`） | 手順 2 へ |
 
 - 地合い（outlook.md）は md のヘッダーで参照するだけで、業界構造の判断には使わない。そのため古くても（`outlook_stale: true`）market-report は実行しない。完了報告の「材料」行に「地合いは N 日前の週（古い）」と書く
-- 収集（collect-company-info）は**1回の実行につき1回まで**。やり直した check でまだ `collect` が出ても、もう一度は収集せず手順 2 に進む（取れなかった材料の要因は「不明」として扱い、6章に書く）
+- 収集（collect-company-info）は**1回の実行につき1回まで**。やり直した check でまだ `collect` が出ても、もう一度は収集せず手順 2 に `--skip-collect` を付けて進む（取れなかった材料の要因は「不明」として扱い、6章に書く）
+- check と prepare を1つのコマンドにつなげない。prepare も `next` を確かめ、`collect` のままなら `ok: false` で拒否する
 - `unavailable` は「収集を試みたが取れなかった」材料（status.md の未取得項目）。再収集しない
 - 収集スキルが止まった（ユーザーへの確認待ち・エラー）ときは、このスキルも止めて状況を報告する
 
 ### 2. 準備（スクリプト）
 
 ```
-$PY -I tools/analysis/five_forces.py prepare --company {company} [--redo]
+$PY -I tools/analysis/five_forces.py prepare --company {company} [--redo] [--skip-collect]
 ```
 
 - `{日付}_brief.md`（材料）と `{日付}_five-forces.md`（FILL つきの骨組み）を作る。返り値の `brief`・`md` がそのパス
 - 作成途中の md（FILL が残っている）は上書きせず残す（`kept: true`）。続きから書く
+- 一字も書いていない骨組み（前回の prepare が書いたままの md）は、`--redo` なしで作り直す（`regenerated: true`）
 - 同じ日に build 済みの結果があると `--redo` は拒否される。その日の md を Edit で直して build し直す
 - `candidates` はスクリプトの判定候補（数値で決まる基準: ③ 買い手の最大顧客比率と前期からの変化、④ 売り手の粗利率の最大低下幅）
 - brief には、スクリプトが計算した数値も入る: ④ に自社の粗利率・営業利益率の時系列、⑤ に競合と自社の営業利益率の推移（最新実績の前年差・会社予想）。比率・差分が欲しいときはここから転記し、自分で計算しない

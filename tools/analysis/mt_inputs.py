@@ -5,7 +5,8 @@ only the list of inputs differs. Headings come from .ai/templates/collect-compan
 """
 from __future__ import annotations
 
-from ff_inputs import Found, Spec, collect_requests, gather, raw_files  # noqa: F401  (re-exported)
+from ff_inputs import (Found, Spec, changed_input_files, collect_requests, gather, input_digests,  # noqa: F401
+                       raw_files, unavailable_items)  # (re-exported)
 from ff_inputs import newer_trigger_files as ff_newer_trigger_files
 from ff_inputs import raw_seen as ff_raw_seen
 

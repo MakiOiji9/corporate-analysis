@@ -14,6 +14,7 @@ ticker, name, url, market, mode, 企業ディレクトリ, 収集日, update の
 - `raw/market/{収集日}_competitors.md`, `raw/ir/{収集日}_valuation-data.md`
 - `fetch.py` 経由の `sources/`（競合の短信など）
 - **書かない**: `status.md`, `overview.md`, `summaries/`, `data/`（`tdnet_summary.py` を競合に使う場合は `--company` を付けず標準出力だけ使う）, 他担当の raw
+- mode=update の差分ファイルは、今回の範囲の章だけを書く。範囲外の章は見出しごと書かない（「変更なし」と書かない。前回の値を再掲しない。collect-company-info.md の保存ルール）
 
 ## Phase 5: 競合
 1. 主力事業を自分で特定する（collect-market と同じ手早い確認でよい）

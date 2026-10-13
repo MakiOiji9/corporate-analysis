@@ -8,7 +8,7 @@ collect-company-info・collect-market-info・market-report が集めた材料と
 - `.../{日付}_brief.md` — 執筆の材料（raw から必要な節を抜き出し、営業利益率の同業比較と判定候補を計算したもの）
 
 `{日付}` は分析日。結果は **180日有効**で、期間内は再実行しても既存の結果を返すだけにする。
-ただし期限前でも、分析後に新しい有報・財務時系列・事業概要・業界概要・競合の raw、または新しい3C分析ができたら再分析する。
+ただし期限前でも、分析が使った節（有報・財務時系列・事業概要・業界概要・競合）の中身が新しい raw で変わったとき、または新しい3C分析ができたときは再分析する。分析が使わない節だけを足した raw や、同じ値を再掲した raw では再分析しない（build が使った節のハッシュを json に記録し、check が比べる）。
 
 抽出・数値の計算（自社と同業平均の営業利益率の年次比較・連続して上回った年数・コスト構造の表）・材料の過不足の判定・検証・**数字の裏付け（強い/弱い/なし/不明）と結論（広い/狭い/なし/判定保留）の判定**はスクリプト（`tools/analysis/moat.py`）が行う。
 LLM が受け持つのは moat.md の FILL 欄（モート5種の判定と根拠・シェアの推移・崩しうる要因・引き継ぎ）だけ。手順は **企業の選択 → 鮮度確認 → 準備 → 執筆 → ビルド** に固定されている。
@@ -65,26 +65,29 @@ $PY -I tools/analysis/moat.py check --company {company}
 | `report_existing`（`result: fresh`） | 有効期間内。`latest`（md・結論・有効期限）を完了報告の形式で伝えて**終わる**（執筆しない）。`redo` の指示があるときだけ手順 2 へ |
 | `collect` で `needs_full_collect: true` | raw が無い。collect-company-info を `mode=full` で実行し、check をやり直す |
 | `three_c` | 3C分析（STEP 1-2）の結果が無い・期限切れ・再分析要・作成途中（`three_c.result`）。**three-c スキルを最後の完了報告まで実行**してから check をやり直す（ファイブフォース・材料の収集が要れば three-c の中で行われる） |
-| `collect` | モートに必須の材料が足りない（節が無い・空・中身が薄い）。collect-company-info を `mode=update` で実行し、`missing_inputs` の担当（`agent`）と項目（`items`）を範囲として伝える。終わったら check をやり直す |
+| `collect` | モートに必須の材料が足りない（節が無い・空・中身が薄い）、または営業利益率を同業と比べられた年が7年未満で、どの年も同業平均を上回っている（古い年を集めれば「強い」になりうる。項目は「競合: 営業利益率の推移（7年以上）」）。collect-company-info を `mode=update` で実行し、`missing_inputs` の担当（`agent`）と項目（`items`）を範囲として伝える。終わったら check をやり直す |
 | `prepare`（`none` / `expired` / `triggered` / `draft`） | 手順 2 へ |
 
 - **3C の結論（勝てる理由 なし・判定保留）ではモート分析を止めない**。3C の結論は md のヘッダーと1章に記録され、執筆の前提になる
 - 地合い（outlook.md）は md のヘッダーで参照するだけで、モートの判断には使わない。古くても（`outlook_stale: true`）market-report・collect-market-info は実行しない。完了報告の「材料」行に「地合いは N 日前の週（古い）」と書く
-- three-c の実行は**1回の実行につき1回まで**。やり直した check でまだ `three_c` が出たら（three-c が止まった・作成途中のまま）、このスキルも止めて状況を報告する
-- 収集（collect-company-info）は**1回の実行につき1回まで**（three-c・five-forces の中で収集した場合も1回と数える）。やり直した check でまだ `collect` が出ても、もう一度は収集せず手順 2 に進む（取れなかった材料に関わる判定は「不明」として扱い、8章に書く）
+- three-c の実行は**1回の実行につき1回まで**。やり直した check でまだ `three_c` が出たら（three-c が止まった・作成途中のまま）、このスキルも止めて状況を報告する。three-c を実行したときは、その理由（`three_c.reason`。期限切れ・新しい raw・作成途中など）と結論が前回から変わったかを完了報告の「材料」行に書く
+- 収集（collect-company-info）は**1回の実行につき1回まで**（three-c・five-forces の中で収集した場合も1回と数える）。やり直した check でまだ `collect` が出ても、もう一度は収集せず手順 2 に `--skip-collect` を付けて進む（取れなかった材料に関わる判定は「不明」として扱い、8章に書く）
+- check と prepare を1つのコマンドにつなげない（check の `next` を見てから次へ進む）。prepare も `next` を確かめ、`three_c`・`collect` のままなら `ok: false` で拒否する
 - `unavailable` は「収集を試みたが取れなかった」材料（status.md の未取得項目）。再収集しない
 - 収集スキル・three-c が止まった（ユーザーへの確認待ち・エラー）ときは、このスキルも止めて状況を報告する
 
 ### 2. 準備（スクリプト）
 
 ```
-$PY -I tools/analysis/moat.py prepare --company {company} [--redo]
+$PY -I tools/analysis/moat.py prepare --company {company} [--redo] [--skip-collect]
 ```
 
 - `{日付}_brief.md`（材料）と `{日付}_moat.md`（FILL つきの骨組み）を作る。返り値の `brief`・`md` がそのパス
-- 骨組みには、**1章の3Cの結論と強み候補**、スクリプトが計算した **3.1 営業利益率の同業比較**（年度ごとの自社・同業平均・差・比較した競合と決算期）と判定候補、**3.2 コスト構造**（competitors.md の表と競合の単純平均）、前回の判定が記入済み
+- 骨組みには、**1章の3Cの結論と強み候補**、スクリプトが計算した **3.1 営業利益率の同業比較**（年度ごとの自社・同業平均・差・比較した競合と決算期）と判定候補、**3.2 コスト構造**（competitors.md の表と競合の単純平均）、前回の判定が記入済み。brief には同じ表を載せない
 - 作成途中の md（FILL が残っている）は上書きせず残す（`kept: true`）。続きから書く
-- 同じ日に build 済みの結果があると `--redo` は拒否される。その日の md を Edit で直して build し直す
+- 一字も書いていない骨組み（前回の prepare が書いたままの md）は、`--redo` なしで作り直す（`regenerated: true`）。材料が変わった・スクリプトを直したときは prepare をもう一度実行すればよい
+- `--redo` は完成済みの結果（有効期間内）と書きかけの md を作り直すときだけ使う（ユーザーの指示があるときだけ）。同じ日に build 済みの結果があると `--redo` は拒否される。その日の md を Edit で直して build し直す
+- `warnings`（brief の「警告」節にも出る）は、スクリプトが raw を読み違えた可能性（表の列がすべて読めない、自社の営業利益率が出典で違うなど）。空でなければ、執筆の前に該当する表を確かめ、完了報告の「警告」行に書く
 - `candidates.margin` はスクリプトの判定候補（営業利益率が同業平均を連続で上回った年数 `years_above` から 強い/弱い/なし。確定）。シェアの推移と合わせた「数字の裏付け」は build が決める
 
 ### 3. 執筆（LLM）
@@ -164,6 +167,7 @@ $PY -I tools/analysis/moat.py build --company {company}
 - スクリプトが作るファイル（brief.md・json）と、moat.md の1章の3Cの結論・強み候補・3.1・3.2・前回の判定・5章を手で直さない
 - 有効期間内の結果を作り直さない（`--redo` はユーザーの指示があるときだけ）。過去の日付の完成済み md を変更しない（hook がブロックする）
 - 投資の勧誘・推奨、「おそらく」「〜と思われる」を書かない（build が検出する）
+- 収集担当（collect-company-info）へのプロンプトで、raw の書き方（範囲外の章に「変更なし」と書く、前回の表を再掲するなど）を指示しない。書き方は collect-company-info.md の保存ルールに任せる（「変更なし」の節や再掲は、前回の材料を隠したり上流の分析を再実行させたりする）
 
 ※ グローバル設定の hook（Fact-Forcing Gate）が、最初の Bash と、ファイルごとの最初の Edit を一度差し戻すことがある。求められた事実を示して同じ操作を再実行すれば通る。
 
@@ -182,7 +186,8 @@ check・prepare・build の JSON（three-c・収集を実行した場合はそ�
   - 持続の見込み: {durability}（5年以内の要因: {near_risks。無ければ「なし」}）
 - 判断が分かれた判定: {tie_breaks。無ければ「なし」} / 根拠が参考情報だけの判定: {low_confidence。無ければ「なし」} / 不明の判定: {unknown。無ければ「なし」}
 - 有効期限: {valid_until}（それまでは再実行しても再分析しない）
-- 材料: {3C {three_c.date}（勝てる理由 {three_c.verdict}）。今回 three-c・collect-company-info を実行した・しなかった。地合いが古ければ「地合いは N 日前の週（古い）」。1社のため選択を省略したならその旨。unavailable があれば列挙}
+- 材料: {3C {three_c.date}（勝てる理由 {three_c.verdict}）。今回 three-c・collect-company-info を実行した・しなかった（three-c を実行したならその理由と、結論が前回から変わったか。--skip-collect で進んだならその項目）。地合いが古ければ「地合いは N 日前の週（古い）」。1社のため選択を省略したならその旨。unavailable があれば列挙}
+- 警告: {prepare の warnings。無ければ「なし」}
 - 欠損: {gaps の全件の要点。無ければ「なし」}
 - 次に集める材料: {verdict が「判定保留」のときだけ。競合の営業利益率の推移（collect-peers-valuation）。collect-company-info で集めると新しい raw として再分析の対象になる}
 ```

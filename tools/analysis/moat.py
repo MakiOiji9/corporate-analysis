@@ -43,6 +43,7 @@ from common import atomic_write_text, utf8_stdout  # noqa: E402
 
 TEMPLATE = A.REPO_ROOT / ".ai" / "templates" / "moat" / "moat.md"
 OUTLOOK_HEADER = re.compile(r"^\*\*地合い\*\*:\s*(.+)$", re.M)
+MARGIN_KEY = "margin_series"  # input_digests entry for the 3.1 comparison (read beyond the SPECS sections)
 
 
 def emit(payload: dict) -> int:
@@ -75,7 +76,15 @@ def evaluate(company: P.Company, today: str) -> dict:
         state["latest"] = {"date": date, "md": company.rel(company.file(date, P.MD_SUFFIX)),
                            "json": company.rel(company.file(date, P.JSON_SUFFIX)),
                            "verdict": result.get("verdict"), "valid_until": result.get("valid_until") or P.valid_until(date)}
-        state["newer_raw"] = I.newer_trigger_files(company, date, result.get("inputs") or (), result.get("seen") or ())
+        digests = result.get("input_digests")
+        if digests is None:  # results built before digests
+            state["newer_raw"] = I.newer_trigger_files(company, date, result.get("inputs") or (),
+                                                       result.get("seen") or ())
+        else:
+            found = I.gather_moat(company)
+            state["newer_raw"] = I.changed_input_files(company, found, digests)
+            if digests.get(MARGIN_KEY, "") != X.margin_digest(X.candidates(company, found)):
+                state["newer_raw"].append("（営業利益率の時系列: data/*.csv・財務時系列・有報・競合）")
         tc = TP.latest_result(_tc_company(company))
         if tc and tc[0] > date:
             state["newer_raw"].append(company.rel(_tc_company(company).file(tc[0], TP.JSON_SUFFIX)))
@@ -137,6 +146,23 @@ def cmd_list(args: argparse.Namespace, root: Path) -> int:
     return emit({"ok": True, "companies": rows})
 
 
+def _requests(company: P.Company, found: dict, cands: dict) -> list[dict]:
+    """Missing required sections, plus older peer margins when they could still lift the candidate to 強い."""
+    return X.with_history_request(I.collect_requests(found), cands["margin"], I.unavailable_items(company))
+
+
+def _next_step(company: P.Company, result: str, tc_result: str, requests: list[dict]) -> str:
+    if result == "fresh":
+        return "report_existing"
+    if not _has_raw(company):
+        return "collect"
+    if tc_result != "fresh":
+        return "three_c"  # STEP 1-2 first; the three-c skill runs five-forces and collection itself
+    if requests:
+        return "collect"
+    return "prepare"  # the 3C verdict (なし / 判定保留) does not stop the moat analysis
+
+
 def cmd_check(args: argparse.Namespace, root: Path) -> int:
     company, error = _resolve(root, args.company)
     if error:
@@ -145,18 +171,9 @@ def cmd_check(args: argparse.Namespace, root: Path) -> int:
     state = evaluate(company, today)
     tc_state = TC.evaluate(_tc_company(company), today)
     found = I.gather_moat(company)
-    requests = I.collect_requests(found)
+    requests = _requests(company, found, X.candidates(company, found))
     outlook = A.latest_outlook(root, today)
-    if state["result"] == "fresh":
-        next_step = "report_existing"
-    elif not _has_raw(company):
-        next_step = "collect"
-    elif tc_state["result"] != "fresh":
-        next_step = "three_c"  # STEP 1-2 first; the three-c skill runs five-forces and collection itself
-    elif requests:
-        next_step = "collect"
-    else:
-        next_step = "prepare"  # the 3C verdict (なし / 判定保留) does not stop the moat analysis
+    next_step = _next_step(company, state["result"], tc_state["result"], requests)
     return emit({"ok": True, "company": company.dirname, "name": company.display_name(), **state,
                  "three_c": {"result": tc_state["result"], "reason": tc_state["reason"],
                              "latest": tc_state["latest"]},
@@ -212,24 +229,39 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     if args.redo and company.file(today, P.JSON_SUFFIX).exists():
         return emit({"ok": False, "error": f"{today} の分析は build 済み。同じ日に作り直さず、"
                      f"{company.rel(company.file(today, P.MD_SUFFIX))} を Edit で直して build し直す"})
-    draft = P.latest_draft(company)
-    kept = state["result"] == "draft" and not args.redo  # an older draft behind a built result is abandoned
-    date = draft[0] if kept and draft else today
     found = I.gather_moat(company)
     cands = X.candidates(company, found)
+    requests = _requests(company, found, cands)
+    draft = P.latest_draft(company)
+    untouched = bool(draft) and A.is_untouched(company.file(draft[0], P.BRIEF_SUFFIX), draft[1])
+    kept = state["result"] == "draft" and not args.redo and not untouched  # an older draft behind a built result is abandoned
+    blocking = _next_step(company, "none", TC.evaluate(_tc_company(company), today)["result"], requests)
+    gate = None if kept else A.prepare_gate(blocking, _has_raw(company), args.skip_collect)  # a started draft goes on
+    if gate:
+        return emit({"ok": False, "error": gate, "next": blocking, "missing_inputs": requests})
+    if untouched and draft[0] != today:
+        for suffix in (P.MD_SUFFIX, P.BRIEF_SUFFIX):  # nobody wrote into it: today's skeleton replaces it
+            company.file(draft[0], suffix).unlink(missing_ok=True)
+    date = draft[0] if kept and draft else today
     previous = P.latest_result(company, before=date)
     three_c = TP.latest_result(_tc_company(company))
     five_forces = FP.latest_result(_ff_company(company))
     outlook = A.latest_outlook(root, today)
+    warnings = X.warnings(cands)
     brief_path, md_path = company.file(date, P.BRIEF_SUFFIX), company.file(date, P.MD_SUFFIX)
-    atomic_write_text(brief_path, B.render_brief(company, date, P.valid_until(date), found, cands, previous,
-                                                 three_c, five_forces, outlook))
+    brief = B.render_brief(company, date, P.valid_until(date), found, cands, previous, three_c, five_forces,
+                           outlook, warnings)
     if not kept:
         values = _values(company, date, found, three_c, five_forces, outlook)
-        atomic_write_text(md_path, D.render_skeleton(_template(root), values, cands, previous))
+        skeleton = D.render_skeleton(_template(root), values, cands, previous)
+        atomic_write_text(md_path, skeleton)
+        brief = A.mark_skeleton(brief, skeleton)
+    atomic_write_text(brief_path, brief)
     return emit({
         "ok": True, "company": company.dirname, "date": date, "brief": company.rel(brief_path),
-        "md": company.rel(md_path), "kept": kept, "fill": len(A.FILL.findall(md_path.read_text(encoding="utf-8"))),
+        "md": company.rel(md_path), "kept": kept, "regenerated": untouched and not args.redo,
+        "skipped_collect": requests if blocking == "collect" else [], "warnings": warnings,
+        "fill": len(A.FILL.findall(md_path.read_text(encoding="utf-8"))),
         "candidates": {"margin": cands["margin"]["rating"], "years_above": cands["margin"]["years_above"],
                        "compared_years": cands["margin"]["compared_years"]},
         "previous": previous[0] if previous else None, "three_c": _three_c_summary(company, three_c),
@@ -273,7 +305,8 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: d
         "changes": parsed["changes"], "gaps": parsed["gaps"],
         "inputs": sorted({company.rel(f.path) for f in found.values() if f.path is not None}),
         "seen": I.raw_seen(company),
-        "three_c":({"date": three_c[0], "verdict": three_c[1].get("verdict")} if three_c else None),
+        "input_digests": {**I.input_digests(found), MARGIN_KEY: X.margin_digest(cands)},
+        "three_c": ({"date": three_c[0], "verdict": three_c[1].get("verdict")} if three_c else None),
         "outlook": _header_path(text, OUTLOOK_HEADER),
         "previous": {"date": previous[0], "verdict": previous[1].get("verdict")} if previous else None,
         "md": company.rel(company.file(date, P.MD_SUFFIX)),
@@ -325,6 +358,8 @@ def main(argv: list[str] | None = None, root: Path = A.REPO_ROOT) -> int:
         p.add_argument("--date", help="YYYY-MM-DD（check/prepare: 今日の代わり、build: 対象の分析日。省略時は今日／最新）")
         if name == "prepare":
             p.add_argument("--redo", action="store_true", help="有効な結果・作成途中の結果があっても作り直す")
+            p.add_argument("--skip-collect", action="store_true",
+                           help="収集を1回試しても材料が足りないまま進む（欠損は brief の「取れていない材料」に出る）")
     args = parser.parse_args(argv)
     if getattr(args, "date", None):
         try:

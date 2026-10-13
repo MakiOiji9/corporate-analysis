@@ -11,6 +11,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+import an_common as A
 import mdparse as M
 from ff_paths import DATED, Company
 
@@ -196,6 +197,25 @@ def summary_main_business(company: Company) -> str:
         return ""
     found = M.section_by_title(path.read_text(encoding="utf-8"), "主力事業")
     return found[1].strip() if found else ""
+
+
+def _section_digest(f: Found) -> str:
+    """Only usable content counts: a blank, thin or unobtainable section reads as nothing, so wording changes in
+    such a section (or a heading added with an empty body) re-open nothing."""
+    return A.digest(COMMENT.sub("", f.body).strip()) if f.status == "ok" else ""
+
+
+def input_digests(found: dict[str, Found]) -> dict[str, str]:
+    """Digest of each input section the analysis read (recorded at build)."""
+    return {key: _section_digest(f) for key, f in found.items()}
+
+
+def changed_input_files(company: Company, found: dict[str, Found], recorded: dict[str, str]) -> list[str]:
+    """Raw files whose section now differs from what the analysis read: a newer file that only adds sections
+    the analysis does not use, or repeats the same values, re-opens nothing."""
+    paths = {company.rel(f.path) if f.path is not None else f"（{f.spec.label}）"
+             for key, f in found.items() if _section_digest(f) != recorded.get(key, "")}
+    return sorted(paths)
 
 
 def raw_seen(company: Company, kinds: tuple[str, ...] = TRIGGER_KINDS) -> list[str]:

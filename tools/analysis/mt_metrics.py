@@ -10,11 +10,13 @@ The comparison table (3.1) and the cost-structure table (3.2) are computed here 
 """
 from __future__ import annotations
 
+import json
 import re
 
+import an_common as A
 import mdparse as M
 from ff_inputs import Found, raw_files
-from ff_metrics import FORECAST, PERCENT, _margins_from_table, _months_apart, _peer_rows, peer_margins
+from ff_metrics import FORECAST, PERCENT, _margins_from_table, _months_apart, _peer_rows, _year, peer_margins
 from tc_metrics import MAX_PEERS, _is_self, _series_from_data
 
 STRONG_YEARS = 7  # framework: 過去10年（最低でも7年以上）
@@ -143,6 +145,61 @@ def candidates(company, found: dict[str, Found]) -> dict:
     rows = comparison_rows(margins, peers(company, found["peers"]))
     costs = cost_rows(company, found["peer_cost"])
     return {"margin": margin_candidate(rows), "rows": rows, "sources": sources, "costs": costs}
+
+
+# ---------- 収集の要求 ----------
+
+HISTORY_AGENT = "collect-peers-valuation"
+HISTORY_ITEM = f"競合: 営業利益率の推移（{STRONG_YEARS}年以上）"
+HISTORY_UNAVAILABLE = "営業利益率の長期推移"  # collect-peers-valuation reports a short history under this name
+
+
+def needs_longer_history(margin: dict, unavailable: list[str]) -> bool:
+    """Older peer margins could still lift the candidate to 強い: the target is above the peer average in every
+    year that could be compared, but fewer than STRONG_YEARS years could be. Not asked again once status.md
+    lists the short history as unobtainable. A run already broken inside the compared years cannot reach 強い."""
+    if any(HISTORY_UNAVAILABLE in item for item in unavailable):
+        return False
+    return (margin["rating"] == "弱い" and margin["years_above"] == margin["compared_years"]
+            and margin["compared_years"] < STRONG_YEARS)
+
+
+def with_history_request(requests: list[dict], margin: dict, unavailable: list[str]) -> list[dict]:
+    """collect_requests plus the longer peer history when it could change the candidate (a new list)."""
+    if not needs_longer_history(margin, unavailable):
+        return requests
+    if any(r["agent"] == HISTORY_AGENT for r in requests):
+        return [dict(r, items=r["items"] + [HISTORY_ITEM]) if r["agent"] == HISTORY_AGENT else r for r in requests]
+    return requests + [{"agent": HISTORY_AGENT, "items": [HISTORY_ITEM]}]
+
+
+# ---------- 材料の警告 ----------
+
+MISMATCH_PT = 0.1  # the target's margin in 3.1 and 3.2 may differ by rounding only
+
+
+def margin_digest(cands: dict) -> str:
+    """The yearly comparison (3.1) behind the margin candidate. Recorded at build: the series is read from every
+    P/L table and data/*.csv, not only from the sections in SPECS, so a new fiscal year re-opens the result."""
+    rows = [[r["year"], r["self"], [[m["name"], m["year"], m["margin"]] for m in r["peers"]]] for r in cands["rows"]]
+    return A.digest(json.dumps(rows, ensure_ascii=False))
+
+
+def warnings(cands: dict) -> list[str]:
+    """Signs that the brief or the skeleton read the raw wrongly (shown to the writer and in prepare's output)."""
+    out = []
+    costs = cands["costs"]
+    for key, label in (("cost", "売上原価率"), ("sga", "販管費率")):  # 営業利益率 may be left out of the table
+        if costs and all(r[key] is None for r in costs):
+            out.append(f"3.2 コスト構造の{label}が全社で読めない（competitors.md「コスト構造」の列名を確認）")
+    series = {r["year"]: r["self"] for r in cands["rows"]}
+    for r in costs:
+        year = _year(r["year"])
+        if (r["self"] and r["margin"] is not None and year in series
+                and round(abs(series[year] - r["margin"]), 1) >= MISMATCH_PT):
+            out.append(f"自社の営業利益率 {year} が 3.1（{series[year]:.1f}%）と 3.2（{r['margin']:.1f}%）で違う"
+                       f"（出典が違う。判定は 3.1 の値で行われる）")
+    return out
 
 
 # ---------- コスト構造 ----------

@@ -8,7 +8,7 @@ collect-company-info・collect-market-info・market-report が集めた材料と
 - `.../{日付}_brief.md` — 執筆の材料（raw から必要な節を抜き出し、比較表と判定候補を計算したもの）
 
 `{日付}` は分析日。結果は **180日有効**で、期間内は再実行しても既存の結果を返すだけにする。
-ただし期限前でも、分析後に新しい有報・事業概要・業界概要・競合の raw、または新しいファイブフォース分析ができたら再分析する。
+ただし期限前でも、分析が使った節（有報・事業概要・業界概要・競合）の中身が新しい raw で変わったとき、または新しいファイブフォース分析ができたときは再分析する。分析が使わない節だけを足した raw（モート用のコスト構造など）や、同じ値を再掲した raw では再分析しない。
 
 抽出・数値の計算（比較表・成長性と競合比較の判定候補・競合の営業利益率の平均）・材料の過不足の判定・検証・**結論（明確/あいまい/なし/判定保留）の判定**はスクリプト（`tools/analysis/three_c.py`）が行う。
 LLM が受け持つのは three-c.md の FILL 欄（顧客・KBF・評価と根拠の文章・KBF 比較表）だけ。手順は **企業の選択 → 鮮度確認 → 準備 → 執筆 → ビルド** に固定されている。
@@ -70,7 +70,8 @@ $PY -I tools/analysis/three_c.py check --company {company}
 
 - 地合い（outlook.md）は md のヘッダーで参照するだけで、3C の判断には使わない。そのため古くても（`outlook_stale: true`）market-report・collect-market-info は実行しない。完了報告の「材料」行に「地合いは N 日前の週（古い）」と書く
 - five-forces の実行は**1回の実行につき1回まで**。やり直した check でまだ `five_forces` が出たら（five-forces が止まった・作成途中のまま）、このスキルも止めて状況を報告する
-- 収集（collect-company-info）は**1回の実行につき1回まで**（five-forces の中で収集した場合も1回と数える）。やり直した check でまだ `collect` が出ても、もう一度は収集せず手順 2 に進む（取れなかった材料に関わる評価は「不明」「？」として扱い、8章に書く）
+- 収集（collect-company-info）は**1回の実行につき1回まで**（five-forces の中で収集した場合も1回と数える）。やり直した check でまだ `collect` が出ても、もう一度は収集せず手順 2 に `--skip-collect` を付けて進む（取れなかった材料に関わる評価は「不明」「？」として扱い、8章に書く）
+- check と prepare を1つのコマンドにつなげない。prepare も `next` を確かめ、`five_forces`・`collect` のままなら `ok: false` で拒否する
 - `unavailable` は「収集を試みたが取れなかった」材料（status.md の未取得項目）。再収集しない
 - 「中身が薄い」は、KBF の調査・競合の顧客・人員の KPI・競合の強みの節で、表に空の会社の行（会社名以外がすべて —）があるもの、または表の無い節が「見つからなかった」「確認できず」などと書いているもの。KBF の比較（3章）が成り立たなくなるため収集を求める
 - 収集スキル・five-forces が止まった（ユーザーへの確認待ち・エラー）ときは、このスキルも止めて状況を報告する
@@ -78,12 +79,13 @@ $PY -I tools/analysis/three_c.py check --company {company}
 ### 2. 準備（スクリプト）
 
 ```
-$PY -I tools/analysis/three_c.py prepare --company {company} [--redo]
+$PY -I tools/analysis/three_c.py prepare --company {company} [--redo] [--skip-collect]
 ```
 
 - `{日付}_brief.md`（材料）と `{日付}_three-c.md`（FILL つきの骨組み）を作る。返り値の `brief`・`md` がそのパス
 - 骨組みには、スクリプトが計算した **2.1 比較表**（対象企業と競合最大3社の売上高・営業利益率・シェア・売上高3年CAGR）、**3章の競合の凡例**（競合A〜C）、判定候補、前回の評価が記入済み
 - 作成途中の md（FILL が残っている）は上書きせず残す（`kept: true`）。続きから書く
+- 一字も書いていない骨組み（前回の prepare が書いたままの md）は、`--redo` なしで作り直す（`regenerated: true`）
 - 同じ日に build 済みの結果があると `--redo` は拒否される。その日の md を Edit で直して build し直す
 - `candidates` はスクリプトの判定候補（成長性: 先頭の市場の CAGR、競合との比較: 営業利益率とシェアの順位）。`competitor_fixed: true` なら競合との比較は確定で変えられない
 

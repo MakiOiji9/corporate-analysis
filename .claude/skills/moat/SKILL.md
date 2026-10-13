@@ -13,5 +13,7 @@ argument-hint: "[{銘柄コード|企業ディレクトリ名|社名の一部}] 
 - 手順 0（企業の選択）は AskUserQuestion で選択肢を出す。選択肢は最大4つなので、企業が5社以上あるときは `moat` が `fresh` 以外の企業を優先し、その中で分析日が古い順（未分析が先）に4社を出す（ほかの企業は「その他」で入力してもらう）。各選択肢の説明にモートの状態・分析日・結論・3Cの状態・最終収集日を書く。企業が1社だけなら AskUserQuestion を出さずにその企業で進む（AskUserQuestion は選択肢が2つ以上要る）
 - 手順 1 で `three_c` のときは、Skill ツールで `three-c` を起動する。引数は `{dir}`（3Cが `fresh` 以外なので再分析される）。その手順書を最後の完了報告まで実行してから、このスキルの手順 1 に戻る
 - 手順 1 で `collect` のときは、Skill ツールで `collect-company-info` を起動する。引数は `{ticker} mode=update 担当={missing_inputs の agent をカンマ区切り} 項目={items}`（`needs_full_collect` なら `mode=full`）。その手順書（並列モード）を最後の完了報告まで実行してから、このスキルの手順 1 に戻る
+- スクリプトは1コマンドずつ実行する（check の `next` を見てから prepare）。Windows で Bash ツールが動かないときは PowerShell ツールで `.venv\Scripts\python.exe -I tools/analysis/moat.py check --company {company}` のように実行する
+- collect-company-info を起動するときに、raw の書き方（範囲外の章の扱い・再掲）を引数やプロンプトで指定しない
 - 執筆（手順 3）はサブエージェントに任せず、自分で brief.md を読んで moat.md を Edit する（モートの特定・裏付け・持続性を一人の書き手が通して書く）。Edit は章・表ごとに1回
 - 書き込みは `tools/guard/write_guard.py`（PreToolUse hook）が監視する。ブロックされたら回避策を探さず、指摘に従う
