@@ -23,12 +23,13 @@
 | `three-c` | 3C分析（顧客・競合・自社から勝てる理由 明確/あいまい/なし（材料不足なら判定保留）。`companies/{ticker}_{name}/analysis/three-c/` に md と json。180日有効で期間内は再分析しない。ファイブフォースが未実施なら先に five-forces、材料が足りなければ collect-company-info を実行。地合いの outlook.md は参照するだけ） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
 | `moat` | モート分析（5種のモートの該当、営業利益率の同業比較とシェアの推移による裏付け、崩しうる要因から モート 広い/狭い/なし（材料不足なら判定保留）。`companies/{ticker}_{name}/analysis/moat/` に md と json。180日有効で期間内は再分析しない。3Cが未実施なら先に three-c（3Cの結論では止めない）、材料が足りなければ collect-company-info を実行。地合いの outlook.md は参照するだけ） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
 | `swot` | SWOT分析（1-1〜1-3 の結果と中計・事業等のリスク・業界・地合いの事実を4象限に振り分け、影響度 大/中/小 から最大の強みで最大の脅威に対抗できるかを SWOT Yes/条件付き/No（材料不足なら判定保留）で判定。`companies/{ticker}_{name}/analysis/swot/` に md と json。180日有効で期間内は再分析しない。モートが未実施なら先に moat（上流の結論では止めない）、地合いの outlook.md が無い・古ければ market-report、材料が足りなければ collect-company-info を実行。STEP 1 判定（A/B/C）はしない） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
+| `profitability` | 収益性分析（STEP 2-1。ROE の水準と安定性・営業利益率の同業比較・デュポン分解による源泉から 収益性 良好/普通/懸念（材料不足なら判定保留）。数値と判定は Python が出し、LLM は背景だけを書く。`companies/{ticker}_{name}/analysis/profitability/` に md と json。180日有効で期間内は再分析しない。材料が足りなければ collect-company-info を実行。STEP 1 は前提にせず、モート・3C の結果があれば整合性チェックに使う。地合いの outlook.md は参照するだけ） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
 
 ## ツールと初回セットアップ
 
 情報収集用の Python スクリプトは `tools/collect/`（地合い用は `tools/collect/market/`）、レポート作成用は `tools/report/` にある。使い方とセットアップは `tools/README.md` を参照。
 
-Copilot には書き込み hook が無いため、collect-market-info・market-report・five-forces・three-c・moat・swot の実行中は、ファイルを編集する前に `python -I tools/guard/write_guard.py --check <path>` を実行し、`BLOCKED` なら編集しない。
+Copilot には書き込み hook が無いため、collect-market-info・market-report・five-forces・three-c・moat・swot・profitability の実行中は、ファイルを編集する前に `python -I tools/guard/write_guard.py --check <path>` を実行し、`BLOCKED` なら編集しない。
 
 ## 言語ポリシー
 

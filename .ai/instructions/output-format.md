@@ -52,10 +52,14 @@ companies/{ticker}_{name}/
 │   │   ├── YYYY-MM-DD_brief.md          # 執筆の材料（スクリプトが生成）
 │   │   ├── YYYY-MM-DD_moat.md           # 分析結果（モートの強さ）。レポートはこれを参照する
 │   │   └── YYYY-MM-DD_moat.json         # 同じ結果の機械可読版（スクリプトが生成）
-│   └── swot/                    # SWOT分析（swot。180日有効）
+│   ├── swot/                    # SWOT分析（swot。180日有効）
+│   │   ├── YYYY-MM-DD_brief.md          # 執筆の材料（スクリプトが生成）
+│   │   ├── YYYY-MM-DD_swot.md           # 分析結果（4象限・最大の強み/脅威・SWOT の結論）。レポートはこれを参照する
+│   │   └── YYYY-MM-DD_swot.json         # 同じ結果の機械可読版（スクリプトが生成）
+│   └── profitability/           # 収益性分析（profitability。STEP 2-1。180日有効）
 │       ├── YYYY-MM-DD_brief.md          # 執筆の材料（スクリプトが生成）
-│       ├── YYYY-MM-DD_swot.md           # 分析結果（4象限・最大の強み/脅威・SWOT の結論）。レポートはこれを参照する
-│       └── YYYY-MM-DD_swot.json         # 同じ結果の機械可読版（スクリプトが生成）
+│       ├── YYYY-MM-DD_profitability.md  # 分析結果（ROE・デュポン分解・収益性の結論）。レポートはこれを参照する
+│       └── YYYY-MM-DD_profitability.json # 同じ結果の機械可読版（スクリプトが生成）
 ├── sessions/
 │   └── YYYY-MM-DD_{topic}/      # 分析セッション（1回の分析につき1ディレクトリ）
 │       ├── {分析ファイル群}      # 各フェーズの分析結果（スキル定義に従う）

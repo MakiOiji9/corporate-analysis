@@ -48,5 +48,7 @@ ticker, name, url, market, mode, 企業ディレクトリ, 収集日, 取得経�
 
 保存先: `raw/ir/{収集日}_financials-historical.md`（雛形 financials-historical.md）
 
+- 収益性分析（profitability）は 売上高・当期純利益（親会社株主に帰属）・総資産・自己資本（無ければ自己資本比率）が揃った年を5年以上要する。どの経路でも5年揃わなかったときは、親への報告の未取得項目に「収益性の財務時系列（N年分のみ）」と書く（status.md の未取得項目になり、収益性分析は再収集を求めなくなる）
+
 ## 報告
 `.ai/templates/collect-company-info/agent-report.md` の形式で返答する。5章に**主力事業の判定**（セグメント情報で営業利益構成比が最大のもの、単一ならその旨）とデータの時点（最新の有報・四半期）を必ず書く。
