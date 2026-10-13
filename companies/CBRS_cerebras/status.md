@@ -1,6 +1,6 @@
 # データ鮮度・未取得項目 — Cerebras Systems Inc.（CBRS）
 
-**最終更新**: 2026-10-14（mode=full）
+**最終更新**: 2026-10-14（mode=full。同日に mode=update で collect-filings を再実行したが新しい値なし）
 
 > collect-company-info を実行するたびに上書きする。`mode=update` はまずこのファイルと `sources/manifest.csv` を読む。
 

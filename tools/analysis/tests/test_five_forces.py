@@ -313,6 +313,18 @@ def test_a_carried_over_peer_selection_keeps_the_earlier_sections(repo):
     assert I.find(company, I.SPEC["peers"], []).path.name == "2026-10-01_competitors.md"
 
 
+def test_us_annual_disclosures_count_as_yuho(repo):
+    company = company_obj(repo)
+    filings = company.path / "raw" / "filings"
+    for p in filings.glob("*.md"):
+        p.unlink()
+    (filings / "2026-10-14_2025-12_424b4.md").write_text(
+        "# 424B4 抜粋\n\n## 3. 主要な販売先\n\n| 相手先 | 比率 |\n|---|---|\n| A社 | 62.0% |\n", encoding="utf-8")
+    (filings / "2026-10-14_2026-06_10q.md").write_text("# 10-Q\n\n## 4. 主要な販売先\n\n- B社 34%\n", encoding="utf-8")
+    assert [p.name for _, p in I.raw_files(company, "yuho")] == ["2026-10-14_2025-12_424b4.md"]  # 10-Q is not annual
+    assert I.find(company, I.SPEC["customers"], []).path.name == "2026-10-14_2025-12_424b4.md"
+
+
 def test_peer_selection_cutoff_applies_only_to_competitors(repo):
     company = company_obj(repo)
     (company.path / "raw" / "market" / "2026-10-05_industry-overview.md").write_text(

@@ -22,6 +22,9 @@ MEANINGLESS = re.compile(r"[\s|—\-:：（）()・]")
 THIN_WORDS = ("見つからなかった", "見つからない", "見つけられなかった", "確認できず", "確認できなかった", "未取得")
 CARRIED_OVER_WORDS = ("前回ファイルから変更なし", "今回の範囲外")  # a diff file's note for a section it did not collect
 PEER_KIND = "competitors"
+# US annual disclosures follow the same yuho.md template (collect-company-info「市場別の経路」): a 10-K, or the
+# prospectus (424B4 / S-1) of a company listed less than a year ago, is read wherever a 有報 is expected.
+KIND_ALIASES = {"yuho": ("yuho", "10k", "424b4", "s-1", "20f")}
 PEER_SELECTION_KEYWORD = "選定"  # competitors.md「1. 選定した同業他社と選定理由」
 
 
@@ -73,17 +76,19 @@ class Found:
 
 
 def raw_files(company: Company, kind: str) -> list[tuple[str, Path]]:
-    """(date, path) of raw/**/YYYY-MM-DD_*{kind}.md, newest first.
+    """(date, path) of raw/**/YYYY-MM-DD_*{kind}.md, newest first. 'yuho' also matches the US annual
+    disclosures in KIND_ALIASES (10-K, 424B4, S-1, 20-F).
     competitors: files older than the newest one with a 選定 section are dropped (a new peer set rewrites every
     section, so an older file's numbers belong to the old peers)."""
     raw = company.path / "raw"
     if not raw.exists():
         return []
     out = []
-    for p in raw.rglob(f"*_{kind}.md"):
-        m = DATED.match(p.name)
-        if m:
-            out.append((m.group(1), p))
+    for suffix in KIND_ALIASES.get(kind, (kind,)):
+        for p in raw.rglob(f"*_{suffix}.md"):
+            m = DATED.match(p.name)
+            if m:
+                out.append((m.group(1), p))
     out = sorted(out, reverse=True)
     return _since_peer_selection(out) if kind == PEER_KIND else out
 
