@@ -22,10 +22,9 @@ GROWTH_RATINGS = ("高", "中", "低", "不明")
 COMPETITOR_RATINGS = ("優位", "同等", "劣位", "不明")
 MARKS = ("○", "△", "×", "？")
 UNUSED = "—"
-PEER_LABELS = ("競合A", "競合B", "競合C")
+PEER_LABELS = ("競合A", "競合B", "競合C", "競合D", "競合E")[:MAX_PEERS]
 KBF_SPLIT = re.compile(r"[、,，]")
 KBF_COUNT = (2, 5)
-KBF_COLUMNS = 2 + MAX_PEERS + 1  # KBF, 自社, 競合A-C, 根拠
 NO_REASON = "なし"
 UNKNOWN_MARK = "？"
 PENDING = "判定保留"
@@ -80,8 +79,10 @@ def _company_section(text: str) -> tuple[list[dict], str]:
     found = M.tables(M.section(text, "3."))
     rows = []
     for row in found[0][1:] if found else []:
-        cells = row + [""] * (KBF_COLUMNS - len(row))
-        rows.append({"kbf": cells[0], "self": cells[1], "peers": cells[2:2 + MAX_PEERS], "basis": cells[-1]})
+        cells = row + [""] * (3 - len(row))  # KBF, 自社, ..., 根拠 (last column)
+        peers = cells[2:-1][:MAX_PEERS]
+        peers += [UNUSED] * (MAX_PEERS - len(peers))  # a table with fewer peer columns (older template)
+        rows.append({"kbf": cells[0], "self": cells[1], "peers": peers, "basis": cells[-1]})
     conclusion = next((r[1] for r in found[1][1:] if len(r) > 1 and r[0] == "結論"), "") if len(found) > 1 else ""
     return rows, conclusion
 

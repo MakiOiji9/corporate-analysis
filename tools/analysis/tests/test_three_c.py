@@ -111,7 +111,7 @@ NO_SHARES = "| 会社 | シェア |\n|---|---|\n| 全社 | —（公表値なし
 
 OUTLOOK = "# 地合い判断\n\n## 1. 総合判断\n\n- 中立\n"
 
-KBF_ROWS = "| 品質 | {top} | {a} | {b} | — | 有報 p.5 |\n| 価格 | △ | △ | △ | — | 価格表 |"
+KBF_ROWS = "| 品質 | {top} | {a} | {b} | — | — | — | 有報 p.5 |\n| 価格 | △ | △ | △ | — | — | — | 価格表 |"
 ANSWERS = {
     "segment": "自動車（単一セグメント）", "customers": "個人顧客が中心", "kbf": "品質、価格",
     "kbf-basis": "brief.md 2.", "market-seen": "国内自動車 CAGR 5.0%", "market-source": "brief.md 2.",
@@ -447,11 +447,18 @@ def test_kbf_marks_and_unused_peer_column(repo, capsys):
     _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
     md = repo / out["md"]
     fill(md, top="◎")
-    md.write_text(md.read_text(encoding="utf-8").replace("| △ | △ | △ | — | 価格表 |", "| △ | △ | △ | △ | 価格表 |"),
+    md.write_text(md.read_text(encoding="utf-8").replace("| △ | △ | △ | — | — | — | 価格表 |", "| △ | △ | △ | △ | — | — | 価格表 |"),
                   encoding="utf-8")
     code, out = run(repo, "build", "--company", "7203", capsys=capsys)
     assert code == 1 and any("自社の列" in i for i in out["issues"])
     assert any("競合C は比較対象が無い" in i for i in out["issues"])
+
+
+def test_kbf_table_with_three_peer_columns_reads_the_rest_as_unused():
+    text = ("## 3. 自社（Company）\n\n| KBF（重要度順） | 自社 | 競合A | 競合B | 競合C | 根拠 |\n"
+            "|---|---|---|---|---|---|\n| 品質 | ○ | △ | × | — | 有報 p.5 |\n")
+    row = D.parse(text)["kbf_rows"][0]
+    assert row["peers"] == ["△", "×", "—", "—", "—"] and row["basis"] == "有報 p.5"
 
 
 def test_kbf_count_is_limited(repo, capsys):

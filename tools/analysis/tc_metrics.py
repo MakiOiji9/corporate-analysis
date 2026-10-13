@@ -20,7 +20,7 @@ from tc_paths import Company
 GROWTH_LIMITS = (0.0, 3.0)  # <0 低 / 0-3 中 / >=3 高
 GROWTH_ORDER = {"高": 2, "中": 1, "低": 0}
 COMPETITOR_ORDER = {"優位": 2, "同等": 1, "劣位": 0}
-MAX_PEERS = 3
+MAX_PEERS = 5
 CAGR_MONTHS = 36
 UNIT_YEN = {"円": 1.0, "千円": 1e3, "百万円": 1e6, "億円": 1e8}
 CSV_ITEMS = (("financials.csv", "item", "net_sales", "operating_income"),

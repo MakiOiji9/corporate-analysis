@@ -97,7 +97,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 |---|---|---|
 | `three_c.py list` | `companies/` の企業と、3C分析の状態（none / fresh / expired / triggered / draft）・結論・ファイブフォースの状態 | 1行の JSON |
 | `three_c.py check --company X` | 結果が有効か（180日以内で、分析後に新しい有報・事業概要・業界・競合の raw や新しいファイブフォース分析が無いか）、ファイブフォースが有効か（無効なら `next: five_forces`）、必須の材料が raw にあるか（無ければ担当の collect-* を返す）、地合い判断の古さ（参照だけ）。`next` に次の作業 | 1行の JSON |
-| `three_c.py prepare --company X [--redo]` | raw から必要な節を抜き出して執筆の材料にし、比較表（対象企業と競合最大3社の売上高・営業利益率・シェア・売上高3年CAGR）、成長性と競合との比較の判定候補、競合の凡例、前回の評価を入れた骨組み（FILL 欄）を作る。作成途中の md は残す | `{日付}_brief.md`・`{日付}_three-c.md` |
+| `three_c.py prepare --company X [--redo]` | raw から必要な節を抜き出して執筆の材料にし、比較表（対象企業と競合最大5社の売上高・営業利益率・シェア・売上高3年CAGR）、成長性と競合との比較の判定候補、競合の凡例、前回の評価を入れた骨組み（FILL 欄）を作る。作成途中の md は残す | `{日付}_brief.md`・`{日付}_three-c.md` |
 | `three_c.py build --company X [--date …]` | md を検証（構造・FILL・評価の語・根拠の確度・KBF 表と1章の一致・○△×？の記号・判定候補/前回との差の理由・禁止表現）し、勝てる理由の結論（明確 / あいまい / なし / 判定保留）を判定して書き込む | `{日付}_three-c.json` |
 
 モジュール: `tc_paths.py`（3C の結果の場所と鮮度）、`tc_inputs.py`（3C の入力一覧。抽出は `ff_inputs.py` を再利用）、`tc_metrics.py`（比較表・判定候補）、`tc_brief.py`（材料）、`tc_doc.py`（骨組み・検証・結論の判定）。テンプレートは `.ai/templates/three-c/`。
@@ -108,7 +108,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 |---|---|---|
 | `moat.py list` | `companies/` の企業と、モート分析の状態（none / fresh / expired / triggered / draft）・結論・3C分析の状態 | 1行の JSON |
 | `moat.py check --company X` | 結果が有効か（180日以内で、分析後に新しい有報・財務時系列・事業概要・業界・競合の raw や新しい3C分析が無いか）、3Cが有効か（無効なら `next: three_c`。3Cの結論では止めない）、必須の材料が raw にあるか（無ければ担当の collect-* を返す）、地合い判断の古さ（参照だけ）。`next` に次の作業 | 1行の JSON |
-| `moat.py prepare --company X [--redo]` | raw から必要な節を抜き出して執筆の材料にし、営業利益率の同業比較（自社の最大10年と競合最大3社の単純平均を決算期6か月以内で突き合わせ、連続で上回った年数から 強い/弱い/なし の判定候補）、コスト構造の表、3Cの結論、前回の判定を入れた骨組み（FILL 欄）を作る。作成途中の md は残す | `{日付}_brief.md`・`{日付}_moat.md` |
+| `moat.py prepare --company X [--redo]` | raw から必要な節を抜き出して執筆の材料にし、営業利益率の同業比較（自社の最大10年と競合最大5社の単純平均を決算期6か月以内で突き合わせ、連続で上回った年数から 強い/弱い/なし の判定候補）、コスト構造の表、3Cの結論、前回の判定を入れた骨組み（FILL 欄）を作る。作成途中の md は残す | `{日付}_brief.md`・`{日付}_moat.md` |
 | `moat.py build --company X [--date …]` | md を検証（構造・FILL・モート5種の行と判定の語・根拠の確度・シェアの推移・崩しうる要因の時期・前回との差の理由・禁止表現）し、数字の裏付け（強い / 弱い / なし / 不明）とモートの強さ（広い / 狭い / なし / 判定保留）を判定して書き込む。裏付けなしなら「該当」を「該当なし」に修正 | `{日付}_moat.json` |
 
 モジュール: `mt_paths.py`（モートの結果の場所と鮮度）、`mt_inputs.py`（モートの入力一覧。抽出は `ff_inputs.py` を再利用）、`mt_metrics.py`（営業利益率の同業比較・判定候補・コスト構造）、`mt_brief.py`（材料）、`mt_doc.py`（骨組み・検証・結論の判定）。テンプレートは `.ai/templates/moat/`。
