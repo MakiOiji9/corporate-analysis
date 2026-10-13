@@ -23,6 +23,7 @@
 | `five-forces` | ファイブフォース分析（業界の魅力度 高/中/低。`companies/{ticker}_{name}/analysis/five-forces/` に md と json。365日有効で期間内は再分析しない。材料が足りなければ collect-company-info を先に実行。地合いの outlook.md は参照するだけ） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
 | `three-c` | 3C分析（顧客・競合・自社から勝てる理由 明確/あいまい/なし（材料不足なら判定保留）。`companies/{ticker}_{name}/analysis/three-c/` に md と json。180日有効で期間内は再分析しない。ファイブフォースが未実施なら先に five-forces、材料が足りなければ collect-company-info を実行。地合いの outlook.md は参照するだけ） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
 | `moat` | モート分析（5種のモートの該当、営業利益率の同業比較とシェアの推移による裏付け、崩しうる要因から モート 広い/狭い/なし（材料不足なら判定保留）。`companies/{ticker}_{name}/analysis/moat/` に md と json。180日有効で期間内は再分析しない。3Cが未実施なら先に three-c（3Cの結論では止めない）、材料が足りなければ collect-company-info を実行。地合いの outlook.md は参照するだけ） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
+| `swot` | SWOT分析（1-1〜1-3 の結果と中計・事業等のリスク・業界・地合いの事実を4象限に振り分け、影響度 大/中/小 から最大の強みで最大の脅威に対抗できるかを SWOT Yes/条件付き/No（材料不足なら判定保留）で判定。`companies/{ticker}_{name}/analysis/swot/` に md と json。180日有効で期間内は再分析しない。モートが未実施なら先に moat（上流の結論では止めない）、地合いの outlook.md が無い・古ければ market-report、材料が足りなければ collect-company-info を実行。STEP 1 判定（A/B/C）はしない） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
 
 ## ツールと初回セットアップ
 

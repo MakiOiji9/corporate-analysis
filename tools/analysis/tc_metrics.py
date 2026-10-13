@@ -95,7 +95,8 @@ def _series_from_data(company: Company) -> list[dict]:
             except ValueError:
                 continue
             by_year.setdefault(period, {}).setdefault("sales" if item == sales_key else "profit", value)
-    return [{"year": y, "sales": v["sales"], "margin": round(v["profit"] / v["sales"] * 100, 1), "forecast": False}
+    return [{"year": y, "sales": v["sales"], "profit": v["profit"], "margin": round(v["profit"] / v["sales"] * 100, 1),
+             "forecast": False}
             for y, v in sorted(by_year.items()) if v.get("sales") and "profit" in v]
 
 

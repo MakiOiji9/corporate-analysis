@@ -1,4 +1,4 @@
-"""Shared by the company analyses (five-forces, three-c): company directories, dated result files,
+"""Shared by the company analyses (five-forces, three-c, moat, swot): company directories, dated result files,
 validity and the market outlook reference.
 
 Each analysis lives in companies/{ticker}_{name}/analysis/{kind}/ as {date}_brief.md (script),
@@ -141,7 +141,7 @@ def is_untouched(brief: Path, md: Path) -> bool:
     return bool(m) and m.group(1) == digest(md.read_text(encoding="utf-8"))
 
 
-UPSTREAM_SKILLS = {"three_c": "three-c", "five_forces": "five-forces"}
+UPSTREAM_SKILLS = {"three_c": "three-c", "five_forces": "five-forces", "moat": "moat"}
 
 
 def prepare_gate(next_step: str, has_raw: bool, skip_collect: bool) -> str | None:

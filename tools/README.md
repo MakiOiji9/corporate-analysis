@@ -113,6 +113,17 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 
 モジュール: `mt_paths.py`（モートの結果の場所と鮮度）、`mt_inputs.py`（モートの入力一覧。抽出は `ff_inputs.py` を再利用）、`mt_metrics.py`（営業利益率の同業比較・判定候補・コスト構造）、`mt_brief.py`（材料）、`mt_doc.py`（骨組み・検証・結論の判定）。テンプレートは `.ai/templates/moat/`。
 
+スキル `swot`（`.ai/skills/swot.md`）からは `swot.py` を呼び出す。出力は `companies/{ticker}_{name}/analysis/swot/{分析日}_*`。
+
+| コマンド | 用途 | 主な出力 |
+|---|---|---|
+| `swot.py list` | `companies/` の企業と、SWOT分析の状態（none / fresh / expired / triggered / draft）・結論・モート分析の状態 | 1行の JSON |
+| `swot.py check --company X` | 結果が有効か（180日以内で、分析後に有報・中期経営計画・事業概要・業界の使った節が変わっていないか、新しいファイブフォース・3C・モート分析が無いか）、モートが有効か（無効なら `next: moat`。上流の結論では止めない）、地合い（outlook.md）が35日以内か（古ければ `next: market_report`）、必須の材料が raw にあるか（無ければ担当の collect-* を返す）。`next` に次の作業 | 1行の JSON |
+| `swot.py prepare --company X [--redo] [--skip-collect] [--skip-market-report]` | raw から必要な節と地合いの該当市場の行を抜き出して執筆の材料にし、上流3分析の結論、必ず記載する項目（ファイブフォースの「強」→ 脅威、残ったモート → 強み）、影響度の目安（直近の売上高・営業利益と 20%・5% の金額）、前回の判定を入れた骨組み（FILL 欄）を作る。作成途中の md は残す | `{日付}_brief.md`・`{日付}_swot.md` |
+| `swot.py build --company X [--date …]` | md を検証（構造・FILL・4象限の番号・由来・確度・影響度の語・必ず記載する項目・最大の強み/脅威が影響度の規則に合うか・判定と結論の文の形・前回との差の理由・禁止表現）し、SWOT の結論（Yes / 条件付き / No / 判定保留）を判定して書き込む | `{日付}_swot.json` |
+
+モジュール: `sw_paths.py`（SWOT の結果の場所と鮮度）、`sw_inputs.py`（SWOT の入力一覧。抽出は `ff_inputs.py` を再利用）、`sw_metrics.py`（影響度の目安）、`sw_brief.py`（材料。上流3分析の json と outlook.md の抜粋を含む）、`sw_doc.py`（骨組み・検証・結論の判定）。テンプレートは `.ai/templates/swot/`。
+
 ### 書き込みガード（`tools/guard/write_guard.py`）
 
 `.claude/settings.json` の PreToolUse hook として、Write / Edit の前に毎回実行される（標準ライブラリだけで動く。PATH 上の `python` を使う）。
@@ -121,7 +132,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 - `market/**/raw/*.md` は FILL 欄が残っている間だけ Edit を許可。`companies/*/raw/` の過去日付のファイルは変更禁止
 - collect-market-info の実行中（`market/sessions/*/.running`）は、tasks.json の `allowed_files` 以外への書き込みをブロック
 - `market/report/` の facts.json・brief.md・HTML は手書き禁止。outlook.md は Edit のみ（新規作成・上書き不可）で、過去の週の完成済みのものは変更禁止
-- `companies/*/analysis/five-forces/`・`three-c/`・`moat/` の brief.md・json は手書き禁止。five-forces.md・three-c.md・moat.md は Edit のみで、過去の日付の build 済み（json がある）ものは変更禁止
+- `companies/*/analysis/five-forces/`・`three-c/`・`moat/`・`swot/` の brief.md・json は手書き禁止。five-forces.md・three-c.md・moat.md・swot.md は Edit のみで、過去の日付の build 済み（json がある）ものは変更禁止
 
 ## 例（3798 ULSグループ）
 

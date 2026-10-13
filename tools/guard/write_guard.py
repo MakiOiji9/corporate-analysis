@@ -17,8 +17,8 @@ Rules (paths relative to the repository; writes outside it are not checked):
   5. market/report/: facts.json, brief.md and the HTML are script-only. {week}_outlook.md is
      created by market_report.py prepare and only edited (not overwritten); once an earlier
      week's outlook is finished (no FILL left) it is immutable.
-  6. companies/*/analysis/{five-forces,three-c,moat}/: {date}_brief.md and {date}_{kind}.json are script-only.
-     {date}_{kind}.md is created by the analysis script's prepare (five_forces.py / three_c.py / moat.py) and only
+  6. companies/*/analysis/{five-forces,three-c,moat,swot}/: {date}_brief.md and {date}_{kind}.json are script-only.
+     {date}_{kind}.md is created by the analysis script's prepare (five_forces.py / three_c.py / moat.py / swot.py) and only
      edited (not overwritten); once an earlier day's analysis is built (its json exists) it is immutable.
 """
 from __future__ import annotations
@@ -44,13 +44,13 @@ SCRIPT_ONLY = [
         r"^companies/[^/]+/sources/",
         r"^companies/[^/]+/data/",
         r"^market/report/[^/]+_(facts\.json|brief\.md|market-report\.html)$",
-        r"^companies/[^/]+/analysis/(five-forces|three-c|moat)/[^/]+_(brief\.md|five-forces\.json|three-c\.json"
-        r"|moat\.json)$",
+        r"^companies/[^/]+/analysis/(five-forces|three-c|moat|swot)/[^/]+_(brief\.md|five-forces\.json|three-c\.json"
+        r"|moat\.json|swot\.json)$",
     )
 ]
-ANALYSIS_SCRIPT = {"five-forces": "five_forces.py", "three-c": "three_c.py", "moat": "moat.py"}
+ANALYSIS_SCRIPT = {"five-forces": "five_forces.py", "three-c": "three_c.py", "moat": "moat.py", "swot": "swot.py"}
 ANALYSIS_MD = re.compile(
-    r"^companies/[^/]+/analysis/(five-forces|three-c|moat)/(\d{4}-\d{2}-\d{2})_(?P<kind>[\w-]+)\.md$")
+    r"^companies/[^/]+/analysis/(five-forces|three-c|moat|swot)/(\d{4}-\d{2}-\d{2})_(?P<kind>[\w-]+)\.md$")
 MARKET_RAW = re.compile(r"^market/(policy/[^/]+|sessions/[^/]+)/raw/[^/]+\.md$")
 COMPANY_RAW = re.compile(r"^companies/[^/]+/raw/")
 REPORT_OUTLOOK = re.compile(r"^market/report/(\d{4}-\d{2}-\d{2})_outlook\.md$")
