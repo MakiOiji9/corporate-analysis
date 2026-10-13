@@ -1,0 +1,168 @@
+{
+ "company": "CBRS_cerebras",
+ "name": "Cerebras Systems Inc.（CBRS）",
+ "date": "2026-10-14",
+ "valid_until": "2027-04-12",
+ "customer": {
+  "segment": "AI アクセラレータ／AI 推論インフラ（単一セグメントのため営業利益構成比は無い。売上はハードウェア 70.3%・クラウド・その他サービス 29.7%〔2025年12月期〕、2026年Q2 はクラウド・その他サービスが約70.0%）",
+  "customers": "法人。AI 研究機関・ソブリン AI（MBZUAI・G42）、AI 開発企業（OpenAI）、ハイパースケーラー（AWS）などの大口顧客が長期の容量契約で買う。最大顧客の売上比率は 2024年12月期 G42 85%、2025年12月期 MBZUAI 62%、2026年Q2（3か月）34%（上半期 49%）。顧客数は開示なし。RPO 25.4十億ドル（2026-06-30）の大部分は OpenAI との契約（750MW）",
+  "kbf": [
+   "スタック統合",
+   "推論速度",
+   "コスト（電力効率）",
+   "供給の安定性"
+  ],
+  "kbf_basis": "1位のスタック統合は、AI インフラ購入者170人への調査（VentureBeat、2026-07）で最重要基準 40%（二次記事経由の検索要約、原調査未確認）による。2位以下は順位の裏付けが無く、会社が挙げる価値の4軸（速度・品質・コスト・簡素さ、424B4）と、会社が競争力の条件に挙げる「安定した供給量・品質・価格」（424B4 Competition）から選んだ。2〜4位の順番は裏付けが無い（2026-10-14_industry-overview.md「5. 顧客の購買決定要因」、2026-10-14_competitors.md「7. 主力製品と強み」）",
+  "seen": "AI 学習インフラ＋Cerebras の対象となる AI 推論市場: 2025年 2,510億ドル → 2029年 6,720億ドル、CAGR 28%（Bloomberg Intelligence、S-1 に引用）。AI 推論市場（世界）: 2025年 1,061.5億ドル → 2030年 2,549.8億ドル、CAGR 19.2%（MarketsandMarkets）、2024年 972.4億ドル → 2030年 2,537.5億ドル、CAGR 17.5%（GIIKOREA）",
+  "source": "brief.md 2章（2026-10-14_industry-overview.md「1. 市場規模と成長率」）",
+  "confidence": "一次",
+  "conclusion": "顧客は AI 研究機関・ソブリン AI・AI 開発企業・ハイパースケーラーなど少数の大口法人で、最も重視するのはスタック統合（KBF。調査の裏付けは検索要約のみ）。市場の成長性は高（根拠：学習＋推論インフラ市場の CAGR 28%、Bloomberg Intelligence）"
+ },
+ "kbf": [
+  "スタック統合",
+  "推論速度",
+  "コスト（電力効率）",
+  "供給の安定性"
+ ],
+ "growth": {
+  "rating": "高",
+  "reason": "主力事業の市場の成長率は CAGR 28%（学習＋推論インフラ）で年3%以上のため高。推論市場だけで見ても 19.2%・17.5% と3%以上で、どの定義でも高に当たる",
+  "candidate": "高"
+ },
+ "competitor": {
+  "rating": "劣位",
+  "reason": "営業利益率が比較した3社の最下位で、シェアは Cerebras の数値が無く、NVIDIA が約86%を占めるため上位とは言えない。2026年上期は IPO 時の株式報酬を含むが、通期（2025年12月期 -28.6%）でも最下位で判定は変わらない",
+  "seen": "営業利益率は Cerebras -131.8%（2026年上期）、NVIDIA 60.4%（2026年1月期）、AMD 10.7%（2025年12月期）で3社中3位。通期の 2025年12月期でも -28.6% で最下位。シェアは NVIDIA 約86%（AI アクセラレータ売上、2025年、Bloomberg 推計）で、Cerebras・AMD は数値なし。売上高3年CAGR は NVIDIA 100.0%、AMD 13.6%（Cerebras は 2022→2025年で売上 24.6百万ドル → 510.0百万ドルだが比較表では未算出）",
+  "source": "brief.md 1章（2.1 比較表、2026-10-14_competitors.md「2. 売上高・営業利益・営業利益率」）、brief.md 3章（同「4. 市場シェア」）",
+  "confidence": "一次",
+  "conclusion": "競合と比べて劣位。根拠：営業利益率 -131.8% vs 競合平均 35.5%",
+  "candidate": "劣位",
+  "candidate_fixed": false
+ },
+ "comparison": [
+  {
+   "name": "Cerebras Systems Inc.（CBRS）（対象）",
+   "self": true,
+   "year": "2026-06",
+   "sales": 373.516,
+   "margin": -131.8,
+   "share": null,
+   "cagr": null,
+   "source": "2026-10-14_competitors.md「2. 売上高・営業利益・営業利益率（最大10年推移。最低7年）」"
+  },
+  {
+   "name": "NVIDIA（NVDA）",
+   "self": false,
+   "year": "2026-01",
+   "sales": 215938.0,
+   "margin": 60.4,
+   "share": 86.0,
+   "cagr": 100.0,
+   "source": "2026-10-14_competitors.md「2. 売上高・営業利益・営業利益率（最大10年推移。最低7年）」"
+  },
+  {
+   "name": "Advanced Micro Devices（AMD）",
+   "self": false,
+   "year": "2025-12",
+   "sales": 34639.0,
+   "margin": 10.7,
+   "share": null,
+   "cagr": 13.6,
+   "source": "2026-10-14_competitors.md「2. 売上高・営業利益・営業利益率（最大10年推移。最低7年）」"
+  }
+ ],
+ "kbf_table": [
+  {
+   "kbf": "スタック統合",
+   "self": "？",
+   "peers": {
+    "NVIDIA（NVDA）": "？",
+    "Advanced Micro Devices（AMD）": "？"
+   },
+   "basis": "NVIDIA は CUDA と数百のライブラリ・SDK を、Cerebras は PyTorch を直接コンパイルするコンパイラと推論サービングスタックを挙げるが、いずれも会社の主張（2026-10-14_competitors.md「7. 主力製品と強み」、2026-10-14_business-overview.md「3. 主力製品」）。顧客評価・採用数など比べられる事実が無い"
+  },
+  {
+   "kbf": "推論速度",
+   "self": "？",
+   "peers": {
+    "NVIDIA（NVDA）": "？",
+    "Advanced Micro Devices（AMD）": "？"
+   },
+   "basis": "Cerebras は主要 GPU ソリューション比で最大15倍高速（ベンチマーク元は Artificial Analysis と会社が記載）、CS-4 は GPU 比最大30倍と主張するが、会社資料経由の数値のみ。AMD との比較材料は無い（2026-10-14_business-overview.md「3. 主力製品」）"
+  },
+  {
+   "kbf": "コスト（電力効率）",
+   "self": "？",
+   "peers": {
+    "NVIDIA（NVDA）": "？",
+    "Advanced Micro Devices（AMD）": "？"
+   },
+   "basis": "Cerebras は CS-4 でワット当たりスループット最大10倍と主張。競合の価格・電力効率の数値は brief に無く、3社とも単価・価格は開示なし（2026-10-14_competitors.md「8. 顧客・人員の KPI」）"
+  },
+  {
+   "kbf": "供給の安定性",
+   "self": "？",
+   "peers": {
+    "NVIDIA（NVDA）": "？",
+    "Advanced Micro Devices（AMD）": "？"
+   },
+   "basis": "Cerebras は HBM・CoWoS・3nm を使わず供給制約を避けられると説明（会社の主張）する一方、全ウエハーを TSMC 1社に依存（424B4）。競合の供給状況の記述は brief に無い"
+  }
+ ],
+ "company_conclusion": "最重要 KBF（スタック統合）で自社が ○ かは判断できない。NVIDIA・Cerebras とも会社の主張しか無く、採用数・顧客評価・開発者数など第三者の比較材料が足りない。推論速度の優位も会社資料経由の数値のみで、第三者ベンチマークの原典と競合（AMD）の数値が要る",
+ "top_kbf": "スタック統合",
+ "top_kbf_win": false,
+ "win_reason": "なし。営業利益率が競合2社を下回り（-131.8% vs 競合平均 35.5%）競合との比較が劣位で、最重要 KBF（スタック統合）でも競合より優れると示す材料が無い",
+ "verdict": "なし",
+ "verdict_reason": "競合との比較が「劣位」",
+ "triggers": "通期の GAAP 営業利益率が AMD（10.7%）を上回るか、第三者のシェア推計で Cerebras が AMD を上回れば競合との比較が同等となり、結論はあいまい以上になりうる",
+ "handoff": {
+  "strengths": "なし。SWOT で確かめる自社の事実: RPO 25.4十億ドル（2026-06-30、大部分が OpenAI の 750MW 契約）、売上の伸び（2023年 78.7百万ドル → 2025年 510.0百万ドル）、推論速度の主張（第三者ベンチマークの原典で確認が要る）、特許 96件登録・50件出願中",
+  "weaknesses": "営業利益率が競合より低い（2025年12月期 -28.6%、2026年上期 -131.8% vs 競合平均 35.5%）。顧客への依存: 最大顧客の売上比率 2024年12月期 85%（G42）→ 2025年12月期 62%（MBZUAI）→ 2026年Q2 34%。シェアの数値が無い",
+  "moat_checks": "営業利益率（GAAP とコア）の推移と黒字化の時期、推論速度の優位を示す第三者ベンチマークの継続、顧客の継続率・RPO の消化状況（OpenAI 契約の解除条項）、AI アクセラレータ市場でのシェア推計"
+ },
+ "changes": [
+  "初回の分析"
+ ],
+ "gaps": [
+  "KBF の順番: 1位（スタック統合）の根拠は VentureBeat 調査の検索要約のみで原調査は未確認、2〜4位は順位の裏付けが無い（status.md の未取得項目「購買決定要因の定量データ」）。調査の原典を取りにいく",
+  "KBF 比較が全行「？」: スタック統合・推論速度・コスト・供給のいずれも会社の主張しか無い。第三者ベンチマーク（Artificial Analysis などの原典）、開発者・採用数、推論の価格（トークン単価）を各社で取りにいく（collect-peers-valuation の競合 KPI）",
+  "シェア: NVIDIA 以外（Cerebras・AMD）の数値が無い（検索要約の推計のみ）"
+ ],
+ "inputs": [
+  "companies/CBRS_cerebras/raw/filings/2026-10-14_2025-12_424b4.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_business-overview.md",
+  "companies/CBRS_cerebras/raw/market/2026-10-14_competitors.md",
+  "companies/CBRS_cerebras/raw/market/2026-10-14_industry-overview.md"
+ ],
+ "seen": [
+  "companies/CBRS_cerebras/raw/filings/2026-10-14_2025-12_424b4.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_business-overview.md",
+  "companies/CBRS_cerebras/raw/market/2026-10-14_competitors.md",
+  "companies/CBRS_cerebras/raw/market/2026-10-14_industry-overview.md"
+ ],
+ "input_digests": {
+  "segment": "eaddd462cab9b5a92783d0a2a4432aa69ec30f93",
+  "customers": "cfd388667ddae07b4ca3c859fec94a02c0d25fcd",
+  "products": "7d2599a2af78972c09ebc24b0f68e3ad735ab0ee",
+  "customer_base": "5033a8221e63fb938c3abfd5fbe6e4b35205c88e",
+  "kpi": "e2b97dd59539860ebd4b86bf3bf8878d7d7ea911",
+  "strategy": "f82b080074f0a9449722c306fd526f42414ffadb",
+  "market_size": "6b41e695edcd3a4637450308a35f7287c189fb80",
+  "share": "4a06ce64dce37ccc229d1bd8558dab2a27d5f4c0",
+  "kbf": "",
+  "peer_selection": "43a861ccc21a4ac7ba25497329976cae6dd31010",
+  "peers": "a3c0819eb4231d9dc5a30cbc46c5853585e9a39a",
+  "peer_share": "d538649cd1ce7fbf95d117531122503c7507b384",
+  "peer_kpi": "43da4bd121e02d24eafb3a99c855704f233b1ba8",
+  "peer_claims": "b64b99ab397f8c509aff4b2196d89ceb7843d17c"
+ },
+ "five_forces": {
+  "date": "2026-10-14",
+  "attractiveness": "低",
+  "industry": "AI アクセラレータ／AI 推論インフラ業界（単一セグメント。売上区分はハードウェア 70.3%・クラウド・その他サービス 29.7%〔2025年12月期〕）"
+ },
+ "outlook": "market/report/2026-10-12_outlook.md",
+ "previous": null,
+ "md": "companies/CBRS_cerebras/analysis/three-c/2026-10-14_three-c.md"
+}

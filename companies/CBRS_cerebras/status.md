@@ -1,6 +1,6 @@
 # データ鮮度・未取得項目 — Cerebras Systems Inc.（CBRS）
 
-**最終更新**: 2026-10-14（mode=full。同日に mode=update で collect-filings を再実行したが新しい値なし）
+**最終更新**: 2026-10-14（mode=full。同日に mode=update で collect-filings を再実行したが新しい値なし。同日に collect-ir で値上げ・価格改定の実績を追記）
 
 > collect-company-info を実行するたびに上書きする。`mode=update` はまずこのファイルと `sources/manifest.csv` を読む。
 
@@ -25,6 +25,7 @@
 | 決算説明会の資料・質疑応答（Q1・Q2） | investors.cerebras.ai が Cloudflare で 403 | ブラウザ経由、または第三者の決算通話記録 |
 | IR サイトのプレスリリース一覧、OpenAI 契約の発表文、Compute Nordic の発表文 | 同上（403） | 同上 |
 | 顧客数・継続率・解約率・単価 | 開示なし（424B4・10-Q・プレスリリースで確認） | 説明会資料が取れれば再確認 |
+| 値上げ・価格改定の実績 | 公式のトークン単価の改定履歴は開示なし（API 変更履歴・/pricing・原本の "pric" 検索で確認）。/pricing の表の数値は WebFetch で読めず、Wayback Machine は取得不可。無料枠の縮小（2026-07-16）など利用条件の変更のみ確認 | ブラウザ経由で /pricing と Wayback の過去版を取得 |
 | 購買決定要因の定量データ | VentureBeat 調査（二次）のみ。Omdia は有料 | 原調査の確認、S-1 Business 章 |
 | 市場シェア（Cerebras・AMD） | 第三者の推計が見つからない | 調査会社の公開レポート |
 | 大株主・Use of Proceeds の詳細・仕入先名 | 424B4 の該当章を読んでいない | 424B4 の該当章、DEF 14A、10-K |

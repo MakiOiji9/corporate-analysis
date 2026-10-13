@@ -1,0 +1,354 @@
+{
+ "company": "CBRS_cerebras",
+ "name": "Cerebras Systems Inc.（CBRS）",
+ "date": "2026-10-14",
+ "valid_until": "2027-04-12",
+ "strength": "3C の勝てる理由は「なし」（競合との比較が劣位）で、強み候補も無い。代わりに、推論速度の優位（会社資料経由の数値のみ）、長期の容量契約と RPO 25.4十億ドル（大部分が OpenAI の 750MW 契約）、特許 96件登録・50件出願中が、堀として続くかを確かめる",
+ "moats": [
+  {
+   "type": "ブランド",
+   "rating": "不明",
+   "basis": "値上げ・価格改定の開示が無く（424B4・10-Q・決算プレスリリースを確認）、価格水準や値上げ後の数量を競合と比べる材料が無い。424B4 のリスク要因は「既存製品の価格は世代交代で低下しやすい」「顧客から価格・契約条件での譲歩を求められ、粗利率を押し下げると見込む」と書いており、価格決定力を示す事実は無い",
+   "source": "brief.md 2章（2026-10-14_business-overview.md「8. 値上げ・価格改定の実績」）",
+   "confidence": "—",
+   "effective": false
+  },
+  {
+   "type": "スイッチングコスト",
+   "rating": "不明",
+   "basis": "継続率・解約率は開示なし。専用キャパシティ契約は take-or-pay、OpenAI とは3〜4年（最長5年）の容量契約で RPO 25.4十億ドルの約65%を48か月以内に認識見込みと、長期契約はある。ただし OpenAI は納入遅延・サービス水準違反で契約の一部または全部を解除でき、乗り換えの費用・リスクを示す数値も無い。上位10顧客の初回購入後12か月の支出増 約80%は継続率の代わりにならない",
+   "source": "brief.md 3章（2026-10-14_business-overview.md「7. 継続率・解約率・ストック型売上の比率」「4. 顧客層」）",
+   "confidence": "—",
+   "effective": false
+  },
+  {
+   "type": "ネットワーク効果",
+   "rating": "該当なし",
+   "basis": "ハードウェア販売と推論クラウドで、利用者が増えるほど他の利用者にとっての価値が上がる構造の記述が brief に無い。利用者数の推移も開示なし",
+   "source": "brief.md 3章（2026-10-14_business-overview.md「4. 顧客層」）",
+   "confidence": "—",
+   "effective": false
+  },
+  {
+   "type": "コスト優位",
+   "rating": "該当なし",
+   "basis": "売上原価率 61.0%・販管費率 19.9%・営業利益率 -28.6%（2025年12月期）に対し、競合の単純平均は 39.4%・7.0%・32.8%で、原価率・販管費率とも同業より高く利益率も下回る。研究開発費は売上高比 47.7%",
+   "source": "md 3.1・3.2（2026-10-14_competitors.md「9. 売上原価率・販管費率」）",
+   "confidence": "一次",
+   "effective": false
+  },
+  {
+   "type": "規制・特許・許認可",
+   "rating": "該当なし",
+   "basis": "特許は 96件登録・50件出願中（2026-03-31）、米国登録特許の満了は 2038〜2041年と期限は長い。ただし特許が主力製品（WSE）への競合の参入を妨げている事実（係争・ライセンス収入など）は brief に無く、事業に必要な許認可も無い（輸出管理は販売先の規制）。迷った: 期限の長い特許があり不明との境目だが、守られている事実が無いため不利な方の該当なしを採った",
+   "source": "brief.md 6章（2026-10-14_2025-12_424b4.md「6. 研究開発・特許・許認可」）",
+   "confidence": "一次",
+   "effective": false
+  }
+ ],
+ "margin": {
+  "candidate": "なし",
+  "years_above": 0,
+  "compared_years": 5,
+  "basis": "2026-06 から遡って 0 年連続で同業平均を上回る（比較できた年 5）。目安: 7年以上 強い / 1〜6年 弱い / 直近が平均以下 なし",
+  "rows": [
+   {
+    "year": "2022-12",
+    "self": -726.4,
+    "avg": 10.6,
+    "diff": -737.0,
+    "peers": [
+     {
+      "name": "NVIDIA（NVDA）",
+      "year": "2023-01",
+      "margin": 15.7
+     },
+     {
+      "name": "Advanced Micro Devices（AMD）",
+      "year": "2022-12",
+      "margin": 5.4
+     }
+    ]
+   },
+   {
+    "year": "2023-12",
+    "self": -170.1,
+    "avg": 27.9,
+    "diff": -198.0,
+    "peers": [
+     {
+      "name": "NVIDIA（NVDA）",
+      "year": "2024-01",
+      "margin": 54.1
+     },
+     {
+      "name": "Advanced Micro Devices（AMD）",
+      "year": "2023-12",
+      "margin": 1.8
+     }
+    ]
+   },
+   {
+    "year": "2024-12",
+    "self": -34.9,
+    "avg": 34.9,
+    "diff": -69.8,
+    "peers": [
+     {
+      "name": "NVIDIA（NVDA）",
+      "year": "2025-01",
+      "margin": 62.4
+     },
+     {
+      "name": "Advanced Micro Devices（AMD）",
+      "year": "2024-12",
+      "margin": 7.4
+     }
+    ]
+   },
+   {
+    "year": "2025-12",
+    "self": -28.6,
+    "avg": 35.5,
+    "diff": -64.1,
+    "peers": [
+     {
+      "name": "NVIDIA（NVDA）",
+      "year": "2026-01",
+      "margin": 60.4
+     },
+     {
+      "name": "Advanced Micro Devices（AMD）",
+      "year": "2025-12",
+      "margin": 10.7
+     }
+    ]
+   },
+   {
+    "year": "2026-06",
+    "self": -131.8,
+    "avg": 35.5,
+    "diff": -167.3,
+    "peers": [
+     {
+      "name": "NVIDIA（NVDA）",
+      "year": "2026-01",
+      "margin": 60.4
+     },
+     {
+      "name": "Advanced Micro Devices（AMD）",
+      "year": "2025-12",
+      "margin": 10.7
+     }
+    ]
+   }
+  ],
+  "sources": [
+   "competitors.md の自社欄"
+  ]
+ },
+ "costs": [
+  {
+   "name": "Cerebras（自社）",
+   "self": true,
+   "year": "2025/12",
+   "cost": 61.0,
+   "sga": 19.9,
+   "margin": -28.6,
+   "source": "424B4 Summary（一次）。研究開発費 243.319"
+  },
+  {
+   "name": "Cerebras（自社）",
+   "self": true,
+   "year": "2024/12",
+   "cost": 57.7,
+   "sga": 22.7,
+   "margin": -34.9,
+   "source": "424B4（一次）。研究開発費 158.234"
+  },
+  {
+   "name": "Cerebras（自社）",
+   "self": true,
+   "year": "2023/12",
+   "cost": 66.5,
+   "sga": 25.7,
+   "margin": -170.1,
+   "source": "S-1 2024（一次）。研究開発費 140.057"
+  },
+  {
+   "name": "Cerebras（自社）",
+   "self": true,
+   "year": "2026/06（6か月）",
+   "cost": 70.1,
+   "sga": null,
+   "margin": -131.8,
+   "source": "10-Q（一次）。総営業費用 604.005。Q2 のみ G&A 95.672・研究開発費 320.151"
+  },
+  {
+   "name": "NVIDIA",
+   "self": false,
+   "year": "2026/01",
+   "cost": 28.9,
+   "sga": 2.1,
+   "margin": 60.4,
+   "source": "10-K 損益計算書（XBRL）。一次"
+  },
+  {
+   "name": "NVIDIA",
+   "self": false,
+   "year": "2025/01",
+   "cost": 25.0,
+   "sga": 2.7,
+   "margin": 62.4,
+   "source": "同上。一次"
+  },
+  {
+   "name": "NVIDIA",
+   "self": false,
+   "year": "2024/01",
+   "cost": 27.3,
+   "sga": 4.4,
+   "margin": 54.1,
+   "source": "同上。一次"
+  },
+  {
+   "name": "AMD",
+   "self": false,
+   "year": "2025/12",
+   "cost": 50.5,
+   "sga": 12.0,
+   "margin": 10.7,
+   "source": "10-K 損益計算書（XBRL）。一次"
+  },
+  {
+   "name": "AMD",
+   "self": false,
+   "year": "2024/12",
+   "cost": 50.6,
+   "sga": 10.6,
+   "margin": 7.4,
+   "source": "同上。一次"
+  },
+  {
+   "name": "AMD",
+   "self": false,
+   "year": "2023/12",
+   "cost": 53.9,
+   "sga": 10.2,
+   "margin": 1.8,
+   "source": "同上。一次"
+  }
+ ],
+ "share": {
+  "trend": "不明",
+  "reason": "自社のシェアの数値が一時点も無いため不明。売上は 2023年 78.7百万ドル → 2025年 510.0百万ドルと伸びているが、市場全体も伸びており、シェアの変化は売上からは言えない",
+  "seen": "Cerebras のシェアは第三者の推計が無く、一時点の値も推移も無い（推移なし）。業界では NVIDIA が AI アクセラレータ売上の約86%（2025年、2024年も同水準、Bloomberg 推計の検索要約）、ASIC は 2023年 22% から 2025年に約8pt 増の見通し（検索要約）",
+  "source": "brief.md 4章（2026-10-14_industry-overview.md「2. 上位企業とシェア分布・推移」、2026-10-14_competitors.md「4. 市場シェア」）",
+  "confidence": "—"
+ },
+ "risks": [
+  {
+   "factor": "競合の推論強化（技術革新）",
+   "timing": "5年以内",
+   "moat": "3Cの強み",
+   "basis": "NVIDIA が Groq の低遅延推論技術をライセンス（約200億ドルと報道、2025-12）。Cerebras が主張する推論速度の優位を競合が縮めうる",
+   "source": "brief.md 7章（2026-10-14_industry-overview.md「8. 業界構造を変えうる要因」。検索要約）"
+  },
+  {
+   "factor": "顧客の内製化（ハイパースケーラーの自社チップ）",
+   "timing": "5年以内",
+   "moat": "3Cの強み",
+   "basis": "TPU・Trainium の拡大で ASIC のシェアが上昇（2025年に約8pt 増の見通し）。424B4 もハイパースケーラーの自社チップを競合に挙げる",
+   "source": "brief.md 4章・7章（2026-10-14_industry-overview.md「2.」「8.」、2026-10-14_2025-12_424b4.md「4. 事業等のリスク」）"
+  },
+  {
+   "factor": "大口顧客の契約解除・集中",
+   "timing": "5年以内",
+   "moat": "3Cの強み",
+   "basis": "OpenAI は納入遅延・サービス水準違反で MRA の全部または一部を解除できる。最大顧客の比率は 2025年12月期 62%で、RPO の大部分が OpenAI 契約に依存",
+   "source": "brief.md 3章・7章（2026-10-14_2025-12_424b4.md「4. 事業等のリスク」、2026-10-14_business-overview.md「4. 顧客層」）"
+  },
+  {
+   "factor": "製造委託先（TSMC）1社への依存",
+   "timing": "5年以内",
+   "moat": "3Cの強み",
+   "basis": "全ウエハーを TSMC が製造し、長期の供給・配分の取り決めが無い。台湾などの地政学リスク・自然災害",
+   "source": "brief.md 7章（2026-10-14_2025-12_424b4.md「4. 事業等のリスク」）"
+  },
+  {
+   "factor": "輸出管理の変更",
+   "timing": "5年以内",
+   "moat": "3Cの強み",
+   "basis": "2026-07-10 施行の BIS 規則で UAE の扱いが変更。中東の大口顧客（MBZUAI・G42）向けの販売条件が規制で変わりうる",
+   "source": "brief.md 7章（2026-10-14_industry-overview.md「8.」。検索要約、2026-10-14_2025-12_424b4.md「4.」）"
+  }
+ ],
+ "durability": "持続を見込むモートなし。推論速度・長期の容量契約といった自社の強みは、競合の推論強化、ハイパースケーラーの自社チップ、OpenAI 契約の解除条項、TSMC への依存により5年以内に崩れうる",
+ "backing": "なし",
+ "backing_reason": "営業利益率が直近で同業平均以下",
+ "effective_moats": [],
+ "corrected": false,
+ "near_risks": [
+  "競合の推論強化（技術革新）",
+  "顧客の内製化（ハイパースケーラーの自社チップ）",
+  "大口顧客の契約解除・集中",
+  "製造委託先（TSMC）1社への依存",
+  "輸出管理の変更"
+ ],
+ "verdict": "なし",
+ "verdict_reason": "該当するモートが無い",
+ "triggers": "通期の営業利益率が同業平均を上回る年が出て、かつ継続率など乗り換えの費用を示す数値が開示され、スイッチングコストが「該当」と判断できれば「狭い」",
+ "handoff": {
+  "strengths": "なし",
+  "threats": "競合（NVIDIA）の推論強化、ハイパースケーラーの自社チップの拡大、OpenAI 契約の解除条項と大口顧客への集中、TSMC 1社への製造依存、輸出管理の変更（いずれも5年以内）",
+  "step2_checks": "GAAP とコアの営業利益率の推移と黒字化の時期、売上原価率（2025年12月期 61.0%）と競合平均（39.4%）の差が縮むか、RPO 25.4十億ドルの売上への転換の進み具合と、ROE が計算できるようになった後の水準"
+ },
+ "changes": [
+  "初回の分析"
+ ],
+ "gaps": [
+  "ブランド（不明）: 値上げ・価格改定の実績が開示なし（status.md の未取得項目）。推論 API のトークン単価の改定履歴（/pricing の過去版）と、改定後の利用量の変化を取りにいく",
+  "スイッチングコスト（不明）: 継続率・解約率が開示なし。決算説明会の資料・質疑応答（IR サイトが 403 で未取得）や初の 10-K で確認する",
+  "シェアの推移（不明）: Cerebras の第三者のシェア推計が無い。調査会社の公開レポートを探す",
+  "営業利益率の比較は 2022〜2026年上期の5年分のみ（上場前の年は開示なし）。7年分そろうのは 2028年12月期以降"
+ ],
+ "inputs": [
+  "companies/CBRS_cerebras/raw/filings/2026-10-14_2025-12_424b4.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_business-overview.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_financials-historical.md",
+  "companies/CBRS_cerebras/raw/market/2026-10-14_competitors.md",
+  "companies/CBRS_cerebras/raw/market/2026-10-14_industry-overview.md"
+ ],
+ "seen": [
+  "companies/CBRS_cerebras/raw/filings/2026-10-14_2025-12_424b4.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_business-overview.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_financials-historical.md",
+  "companies/CBRS_cerebras/raw/market/2026-10-14_competitors.md",
+  "companies/CBRS_cerebras/raw/market/2026-10-14_industry-overview.md"
+ ],
+ "input_digests": {
+  "self_financials": "377953e6b622d745f7911900f4f72ca422ddd8ee",
+  "ip": "3c124651fa44c91af76c131c3357ac76dcca04da",
+  "risks": "f30dd4a79f3733e601a8078361139a79da77aeb9",
+  "customer_base": "5033a8221e63fb938c3abfd5fbe6e4b35205c88e",
+  "kpi": "e2b97dd59539860ebd4b86bf3bf8878d7d7ea911",
+  "retention": "255703793ddeb5503bd27cc33d64d7b738af6c86",
+  "pricing": "",
+  "share": "4a06ce64dce37ccc229d1bd8558dab2a27d5f4c0",
+  "industry_margin": "3aacccc52e33bdbcea403cecf7c73002694c2b4a",
+  "structural": "e45cc28b4e8553c60cddacce5b1398133d9edc80",
+  "peers": "a3c0819eb4231d9dc5a30cbc46c5853585e9a39a",
+  "peer_share": "d538649cd1ce7fbf95d117531122503c7507b384",
+  "peer_cost": "45123058428e05402db3d608410845e3d792f03d",
+  "peer_claims": "b64b99ab397f8c509aff4b2196d89ceb7843d17c",
+  "peer_kpi": "43da4bd121e02d24eafb3a99c855704f233b1ba8",
+  "margin_series": "6e2c769c7bee60d94defb0302446f2f70d720419"
+ },
+ "three_c": {
+  "date": "2026-10-14",
+  "verdict": "なし"
+ },
+ "outlook": "market/report/2026-10-12_outlook.md",
+ "previous": null,
+ "md": "companies/CBRS_cerebras/analysis/moat/2026-10-14_moat.md"
+}
