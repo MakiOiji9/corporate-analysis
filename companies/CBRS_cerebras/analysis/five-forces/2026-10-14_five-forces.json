@@ -1,0 +1,129 @@
+{
+ "company": "CBRS_cerebras",
+ "name": "Cerebras Systems Inc.（CBRS）",
+ "date": "2026-10-14",
+ "valid_until": "2027-10-14",
+ "industry": "AI アクセラレータ／AI 推論インフラ業界（単一セグメント。売上区分はハードウェア 70.3%・クラウド・その他サービス 29.7%〔2025年12月期〕）",
+ "industry_source": "brief.md 1章（2026-10-14_2025-12_424b4.md「2. 事業の内容・セグメント情報」: one operating segment、Note 5 の収益の分解。summaries/business.md「主力事業の定義」）",
+ "factors": [
+  {
+   "key": "entry",
+   "name": "新規参入の脅威",
+   "rating": "中",
+   "points": 1,
+   "seen": "424B4 に特定の許認可の記載は無く、輸出入規制・国家安全保障などの法規制の対象（2026-07-10 施行の BIS 規則など）。研究開発費は 2025年 243,319千ドル（売上高比 47.7%）、特許は 96件登録・50件出願中（2026-03-31）。製造は TSMC 委託で、先端ロジック・HBM・CoWoS の確保が必要（大手4社が 2025年の CoWoS・HBM 供給の90%超を確保との分析）。推論特化の非上場企業が大型の資金調達を続けている: Etched 評価額210億ドル（2026年）、SambaNova 約100億ドルでの調達（2026-06 報道、成立未確認）、Fractile 65億ドルで交渉中（2026-08 報道）、Positron 50億ドル評価で交渉（報道）、Groq 69億ドル評価（2025-09 / 2026-03 報道）",
+   "source": "brief.md 2章（2026-10-14_2025-12_424b4.md「6. 研究開発・特許・許認可」、2026-10-14_industry-overview.md「3. 参入に必要な条件・過去5年の主な新規参入」）",
+   "confidence": "参考",
+   "triggers": "推論特化の新興企業のうち2社以上で製品の出荷・売上の計上・新規上場が確認され、参入に要る投資が小さくなった（数億ドル未満で参入した例が出た）ら強。新興企業の撤退・買収が相次ぎ、新たな参入の動きが無くなれば弱",
+   "reason": "事業に許認可は不要だが、参入障壁が有る: 資本（研究開発費が年 2.4億ドル・売上高比 47.7%）、供給（CoWoS・HBM 供給の90%超を大手4社が確保との分析）、技術（特許 96件登録・50件出願中）。新興企業5社は資金調達・評価額の報道だけで、製品の出荷・売上の計上・新規上場が brief で確認できず、新規参入の例として数えられない。参入の動きは巨額の資金を集めた新興企業に限られるため、判断基準の中「資本力のある異業種や海外企業の参入例がある」に当たる。弱にしないのは、有力な参入の動き（巨額調達）が続いているため",
+   "tie_break": false,
+   "candidate": "",
+   "previous": ""
+  },
+  {
+   "key": "substitutes",
+   "name": "代替品の脅威",
+   "rating": "中",
+   "points": 1,
+   "seen": "ハイパースケーラーの自社チップ（Google TPU、AWS Trainium、Broadcom 設計の ASIC）が拡大: GPU 72% / ASIC 22%（2023年）から 2025年は ASIC 約8pt 増の見通し、ASIC の CAGR 27.15%。GPU クラウド利用企業の2026年の評価意向は非 NVIDIA アクセラレータ 39.4%・Blackwell 級 25.3%（評価意向で導入実績ではない）。424B4 のリスク要因もハイパースケーラーの自社チップを競合に挙げる。価格・性能で同等以上とする記述は brief に無い",
+   "source": "brief.md 3章（2026-10-14_industry-overview.md「4. 代替製品・代替手段と普及状況」「8. 業界構造を変えうる要因」）、brief.md 6章（同「2. 上位企業とシェア分布・推移」）、brief.md 7章（2026-10-14_2025-12_424b4.md「4. 事業等のリスク」）",
+   "confidence": "参考",
+   "triggers": "ハイパースケーラーの自社チップで推論の価格性能が同等以上と示され、ASIC のシェアが全体の30%以上に達すれば強",
+   "reason": "自社チップ（ASIC）の普及を示すシェアの数値はあるが、価格または性能で同等以上という記述が brief に無いため、判定条件の強に当たらず中とした。GPU は同じ業界の競合として 2.5 で扱う",
+   "tie_break": false,
+   "candidate": "",
+   "previous": ""
+  },
+  {
+   "key": "buyers",
+   "name": "買い手の交渉力",
+   "rating": "強",
+   "points": 0,
+   "seen": "主要な販売先: 2025年12月期 Customer A（MBZUAI）62%・Customer B（G42）24%、2024年12月期 Customer B 85%。A と B は関連当事者同士。売上債権の集中は 2025-12-31 に A 78%。2026年Q2（3か月）は A 34%・B 32%・C 10%、2026-06-30 の売掛金は B 57%・D 19%。大口顧客の長期容量契約が中心で、契約に顧客が指定する競合との提携を制限する条項がある。顧客数・リピート率は開示なし",
+   "source": "brief.md 4章（2026-10-14_2025-12_424b4.md「3. 主要な販売先」、2026-10-14_business-overview.md「4. 顧客層」、2026-10-14_industry-overview.md「5. 顧客の購買決定要因」）",
+   "confidence": "一次",
+   "triggers": "最大顧客の売上比率が通期で20%未満になれば中",
+   "reason": "単一顧客の比率が 2025年12月期 62%（2024年12月期は別の1社が 85%）、2026年Q2 でも 34% と20%以上で、判断基準の強に当たる（スクリプトの判定も強（確定））",
+   "tie_break": false,
+   "candidate": "強",
+   "previous": ""
+  },
+  {
+   "key": "suppliers",
+   "name": "売り手の交渉力",
+   "rating": "強",
+   "points": 0,
+   "seen": "ファブレスで、ウエハーは TSMC（WSE-3 は 5nm）、再配線層は ASE、最終工程は自社施設。424B4 のリスク要因に「唯一の鋳造先 TSMC への依存（全ウエハーを TSMC が製造、長期の供給・配分の取り決めなし）」「調達の大半は数量の確約なしの発注書ベース。単一・唯一の供給元の部材がある」。10-Q では3社が購入額の 13%・12%・10%。CoWoS は TSMC が2026年末まで満席と述べたと報道。粗利率は 2022-12 11.7% → 2023-12 33.5% → 2024-12 42.3% → 2025-12 39.0%（前年比の最大低下 3.3pt）",
+   "source": "brief.md 5章（2026-10-14_2025-12_424b4.md「5. 主要な原材料・調達先」、2026-10-14_industry-overview.md「6. 原材料・部品の調達構造」、2026-10-14_financials-historical.md の粗利率）、brief.md 7章（2026-10-14_2025-12_424b4.md「4. 事業等のリスク」）",
+   "confidence": "一次",
+   "triggers": "ウエハーの第2の製造委託先の確保や TSMC との長期供給契約の締結が開示されれば中",
+   "reason": "粗利率の低下は 3.3pt で中の範囲だが、全ウエハーを唯一の鋳造先 TSMC が製造し長期の供給・配分の取り決めも無く、単一・唯一の供給元の部材もあると 424B4 に書かれており、判断基準の「供給元が寡占・独占状態」に当たる",
+   "tie_break": false,
+   "candidate": "中",
+   "previous": ""
+  },
+  {
+   "key": "rivalry",
+   "name": "業界内の競争",
+   "rating": "中",
+   "points": 1,
+   "seen": "NVIDIA の AI アクセラレータ売上シェア約86%（2025年、Bloomberg 推計。別推計 80〜92%）。市場成長率は CAGR 28%（学習＋推論インフラ、2025→2029年）、19.2%・17.5%（推論市場）。競合の営業利益率は NVIDIA 62.4% → 60.4%（前年差 -2.0pt）、AMD 7.4% → 10.7%（前年差 +3.3pt）。424B4 は競合に NVIDIA・AMD・Intel、ハイパースケーラーの自社チップ、AWS・Azure・Google Cloud・Oracle、CoreWeave などのネオクラウドを挙げる。Cerebras は営業赤字（2025-12 -28.6%）で、第三者のシェア推計は無い",
+   "source": "brief.md 6章（2026-10-14_industry-overview.md「1. 市場規模と成長率」「2. 上位企業とシェア分布・推移」、2026-10-14_competitors.md「2. 売上高・営業利益・営業利益率」「4. 市場シェア」）、brief.md 7章（2026-10-14_2025-12_424b4.md「4. 事業等のリスク」）",
+   "confidence": "参考",
+   "triggers": "競合の営業利益率が2社とも前年比横ばい以上（低下1pt未満）になれば弱。市場成長率の予測が3%未満に下がり、競合の過半で営業利益率が低下すれば強",
+   "reason": "市場成長率が5%以上のため強にはしない。上位1社のシェアが過半で成長率も5%以上と弱の2条件は満たすが、競合2社の営業利益率は NVIDIA が -2.0pt、AMD が +3.3pt と「過半の会社で横ばい以上」と言い切れない。迷った: NVIDIA の -2.0pt を横ばいと見れば弱だが、不利な方の中を採った",
+   "tie_break": true,
+   "candidate": "",
+   "previous": ""
+  }
+ ],
+ "total": 3,
+ "attractiveness": "低",
+ "attractiveness_by_points": "低",
+ "unknown_count": 0,
+ "downgraded": false,
+ "swot_threats": [
+  "買い手の交渉力",
+  "売り手の交渉力"
+ ],
+ "changes": [
+  "初回の分析"
+ ],
+ "gaps": [
+  "新規参入（中）: 各新興企業の製品出荷・売上計上・参入年が未確認（資金調達の報道のみ、検索要約）で、新規参入の例として数えていない。出荷・売上の確認が取れれば強になりうるため、新規参入の一覧と各社の出荷状況を取りにいく",
+  "業界内競争（中）・代替品（中）: シェアは検索要約（Bloomberg 推計の記事経由）のみ。ASIC の価格性能比の比較資料も無い",
+  "年次開示は 10-K が未提出のため 424B4（2025年12月期）を有報の代わりに使った。初の 10-K（2027年初の見込み）の収集後に再分析する"
+ ],
+ "inputs": [
+  "companies/CBRS_cerebras/raw/filings/2026-10-14_2025-12_424b4.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_business-overview.md",
+  "companies/CBRS_cerebras/raw/market/2026-10-14_competitors.md",
+  "companies/CBRS_cerebras/raw/market/2026-10-14_industry-overview.md"
+ ],
+ "seen": [
+  "companies/CBRS_cerebras/raw/filings/2026-10-14_2025-12_424b4.md",
+  "companies/CBRS_cerebras/raw/market/2026-10-14_competitors.md",
+  "companies/CBRS_cerebras/raw/market/2026-10-14_industry-overview.md"
+ ],
+ "input_digests": {
+  "segment": "eaddd462cab9b5a92783d0a2a4432aa69ec30f93",
+  "customers": "cfd388667ddae07b4ca3c859fec94a02c0d25fcd",
+  "procurement": "d4d1a7af4e2770e6d2dd7d694bc0133cabe9991a",
+  "ip": "3c124651fa44c91af76c131c3357ac76dcca04da",
+  "risks": "f30dd4a79f3733e601a8078361139a79da77aeb9",
+  "customer_base": "5033a8221e63fb938c3abfd5fbe6e4b35205c88e",
+  "market_size": "6b41e695edcd3a4637450308a35f7287c189fb80",
+  "share": "4a06ce64dce37ccc229d1bd8558dab2a27d5f4c0",
+  "entry": "67d8d086daae2006cf4a2874a10ff2c074bd5f2e",
+  "substitutes": "ce50155db7fb1a32c4b4348709aea91b62f8b0b6",
+  "kbf": "a65d6e21124b901474624cfb52c961b9d9c35a7f",
+  "supply": "ed4232e0aa6c6447cffda54272ee15d7d82c743f",
+  "industry_margin": "3aacccc52e33bdbcea403cecf7c73002694c2b4a",
+  "structural": "e45cc28b4e8553c60cddacce5b1398133d9edc80",
+  "peers": "a3c0819eb4231d9dc5a30cbc46c5853585e9a39a",
+  "peer_share": "d538649cd1ce7fbf95d117531122503c7507b384"
+ },
+ "outlook": "market/report/2026-10-12_outlook.md",
+ "previous": null,
+ "md": "companies/CBRS_cerebras/analysis/five-forces/2026-10-14_five-forces.md"
+}
