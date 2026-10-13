@@ -147,7 +147,8 @@ def candidates(company, found: dict[str, Found]) -> dict:
 
 # ---------- コスト構造 ----------
 
-COST_COLUMNS = (("company", ("会社",)), ("year", ("年度",)), ("cost", ("原価率",)), ("sga", ("販管費",)),
+# ratio columns only: the table may also carry the amounts (売上原価・販管費) in columns of their own
+COST_COLUMNS = (("company", ("会社",)), ("year", ("年度",)), ("cost", ("原価率",)), ("sga", ("販管費率", "販管費比率")),
                 ("margin", ("営業利益率",)), ("source", ("出典",)))
 
 

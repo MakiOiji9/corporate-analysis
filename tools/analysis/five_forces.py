@@ -64,7 +64,8 @@ def evaluate(company: P.Company, today: str) -> dict:
                            "json": company.rel(company.file(date, P.JSON_SUFFIX)),
                            "attractiveness": result.get("attractiveness"), "total": result.get("total"),
                            "valid_until": result.get("valid_until") or P.valid_until(date)}
-        state["newer_raw"] = I.newer_trigger_files(company, date, result.get("inputs") or ())
+        state["newer_raw"] = I.newer_trigger_files(company, date, result.get("inputs") or (),
+                                                   seen=result.get("seen") or ())
     if draft and (not latest or draft[0] >= latest[0]):
         state.update(result="draft", reason=f"作成途中の {company.rel(draft[1])} がある（続きから書く）")
     elif not latest:
@@ -206,6 +207,7 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, scored: 
         "unknown_count": scored["unknown_count"], "downgraded": scored["downgraded"],
         "swot_threats": scored["swot_threats"], "changes": parsed["changes"], "gaps": parsed["gaps"],
         "inputs": sorted({company.rel(f.path) for f in found.values() if f.path is not None}),
+        "seen": I.raw_seen(company),
         "outlook": _outlook_path(outlook.group(1)) if outlook else None,
         "previous": {"date": previous[0], "attractiveness": previous[1].get("attractiveness")} if previous else None,
         "md": company.rel(company.file(date, P.MD_SUFFIX)),

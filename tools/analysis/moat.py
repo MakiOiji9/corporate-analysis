@@ -75,7 +75,7 @@ def evaluate(company: P.Company, today: str) -> dict:
         state["latest"] = {"date": date, "md": company.rel(company.file(date, P.MD_SUFFIX)),
                            "json": company.rel(company.file(date, P.JSON_SUFFIX)),
                            "verdict": result.get("verdict"), "valid_until": result.get("valid_until") or P.valid_until(date)}
-        state["newer_raw"] = I.newer_trigger_files(company, date, result.get("inputs") or ())
+        state["newer_raw"] = I.newer_trigger_files(company, date, result.get("inputs") or (), result.get("seen") or ())
         tc = TP.latest_result(_tc_company(company))
         if tc and tc[0] > date:
             state["newer_raw"].append(company.rel(_tc_company(company).file(tc[0], TP.JSON_SUFFIX)))
@@ -272,7 +272,8 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: d
                     "step2_checks": parsed["step2_checks"]},
         "changes": parsed["changes"], "gaps": parsed["gaps"],
         "inputs": sorted({company.rel(f.path) for f in found.values() if f.path is not None}),
-        "three_c": ({"date": three_c[0], "verdict": three_c[1].get("verdict")} if three_c else None),
+        "seen": I.raw_seen(company),
+        "three_c":({"date": three_c[0], "verdict": three_c[1].get("verdict")} if three_c else None),
         "outlook": _header_path(text, OUTLOOK_HEADER),
         "previous": {"date": previous[0], "verdict": previous[1].get("verdict")} if previous else None,
         "md": company.rel(company.file(date, P.MD_SUFFIX)),

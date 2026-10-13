@@ -250,6 +250,38 @@ def test_newest_raw_with_content_wins(repo):
     assert found["substitutes"].path.name == "2026-10-01_industry-overview.md"
 
 
+def test_carried_over_section_of_a_diff_file_falls_back_to_older_raw(repo):
+    diff = repo / "companies" / "7203_toyota" / "raw" / "market" / "2026-10-11_industry-overview.md"
+    diff.write_text("# 差分\n\n> 前回ファイル: raw/market/2026-10-01_industry-overview.md からの差分\n\n"
+                    "## 3. 参入に必要な条件・過去5年の主な新規参入\n\n前回ファイルから変更なし（今回の範囲外）。\n\n"
+                    "## 4. 代替製品・代替手段と普及状況\n\n前回ファイルから変更なし（今回の範囲外）。対象は前回と同じ。\n",
+                    encoding="utf-8")
+    found = I.gather(company_obj(repo))
+    assert found["entry"].path.name == "2026-10-01_industry-overview.md"
+    assert found["substitutes"].path.name == "2026-10-01_industry-overview.md"
+
+
+def test_same_day_raw_seen_at_build_does_not_trigger(repo):
+    company = company_obj(repo)
+    diff = company.path / "raw" / "market" / "2026-10-05_competitors.md"
+    diff.write_text("# 差分\n\n## 4. 市場シェア\n\n前回ファイルから変更なし（今回の範囲外）。\n", encoding="utf-8")
+    rel = company.rel(diff)
+    seen = I.raw_seen(company)
+    assert rel in seen
+    assert I.newer_trigger_files(company, "2026-10-05", ["x"], seen=seen) == []
+    assert I.newer_trigger_files(company, "2026-10-05", ["x"]) == [rel]  # not seen, not used: collected later
+
+
+@pytest.mark.parametrize("body, blank", [
+    ("前回ファイルから変更なし（今回の範囲外）。", True),
+    ("- 今回の範囲外\n", True),
+    ("前回ファイルから変更なし。\n\n| 項目 | 値 |\n|---|---|\n| 市場 | 1兆円 |\n", False),
+    ("市場は前年から変更なし（5,000億円）。", False),
+])
+def test_is_blank_section_treats_carried_over_notes_as_blank(body, blank):
+    assert I.is_blank_section(body) is blank
+
+
 # ---------- check / prepare / build ----------
 
 def test_check_new_company_goes_to_prepare(repo, capsys):

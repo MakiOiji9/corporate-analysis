@@ -2,7 +2,8 @@
 
 Each input is one section of one raw kind, found by a heading keyword (the headings come from
 .ai/templates/collect-company-info/raw/). Raw files are dated (YYYY-MM-DD_{kind}.md) and an update
-run may add a diff-only file, so the newest file whose section has content wins.
+run may add a diff-only file, so the newest file whose section has content wins. A diff file's
+out-of-scope section that only says it is carried over (前回ファイルから変更なし・今回の範囲外) counts as blank.
 """
 from __future__ import annotations
 
@@ -18,6 +19,7 @@ HEADER_NOTE_LIMIT = 600  # characters of a raw file's 情報源・注意 header 
 COMMENT = re.compile(r"<!--.*?-->", re.S)
 MEANINGLESS = re.compile(r"[\s|—\-:：（）()・]")
 THIN_WORDS = ("見つからなかった", "見つからない", "見つけられなかった", "確認できず", "確認できなかった", "未取得")
+CARRIED_OVER_WORDS = ("前回ファイルから変更なし", "今回の範囲外")  # a diff file's note for a section it did not collect
 
 
 @dataclass(frozen=True)
@@ -81,12 +83,13 @@ def raw_files(company: Company, kind: str) -> list[tuple[str, Path]]:
 
 
 def is_blank_section(body: str) -> bool:
-    """True when the section has no data rows and no text besides dashes and punctuation."""
+    """True when the section has no data rows and no text besides dashes, punctuation and carried-over notes."""
     text = COMMENT.sub("", body)
     for table in M.tables(text):
         if any(not M.is_blank(c) for row in table[1:] for c in row):
             return False
-    prose = [line for line in text.splitlines() if line.strip() and not line.lstrip().startswith("|")]
+    prose = [line for line in text.splitlines() if line.strip() and not line.lstrip().startswith("|")
+             and not any(w in line for w in CARRIED_OVER_WORDS)]
     return not any(MEANINGLESS.sub("", line.lstrip("-*> #")) for line in prose)
 
 
@@ -195,9 +198,16 @@ def summary_main_business(company: Company) -> str:
     return found[1].strip() if found else ""
 
 
+def raw_seen(company: Company, kinds: tuple[str, ...] = TRIGGER_KINDS) -> list[str]:
+    """Raw files of the trigger kinds that exist now (recorded at build, so a same-day file is not taken as newer)."""
+    return sorted(company.rel(p) for kind in kinds for _, p in raw_files(company, kind))
+
+
 def newer_trigger_files(company: Company, since: str, used: tuple[str, ...] | list[str] = (),
-                        kinds: tuple[str, ...] = TRIGGER_KINDS) -> list[str]:
-    """Raw files of the trigger kinds collected after the analysis date, or on that date but not among the
-    inputs the analysis used (collected later the same day). Without a list of used inputs only the date counts."""
+                        kinds: tuple[str, ...] = TRIGGER_KINDS,
+                        seen: tuple[str, ...] | list[str] = ()) -> list[str]:
+    """Raw files of the trigger kinds collected after the analysis date, or on that date but neither among the
+    inputs the analysis used nor present at its build (collected later the same day). Without a list of used
+    inputs only the date counts."""
     return [company.rel(p) for kind in kinds for d, p in raw_files(company, kind)
-            if d > since or (d == since and used and company.rel(p) not in used)]
+            if d > since or (d == since and used and company.rel(p) not in used and company.rel(p) not in seen)]

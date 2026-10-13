@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from ff_inputs import Found, Spec, collect_requests, gather, raw_files  # noqa: F401  (re-exported)
 from ff_inputs import newer_trigger_files as ff_newer_trigger_files
+from ff_inputs import raw_seen as ff_raw_seen
 
 SPECS = (
     Spec("segment", "有報: 事業の内容・セグメント情報", "yuho", "事業の内容", "collect-filings", True),
@@ -38,6 +39,12 @@ def gather_3c(company) -> dict[str, Found]:
     return gather(company, SPECS)
 
 
-def newer_trigger_files(company, since: str, used: tuple[str, ...] | list[str] = ()) -> list[str]:
+def newer_trigger_files(company, since: str, used: tuple[str, ...] | list[str] = (),
+                        seen: tuple[str, ...] | list[str] = ()) -> list[str]:
     """ff_inputs.newer_trigger_files with the 3C trigger kinds."""
-    return ff_newer_trigger_files(company, since, used, TRIGGER_KINDS)
+    return ff_newer_trigger_files(company, since, used, TRIGGER_KINDS, seen)
+
+
+def raw_seen(company) -> list[str]:
+    """ff_inputs.raw_seen with the 3C trigger kinds."""
+    return ff_raw_seen(company, TRIGGER_KINDS)

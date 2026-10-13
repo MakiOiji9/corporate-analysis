@@ -70,7 +70,7 @@ def evaluate(company: P.Company, today: str) -> dict:
         state["latest"] = {"date": date, "md": company.rel(company.file(date, P.MD_SUFFIX)),
                            "json": company.rel(company.file(date, P.JSON_SUFFIX)),
                            "verdict": result.get("verdict"), "valid_until": result.get("valid_until") or P.valid_until(date)}
-        state["newer_raw"] = I.newer_trigger_files(company, date, result.get("inputs") or ())
+        state["newer_raw"] = I.newer_trigger_files(company, date, result.get("inputs") or (), result.get("seen") or ())
         ff = FP.latest_result(_ff_company(company))
         if ff and ff[0] > date:
             state["newer_raw"].append(company.rel(_ff_company(company).file(ff[0], FP.JSON_SUFFIX)))
@@ -246,6 +246,7 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: d
                     "moat_checks": parsed["moat_checks"]},
         "changes": parsed["changes"], "gaps": parsed["gaps"],
         "inputs": sorted({company.rel(f.path) for f in found.values() if f.path is not None}),
+        "seen": I.raw_seen(company),
         "five_forces": ({"date": five_forces[0], "attractiveness": five_forces[1].get("attractiveness"),
                          "industry": five_forces[1].get("industry")} if five_forces else None),
         "outlook": _header_path(text, OUTLOOK_HEADER),

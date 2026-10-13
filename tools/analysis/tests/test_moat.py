@@ -309,6 +309,16 @@ def test_cost_rows_and_peer_average(repo):
     assert "| 競合の単純平均 | — | 79.0% | 15.0% | 6.0% |" in X.cost_table_rows(rows)
 
 
+def test_cost_rows_read_ratio_columns_next_to_amount_columns(repo):
+    body = ("| 会社 | 年度 | 売上高 | 売上原価 | 販管費 | 営業利益 | 売上原価率 | 販管費率 | 営業利益率 | 出典・確度 |\n"
+            "|---|---|---|---|---|---|---|---|---|---|\n"
+            "| アルファ社（1111） | 2026/03 | 16,600 | 9,990 | 3,562 | 3,046 | 60.2%（算出 9,990÷16,600） "
+            "| 21.5%（算出 3,562÷16,600） | 18.3% | 有報（一次） |\n")
+    found = I.Found(I.SPEC["peer_cost"], "ok", Path("x"), "9.", body)
+    [row] = X.cost_rows(company_obj(repo), found)
+    assert (row["cost"], row["sga"], row["margin"]) == (60.2, 21.5, 18.3)
+
+
 # ---------- check ----------
 
 def test_check_goes_to_prepare(repo, capsys):
