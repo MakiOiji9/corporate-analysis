@@ -94,16 +94,25 @@ def change_table_rows(changes: list[dict]) -> str:
         return f"| — | — | — | — | 該当なし（前年から {CHANGE_PT:.0f}pt 以上動いた年なし） |"
     return "\n".join(
         f"| {c['year']} | {c['from']:.1f}% → {c['to']:.1f}% | {c['main']} | {c['moves']} | "
-        f"<!-- FILL:bg-{c['year']} この年に{c['main']}が動いた理由を1文（brief の特別損益・株主還元・事業の記述から）。"
-        f"分からなければ「{UNKNOWN_BACKGROUND}（brief に記載なし）」 --> |" for c in changes)
+        f"<!-- FILL:bg-{c['year']} この年に{c['main']}が動いた理由を1文（同じ行の営業利益率・特別損益の変化と、"
+        f"brief の特別損益の内訳・株主還元・事業の記述から）。分からなければ「{UNKNOWN_BACKGROUND}（brief に記載なし）」 --> |"
+        for c in changes)
 
 
 def one_off_table_rows(rows: list[dict]) -> str:
     if not rows:
-        return "| — | — | — | — | 特別損益の記載が raw に無い |"
+        return "| — | — | — | — | — | 特別損益の記載が raw に無い |"
     return "\n".join(
         f"| {r['year']} | {_m(r['gain'])} | {_m(r['loss'])} | {_m(r['net_income'])} | "
-        f"{_p(r['share'])}{'（要確認）' if r['check'] else ''} |" for r in rows)
+        f"{_p(r['share'])}{'（要確認）' if r['check'] else ''} | {_p(r.get('adjusted_roe'))} |" for r in rows)
+
+
+def one_off_step1_cell(adjusted: dict | None, s1: dict) -> str:
+    if adjusted is None:
+        return f"—（要確認の年なし。特別損益の純額は各年とも当期純利益の{ONE_OFF_SHARE:.0f}%未満）"
+    same = "変わらない" if adjusted["rating"] == s1["rating"] else f"{s1['rating']} から変わる"
+    return (f"{'、'.join(adjusted['years'])} の特別損益を除くと（税効果は考慮しない）: {adjusted['sentence']}。"
+            f"手順1の判定は{same}")
 
 
 def consistency_table_rows(rows: list[dict]) -> str:
@@ -134,6 +143,7 @@ def render_skeleton(template: str, values: dict, cands: dict, consistency: list[
                   peer_rows=peer_table_rows(values["company"], cands["dupont"], s3["comparison"]),
                   step3_rating=f"{s3['source']}{'' if s3['source'] == '不明' else FIXED_MARK}: {s3['basis']}",
                   change_rows=change_table_rows(cands["changes"]), one_off_rows=one_off_table_rows(cands["one_off"]),
+                  one_off_step1=one_off_step1_cell(cands["one_off_step1"], s1),
                   consistency_rows=consistency_table_rows(consistency))
     return Template(template).safe_substitute(filled)
 
@@ -207,6 +217,7 @@ def conclusion_section(cands: dict) -> str:
         f"| 手順1 ROE の水準と安定性 | {s1['sentence']} |",
         f"| 手順2 営業利益率の同業比較 | {s2['sentence']} |",
         f"| 手順3 ROE の源泉 | {s3['sentence']}{basis} |",
+        f"| 境界に近い比較 | {'。'.join(cands['borderline']) or 'なし'} |",
         f"| 収益性 | **{cands['verdict']}**: {cands['why']} |"])
 
 
@@ -219,4 +230,4 @@ def flags(parsed: dict, cands: dict) -> dict:
     return {"unknown_backgrounds": [c["year"] for c in parsed["changes_by_year"]
                                     if c["background"].strip().startswith(UNKNOWN_BACKGROUND)],
             "one_off_checks": [r["year"] for r in cands["one_off"] if r["check"]],
-            "one_off_share_limit": ONE_OFF_SHARE}
+            "one_off_share_limit": ONE_OFF_SHARE, "borderline": cands["borderline"]}

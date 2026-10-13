@@ -130,7 +130,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 |---|---|---|
 | `profitability.py list` | `companies/` の企業と、収益性分析の状態（none / fresh / expired / triggered / draft）・結論・モートと3Cの結論 | 1行の JSON |
 | `profitability.py check --company X` | 結果が有効か（180日以内で、使った節と年次の数値が変わっていないか、新しいモート・3C分析が無いか）、材料があるか（自社の財務時系列5年以上 → collect-filings、競合の「収益性の分解」と営業利益率の推移 → collect-peers-valuation）。STEP 1 は前提にしない。`next` に次の作業 | 1行の JSON |
-| `profitability.py prepare --company X [--redo] [--skip-collect]` | 自社の年次系列（data/*.csv → 有報・財務時系列の表。単位 千円/百万円/億円 を判別、一次の値を優先）から ROE（期首期末平均の自己資本）・3要素を計算し、手順1〜3の判定、営業利益率と3要素の同業比較、ROE が2pt以上動いた年の主因、特別損益の比率、STEP 1 との整合性を入れた骨組み（FILL は背景だけ）と材料を作る。作成途中の md は残す | `{日付}_brief.md`・`{日付}_profitability.md` |
+| `profitability.py prepare --company X [--redo] [--skip-collect]` | 自社の年次系列（data/*.csv → 有報・財務時系列の表。単位 千円/百万円/億円 を判別、一次の値を優先）から ROE（期首期末平均の自己資本）・3要素を計算し、手順1〜3の判定（同業比較は 純利益率 ±1pt・回転率とレバレッジ ±5% 以内を同等とみなす）、営業利益率と3要素の同業比較、ROE が2pt以上動いた年の主因（営業利益率・特別損益の前年比つき）、特別損益の比率と除いた ROE・除いた場合の手順1、境界に近い比較、STEP 1 との整合性を入れた骨組み（FILL は背景だけ）と材料を作る。返り値に書く欄の一覧（`fill_keys`）。作成途中の md は残す | `{日付}_brief.md`・`{日付}_profitability.md` |
 | `profitability.py build --company X [--date …]` | md を検証（構造・FILL・3.3 の年度がスクリプトの抽出と一致・必須欄・禁止表現）し、数値を raw から計算し直して収益性（良好 / 普通 / 懸念 / 判定保留）を書き込む | `{日付}_profitability.json` |
 
 モジュール: `pf_paths.py`（結果の場所と鮮度）、`pf_inputs.py`（入力一覧。抽出は `ff_inputs.py` を再利用）、`pf_series.py`（自社・競合の年次系列: 売上高・当期純利益・総資産・自己資本・自己資本比率・ROE・特別損益）、`pf_metrics.py`（ROE とデュポン分解、手順1〜4の判定、整合性チェック、収集の要求。営業利益率の同業比較は `mt_metrics.py` を再利用）、`pf_brief.py`（材料）、`pf_doc.py`（骨組み・検証・結論）。テンプレートは `.ai/templates/profitability/`。

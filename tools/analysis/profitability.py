@@ -44,6 +44,17 @@ from common import atomic_write_text, utf8_stdout  # noqa: E402
 TEMPLATE = A.REPO_ROOT / ".ai" / "templates" / "profitability" / "profitability.md"
 OUTLOOK_HEADER = re.compile(r"^\*\*地合い\*\*:\s*(.+)$", re.M)
 SERIES_KEY = "yearly_series"  # input_digests entry for every number (read beyond the SPECS sections)
+FILL_KEY = re.compile(r"<!--\s*FILL:([\w-]+)")
+
+
+def _peer_summary(cands: dict) -> dict | None:
+    """3.2 in one line per side: the target's and the peers' average factors (None without peers)."""
+    comparison = cands["step3"]["comparison"]
+    if not comparison["peers"]:
+        return None
+    keys = ("margin", "turnover", "leverage", "roe")
+    return {side: {k: round(comparison[name][k], 2) for k in keys}
+            for side, name in (("self", "self"), ("peer_avg", "peer_avg"))}
 
 
 def emit(payload: dict) -> int:
@@ -239,8 +250,10 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
         "md": company.rel(md_path), "kept": kept, "regenerated": untouched and not args.redo,
         "skipped_collect": requests if blocking == "collect" else [], "warnings": warnings,
         "fill": len(A.FILL.findall(md_path.read_text(encoding="utf-8"))),
+        "fill_keys": FILL_KEY.findall(md_path.read_text(encoding="utf-8")),
         "candidate": {"verdict": cands["verdict"], "why": cands["why"], "step1": cands["step1"]["rating"],
                       "step2": cands["step2"]["rating"], "step3": cands["step3"]["source"]},
+        "peer_summary": _peer_summary(cands), "borderline": cands["borderline"],
         "change_years": [c["year"] for c in cands["changes"]],
         "previous": previous[0] if previous else None, "moat": _summary(_moat(company)),
         "three_c": _summary(_three_c(company)), "unavailable": _unavailable(found), "outlook": outlook["path"],
@@ -288,7 +301,8 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: d
         "roe_rows": cands["roe_rows"],
         "dupont": [{k: (round(v, 4) if isinstance(v, float) else v) for k, v in r.items()} for r in cands["dupont"]],
         "change_years": [dict(c, background=backgrounds.get(c["year"], "")) for c in cands["changes"]],
-        "one_off": cands["one_off"], "one_off_assessment": parsed["one_off"], "peer_gap": parsed["peer_gap"],
+        "one_off": cands["one_off"], "one_off_step1": cands["one_off_step1"],
+        "one_off_assessment": parsed["one_off"], "peer_gap": parsed["peer_gap"], "borderline": cands["borderline"],
         "consistency": consistency, "consistency_comment": parsed["consistency_comment"],
         "handoff": {"report_points": parsed["report_points"], "targets": parsed["targets"],
                     "step2_checks": parsed["step2_checks"], "triggers": parsed["triggers"]},

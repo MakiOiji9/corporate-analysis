@@ -12,6 +12,9 @@
   手順3 (源泉): the target's factors averaged over the years compared with the peers (up to 5) against the
     peer average: leverage over 3x in the newest year and above the peers -> 借入依存; else net margin or asset
     turnover above the peers -> 本業由来; else 特定できず. No peer data -> 不明 (借入依存 when over 3x anyway).
+    "Above" needs a lead beyond the band (net margin > 1pt, turnover / leverage > 5%); a smaller lead is 同等.
+  Comparisons within twice their band are listed as borderline; the 要確認 years of the extraordinary items get
+  手順1 recomputed without them (before tax effects).
   手順4 (結論): 懸念: 手順1 懸念 or 借入依存 / 良好: 手順1 良好, 手順2 上回る・同等, 本業由来 /
     判定保留: 手順1 良好 and the rest could not be compared (or 手順1 lacks years) / 普通: otherwise
 """
@@ -29,7 +32,9 @@ from ff_metrics import _months_apart, peer_margins
 MIN_YEARS, MAX_YEARS = 5, 10
 GOOD_AVG, FAIR_AVG, GOOD_MIN = 10.0, 8.0, 5.0
 TREND_PT = 1.0  # 直近3年・5年の方向: a change within this is 横ばい / 安定
-SAME_PT = 1.0  # 営業利益率の同業比較: within this is 同等
+SAME_PT = 1.0  # 営業利益率・純利益率の同業比較: within this is 同等
+FACTOR_SAME_RATIO = 1.05  # 総資産回転率・財務レバレッジ: within ±5% of the peer average is 同等
+BORDERLINE_WIDTH = 2.0  # a comparison within twice its band is reported as borderline
 CHANGE_PT = 2.0  # ROE moves of this size are decomposed (3.3)
 LEVERAGE_LIMIT = 3.0  # 自己資本比率 33% 未満に相当
 MARGIN_YEARS = 5
@@ -139,7 +144,7 @@ def step2(company, found: dict) -> dict:
     rows = MT.comparison_rows(margins, MT.peers(company, found["peers"]))[-MARGIN_YEARS:]
     trend = _direction([r["self"] for r in rows], TREND_PT, ("改善", "安定", "悪化"))
     compared = [r for r in rows if r["avg"] is not None]
-    base = {"rows": rows, "sources": sources, "trend": trend}
+    base = {"rows": rows, "sources": sources, "trend": trend, "margins": margins}
     if not compared:
         return {**base, "rating": None, "basis": "自社と競合の営業利益率を同じ年度で比べられない",
                 "sentence": f"営業利益率は同業と比べられない（自社の{len(rows)}年の推移は{trend}）"}
@@ -184,6 +189,23 @@ def peer_comparison(own: list[dict], peers: list[dict]) -> dict:
             "peer_rows": peer_rows}
 
 
+def is_above(key: str, own: float, peer: float) -> bool:
+    """Above the peer average beyond the band: net margin by more than SAME_PT points, turnover and leverage by
+    more than FACTOR_SAME_RATIO times. A smaller lead counts as 同等 (迷ったら保守的に)."""
+    if key in ("margin", "roe"):
+        return own - peer > SAME_PT
+    return peer > 0 and own / peer > FACTOR_SAME_RATIO
+
+
+def compare_text(key: str, own: float, peer: float) -> str:
+    name = dict(FACTORS).get(key, "ROE")
+    if key in ("margin", "roe"):
+        gap = f"{own - peer:+.1f}pt、±{SAME_PT:.0f}pt 以内は同等"
+    else:
+        gap = f"比 {own / peer:.2f}、±{(FACTOR_SAME_RATIO - 1) * 100:.0f}% 以内は同等" if peer else "比較不可"
+    return f"{name} {fmt_factor(own, key)} と同業平均 {fmt_factor(peer, key)}（{gap}）"
+
+
 def step3(own: list[dict], comparison: dict) -> dict:
     lev = own[-1]["leverage"] if own else None
     base = {"latest_leverage": lev, "comparison": comparison}
@@ -198,18 +220,19 @@ def step3(own: list[dict], comparison: dict) -> dict:
         return {**base, "source": "不明", "drivers": [], "basis": "競合の3要素が無く同業と比べられない",
                 "sentence": "ROE の源泉は不明（同業と比べられない）"}
     own_avg, peer = comparison["self"], comparison["peer_avg"]
-    above = [name for key, name in FACTORS[:2] if own_avg[key] > peer[key]]
-    if lev > LEVERAGE_LIMIT and own_avg["leverage"] > peer["leverage"]:
+    above = [name for key, name in FACTORS[:2] if is_above(key, own_avg[key], peer[key])]
+    compared = "、".join(compare_text(key, own_avg[key], peer[key]) for key, _ in FACTORS)
+    if lev > LEVERAGE_LIMIT and is_above("leverage", own_avg["leverage"], peer["leverage"]):
         source, drivers = "借入依存", ["財務レバレッジ"]
-        why = f"財務レバレッジが {lev:.2f} 倍（{LEVERAGE_LIMIT:.0f}倍超）で同業平均 {peer['leverage']:.2f} 倍を上回る"
+        why = f"財務レバレッジが {lev:.2f} 倍（{LEVERAGE_LIMIT:.0f}倍超）で同業平均を上回る（{compared}）"
     elif above:
         source, drivers = "本業由来", above
-        why = "、".join(f"{name}が同業平均を上回る" for name in above)
+        why = f"{'・'.join(above)}が同業平均を上回る（{compared}）"
     else:
         source, drivers = "特定できず", []
-        why = "売上高純利益率・総資産回転率とも同業平均以下"
+        why = f"売上高純利益率・総資産回転率とも同業平均を上回らない（{compared}）"
     label = {"本業由来": "（本業の強さ）", "借入依存": "（借入依存）", "特定できず": ""}[source]
-    named = "・".join(drivers) or "特定できず（純利益率・回転率とも同業平均以下）"
+    named = "・".join(drivers) or "特定できず（純利益率・回転率とも同業平均を上回らない）"
     return {**base, "source": source, "drivers": drivers, "basis": why, "sentence": f"ROE の源泉は{named}{label}"}
 
 
@@ -221,13 +244,36 @@ def fmt_factor(value: float | None, key: str) -> str:
     return f"{value:.1f}%" if key in ("margin", "roe") else f"{value:.2f}{'回' if key == 'turnover' else '倍'}"
 
 
-def change_years(own: list[dict]) -> list[dict]:
-    """Years whose ROE moved CHANGE_PT or more from the year before, with the factor that moved it most."""
+def _extra_net(series: S.Series, year: str) -> float | None:
+    gain, loss = series["extra_gain"].get(year), series["extra_loss"].get(year)
+    if gain is None and loss is None:
+        return None
+    return (gain.value if gain else 0.0) - (loss.value if loss else 0.0)
+
+
+def _context(series: S.Series, margins: dict[str, float], prev: str, cur: str) -> list[str]:
+    """What the writer needs beside the factors: the operating margin and the extraordinary items of both years."""
+    out = []
+    if prev in margins and cur in margins:
+        out.append(f"営業利益率 {margins[prev]:.1f}%→{margins[cur]:.1f}%")
+    before, after = _extra_net(series, prev), _extra_net(series, cur)
+    if before is not None or after is not None:
+        out.append(f"特別損益の純額 {'—' if before is None else f'{before:,.0f}'}→"
+                   f"{'—' if after is None else f'{after:,.0f}'}百万円")
+    return out
+
+
+def change_years(own: list[dict], series: S.Series | None = None, margins: dict[str, float] | None = None) -> list[dict]:
+    """Years whose ROE moved CHANGE_PT or more from the year before, with the factor that moved it most and the
+    operating margin / extraordinary items of both years (so the writer need not look elsewhere)."""
     out = []
     for prev, cur in zip(own, own[1:]):
         if _months_apart(prev["year"], cur["year"]) != 12 or abs(cur["roe"] - prev["roe"]) < CHANGE_PT:
             continue
-        moves = "、".join(f"{name} {fmt_factor(prev[k], k)}→{fmt_factor(cur[k], k)}" for k, name in FACTORS)
+        moves = [f"{name} {fmt_factor(prev[k], k)}→{fmt_factor(cur[k], k)}" for k, name in FACTORS]
+        if series is not None:
+            moves += _context(series, margins or {}, prev["year"], cur["year"])
+        moves = "、".join(moves)
         if cur["net_income"] <= 0 or prev["net_income"] <= 0:
             main = "（赤字を含むため分解できない）"
         else:
@@ -239,19 +285,34 @@ def change_years(own: list[dict]) -> list[dict]:
     return out
 
 
-def one_off_rows(series: S.Series, years: list[str]) -> list[dict]:
+def one_off_rows(series: S.Series, years: list[str], dupont: list[dict] = ()) -> list[dict]:
+    """Extraordinary items per year; for a year whose net amount is ONE_OFF_SHARE% or more of the net income,
+    the ROE without it (net income minus the net amount, before tax effects, over the same average equity)."""
+    equity = {r["year"]: r["avg_equity"] for r in dupont}
     out = []
     for year in years:
         gain, loss = series["extra_gain"].get(year), series["extra_loss"].get(year)
         ni = series["net_income"].get(year)
-        if gain is None and loss is None:
+        net = _extra_net(series, year)
+        if net is None:
             continue
-        net = (gain.value if gain else 0.0) - (loss.value if loss else 0.0)
         share = net / ni.value * 100 if ni and ni.value else None
+        check = share is not None and abs(share) >= ONE_OFF_SHARE
+        adjusted = ((ni.value - net) / equity[year] * 100 if check and year in equity and equity[year] > 0 else None)
         out.append({"year": year, "gain": gain.value if gain else None, "loss": loss.value if loss else None,
                     "net_income": ni.value if ni else None, "share": round(share, 1) if share is not None else None,
-                    "check": share is not None and abs(share) >= ONE_OFF_SHARE})
+                    "check": check, "adjusted_roe": round(adjusted, 1) if adjusted is not None else None})
     return out
+
+
+def adjusted_step1(roes: list[dict], one_off: list[dict]) -> dict | None:
+    """手順1 again with the ROE of the 要確認 years replaced by the ROE without the extraordinary items."""
+    adjusted = {r["year"]: r["adjusted_roe"] for r in one_off if r["adjusted_roe"] is not None}
+    if not adjusted:
+        return None
+    rows = [dict(r, roe=adjusted.get(r["year"], r["roe"])) for r in roes]
+    result = step1(rows)
+    return {"years": sorted(adjusted), "rating": result["rating"], "sentence": result["sentence"]}
 
 
 # ---------- 手順4 / STEP 1 ----------
@@ -269,12 +330,36 @@ def judge(s1: dict, s2: dict, s3: dict) -> tuple[str, str]:
     if s2["rating"] == "下回る":
         return "普通", "手順1は良好だが、営業利益率が同業平均を下回る"
     if s3["source"] == "特定できず":
-        return "普通", "手順1は良好だが、純利益率・回転率とも同業平均以下で本業由来と言えない"
+        return "普通", "手順1は良好だが、純利益率・回転率とも同業平均を上回らず本業由来と言えない"
     unknown = [label for label, missing in (("営業利益率の同業比較", s2["rating"] is None),
                                             ("ROE の源泉の同業比較", s3["source"] == "不明")) if missing]
     if unknown:
         return "判定保留", f"手順1は良好だが、{'・'.join(unknown)}ができない（競合の材料不足。普通・懸念という意味ではない）"
     return "良好", "手順1が良好、営業利益率が同業平均以上、ROE の源泉が本業由来"
+
+
+def borderline(s1: dict, s2: dict, s3: dict) -> list[str]:
+    """Comparisons that sit within BORDERLINE_WIDTH times their band: a small change in the data (a secondary
+    value, a new fiscal year) could move the judgement by one step."""
+    out = []
+    if s1["rating"] is not None:
+        for name, value, limit in (("ROE の平均", s1["average"], GOOD_AVG), ("ROE の平均", s1["average"], FAIR_AVG),
+                                   ("ROE の最低", s1["minimum"], GOOD_MIN)):
+            if abs(value - limit) <= TREND_PT * BORDERLINE_WIDTH:
+                out.append(f"手順1: {name} {value:.1f}% が基準 {limit:.0f}% に近い")
+    if s2["rating"] is not None and abs(s2["diff"]) <= SAME_PT * BORDERLINE_WIDTH:
+        out.append(f"手順2: 営業利益率の差 {s2['diff']:+.1f}pt（±{SAME_PT:.0f}pt が同等の幅）")
+    comparison = s3["comparison"]
+    if comparison["peers"]:
+        own, peer = comparison["self"], comparison["peer_avg"]
+        for key, _ in FACTORS:
+            if key == "margin":
+                near = abs(own[key] - peer[key]) <= SAME_PT * BORDERLINE_WIDTH
+            else:
+                near = peer[key] > 0 and abs(own[key] / peer[key] - 1) <= (FACTOR_SAME_RATIO - 1) * BORDERLINE_WIDTH
+            if near:
+                out.append(f"手順3: {compare_text(key, own[key], peer[key])}")
+    return out
 
 
 def consistency(s2: dict, s3: dict, moat: dict | None, three_c: dict | None) -> list[dict]:
@@ -317,8 +402,10 @@ def candidates(company, found: dict) -> dict:
     comparison = peer_comparison(own, S.peer_series(company, found["peer_dupont"]))
     s1, s2, s3 = step1(roes), step2(company, found), step3(own, comparison)
     verdict, why = judge(s1, s2, s3)
+    one_off = one_off_rows(series, [r["year"] for r in roes], own)
     return {"series": series, "dupont": own, "roe_rows": roes, "step1": s1, "step2": s2, "step3": s3,
-            "changes": change_years(own), "one_off": one_off_rows(series, [r["year"] for r in roes]),
+            "changes": change_years(own, series, s2["margins"]), "one_off": one_off,
+            "one_off_step1": adjusted_step1(roes, one_off), "borderline": borderline(s1, s2, s3),
             "verdict": verdict, "why": why}
 
 

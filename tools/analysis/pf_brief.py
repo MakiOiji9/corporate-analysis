@@ -6,9 +6,10 @@ this file and the skeleton; raw files, PDFs and CSVs stay closed.
 """
 from __future__ import annotations
 
+import re
 from dataclasses import replace
 
-from ff_inputs import Found, excerpt, header_notes
+from ff_inputs import Found, excerpt
 from pf_metrics import CHANGE_PT, ONE_OFF_SHARE
 from pf_paths import Company
 
@@ -18,7 +19,9 @@ CHAPTERS = (
     ("会社の目標・資本政策の材料（6章）", ("targets", "capital", "policy")),
     ("競合の材料（3.2 の差の背景）", ("peer_roe", "peer_dupont")),
 )
-PROSE_ONLY = ("self_pl",)  # the tables are already in the md; keep the notes under them
+PROSE_ONLY = ("self_pl", "peer_roe", "peer_dupont")  # the numbers are already in the md; keep the notes only
+COVERED_BY_TARGETS = ("資本政策", "株主還元")  # the yuho policy section is skipped when the targets section has these
+EMPTY_HEADING = re.compile(r"^\*\*[^*\n]+\*\*\s*\n(?=\s*(?:\*\*|$))", re.M)  # a bold heading left with no body
 STATUS_LABEL = {"missing": "raw に無い", "blank": "節はあるが空", "thin": "中身が薄い（見つからなかった旨の記載・空の行）",
                 "unavailable": "取得を試みたが取れていない（status.md）"}
 
@@ -58,12 +61,6 @@ def _outlook_line(outlook: dict) -> str:
     return f"- 地合い: {outlook['path']}（{outlook['age_days']} 日前の週{stale}）。収益性の判断には使わない"
 
 
-def _source_lines(found: dict[str, Found], company: Company) -> list[str]:
-    paths = sorted({f.path for f in found.values() if f.path is not None}, key=lambda p: p.name)
-    lines = [f"  - {company.rel(p)}: {note}" for p in paths if (note := header_notes(p))]
-    return ["- raw の情報源と注意:"] + lines if lines else []
-
-
 def _numbers_lines(cands: dict) -> list[str]:
     s1, s2, s3 = cands["step1"], cands["step2"], cands["step3"]
     lines = [f"- 収益性の候補（build が確定する）: {cands['verdict']} — {cands['why']}",
@@ -77,18 +74,34 @@ def _numbers_lines(cands: dict) -> list[str]:
     if checks:
         lines.append(f"- 一過性要因の要確認（特別損益の純額が当期純利益の {ONE_OFF_SHARE:.0f}% 以上。md の 3.4）: "
                      + "、".join(f"{r['year']}（{r['share']:.1f}%）" for r in checks))
-    lines.append("- 年度ごとの表は md の 1〜3章にある（同じ表をここには載せない）")
+    if cands["borderline"]:
+        lines.append("- 境界に近い比較（材料の誤差で判定が1段階動きうる。6章の「評価が変わる条件」に使う）: "
+                     + "。".join(cands["borderline"]))
+    lines.append("- 年度ごとの表・競合の3要素は md の 1〜3章にある（同じ表をここには載せない）")
     return lines
 
 
 def _prose(body: str) -> str:
-    return "\n".join(line for line in body.splitlines() if not line.lstrip().startswith("|")).strip()
+    """The body without its tables; sub-headings left with nothing under them are dropped."""
+    text = "\n".join(line for line in body.splitlines() if not line.lstrip().startswith("|"))
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    text = re.sub(r"^#{3,6}\s+(.+)$", r"**\1**", text, flags=re.M)
+    previous = None
+    while previous != text:
+        previous, text = text, EMPTY_HEADING.sub("", re.sub(r"\n{3,}", "\n\n", text))
+    return text.strip()
 
 
 def _section(f: Found, company: Company) -> str:
     if f.spec.key in PROSE_ONLY and f.body:
         return excerpt(replace(f, body=_prose(f.body) or "—（表のみ。数値は md の表を見る）"), company)
     return excerpt(f, company)
+
+
+def _skipped(key: str, found: dict[str, Found]) -> bool:
+    """The yuho policy section repeats what the targets section already quotes."""
+    targets = found["targets"]
+    return key == "policy" and targets.status == "ok" and all(w in targets.body for w in COVERED_BY_TARGETS)
 
 
 def _gaps(found: dict[str, Found]) -> list[str]:
@@ -108,12 +121,14 @@ def render_brief(company: Company, date: str, valid_until: str, found: dict[str,
         out += ["", "## 警告（スクリプトが raw を読み違えた可能性。執筆の前に確かめ、完了報告に書く）", ""]
         out += [f"- {w}" for w in warnings]
     out += ["", "## 0. 前提", "", f"- 分析日: {date} / 有効期限: {valid_until}"]
-    out += (_previous_lines(previous) + _upstream_lines(moat, three_c) + [_outlook_line(outlook)]
-            + _source_lines(found, company))
+    out += _previous_lines(previous) + _upstream_lines(moat, three_c) + [_outlook_line(outlook)]
     out += ["", "## 1. 数値の要点（スクリプトが計算）", ""] + _numbers_lines(cands)
     for number, (title, keys) in enumerate(CHAPTERS, start=2):
         out += ["", f"## {number}. {title}"]
         for key in keys:
+            if _skipped(key, found):
+                out += ["", f"### {found[key].spec.label}", "", "（中期経営計画の節と同じ内容のため省略）"]
+                continue
             out += ["", f"### {found[key].spec.label}", "", _section(found[key], company)]
     out += ["", f"## {len(CHAPTERS) + 2}. 取れていない材料", ""] + _gaps(found)
     return "\n".join(out).rstrip() + "\n"

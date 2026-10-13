@@ -31,3 +31,6 @@ fetched_date,doc_type,period,published_date,doc_id,url,sha256,local_path,note
 2026-10-12,peer-tanshin,2026-03,,140120260507518187,https://www2.jpx.co.jp/disc/60880/081220260507518187_tse-acedjpsm-60880-20260508360880-ixbrl.htm,4fc5392b63777c4dcbf466b8b3aaf68f0f7459aa53ff6bae52de56ffe46fda60,sources/2026-10-12/140120260507518187.htm,
 2026-10-12,peer-tanshin,2026-02,,140120260413502518,https://www2.jpx.co.jp/disc/91680/081220260413502518_tse-acedifsm-91680-20260413391680-ixbrl.htm,b438a7bf199c406109284ffca1d5bb94b5da6b842ea63eda389cd07b6fac01db,sources/2026-10-12/140120260413502518.htm,
 2026-10-12,peer-tanshin,2026-07,,140120260911534621,https://www2.jpx.co.jp/disc/95560/081220260911534621_tse-acedjpsm-95560-20260911395560-ixbrl.htm,36d57a058544669ac19e0df5b0c0bc3ababf8566417dafd3a7ede795607305dd,sources/2026-10-12/140120260911534621.htm,
+2026-10-13,peer-irbank,,,results,https://irbank.net/6088/results,1b2767f1d9494edea0aed19eba1c0bbb7b94ce57ae0134bd3a56f01fcc7a150a,sources/2026-10-13/results.htm,
+2026-10-13,peer-irbank,,,results,https://irbank.net/9168/results,01de8318e56d38292f17c1abe6bad70dd4d3fc415d6ecad64e9eaa6184de64af,sources/2026-10-13/results_2.htm,
+2026-10-13,peer-irbank,,,results,https://irbank.net/9556/results,d90f64140da1ee3733ce92080e485ebb045840d779daf68b63f4253de9225faf,sources/2026-10-13/results_3.htm,

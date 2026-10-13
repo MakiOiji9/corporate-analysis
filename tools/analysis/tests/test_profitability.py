@@ -303,6 +303,36 @@ def test_step3_rules(own_kw, peer_kw, source):
     assert X.step3(own, _comparison(own, **peer_kw))["source"] == source
 
 
+@pytest.mark.parametrize("own_kw, peer_kw, source", [
+    ({"margin": 3.5}, {}, "特定できず"),  # +0.5pt is within ±1pt: 同等
+    ({"margin": 4.5}, {}, "本業由来"),  # +1.5pt
+    ({"margin": 2.0, "turnover": 1.04}, {}, "特定できず"),  # turnover 4% above: 同等
+    ({"margin": 2.0, "turnover": 1.10}, {}, "本業由来"),
+    ({"leverage": 3.5, "margin": 2.0}, {"leverage": 3.4}, "特定できず"),  # 3% above the peers: not 借入依存
+])
+def test_step3_needs_a_lead_beyond_the_band(own_kw, peer_kw, source):
+    own = _own(**own_kw)
+    assert X.step3(own, _comparison(own, **peer_kw))["source"] == source
+
+
+def test_borderline_lists_close_comparisons():
+    own = _own(margin=3.5)
+    s3 = X.step3(own, _comparison(own))
+    s1 = X.step1(_roe_rows([11, 11, 11, 11, 11]))
+    found = X.borderline(s1, {"rating": "上回る", "diff": 1.5}, s3)
+    assert any(f.startswith("手順1: ROE の平均") for f in found)
+    assert any(f.startswith("手順2") for f in found)
+    assert any("売上高純利益率" in f for f in found if f.startswith("手順3"))
+
+
+def test_adjusted_step1_can_change_the_rating():
+    roes = _roe_rows([10, 10, 10, 10, 30])
+    one_off = [{"year": "2020-03", "adjusted_roe": -5.0}]
+    result = X.adjusted_step1(roes, one_off)
+    assert result["years"] == ["2020-03"] and result["rating"] == "懸念"
+    assert X.adjusted_step1(roes, [{"year": "2020-03", "adjusted_roe": None}]) is None
+
+
 @pytest.mark.parametrize("leverage, source", [(3.5, "借入依存"), (2.0, "不明")])
 def test_step3_without_peers(leverage, source):
     assert X.step3(_own(leverage=leverage), EMPTY)["source"] == source
@@ -323,6 +353,15 @@ def test_change_years_name_the_factor_that_moved(repo):
     changes = cands_of(repo)["changes"]
     assert [c["year"] for c in changes] == ["2024-03", "2025-03"]
     assert all(c["main"] == "売上高純利益率" for c in changes)
+    assert "営業利益率 20.0%→20.0%" in changes[0]["moves"]
+    assert "特別損益の純額 —→0百万円" in changes[1]["moves"]
+
+
+def test_one_off_roe_without_the_extraordinary_items(repo):
+    cands = cands_of(repo)
+    row = next(r for r in cands["one_off"] if r["year"] == "2026-03")
+    assert row["check"] and row["adjusted_roe"] == 10.0  # (600 - 100) / 5,000
+    assert cands["one_off_step1"]["rating"] == "良好"
 
 
 def test_peer_comparison_and_one_off(repo):
@@ -407,7 +446,17 @@ def test_skeleton_has_numbers_and_fill_only_for_background(repo, capsys):
     assert sorted(set(FILL_ANY.findall(text))) == sorted(
         ["peer-gap", "bg-2024-03", "bg-2025-03", "one-off", "consistency", "report-points", "targets",
          "step2-checks", "triggers", "changes", "gaps"])
-    assert "16.7%（要確認）" in text
+    assert "16.7%（要確認） | 10.0% |" in text
+    assert "手順1の判定は変わらない" in text
+
+
+def test_prepare_returns_fill_keys_and_brief_has_no_peer_table(repo, capsys):
+    code, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert code == 0 and out["fill_keys"][0] == "peer-gap" and len(out["fill_keys"]) == out["fill"]
+    assert out["peer_summary"]["self"]["margin"] == 6.4  # 2022-2026: 6, 6, 8 (2024), 6, 6 億円 of 100
+    brief = (repo / out["brief"]).read_text(encoding="utf-8")
+    assert "| 会社 | 年度 | 売上高 | 当期純利益" not in brief and "raw の情報源" not in brief
+    assert "| アルファ社 | 2026/03 | 6.0%" not in brief  # peer_roe table left out too
 
 
 def test_full_cycle_then_fresh_and_triggered(repo, capsys):
@@ -420,6 +469,7 @@ def test_full_cycle_then_fresh_and_triggered(repo, capsys):
     assert code == 0, out
     assert out["verdict"] == "良好"
     assert out["consistency"][0] == "モートが広い ⇔ 高い利益率: 整合"
+    assert isinstance(out["borderline"], list) and "| 境界に近い比較 |" in md.read_text(encoding="utf-8")
     assert "| 収益性 | **良好**:" in md.read_text(encoding="utf-8")
     result = json.loads((repo / out["json"]).read_text(encoding="utf-8"))
     assert result["step1"]["rating"] == "良好" and result["change_years"][0]["background"].startswith("背景")
