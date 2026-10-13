@@ -46,7 +46,7 @@
 
 | 情報源 | WebFetch | fetch.py | 備考・URL パターン |
 |---|---|---|---|
-| SEC EDGAR（www.sec.gov / data.sec.gov） | ○ | ×（403） | SEC は連絡先入りの User-Agent（`名前 メールアドレス`）を要求する。fetch.py の UA（ブラウザ風）は 403。提出書類一覧は `https://data.sec.gov/submissions/CIK{10桁}.json`、XBRL の年次値は `https://data.sec.gov/api/xbrl/companyfacts/CIK{10桁}.json`、本文は `https://www.sec.gov/Archives/edgar/data/{CIK}/{accession(ハイフンなし)}/{file}.htm` |
+| SEC EDGAR（www.sec.gov / data.sec.gov） | ○ | ○（要 `SEC_USER_AGENT`） | SEC は連絡先入りの User-Agent（`名前 メールアドレス`）を要求する。`.env` の `SEC_USER_AGENT` が無いと fetch.py・edgar.py は失敗する（preflight の「SEC EDGAR（米国株）」で確認）。一覧と年次財務は `edgar.py list / facts`。提出書類一覧は `https://data.sec.gov/submissions/CIK{10桁}.json`、XBRL の年次値は `https://data.sec.gov/api/xbrl/companyfacts/CIK{10桁}.json`、本文は `https://www.sec.gov/Archives/edgar/data/{CIK}/{accession(ハイフンなし)}/{file}.htm` |
 | 企業 IR サイト（gcs-web / Q4 系、例: investors.cerebras.ai） | ×（403、Cloudflare） | ×（403） | 決算発表は 8-K の Ex.99.1（EDGAR）で代替。説明会資料・質疑応答は取得不可 |
 | 企業サイトのプレスリリース（例: www.cerebras.ai/press-release/...） | ○ | ○ | `sitemap.xml` に一部の URL が載る（lastmod は公表日ではない） |
 | Yahoo Finance チャート API | — | — | `https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?range=1y&interval=1d` で日次 OHLC。**二次** |

@@ -61,6 +61,8 @@
 - 他の担当が保存する原本を自分も必要とする場合は、同じ URL を `fetch.py` で取得すればよい（同一内容は DUPLICATE として既存のパスが返り、二重保存されない）
 - `data/*.csv` は読んでよい（書き込みは原子的なので、途中の壊れた状態は見えない）
 - サブエージェントはユーザーに質問しない。判断を保留した点は報告の6章に書き、親がまとめて確認する
+- `fetch.py` / `edinet.py` / `edgar.py` が失敗しても、**独自のスクリプトで原本を保存したり `store_document`・manifest を呼んだりしない**（引数の取り違えで manifest が壊れる）。原本の保存はあきらめて WebFetch で読み、報告の3章に「原本なし（理由）」と書く。経路の不足は親がツールを直す
+- manifest の誤登録は手で直さない。ユーザーの了承を得て `sources_admin.py remove` で行を除いてから取り直す
 
 ---
 
@@ -80,6 +82,30 @@
 - 取得できなかった項目は `—` と記載し、取得できなかった理由（非開示・資料未発見など）を併記する
 - 数値は資料に記載された値をそのまま転記し、単位と会計期間を明記する。単位（千円/百万円）や株式分割前後が混在する場合は注記する
 - 推測で値を補完しない
+- 株価の基準は**直近の確定終値**（取引中の値は使わない）。基準日を明記し、競合も同じ基準日にそろえる
+- 決算期は会社の呼び方と期末日を併記する（例「NVIDIA FY2027 Q2（2026-07-26 終了）」「2026年3月期」）。他社の決算期を自社の期に読み替えない
+
+---
+
+## 市場別の経路（日本株 / 米国株）
+
+雛形・章立ては共通。米国株は次のように読み替える。
+
+| 日本株 | 米国株 | 備考 |
+|---|---|---|
+| 有価証券報告書（EDINET） | 10-K（EDGAR）。上場から1年未満で 10-K が無ければ 424B4（最終目論見書）、なければ最新の S-1 | raw のファイル名は書類種別どおり（例 `2026-10-14_2025-12_424b4.md`） |
+| 四半期報告書・半期報告書 | 10-Q | |
+| 決算短信 | 8-K（Item 2.02）の Ex.99.1（決算プレスリリース） | `edgar.py list` の index URL から Ex.99.1 を探す |
+| 期初予想・業績予想の修正 | 決算発表のガイダンス | 非 GAAP（会社独自の「コア」「調整後」等）は定義を書き、GAAP と混ぜない |
+| `xbrl_financials.py` → `data/financials.csv` | `edgar.py facts` → `data/financials.csv`（百万ドル） | `tdnet_facts.csv` は作らない（ガイダンスは raw に書く） |
+| 経常利益・特別損益 | 区分なし（`—`）。その他収益（費用）の主な内訳を書く | |
+| IRBANK・株探（二次） | Yahoo Finance チャート API（株価のみ、二次） | |
+
+**上場から1年未満の会社**:
+- 年次の財務は目論見書に載っている年数だけになる。取れた年数を報告の3章に書く（「収益性の財務時系列（N年分のみ）」）
+- 株価・PER/PBR の過去レンジは上場後の期間だけ。上場前の欄は「—（未上場）」
+- ロックアップの解除日程（目論見書の Lock-Up 章）と、新株予約権・優先株の転換による株式数の変化を status.md の3章に書く
+- IPO 前の会社予想は無い（「—（上場前は公表なし）」）
 
 ---
 
@@ -97,7 +123,9 @@
 | `edinet.py` | EDINET API v2 で書類一覧（`list`）・取得（`fetch --kind csv/pdf`）。要 `EDINET_API_KEY` |
 | `xbrl_financials.py` | EDINET の XBRL→CSV から財務を抽出し `data/financials.csv` に追記 |
 | `tdnet_summary.py` | 決算短信 iXBRL（.htm）からサマリー（実績・予想・配当・株式数）を `data/tdnet_facts.csv` に追記 |
+| `edgar.py` | 米国株: SEC EDGAR の提出書類一覧（`list`）、companyfacts から年次財務を `data/financials.csv` に追記（`facts`。百万ドル）。要 `SEC_USER_AGENT` |
 | `render_tables.py` | `data/*.csv` から Markdown 表（`financials` / `forecasts` / `quarterly`）を出力 |
+| `sources_admin.py` | manifest の誤登録行の除去（`remove`。ユーザーの了承を得てから） |
 
 **トークン節約の原則**: PDF の全文を読まない。`find_pages.py` で必要なページだけ読む。財務の数値はスクリプトの出力を使い、AI は定性情報の読解・要約と出典の判断に専念する。
 
@@ -111,6 +139,7 @@
 1. `tools/collect/preflight.py` を実行する。`.venv` が無い・ライブラリ不足の場合は、ユーザーに `tools/setup.ps1`（Windows）または `tools/setup.sh` の実行を依頼して止まる
 2. 出力から、この環境で使える経路を確定する
    - `EDINET_API_KEY` あり → collect-filings は EDINET 経路、なし → PDF 経路
+   - 米国株: 「SEC EDGAR（米国株）」が OK → EDGAR 経路（`edgar.py` + `fetch.py`）。NG（`SEC_USER_AGENT` 未設定）なら**担当を起動する前に**ユーザーに `.env` への記入を依頼する（未設定のままでは SEC の原本が1件も保存できない）
    - Playwright（ブラウザ MCP）が使えるツール一覧にある場合のみ、`browser_navigate` を1回試す。エラーなら以降ブラウザは使わない
 3. 確定した経路と実行モード（並列 / 逐次）を1行でユーザーに伝える
 
@@ -141,7 +170,7 @@ companies/{ticker}_{name}/
 ticker: {ticker} / name: {name} / url: {url} / market: {market} / mode: full
 企業ディレクトリ: companies/{ticker}_{name}
 収集日: YYYY-MM-DD（全担当で同じ日付を使う）
-取得経路: EDINET API {あり/なし}、ブラウザ {可/不可}
+取得経路: EDINET API {あり/なし}、SEC EDGAR {可/不可}、ブラウザ {可/不可}
 Python: {.venv の python のパス}
 ```
 
