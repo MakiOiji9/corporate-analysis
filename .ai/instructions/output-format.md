@@ -56,10 +56,22 @@ companies/{ticker}_{name}/
 │   │   ├── YYYY-MM-DD_brief.md          # 執筆の材料（スクリプトが生成）
 │   │   ├── YYYY-MM-DD_swot.md           # 分析結果（4象限・最大の強み/脅威・SWOT の結論）。レポートはこれを参照する
 │   │   └── YYYY-MM-DD_swot.json         # 同じ結果の機械可読版（スクリプトが生成）
-│   └── profitability/           # 収益性分析（profitability。STEP 2-1。180日有効）
+│   ├── profitability/           # 収益性分析（profitability。STEP 2-1。180日有効）
+│   │   ├── YYYY-MM-DD_brief.md          # 執筆の材料（スクリプトが生成）
+│   │   ├── YYYY-MM-DD_profitability.md  # 分析結果（ROE・デュポン分解・収益性の結論）。レポートはこれを参照する
+│   │   └── YYYY-MM-DD_profitability.json # 同じ結果の機械可読版（スクリプトが生成）
+│   ├── growth/                  # 成長性分析（growth。STEP 2-2。180日有効）
+│   │   ├── YYYY-MM-DD_brief.md          # 執筆の材料（スクリプトが生成）
+│   │   ├── YYYY-MM-DD_growth.md         # 分析結果（CAGR・減収減益の原因・計画の信頼性・成長の質と成長性の結論）。レポートはこれを参照する
+│   │   └── YYYY-MM-DD_growth.json       # 同じ結果の機械可読版（スクリプトが生成）
+│   ├── cash-flow/               # キャッシュフロー分析（cash-flow。STEP 2-4。180日有効）
+│   │   ├── YYYY-MM-DD_brief.md          # 執筆の材料（スクリプトが生成）
+│   │   ├── YYYY-MM-DD_cash-flow.md      # 分析結果（営業CF・FCF・利益の質・CF パターン・株主還元とキャッシュフローの結論）。レポートはこれを参照する
+│   │   └── YYYY-MM-DD_cash-flow.json    # 同じ結果の機械可読版（スクリプトが生成）
+│   └── safety/                  # 安全性分析（safety。STEP 2-3。180日有効）
 │       ├── YYYY-MM-DD_brief.md          # 執筆の材料（スクリプトが生成）
-│       ├── YYYY-MM-DD_profitability.md  # 分析結果（ROE・デュポン分解・収益性の結論）。レポートはこれを参照する
-│       └── YYYY-MM-DD_profitability.json # 同じ結果の機械可読版（スクリプトが生成）
+│       ├── YYYY-MM-DD_safety.md         # 分析結果（3指標の水準・推移・借入の目的と安全性の結論）。レポートはこれを参照する
+│       └── YYYY-MM-DD_safety.json       # 同じ結果の機械可読版（スクリプトが生成）
 ├── sessions/
 │   └── YYYY-MM-DD_{topic}/      # 分析セッション（1回の分析につき1ディレクトリ）
 │       ├── {分析ファイル群}      # 各フェーズの分析結果（スキル定義に従う）

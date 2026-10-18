@@ -52,6 +52,7 @@ SKIP_SECTION = re.compile(r"予想|計画|四半期|CAGR|提出会社|単体|個
 YUHO_SECTION = re.compile(r"主要な経営指標|財務|損益|貸借|特別")
 SECONDARY = re.compile(r"IRBANK|二次|株探|kabutan|集計サイト")
 PEER_SECTION = "収益性の分解"
+PAREN_NEGATIVE = re.compile(r"^\((\d[\d,]*(?:\.\d+)?)\)")  # US filings: '(164,402)' is -164,402
 
 # data/financials.csv items (with or without the 'summary.' prefix)
 CSV_ITEMS = {"net_sales": "sales", "net_income": "net_income", "total_assets": "total_assets",
@@ -68,6 +69,18 @@ class Value:
     value: float
     source: str
     primary: bool
+
+
+@dataclass(frozen=True)
+class Fields:
+    """What one analysis reads from the tables: the labels per field (most specific first), the ratio fields and
+    the section titles to skip. The table readers default to the profitability fields."""
+    labels: dict[str, tuple[str, ...]]
+    percent: tuple[str, ...]
+    skip: re.Pattern
+
+
+PROFITABILITY = Fields(LABELS, PERCENT_FIELDS, SKIP_SECTION)
 
 
 Series = dict[str, dict[str, Value]]  # field -> fiscal year end (YYYY-MM) -> value
@@ -93,7 +106,7 @@ def _signed(text: str) -> float:
 def amount(cell: str, factor: float) -> float | None:
     """A cell in 百万円. A cell with its own unit ('7.93億円', '23,831百万円') uses it; a bare number
     ('1,748,986（売掛金）', '△98') is multiplied by the table's factor. '計上なし' / '—' -> None."""
-    text = cell.replace("*", "").strip()
+    text = PAREN_NEGATIVE.sub(r"-\1", cell.replace("*", "").strip())
     bracketed = UNIT_IN_LABEL.search(text)  # '1,200（百万円）': _yen would drop the bracket as a note
     if bracketed:
         factor = UNIT_TO_MILLION[bracketed.group(1)]
@@ -120,23 +133,24 @@ def _names(text: str, lb: str) -> bool:
     return text == lb or (text.startswith(lb) and text[len(lb)] in LABEL_END)
 
 
-def field_of(label: str) -> str | None:
+def field_of(label: str, fields: Fields = PROFITABILITY) -> str | None:
     """Which field a row / column label holds (ratios are told apart from amounts by their own labels)."""
     text = _label(label)
-    for field in PERCENT_FIELDS:
-        if any(_names(text, lb) for lb in LABELS[field]) and not any(w in text for w in RATIO_EXCLUDE):
+    for field in fields.percent:
+        if any(_names(text, lb) for lb in fields.labels[field]) and not any(w in text for w in RATIO_EXCLUDE):
             return field
-    for field, labels in LABELS.items():
-        if field in PERCENT_FIELDS:
+    for field, labels in fields.labels.items():
+        if field in fields.percent:
             continue
         if any(_names(text, lb) for lb in labels) and not any(w in text for w in AMOUNT_EXCLUDE):
             return field
     return None
 
 
-def _priority(field: str, label: str) -> int:
+def _priority(field: str, label: str, fields: Fields = PROFITABILITY) -> int:
     text = _label(label)
-    return next((i for i, lb in enumerate(LABELS[field]) if _names(text, lb)), len(LABELS[field]))
+    labels = fields.labels[field]
+    return next((i for i, lb in enumerate(labels) if _names(text, lb)), len(labels))
 
 
 def unit_of(text: str) -> float | None:
@@ -148,18 +162,18 @@ def unit_of(text: str) -> float | None:
 
 # ---------- tables ----------
 
-def _best(labels: list[tuple[int, str]]) -> dict[str, int]:
+def _best(labels: list[tuple[int, str]], fields: Fields = PROFITABILITY) -> dict[str, int]:
     """field -> index of the most specific label in the table."""
     best: dict[str, tuple[int, int]] = {}
     for index, label in labels:
-        field = field_of(label)
-        if field and (field not in best or _priority(field, label) < best[field][0]):
-            best[field] = (_priority(field, label), index)
+        field = field_of(label, fields)
+        if field and (field not in best or _priority(field, label, fields) < best[field][0]):
+            best[field] = (_priority(field, label, fields), index)
     return {field: index for field, (_, index) in best.items()}
 
 
-def _parse(field: str, cell: str, factor: float) -> float | None:
-    return percent(cell) if field in PERCENT_FIELDS else amount(cell, factor)
+def _parse(field: str, cell: str, factor: float, fields: Fields = PROFITABILITY) -> float | None:
+    return percent(cell) if field in fields.percent else amount(cell, factor)
 
 
 def derive_equity(values: list[tuple[str, str, float]]) -> list[tuple[str, str, float]]:
@@ -174,7 +188,8 @@ def derive_equity(values: list[tuple[str, str, float]]) -> list[tuple[str, str, 
     return values + derived
 
 
-def read_table(table: list[list[str]], default_factor: float) -> list[tuple[str, str, float]]:
+def read_table(table: list[list[str]], default_factor: float,
+               fields: Fields = PROFITABILITY) -> list[tuple[str, str, float]]:
     """(field, year, value) of a table with years as columns or as rows."""
     header = table[0]
     columns = {i: period(c) for i, c in enumerate(header) if i > 0}
@@ -183,21 +198,21 @@ def read_table(table: list[list[str]], default_factor: float) -> list[tuple[str,
     if len(columns) >= 2:  # years as columns, items as rows
         table_factor = unit_of(header[0]) or default_factor
         rows = {i: row for i, row in enumerate(table[1:]) if row}
-        for field, index in _best([(i, row[0]) for i, row in rows.items()]).items():
+        for field, index in _best([(i, row[0]) for i, row in rows.items()], fields).items():
             row = rows[index]
             factor = unit_of(row[0]) or table_factor
             for col, year in columns.items():
                 if col < len(row):
-                    value = _parse(field, row[col], factor)
+                    value = _parse(field, row[col], factor, fields)
                     if value is not None:
                         out.append((field, year, value))
         return derive_equity(out)
-    for field, col in _best(list(enumerate(header))).items():  # years as rows, items as columns
+    for field, col in _best(list(enumerate(header)), fields).items():  # years as rows, items as columns
         factor = unit_of(header[col]) or default_factor
         for row in table[1:]:
             year = period(row[0]) if row else None
             if year and col < len(row):
-                value = _parse(field, row[col], factor)
+                value = _parse(field, row[col], factor, fields)
                 if value is not None:
                     out.append((field, year, value))
     return derive_equity(out)
@@ -223,19 +238,20 @@ def _prose(body: str) -> str:
     return "\n".join(line for line in body.splitlines() if not line.lstrip().startswith("|"))
 
 
-def from_raw_text(text: str, source: str, include: re.Pattern | None = None) -> list[tuple[str, str, Value]]:
+def from_raw_text(text: str, source: str, include: re.Pattern | None = None,
+                  fields: Fields = PROFITABILITY) -> list[tuple[str, str, Value]]:
     """(field, year, Value) of every table in a raw file, in reading order."""
     first = SECTION.search(text)
     file_factor = unit_of(text[:first.start()] if first else text) or 1.0
     out = []
     for titles, body in sections(text):
-        if SKIP_SECTION.search(titles) or (include and not include.search(titles)):
+        if fields.skip.search(titles) or (include and not include.search(titles)):
             continue
         factor = unit_of(titles) or unit_of(_prose(body)) or file_factor
         primary = not SECONDARY.search(titles)
         label = f"{source}「{titles.split(' / ')[-1][:30]}」"
         for table in M.tables(body):
-            for field, year, value in read_table(table, factor):
+            for field, year, value in read_table(table, factor, fields):
                 out.append((field, year, Value(value, label, primary)))
     return out
 
@@ -247,13 +263,14 @@ def _shift_year(year: str, months: int) -> str:
     return f"{total // 12:04d}-{total % 12 + 1:02d}"
 
 
-def from_data(company) -> list[tuple[str, str, Value]]:
+def from_data(company, csv_items: dict[str, str] = CSV_ITEMS,
+              tdnet_items: dict[str, str] = TDNET_ITEMS) -> list[tuple[str, str, Value]]:
     out = []
     path = company.path / "data" / "financials.csv"
     if path.exists():
         values = []
         for row in read_csv_rows(path):
-            field = CSV_ITEMS.get(row.get("item", "").removeprefix("summary."))
+            field = csv_items.get(row.get("item", "").removeprefix("summary."))
             year = (row.get("period_end") or "")[:7]
             try:
                 value = float(row.get("value", ""))
@@ -262,15 +279,15 @@ def from_data(company) -> list[tuple[str, str, Value]]:
             if field and year:
                 values.append((field, year, value))
         out += [(f, y, Value(v, "data/financials.csv（EDINET）", True)) for f, y, v in derive_equity(values)]
-    return _from_tdnet(company) + out  # 短信's explicit 自己資本 before the equity derived from a rounded ratio
+    return _from_tdnet(company, tdnet_items) + out  # 短信's explicit 自己資本 before the equity derived from a rounded ratio
 
 
-def _from_tdnet(company) -> list[tuple[str, str, Value]]:
+def _from_tdnet(company, items: dict[str, str] = TDNET_ITEMS) -> list[tuple[str, str, Value]]:
     out = []
     path = company.path / "data" / "tdnet_facts.csv"
     if path.exists():
         for row in read_csv_rows(path):
-            context, field = row.get("context", ""), TDNET_ITEMS.get(row.get("element", ""))
+            context, field = row.get("context", ""), items.get(row.get("element", ""))
             if not field or "Consolidated" not in context or "NonConsolidated" in context or "Result" not in context:
                 continue
             fy = (row.get("fiscal_year_end") or "")[:7]
@@ -287,10 +304,13 @@ def _from_tdnet(company) -> list[tuple[str, str, Value]]:
 
 # ---------- merge ----------
 
-def merge(observations: list[tuple[str, str, Value]]) -> Series:
-    """The first primary value per (field, year) wins; a secondary one only fills a gap."""
-    series: Series = {f: {} for f in FIELDS}
+def merge(observations: list[tuple[str, str, Value]], names: tuple[str, ...] = FIELDS) -> Series:
+    """The first primary value per (field, year) wins; a secondary one only fills a gap. Fields not in names
+    (自己資本 derived inside a table another analysis reads) are dropped."""
+    series: Series = {f: {} for f in names}
     for field, year, value in observations:
+        if field not in series:
+            continue
         current = series[field].get(year)
         if current is None or (value.primary and not current.primary):
             series[field][year] = value
