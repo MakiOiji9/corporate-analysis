@@ -1,0 +1,85 @@
+{
+ "session": "market/sessions/2026-10-19_weekly",
+ "collected": "2026-10-19",
+ "markets": [
+  "japan",
+  "us"
+ ],
+ "mode": "update",
+ "tasks": [
+  {
+   "type": "summarize-doc",
+   "docs": [
+    {
+     "market": "us",
+     "title": "ベージュブック（Beige Book）（2026-10-01）",
+     "doc_key": "beige-book-2026-10-01",
+     "output": "market/policy/us/raw/2026-10-19_beige-book-2026-10-01.md",
+     "inputs": [
+      "market/policy/us/sources/2026-10-19/beigebook202610-summary.htm.excerpt.txt",
+      "market/policy/us/raw/2026-10-11_beige-book-2026-08-01.md"
+     ],
+     "template": ".ai/templates/collect-market-info/raw/monetary-doc.md"
+    }
+   ],
+   "allowed_files": [
+    "market/policy/us/raw/2026-10-19_beige-book-2026-10-01.md"
+   ],
+   "id": "T01"
+  },
+  {
+   "type": "search-calendar",
+   "market": "japan",
+   "title": "政治・イベント日程（日本）",
+   "output": "market/sessions/2026-10-19_weekly/raw/calendar-japan.md",
+   "inputs": [],
+   "max_searches": 8,
+   "template": ".ai/templates/collect-market-info/raw/calendar.md",
+   "allowed_files": [
+    "market/sessions/2026-10-19_weekly/raw/calendar-japan.md"
+   ],
+   "id": "T02"
+  },
+  {
+   "type": "search-calendar",
+   "market": "us",
+   "title": "政治・イベント日程（米国）",
+   "output": "market/sessions/2026-10-19_weekly/raw/calendar-us.md",
+   "inputs": [],
+   "max_searches": 8,
+   "template": ".ai/templates/collect-market-info/raw/calendar.md",
+   "allowed_files": [
+    "market/sessions/2026-10-19_weekly/raw/calendar-us.md"
+   ],
+   "id": "T03"
+  }
+ ],
+ "new_docs": [
+  {
+   "doc_key": "presidential-actions-2026-10-17",
+   "watch_key": "presidential-actions",
+   "layer": "A",
+   "title": "Implementing the Lindsey O. Graham Sanctioning Russia and Iran Act of 2026",
+   "published": "2026-10-17",
+   "url": "https://www.whitehouse.gov/presidential-actions/2026/10/implementing-the-lindsey-o-graham-sanctioning-russia-and-iran-act-of-2026/",
+   "page_url": "",
+   "raw_path": "market/policy/us/raw/2026-10-19_presidential-actions.md",
+   "collected": "2026-10-19",
+   "status": "listed",
+   "market": "us"
+  },
+  {
+   "doc_key": "beige-book-2026-10-01",
+   "watch_key": "beige-book",
+   "layer": "C",
+   "title": "ベージュブック（Beige Book）（2026-10-01）",
+   "published": "2026-10-01",
+   "url": "https://www.federalreserve.gov/monetarypolicy/beigebook202610-summary.htm",
+   "page_url": "",
+   "raw_path": "market/policy/us/raw/2026-10-19_beige-book-2026-10-01.md",
+   "collected": "2026-10-19",
+   "status": "pending",
+   "market": "us"
+  }
+ ]
+}
