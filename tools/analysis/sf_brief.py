@@ -20,12 +20,17 @@ from sw_brief import _rows_for
 
 # brief chapter: (title, input keys). Every raw section once.
 CHAPTERS = (
-    ("水準と借入の目的の材料（1章の背景・3章）", ("self_bs", "self_cf", "statements", "summary")),
+    ("水準と借入の目的の材料（1章の背景・3章）", ("self_bscf", "self_bs", "self_cf", "statements", "summary")),
     ("財務方針・資本政策の材料（5章）", ("capital", "policy", "self_return")),
     ("財務に関わるリスク（5章・7章）", ("risks",)),
     ("競合の材料（1章の同業比較）", ("peer_safety",)),
 )
-PROSE_ONLY = ("self_bs", "self_cf", "statements", "summary", "peer_safety")  # the numbers are already in the md
+PROSE_ONLY = ("self_bscf", "self_bs", "self_cf", "statements", "summary", "peer_safety")  # numbers are in the md
+# only the lines that bear on the balance sheet are kept from these sections
+FINANCE_ONLY = ("risks", "statements", "summary")
+FINANCE_WORDS = re.compile(r"借入|資金|金利|減損|引当|与信|貸倒|為替|資本|債務|担保|保証|流動性|有価証券|キャッシュ|財務|"
+                           r"格付|社債|有利子負債|現金|預金|リース")
+SUPERSEDED_BY_BSCF = ("self_bs", "self_cf")  # an older section of these is replaced by a newer 貸借・CF section
 EMPTY_HEADING = re.compile(r"^\*\*[^*\n]+\*\*\s*\n(?=\s*(?:\*\*|$))", re.M)  # a bold heading left with no body
 STATUS_LABEL = {"missing": "raw に無い", "blank": "節はあるが空", "thin": "中身が薄い（見つからなかった旨の記載・空の行）",
                 "unavailable": "取得を試みたが取れていない（status.md）"}
@@ -102,10 +107,46 @@ def _prose(body: str) -> str:
     return text.strip()
 
 
+def _finance_only(body: str) -> str:
+    """Bold headings, blank lines and the lines with a finance word; headings left empty are dropped."""
+    lines = [line for line in body.splitlines()
+             if not line.strip() or line.strip().startswith("**") or FINANCE_WORDS.search(line)]
+    text = "\n".join(lines)
+    previous = None
+    while previous != text:
+        previous, text = text, EMPTY_HEADING.sub("", re.sub(r"\n{3,}", "\n\n", text))
+    return text.strip()
+
+
 def _section(f: Found, company: Company) -> str:
-    if f.spec.key in PROSE_ONLY and f.body:
-        return excerpt(replace(f, body=_prose(f.body) or "—（表のみ。数値は md の表を見る）"), company)
-    return excerpt(f, company)
+    if not f.body:
+        return excerpt(f, company)
+    body = f.body
+    if f.spec.key in PROSE_ONLY:
+        body = _prose(body) or "—（表のみ。数値は md の表を見る）"
+    if f.spec.key in FINANCE_ONLY:
+        body = _finance_only(re.sub(r"^#{3,6}\s+(.+)$", r"**\1**", body, flags=re.M)) or "（財務に関わる記載なし）"
+    return excerpt(replace(f, body=body), company)
+
+
+def _file_date(f: Found) -> str:
+    return f.path.name[:10] if f.path is not None else ""
+
+
+def _skip_note(key: str, found: dict[str, Found], seen: set) -> str | None:
+    """Why a section is not shown: the same section was already shown, or a newer 貸借・CF section replaces it
+    (its older notes may have been corrected since)."""
+    f = found[key]
+    if f.path is None:
+        return None
+    if (f.path, f.heading) in seen:
+        return "（上に載せた節と同じため省略）"
+    bscf = found.get("self_bscf")
+    if key in SUPERSEDED_BY_BSCF and bscf is not None and bscf.status == "ok" and bscf.path != f.path \
+            and _file_date(bscf) >= _file_date(f):
+        return (f"（{_file_date(f)} の古い節。新しい「{bscf.heading}」（{_file_date(bscf)}）に含まれるため省略。"
+                "古い注記は載せない）")
+    return None
 
 
 def _gaps(found: dict[str, Found]) -> list[str]:
@@ -128,10 +169,14 @@ def render_brief(company: Company, date: str, valid_until: str, found: dict[str,
     out += ["", "## 0. 前提", "", f"- 分析日: {date} / 有効期限: {valid_until}"]
     out += _previous_lines(previous) + _profitability_lines(profitability)
     out += ["", "## 1. 数値の要点（スクリプトが計算）", ""] + _numbers_lines(cands)
+    seen: set = set()
     for number, (title, keys) in enumerate(CHAPTERS, start=2):
         out += ["", f"## {number}. {title}"]
         for key in keys:
-            out += ["", f"### {found[key].spec.label}", "", _section(found[key], company)]
+            note = _skip_note(key, found, seen)
+            out += ["", f"### {found[key].spec.label}", "", note or _section(found[key], company)]
+            if found[key].path is not None:
+                seen.add((found[key].path, found[key].heading))
     tail = len(CHAPTERS) + 2
     out += ["", f"## {tail}. 地合い（金利・金融政策）", ""] + outlook_lines(company.root, outlook, market_of(company))
     out += ["", f"## {tail + 1}. 取れていない材料", ""] + _gaps(found)

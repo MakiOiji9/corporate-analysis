@@ -14,6 +14,8 @@ PEER_SAFETY_UNAVAILABLE = "安全性の指標"  # collect-peers-valuation report
 PEER_SAFETY_SECTION = "安全性の指標"
 
 SPECS = (
+    Spec("self_bscf", "財務時系列: 貸借・CF の主要項目（安全性）", "financials-historical", "貸借・CF", "collect-filings",
+         False),
     Spec("self_bs", "財務時系列: 貸借（5〜10年）", "financials-historical", "貸借", "collect-filings", False),
     Spec("self_cf", "財務時系列: キャッシュ・フロー", "financials-historical", "キャッシュ", "collect-filings", False),
     Spec("self_return", "財務時系列: 株主還元", "financials-historical", "株主還元", "collect-filings", False),
@@ -22,7 +24,8 @@ SPECS = (
     Spec("risks", "有報: 事業等のリスク", "yuho", "事業等のリスク", "collect-filings", False),
     Spec("policy", "有報: 経営方針・資本政策", "yuho", "経営方針", "collect-filings", False),
     Spec("capital", "中期経営計画: 資本政策・株主還元方針", "mid-term-plan", "資本政策", "collect-ir", False),
-    Spec("peer_safety", "競合: 安全性の指標（総資産・自己資本・有利子負債・現金・流動資産・流動負債、最大5期）",
+    Spec("peer_safety", "競合 11章「安全性の指標」: 有利子負債・現金及び現金同等物・流動資産・流動負債（自社と競合、最大5期。"
+         "総資産・自己資本は 10章に同じ年度があれば不要）",
          "competitors", PEER_SAFETY_SECTION, "collect-peers-valuation", True, (PEER_SAFETY_UNAVAILABLE,),
          thin_check=True),
     Spec("peer_roe", "競合: ROE・自己資本比率", "competitors", "ROE・自己資本比率", "collect-peers-valuation",

@@ -19,7 +19,9 @@ from common import read_csv_rows
 from ff_inputs import raw_files
 
 FIELDS = ("cfo", "cfi", "cff", "sales", "net_income", "receivables", "inventories", "dividends", "buybacks",
-          "capex", "acquisitions")
+          "capex", "acquisitions", "pretax", "depreciation", "receivables_change", "inventories_change", "taxes_paid")
+# the lines of the operating CF that explain its gap to the net income (signs as in the CF statement)
+ADJUSTMENTS = ("depreciation", "receivables_change", "inventories_change", "taxes_paid")
 OUTFLOWS = ("dividends", "buybacks", "capex", "acquisitions")
 LABELS = {
     "cfo": ("営業活動によるキャッシュ・フロー", "営業活動によるキャッシュフロー", "営業キャッシュ・フロー", "営業CF"),
@@ -35,16 +37,25 @@ LABELS = {
     "capex": ("有形固定資産の取得による支出", "設備投資額", "設備投資"),
     "acquisitions": ("連結範囲の変更を伴う子会社株式の取得による支出", "連結範囲の変更を伴う子会社株式の取得",
                      "子会社株式取得による支出"),
+    "pretax": ("税金等調整前当期純利益", "税引前当期純利益", "税引前利益"),
+    "depreciation": ("減価償却費", "減価償却費及び償却費"),
+    # only the signed CF-statement lines (増加額 / 還付額 alone could be written with either sign)
+    "receivables_change": ("売上債権の増減額", "売上債権及び契約資産の増減額"),
+    "inventories_change": ("棚卸資産の増減額", "たな卸資産の増減額"),
+    "taxes_paid": ("法人税等の支払額", "法人税等の支払額又は還付額"),
 }
 # unlike the profitability reader, the キャッシュ・フロー / 株主還元 / 配当 sections are read
 SKIP_SECTION = re.compile(r"予想|計画|四半期|中間|CAGR|提出会社|単体|個別|子会社|セグメント")
 YUHO_SECTION = re.compile(r"主要な経営指標|財務|損益|貸借|キャッシュ|設備投資")
-CF_FIELDS = S.Fields(LABELS, (), SKIP_SECTION)
+# 「売上債権の増減額」「税金等調整前当期純利益」are read here (the bare 売上債権 / 当期純利益 labels do not match
+# them: a label only names a cell when it is followed by nothing or a bracket)
+CF_EXCLUDE = tuple(w for w in S.AMOUNT_EXCLUDE if w not in ("増減", "税金等調整前"))
+CF_FIELDS = S.Fields(LABELS, (), SKIP_SECTION, CF_EXCLUDE)
 
 CSV_ITEMS = {"cfo": "cfo", "cfi": "cfi", "cff": "cff", "net_sales": "sales", "net_income": "net_income",
              "receivables": "receivables", "inventories": "inventories", "dividends_paid": "dividends",
              "treasury_stock_purchase": "buybacks", "capex_tangible": "capex",
-             "acquisition_of_subsidiaries": "acquisitions"}
+             "acquisition_of_subsidiaries": "acquisitions", "depreciation": "depreciation"}
 TDNET_ITEMS = {"CashFlowsFromOperatingActivities": "cfo", "CashFlowsFromInvestingActivities": "cfi",
                "CashFlowsFromFinancingActivities": "cff", "NetSales": "sales",
                "ProfitAttributableToOwnersOfParent": "net_income"}

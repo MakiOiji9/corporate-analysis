@@ -7,8 +7,10 @@ PDFs and CSVs stay closed.
 """
 from __future__ import annotations
 
+import re
 from dataclasses import replace
 
+import gr_facts as F
 from ff_inputs import Found, excerpt
 from gr_metrics import fmt_cagr
 from gr_paths import Company
@@ -22,6 +24,9 @@ CHAPTERS = (
 )
 PROSE_ONLY = ("self_pl", "plan", "self_return")  # the numbers are already in the md; keep the notes only
 SWOT_QUADRANTS = (("W", "弱み"), ("T", "脅威"))
+ONLY_WITH_DECLINES = ("risks",)  # structural causes are looked for only when a year fell
+SEGMENT_KEEP = re.compile(r"受注|契約形態|販売実績|生産実績|セグメント")
+COVERED_BY_TARGETS = ("資本政策", "株主還元")  # the yuho policy section is skipped when the targets section has these
 
 
 def _previous_lines(previous: tuple[str, dict] | None) -> list[str]:
@@ -44,7 +49,10 @@ def _three_c_lines(three_c: tuple[str, dict] | None) -> list[str]:
             f"  - 市場の成長性 {growth.get('rating', '—')}: {growth.get('reason', '—')}"]
 
 
-def _swot_lines(swot: tuple[str, dict] | None) -> list[str]:
+def _swot_lines(swot: tuple[str, dict] | None, declines: bool = True) -> list[str]:
+    if not declines:
+        return ["- SWOT分析: 減収・減益の年が無い、または2年以内に回復しているため、照合する弱み・脅威は省略"
+                "（2章の SWOT との照合は「—（構造要因ではない）」）"]
     if not swot:
         return ["- SWOT分析: 完成済みの結果が無い（2章の SWOT との照合は「SWOT 未実施」と書く）"]
     date, r = swot
@@ -74,6 +82,10 @@ def _numbers_lines(cands: dict) -> list[str]:
     else:
         lines.append("- 減収・減益の年: なし")
     lines.append(f"- 純利益 CAGR（参考）: {fmt_cagr(s1['net_income'])}")
+    lines.append(f"- 今期の進捗（md の 3章。STEP 3 の示唆に使う）: {F.progress_text(cands['progress'])}")
+    lines.append(f"- {cands['receivables']}（7章の「STEP 2 の他の分析で確かめること」に使う）")
+    if cands["downgraded"]:
+        lines.append("- 境界に近いため候補を保守的に1段階下げた理由: " + "、".join(cands["downgraded"]))
     if cands["borderline"]:
         lines.append("- 境界に近い比較（材料の誤差で判定が1段階動きうる。7章の「評価が変わる条件」に使う）: "
                      + "。".join(cands["borderline"]))
@@ -81,10 +93,32 @@ def _numbers_lines(cands: dict) -> list[str]:
     return lines
 
 
+def _blocks(body: str) -> list[str]:
+    return [b for b in re.split(r"\n\s*\n", body) if b.strip()]
+
+
+def _segment(body: str) -> str:
+    """Only the growth-related parts of the business section: orders, contract types, sales and production."""
+    kept = [b for b in _blocks(body) if SEGMENT_KEEP.search(b)]
+    return "\n\n".join(kept) or "—（受注・契約形態・販売実績の記載なし）"
+
+
 def _section(f: Found, company: Company) -> str:
     if f.spec.key in PROSE_ONLY and f.body:
         return excerpt(replace(f, body=_prose(f.body) or "—（表のみ。数値は md の表を見る）"), company)
+    if f.spec.key == "segment" and f.body:
+        return excerpt(replace(f, body=_segment(f.body)), company)
     return excerpt(f, company)
+
+
+def _skipped(key: str, found: dict[str, Found], declines: bool) -> str | None:
+    """Why a section is left out of the brief, or None."""
+    if key in ONLY_WITH_DECLINES and not declines:
+        return "（減収・減益の年が無い、または2年以内に回復しているため省略）"
+    targets = found["targets"]
+    if key == "policy" and targets.status == "ok" and all(w in targets.body for w in COVERED_BY_TARGETS):
+        return "（中期経営計画の節と同じ内容のため省略）"
+    return None
 
 
 def _gaps(found: dict[str, Found]) -> list[str]:
@@ -104,12 +138,18 @@ def render_brief(company: Company, date: str, valid_until: str, found: dict[str,
         out += ["", "## 警告（スクリプトが raw を読み違えた・補正した可能性。執筆の前に確かめ、完了報告に書く）", ""]
         out += [f"- {w}" for w in warnings]
     out += ["", "## 0. 前提", "", f"- 分析日: {date} / 有効期限: {valid_until}"]
-    out += _previous_lines(previous) + _three_c_lines(three_c) + _swot_lines(swot)
+    # risks and the SWOT weaknesses / threats are material only for a fall that did not come back in time
+    declines = any(d["recovery"] != "回復" for d in cands["declines"])
+    out += _previous_lines(previous) + _three_c_lines(three_c) + _swot_lines(swot, declines)
     out.append(_outlook_line(outlook).replace("収益性", "成長性"))
     out += ["", "## 1. 数値の要点（スクリプトが計算）", ""] + _numbers_lines(cands)
     for number, (title, keys) in enumerate(CHAPTERS, start=2):
         out += ["", f"## {number}. {title}"]
         for key in keys:
-            out += ["", f"### {found[key].spec.label}", "", _section(found[key], company)]
+            skipped = _skipped(key, found, declines)
+            out += ["", f"### {found[key].spec.label}", "", skipped or _section(found[key], company)]
+        if number == len(CHAPTERS) + 1:
+            sga = F.sga_lines(company)
+            out += ["", "### 販管費の内訳（採用費・人件費）", "", "\n".join(sga) if sga else "—（raw に記載なし）"]
     out += ["", f"## {len(CHAPTERS) + 2}. 取れていない材料", ""] + _gaps(found)
     return "\n".join(out).rstrip() + "\n"

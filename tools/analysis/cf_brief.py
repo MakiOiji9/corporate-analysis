@@ -9,6 +9,8 @@ from __future__ import annotations
 import re
 from dataclasses import replace
 
+import mdparse as M
+from cf_doc import main_causes
 from cf_paths import Company
 from ff_inputs import Found, excerpt
 
@@ -18,6 +20,7 @@ CHAPTERS = (
     ("株主還元・資本政策の材料（5・8章）", ("self_return", "capital", "targets", "policy")),
 )
 PROSE_ONLY = ("cf_table", "cf_section", "statements", "self_return")  # the numbers are in the md; keep the notes
+CAPEX_SUBSECTION = "設備投資"
 COVERED_BY_CAPITAL = ("資本政策", "株主還元")  # the yuho policy section is skipped when the plan section has these
 EMPTY_HEADING = re.compile(r"^\*\*[^*\n]+\*\*\s*\n(?=\s*(?:\*\*|$))", re.M)  # a bold heading left with no body
 STATUS_LABEL = {"missing": "raw に無い", "blank": "節はあるが空", "thin": "中身が薄い（見つからなかった旨の記載・空の行）",
@@ -44,6 +47,24 @@ def _profitability_line(profitability: tuple[str, dict] | None) -> list[str]:
     return lines
 
 
+OTHER_LABELS = {"growth": ("成長性分析", "成長性"), "safety": ("安全性分析", "安全性")}
+
+
+def _other_lines(others: dict) -> list[str]:
+    lines = []
+    for name, (label, word) in OTHER_LABELS.items():
+        result = others.get(name)
+        if not result:
+            lines.append(f"- {label}: 完成済みの結果が無い（7章の該当行は未実施）")
+            continue
+        date, r = result
+        lines.append(f"- {label}: {date}（{word} {r.get('verdict', '—')}: {r.get('verdict_reason', '—')}）")
+        checks = (r.get("handoff") or {}).get("step2_checks")
+        if checks:
+            lines.append(f"  - STEP 2 の他の分析で確かめること（{label}から）: {checks}")
+    return lines
+
+
 def _outlook_line(outlook: dict) -> str:
     if not outlook.get("path"):
         return "- 地合い: 完成済みの outlook.md が無い（キャッシュフローの判断には使わない）"
@@ -57,8 +78,13 @@ def _numbers_lines(cands: dict) -> list[str]:
     negative = cands["step1"]["negative_years"]
     if negative:
         lines.append(f"- 背景を書く年（営業CF がマイナス。md の 1章）: {'、'.join(negative)}")
-    if cands["step3"]["flagged"]:
-        lines.append(f"- 要確認（md の 3章）: {'・'.join(cands['step3']['flagged'])}の増加率が売上高を上回る")
+    s3 = cands["step3"]
+    if s3["ratio"] is not None:
+        lines += [f"- 手順3の補足（md の 3章。引用するだけで計算しない）: 直近の推移 {s3['recent_text']}。"
+                  f"基準を下回った年 {s3['below_text']}。{s3['without_oldest_text']}",
+                  f"- 純利益と営業CF の差の主因（md の 3章の表）: {main_causes(s3['gap_rows'])}"]
+    if s3["flagged"]:
+        lines.append(f"- 要確認（md の 3章）: {'・'.join(s3['flagged'])}の増加率が売上高を上回る")
     if cands["borderline"]:
         lines.append("- 境界に近い比較（材料の誤差で判定が1段階動きうる。8章の「評価が変わる条件」に使う）: "
                      + "。".join(cands["borderline"]))
@@ -77,6 +103,10 @@ def _prose(body: str) -> str:
 
 
 def _section(f: Found, company: Company) -> str:
+    if f.spec.key == "capex" and f.body:
+        hit = M.section_by_title(f.body, CAPEX_SUBSECTION, level=3)  # only the 設備投資 part, not the staff tables
+        if hit and hit[1].strip():
+            return excerpt(replace(f, heading=f"{f.heading} / {hit[0]}", body=hit[1]), company)
     if f.spec.key in PROSE_ONLY and f.body:
         return excerpt(replace(f, body=_prose(f.body) or "—（表のみ。数値は md の表を見る）"), company)
     return excerpt(f, company)
@@ -101,7 +131,7 @@ def _gaps(found: dict[str, Found]) -> list[str]:
 
 def render_brief(company: Company, date: str, valid_until: str, found: dict[str, Found], cands: dict,
                  previous: tuple[str, dict] | None, profitability: tuple[str, dict] | None, outlook: dict,
-                 warnings: list[str] = ()) -> str:
+                 warnings: list[str] = (), others: dict | None = None) -> str:
     out = [f"# キャッシュフロー分析の材料 — {company.display_name()}", "",
            f"**作成日**: {date}（cash_flow.py prepare が生成。手で直さない）", "",
            "> 執筆はこのファイルと md だけを根拠にする（raw・PDF・CSV を開かない）。数値と判定はスクリプトが md に記入済み。",
@@ -110,7 +140,8 @@ def render_brief(company: Company, date: str, valid_until: str, found: dict[str,
         out += ["", "## 警告（スクリプトが raw を読み違えた可能性。執筆の前に確かめ、完了報告に書く）", ""]
         out += [f"- {w}" for w in warnings]
     out += ["", "## 0. 前提", "", f"- 分析日: {date} / 有効期限: {valid_until}"]
-    out += _previous_lines(previous) + _profitability_line(profitability) + [_outlook_line(outlook)]
+    out += (_previous_lines(previous) + _profitability_line(profitability) + _other_lines(others or {})
+            + [_outlook_line(outlook)])
     out += ["", "## 1. 数値の要点（スクリプトが計算）", ""] + _numbers_lines(cands)
     shown: set[tuple[str, str]] = set()
     for number, (title, keys) in enumerate(CHAPTERS, start=2):

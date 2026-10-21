@@ -20,7 +20,7 @@ from ff_inputs import Found, raw_files
 from sf_inputs import PEER_SAFETY_SECTION
 from tc_metrics import _is_self
 
-FIELDS = ("total_assets", "equity", "equity_ratio", "debt", "debt_short", "debt_current_long", "debt_long",
+FIELDS = ("total_assets", "equity", "equity_derived", "equity_ratio", "debt", "debt_short", "debt_current_long", "debt_long",
           "debt_bonds", "debt_bonds_current", "debt_cp", "cash", "cash_deposits", "current_assets",
           "current_liabilities", "cfo", "cfi", "cff", "sales", "operating_income", "net_income")
 DEBT_PARTS = ("debt_short", "debt_current_long", "debt_long", "debt_bonds", "debt_bonds_current", "debt_cp")
@@ -156,9 +156,9 @@ def self_series(company, found: dict[str, Found] | None = None) -> S.Series:
     for kind, include in (("yuho", YUHO_SECTION), ("financials-historical", None)):
         for _, path in raw_files(company, kind):
             observations += S.from_raw_text(path.read_text(encoding="utf-8"), path.name, include, SAFETY)
-    if found is not None:
+    if found is not None:  # the target's own row in competitors.md is a copy of its raw: it only fills gaps
         own = [r for r in table_rows(found["peer_safety"], SAFETY, PEER_SAFETY_SECTION) if _is_self(r["name"], company)]
-        observations += [(f, r["year"], v) for r in own for f, v in r["values"].items()]
+        observations += [(f, r["year"], S.Value(v.value, v.source, False)) for r in own for f, v in r["values"].items()]
     return finish(S.merge(observations, FIELDS))
 
 

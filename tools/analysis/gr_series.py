@@ -29,7 +29,7 @@ from render_tables import forecast_records
 Value = S.Value
 Series = dict[str, dict[str, S.Value]]
 
-FIELDS = ("sales", "operating_income", "net_income", "eps", "acquisition", "buyback")
+FIELDS = ("sales", "operating_income", "net_income", "eps", "acquisition", "buyback", "receivables")
 PLAIN_FIELDS = ("eps",)  # per-share figures: never scaled to 百万
 LABELS = {
     "sales": S.LABELS["sales"],
@@ -40,6 +40,7 @@ LABELS = {
     "acquisition": ("連結範囲の変更を伴う子会社株式の取得", "子会社株式の取得", "子会社株式取得による支出",
                     "事業譲受", "事業の譲受"),
     "buyback": ("自己株式の取得による支出", "自己株式の取得", "自社株買い"),
+    "receivables": ("売上債権", "売掛金及び契約資産", "受取手形及び売掛金", "受取手形、売掛金及び契約資産", "売掛金"),
 }
 AMOUNT_EXCLUDE = S.AMOUNT_EXCLUDE + ("伴わない",)
 EPS_EXCLUDE = ("希薄化", "潜在株式", "調整後", "前期比", "増減", ":", "：")
@@ -53,7 +54,8 @@ SKIP_SECTION = re.compile(r"予想|計画|四半期|CAGR|提出会社|単体|個
 YUHO_SECTION = S.YUHO_SECTION
 
 CSV_ITEMS = {"net_sales": "sales", "operating_income": "operating_income", "net_income": "net_income",
-             "eps": "eps", "acquisition_of_subsidiaries": "acquisition", "treasury_stock_purchase": "buyback"}
+             "eps": "eps", "acquisition_of_subsidiaries": "acquisition", "treasury_stock_purchase": "buyback",
+             "receivables": "receivables"}
 TDNET_ITEMS = {"NetSales": "sales", "OperatingIncome": "operating_income",
                "ProfitAttributableToOwnersOfParent": "net_income", "NetIncomePerShare": "eps"}
 

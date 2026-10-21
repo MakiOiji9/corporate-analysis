@@ -9,9 +9,13 @@ from __future__ import annotations
 
 from string import Template
 
+import re
+import unicodedata
+
+import gr_facts as F
 import mdparse as M
 from ff_doc import FIXED_MARK, _check_words, replace_section
-from gr_metrics import CLASSES, PLAN_HIT, RECOVERY_YEARS, fmt_cagr, judge, yoy
+from gr_metrics import CLASSES, PLAN_HIT, RECOVERY_YEARS, decide, fmt_cagr, yoy
 from validate import check_fill, check_structure, check_tables
 
 UNKNOWN = "不明"
@@ -57,11 +61,9 @@ def rating_cell(rating: str | None, basis: str) -> str:
     return f"—（{basis}）" if rating is None else f"{rating}{FIXED_MARK}: {basis}"
 
 
-def growth_note(splits: list[dict]) -> str:
-    split = ("EPS は " + "、".join(f"{s['before']} 以前を {s['factor']:g} で割って" for s in splits)
-             + "直近の株式数の基準にそろえた（純利益÷EPS の株式数が整数倍に変わった年を株式分割・併合とみなす）。"
-             if splits else "")
-    return (f"注: CAGR =（最終年 ÷ 初年）^(1 ÷ 年数) − 1。対象は売上高のある直近最大10年。{split}"
+def growth_note(notes: list[dict]) -> str:
+    split = "".join(f"{n['text']}。" for n in notes)
+    return (f"注: CAGR =（最終年 ÷ 初年）^(1 ÷ 年数) − 1。売上高と EPS が揃う直近最大10年で計算する。{split}"
             "初年が赤字の指標は CAGR を計算しない。（二次）は集計サイトの値。")
 
 
@@ -137,7 +139,8 @@ def render_skeleton(template: str, values: dict, cands: dict, consistency: list[
     s1, s3, s4 = cands["step1"], cands["step3"], cands["step4"]
     filled = dict(values,
                   growth_rows=growth_table_rows(cands["rows"]), cagr_summary=cagr_summary(s1),
-                  step1_rating=rating_cell(s1["rating"], s1["basis"]), growth_note=growth_note(cands["splits"]),
+                  step1_rating=rating_cell(s1["rating"], s1["basis"]), growth_note=growth_note(cands["split_notes"]),
+                  progress=F.progress_text(cands["progress"]),
                   decline_rows=decline_table_rows(cands["declines"]), decline_note=decline_note(),
                   plan_rows=plan_table_rows(s3["rows"]), step3_rating=rating_cell(s3["rating"], s3["basis"]),
                   quality_rows=quality_table_rows(s4), adjusted_step1=adjusted_cell(s4, s1),
@@ -210,13 +213,52 @@ def _check_declines(parsed: dict, expected: list[dict]) -> list[str]:
     return issues
 
 
-def validate(text: str, template: str, expected_declines: list[dict]) -> list[str]:
+UNIT_NUMBER = re.compile(r"(?<![\dp.第])(\d[\d,]*(?:\.\d+)?)\s*(?:%|％|pt|百万円|百万|億円|千円|円|倍|名|社)")
+ANY_NUMBER = re.compile(r"\d[\d,]*(?:\.\d+)?")
+# framework thresholds the writer may name without quoting them
+REFERENCE_NUMBERS = {0.0, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 20.0, 30.0, 50.0, 80.0, 90.0, 100.0}
+
+
+def _numbers(text: str, pattern: re.Pattern = ANY_NUMBER) -> set[float]:
+    out = set()
+    for m in pattern.finditer(unicodedata.normalize("NFKC", text)):  # '１２．５％' is 12.5%
+        try:
+            out.add(round(float(m.group(1 if pattern.groups else 0).replace(",", "")), 2))
+        except ValueError:
+            continue
+    return out
+
+
+def _written(p: dict) -> list[tuple[str, str]]:
+    cells = [(f"2章 {d['year']}", f"{d['reason']} {d['swot']}") for d in p["declines"]] + _required_cells(p)
+    return cells + [("8. 前回からの変更点", " ".join(p["changes"])), ("9. 判定に効く欠損", " ".join(p["gaps"]))]
+
+
+def check_numbers(p: dict, allowed_text: str) -> list[str]:
+    """Numbers with a unit in the writer's cells must appear in the brief or in the script's part of the md:
+    the writer quotes, it does not compute or bring numbers from elsewhere."""
+    allowed = _numbers(allowed_text) | REFERENCE_NUMBERS
+    issues = []
+    for label, cell in _written(p):
+        missing = sorted(n for n in _numbers(cell, UNIT_NUMBER) if n not in allowed)
+        if missing:
+            shown = "、".join(f"{n:g}" for n in missing[:6])
+            issues.append(f"{label}: brief・md の表に無い数値（{shown}）。brief にある数値だけを引用し、計算したり"
+                          "他の資料から持ち込んだりしない")
+    return issues
+
+
+def validate(text: str, template: str, expected_declines: list[dict], allowed_text: str | None = None) -> list[str]:
+    """allowed_text: the brief and the freshly rendered skeleton (the numbers the writer may quote); None skips
+    the number check."""
     issues = check_structure(text, template) + check_fill(text) + check_tables(text)
     if issues:
         return issues  # content checks are meaningless while the skeleton is incomplete
     p = parse(text)
     issues = [f"{label}が空" for label, value in _required_cells(p) if M.is_blank(value)]
     issues += _check_declines(p, expected_declines)
+    if allowed_text is not None:
+        issues += check_numbers(p, allowed_text)
     if not p["changes"]:
         issues.append("8. 前回からの変更点に箇条書きが無い")
     if not p["gaps"]:
@@ -235,12 +277,13 @@ def step2_sentence(cands: dict, year_classes: dict[str, str]) -> str:
     return f"減収・減益の年 {len(cands['declines'])} 年（{' / '.join(parts)}）で{structural}"
 
 
-def final(cands: dict, year_classes: dict[str, str]) -> tuple[str, str]:
-    return judge(cands["step1"], cands["declines"], cands["step4"], year_classes)
+def final(cands: dict, year_classes: dict[str, str]) -> tuple[str, str, list[str]]:
+    """(verdict, why, the reasons it was moved down for being near a line)."""
+    return decide(cands["step1"], cands["declines"], cands["step4"], year_classes)
 
 
 def conclusion_section(cands: dict, year_classes: dict[str, str]) -> str:
-    verdict, why = final(cands, year_classes)
+    verdict, why, _ = final(cands, year_classes)
     s1, s3, s4 = cands["step1"], cands["step3"], cands["step4"]
     return "\n".join([
         "| 項目 | 内容 |", "|---|---|",

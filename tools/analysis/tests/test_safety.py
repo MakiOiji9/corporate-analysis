@@ -78,6 +78,7 @@ YUHO = """# 有価証券報告書 抜粋 — テスト
 ## 4. 事業等のリスク（要旨）
 
 - 金利上昇で借入コストが増える
+- 人材の確保が難しくなる
 
 ## 11. 経営方針・中期経営計画・資本政策（p.7）
 
@@ -347,8 +348,22 @@ def test_candidates_end_to_end(repo):
 def test_borderline_lists_close_comparisons(tmp_path):
     _company(tmp_path, fin=financials(equity=4200, current_liabilities=4000), yuho=YUHO.replace("60.0", "42.0"))
     found = cands_of(tmp_path)["borderline"]
-    assert any("自己資本比率 42.0% が目安" in f for f in found)
-    assert any("流動比率 125.0% が目安" in f for f in found)
+    # 42.0% is near the 40% 目安 but also clears the peer average (40.0%): a second path, nothing to flag
+    assert not any("自己資本比率" in f for f in found)
+    # 125.0% clears only the 目安 (peer average 131.3%) and sits within twice the band of it
+    assert any("流動比率 125.0% が目安 120%以上に近い（クリア）" in f for f in found)
+
+
+def test_borderline_skips_indicators_cleared_with_room(repo):
+    assert cands_of(repo)["borderline"] == []
+
+
+def test_borderline_lists_a_near_miss():
+    item = {"key": "equity_ratio", "name": "自己資本比率", "value": 39.0, "peer_avg": 42.0, "rating": "未達",
+            "by_target": False, "by_peer": False, "target": "40%以上"}
+    s1 = {"items": [item], "own": None, "excluded": False, "debt_free": False, "unit": "百万円"}
+    found = X.borderline(s1, {"drop": None})
+    assert any("目安 40%以上に近い（未達）" in f for f in found) and any("同業平均 42.0%" in f for f in found)
 
 
 # ---------- check / prepare / build ----------
@@ -429,6 +444,94 @@ def test_validate_requires_the_handoff(repo, capsys):
     issues = D.validate(text, (repo / ".ai" / "templates" / "safety" / "safety.md").read_text(encoding="utf-8"),
                         cands_of(repo)["step3"]["years"])
     assert "5. レポートで使う要点が空" in issues
+
+
+NEW_BSCF = """# 財務データ時系列（差分） — テスト
+
+## 8. 貸借・CF の主要項目（安全性）
+
+注: 新しい注記（有利子負債は借入金・社債の合計）
+
+| 項目（百万円） | 2025年3月期 | 2026年3月期 |
+|---|---|---|
+| 有利子負債 | 2,000 | 2,000 |
+"""
+
+
+def test_brief_drops_an_older_cash_flow_section(repo, capsys):
+    ir = repo / "companies" / "7203_toyota" / "raw" / "ir"
+    old = ir / f"{COLLECTED}_financials-historical.md"
+    old.write_text(financials().replace("## 4. キャッシュ・フロー\n", "## 4. キャッシュ・フロー\n\n注: 2019年の有報は未取得\n"),
+                   encoding="utf-8")
+    (ir / "2026-10-05_financials-historical.md").write_text(NEW_BSCF, encoding="utf-8")
+    brief = prepared(repo, capsys).with_name(f"{DAY}_brief.md").read_text(encoding="utf-8")
+    assert "新しい注記" in brief and "2019年の有報は未取得" not in brief
+    assert brief.count("新しい注記") == 1  # the 貸借 section is the same section: shown once
+    assert "に含まれるため省略" in brief
+
+
+def test_brief_keeps_only_finance_lines_of_the_risks(repo, capsys):
+    brief = prepared(repo, capsys).with_name(f"{DAY}_brief.md").read_text(encoding="utf-8")
+    assert "金利上昇で借入コストが増える" in brief and "人材の確保" not in brief
+
+
+def test_explicit_equity_beats_the_one_derived_in_a_table(tmp_path):
+    _company(tmp_path, yuho=YUHO.replace("60.0", "59.9"))  # 有報: 10,000 × 59.9% = 5,990 (derived, primary)
+    series = SS.self_series(company_obj(tmp_path))
+    assert series["equity"]["2026-03"].value == 6000  # the explicit 自己資本 row of the 財務時系列 (primary)
+
+
+def test_derived_primary_beats_explicit_secondary():
+    series = {"total_assets": {}, "equity_ratio": {},
+              "equity": {"2026-03": SS.S.Value(999, "IRBANK", False)},
+              "equity_derived": {"2026-03": SS.S.Value(5000, "有報", True)}}
+    got = SS.S.with_equity(series)["equity"]["2026-03"]
+    assert got.value == 5000 and got.primary and got.source.startswith("総資産 × 自己資本比率")
+
+
+def test_build_rejects_numbers_not_in_the_brief(repo, capsys):
+    md = prepared(repo, capsys)
+    fill(md)
+    text = md.read_text(encoding="utf-8")
+    md.write_text(text.replace("背景 report-points（brief による）", "自己資本比率 61.3% に低下する（p.24）"),
+                  encoding="utf-8")
+    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 1 and any("61.3" in i and "brief・md に無い" in i for i in out["issues"])
+    md.write_text(text.replace("背景 report-points（brief による）", "自己資本比率 60.0%、2026年3月期（p.24）"),
+                  encoding="utf-8")
+    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 0, out
+
+
+PEER_SPLIT = SAFETY_SECTION.format(
+    rows="| デルタ社（4444） | 2026/03 | —（10章） | —（10章） | —（10章） | 10億円 | 5億円 | 60億円 | 30億円 | 短信（一次） |")
+DUPONT_FOR_DELTA = """## 10. 収益性の分解（最大5年。ROE・デュポン分解の材料）
+
+| 会社 | 年度 | 売上高 | 当期純利益 | 総資産 | 自己資本 | ROE | 自己資本比率 | 出典・確度 |
+|---|---|---|---|---|---|---|---|---|
+| デルタ社 | 2026/03 | 100億円 | 5億円 | 100億円 | 50億円 | — | — | 短信（一次） |
+"""
+
+
+def test_peer_assets_and_equity_come_from_chapter_10(tmp_path):
+    _company(tmp_path, safety=PEER_SPLIT + "\n" + DUPONT_FOR_DELTA)
+    peers = {p["name"]: p for p in cands_of(tmp_path)["step1"]["peers"]}
+    delta = peers["デルタ社（4444）"]
+    assert delta["equity_ratio"] == pytest.approx(50.0) and delta["de"] == pytest.approx(0.2)
+    assert delta["current_ratio"] == pytest.approx(200.0)
+
+
+def test_us_unit_label_and_insolvency(tmp_path):
+    company = tmp_path / "companies" / "ABCD_test"
+    (company / "raw" / "ir").mkdir(parents=True)
+    (company / "raw" / "ir" / f"{COLLECTED}_financials-historical.md").write_text(
+        "# 財務データ時系列 — テスト\n\n> 単位: 千米ドル（USD thousands）\n", encoding="utf-8")
+    assert SS.unit_label(P.Company(tmp_path, company)) == "千米ドル"
+    assert SS.unit_label(company_obj(tmp_path)) == "百万円"
+    _company(tmp_path, fin=financials(equity=-500), yuho=YUHO.replace("| 自己資本比率（%） | 60.0 | 60.0 |\n", ""))
+    cands = cands_of(tmp_path)
+    assert cands["step1"]["items"][0]["rating"] == "未達"
+    assert any("債務超過" in w for w in X.warnings(cands))
 
 
 def test_guard_protects_the_safety_files(repo, capsys):

@@ -142,23 +142,23 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 
 | コマンド | 用途 | 主な出力 |
 |---|---|---|
-| `cash_flow.py list` | `companies/` の企業と、キャッシュフロー分析の状態（none / fresh / expired / triggered / draft）・結論・収益性の結論 | 1行の JSON |
-| `cash_flow.py check --company X` | 結果が有効か（180日以内で、使った節と年次の数値が変わっていないか、新しい収益性分析が無いか）、材料があるか（自社の営業CF 5年以上・株主還元 → collect-filings）。`next` に次の作業 | 1行の JSON |
-| `cash_flow.py prepare --company X [--redo] [--skip-collect]` | 自社の年次系列（data/*.csv → 有報・財務時系列の表。配当は CF 計算書の支払額を優先し、短信の配当金総額は最後の補完）から FCF・営業CF対純利益比率を計算し、手順1〜5の判定（一時要因・成長投資期は数値の代理指標）、売上債権・棚卸資産と売上高の増加率、年ごとの CF パターン、株主還元と FCF、境界に近い比較、収益性分析との関係を入れた骨組み（FILL は背景だけ）と材料を作る。返り値に書く欄の一覧（`fill_keys`）。作成途中の md は残す | `{日付}_brief.md`・`{日付}_cash-flow.md` |
-| `cash_flow.py build --company X [--date …]` | md を検証（構造・FILL・必須欄・禁止表現）し、数値を raw から計算し直してキャッシュフロー（良好 / 普通 / 懸念 / 判定保留）を書き込む | `{日付}_cash-flow.json` |
+| `cash_flow.py list` | `companies/` の企業と、キャッシュフロー分析の状態（none / fresh / expired / triggered / draft）・結論・収益性・成長性・安全性の結論 | 1行の JSON |
+| `cash_flow.py check --company X` | 結果が有効か（180日以内で、使った節と年次の数値が変わっていないか、新しい収益性・成長性・安全性分析が無いか）、材料があるか（自社の営業CF 5年以上・株主還元、手順3が懸念なら CF 計算書の営業活動の内訳 → collect-filings）。`next` に次の作業 | 1行の JSON |
+| `cash_flow.py prepare --company X [--redo] [--skip-collect]` | 自社の年次系列（data/*.csv → 有報・財務時系列の表。配当は CF 計算書の支払額を優先し、短信の配当金総額は最後の補完）から FCF・営業CF対純利益比率（5年平均と累計の低い方）を計算し、手順1〜5の判定（一時要因・成長投資期は数値の代理指標）、純利益と営業CF の差の内訳（減価償却費・売上債権の増減・棚卸資産の増減・税金の支払いと計上の差）と主因、直近の推移と最も古い年を除いた平均、売上債権・棚卸資産と売上高の増加率、財務CF の中身で書き分けた年ごとの CF パターン、株主還元と FCF（0扱いは「0（記載なし）」）、境界に近い比較、収益性・成長性・安全性分析との関係を入れた骨組み（FILL は背景だけ）と材料を作る。返り値に書く欄の一覧（`fill_keys`）。作成途中の md は残す | `{日付}_brief.md`・`{日付}_cash-flow.md` |
+| `cash_flow.py build --company X [--date …]` | md を検証（構造・FILL・必須欄・禁止表現、書いた欄の数値が md の表か brief にあるか、概数（約〜・〜割）が無いか）し、数値を raw から計算し直してキャッシュフロー（良好 / 普通 / 懸念 / 判定保留）を書き込む | `{日付}_cash-flow.json` |
 
-モジュール: `cf_paths.py`（結果の場所と鮮度）、`cf_inputs.py`（入力一覧。抽出は `ff_inputs.py` を再利用）、`cf_series.py`（自社の年次系列: 営業・投資・財務CF・売上高・当期純利益・売上債権・棚卸資産・配当金の支払額・自己株式の取得・設備投資・子会社株式の取得。表の読み取りは `pf_series.py`）、`cf_metrics.py`（手順1〜6の判定、収益性分析との関係、収集の要求）、`cf_brief.py`（材料）、`cf_doc.py`（骨組み・検証・結論）。テンプレートは `.ai/templates/cash-flow/`。
+モジュール: `cf_paths.py`（結果の場所と鮮度）、`cf_inputs.py`（入力一覧。抽出は `ff_inputs.py` を再利用）、`cf_series.py`（自社の年次系列: 営業・投資・財務CF・売上高・当期純利益・売上債権・棚卸資産・配当金の支払額・自己株式の取得・設備投資・子会社株式の取得、営業CF の内訳（税金等調整前当期純利益・減価償却費・売上債権と棚卸資産の増減額・法人税等の支払額）。表の読み取りは `pf_series.py` に CF 用の `Fields`（「増減」「税金等調整前」を除外しない）を渡す）、`cf_metrics.py`（手順1〜6の判定、差の内訳、STEP 2 の他の分析との関係、収集の要求）、`cf_brief.py`（材料）、`cf_doc.py`（骨組み・検証・結論）。成長性・安全性の結果は `gr_paths.py`・`sf_paths.py` で読む。テンプレートは `.ai/templates/cash-flow/`。
 
 スキル `growth`（`.ai/skills/growth.md`、STEP 2-2 成長性）からは `growth.py` を呼び出す。出力は `companies/{ticker}_{name}/analysis/growth/{分析日}_*`。数値と判定はすべてスクリプトが出し、LLM は減収・減益の年の分類（一時 / 構造 / 不明）と数値の背景だけを書く。
 
 | コマンド | 用途 | 主な出力 |
 |---|---|---|
 | `growth.py list` | `companies/` の企業と、成長性分析の状態（none / fresh / expired / triggered / draft）・結論・3C の市場の成長性・SWOT の結論 | 1行の JSON |
-| `growth.py check --company X` | 結果が有効か（180日以内で、使った節と年次の数値が変わっていないか、新しい 3C・SWOT 分析が無いか）、材料があるか（自社の売上高・EPS 5年以上・会社計画と実績・M&A・連結範囲の変更・減収減益の年の会社説明 → collect-filings）。STEP 1 は前提にしない。`next` に次の作業 | 1行の JSON |
-| `growth.py prepare --company X [--redo] [--skip-collect]` | 自社の年次系列（短信 → data/*.csv → 有報・財務時系列の表。千円/百万円/億円/千米ドル、括弧の負数を判別、一次の値を優先）から CAGR（EPS は純利益÷EPS の株式数の整数倍の変化を株式分割とみなして調整）、手順1の判定、減収・減益の年と2年以内の回復、期初予想の達成率と手順3の判定、成長の質（営業利益と売上の CAGR、M&A を除いた売上 CAGR、EPS と純利益の CAGR の差）、境界に近い比較、3C の市場成長率との整合性を入れた骨組み（FILL は分類と背景だけ）と材料を作る。返り値に書く欄の一覧（`fill_keys`）。作成途中の md は残す | `{日付}_brief.md`・`{日付}_growth.md` |
-| `growth.py build --company X [--date …]` | md を検証（構造・FILL・2章の年度がスクリプトの抽出と一致・分類が 一時/構造/不明・未回復の年に一時を使っていない・必須欄・禁止表現）し、数値を raw から計算し直して成長性（良好 / 普通 / 懸念 / 判定保留）を書き込む | `{日付}_growth.json` |
+| `growth.py check --company X` | 結果が有効か（180日以内で、使った節と年次の数値が変わっていないか、新しい 3C・SWOT 分析が無いか）、材料があるか（自社の売上高・EPS 5年以上・会社計画と実績・M&A・連結範囲の変更・減収減益の年の会社説明 → collect-filings）。STEP 1 は前提にしない。`next` に次の作業。`missing_inputs` の各要求に `hints`（雛形の章名・`sources/` に保存済みの関連原本） | 1行の JSON |
+| `growth.py prepare --company X [--redo] [--skip-collect]` | 自社の年次系列（短信 → data/*.csv → 有報・財務時系列の表。千円/百万円/億円/千米ドル、括弧の負数を判別、一次の値を優先）から CAGR（EPS は純利益÷EPS の株式数の整数倍の変化を株式分割とみなして調整）、手順1の判定、減収・減益の年と2年以内の回復、期初予想の達成率と手順3の判定（直近3年の平均達成率つき）、今期の進捗（短信の最新の四半期累計の前年同期比と通期予想に対する進捗率）、成長の質（営業利益と売上の CAGR を長期と直近3年で、M&A を除いた売上 CAGR、EPS と純利益の CAGR の差）、境界に近い比較と保守的判断（結論を左右する比較が 1pt 以内なら1段階下げる）、株式分割の記録（status.md・raw）との照合、3C の市場成長率との整合性を入れた骨組み（FILL は分類と背景だけ）と材料を作る。返り値に書く欄の一覧（`fill_keys`）。作成途中の md は残す | `{日付}_brief.md`・`{日付}_growth.md` |
+| `growth.py build --company X [--date …]` | md を検証（構造・FILL・2章の年度がスクリプトの抽出と一致・分類が 一時/構造/不明・未回復の年に一時を使っていない・必須欄・禁止表現・LLM が書いた単位付きの数値が brief か骨組みにあるか）し、数値を raw から計算し直して成長性（良好 / 普通 / 懸念 / 判定保留）を書き込む | `{日付}_growth.json` |
 
-モジュール: `gr_paths.py`（結果の場所と鮮度）、`gr_inputs.py`（入力一覧。抽出は `ff_inputs.py` を再利用）、`gr_series.py`（自社の年次系列: 売上高・営業利益・当期純利益・EPS・子会社株式の取得・自己株式の取得、EPS の分割調整、会社計画と実績、M&A の表。セルの読み取りは `pf_series.py`）、`gr_metrics.py`（CAGR、手順1〜5の判定、整合性チェック、収集の要求）、`gr_brief.py`（材料。SWOT の弱み・脅威を引用）、`gr_doc.py`（骨組み・検証・結論）。テンプレートは `.ai/templates/growth/`。
+モジュール: `gr_paths.py`（結果の場所と鮮度）、`gr_inputs.py`（入力一覧。抽出は `ff_inputs.py` を再利用）、`gr_series.py`（自社の年次系列: 売上高・営業利益・当期純利益・EPS・子会社株式の取得・自己株式の取得、EPS の分割調整、会社計画と実績、M&A の表。セルの読み取りは `pf_series.py`）、`gr_metrics.py`（CAGR、手順1〜5の判定と保守的判断、整合性チェック、収集の要求とヒント）、`gr_facts.py`（株式分割の記録、今期の進捗、販管費の内訳、保存済みの原本の検索）、`gr_brief.py`（材料。SWOT の弱み・脅威を引用）、`gr_doc.py`（骨組み・検証・結論）。テンプレートは `.ai/templates/growth/`。
 
 スキル `safety`（`.ai/skills/safety.md`、STEP 2-3 安全性）からは `safety.py` を呼び出す。出力は `companies/{ticker}_{name}/analysis/safety/{分析日}_*`。数値と判定はすべてスクリプトが出し、LLM は数値の背景だけを書く。
 
@@ -166,8 +166,8 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 |---|---|---|
 | `safety.py list` | `companies/` の企業と、安全性分析の状態（none / fresh / expired / triggered / draft）・結論・収益性の結論 | 1行の JSON |
 | `safety.py check --company X` | 結果が有効か（180日以内で、使った節と年次の数値が変わっていないか）、材料があるか（自社の3指標と3年以上の推移・有利子負債 → collect-filings、競合の「安全性の指標」 → collect-peers-valuation）。STEP 1・収益性は前提にしない。`next` に次の作業 | 1行の JSON |
-| `safety.py prepare --company X [--redo] [--skip-collect]` | 自社の年次系列（data/*.csv → 有報・財務時系列の表。CF の節も読む。有利子負債は行が無ければ借入金・社債の内訳の合計、どちらも無ければ不明）から自己資本比率・D/E・流動比率・ネットキャッシュを計算し、目安と同業平均による手順1、5年の推移（手順2）、有利子負債が増えた年の CF による借入目的の分類（手順3）を入れた骨組み（FILL は背景だけ）と材料（収益性の結果と outlook.md の金利・金融政策の行を抜粋）を作る。作成途中の md は残す | `{日付}_brief.md`・`{日付}_safety.md` |
-| `safety.py build --company X [--date …]` | md を検証（構造・FILL・3章の年度がスクリプトの抽出と一致・必須欄・禁止表現）し、数値を raw から計算し直して安全性（良好 / 普通 / 懸念 / 判定保留）を書き込む | `{日付}_safety.json` |
+| `safety.py prepare --company X [--redo] [--skip-collect]` | 自社の年次系列（data/*.csv → 有報・財務時系列の表。CF の節も読む。有利子負債は行が無ければ借入金・社債の内訳の合計、どちらも無ければ不明）から自己資本比率・D/E・流動比率・ネットキャッシュを計算し、目安と同業平均による手順1、5年の推移（手順2）、有利子負債が増えた年の CF による借入目的の分類（手順3）を入れた骨組み（FILL は背景だけ）と材料（収益性の結果と outlook.md の金利・金融政策の行を抜粋。同じ節は1回、新しい「貸借・CF」の節より古い貸借・CF の節は載せない。リスク・財務3表は財務に関わる行だけ）を作る。作成途中の md は残す | `{日付}_brief.md`・`{日付}_safety.md` |
+| `safety.py build --company X [--date …]` | md を検証（構造・FILL・3章の年度がスクリプトの抽出と一致・必須欄・禁止表現・書いた数値が brief と md の記入済みの部分にあるか）し、数値を raw から計算し直して安全性（良好 / 普通 / 懸念 / 判定保留）を書き込む | `{日付}_safety.json` |
 
 モジュール: `sf_paths.py`（結果の場所と鮮度）、`sf_inputs.py`（入力一覧。抽出は `ff_inputs.py` を再利用）、`sf_series.py`（自社・競合の貸借・CF の年次系列。表の読み取りは `pf_series.py` の Fields を使う。米国株の金額は raw の単位のまま）、`sf_metrics.py`（3指標、手順1〜4の判定、境界に近い比較、収集の要求）、`sf_brief.py`（材料）、`sf_doc.py`（骨組み・検証・結論）。テンプレートは `.ai/templates/safety/`。
 

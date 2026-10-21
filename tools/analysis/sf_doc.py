@@ -6,6 +6,7 @@ build recomputes the candidates from the raw, so an edited table in the md canno
 """
 from __future__ import annotations
 
+import re
 from string import Template
 
 import mdparse as M
@@ -14,6 +15,8 @@ from sf_metrics import CLEAR, DEBT_MATERIAL, MATCH_MONTHS, NAMES, UNKNOWN, fmt, 
 from validate import check_fill, check_structure, check_tables
 
 UNKNOWN_BACKGROUND = "不明"
+NUMBER = re.compile(r"\d[\d,]*(?:\.\d+)?")
+YEAR = re.compile(r"^(19|20)\d{2}$")
 
 
 # ---------- tables ----------
@@ -144,13 +147,49 @@ def _check_years(parsed: dict, expected: list[dict]) -> list[str]:
     return [f"3章 {y['year']}: 背景が空" for y in parsed["purpose_by_year"] if M.is_blank(y["background"])]
 
 
-def validate(text: str, template: str, expected_years: list[dict]) -> list[str]:
+def _written(p: dict) -> list[tuple[str, str]]:
+    """(label, text) of every part the writer filled."""
+    return (_required_cells(p) + [(f"3章 {y['year']} の背景", y["background"]) for y in p["purpose_by_year"]]
+            + [("6. 前回からの変更点", c) for c in p["changes"]] + [("7. 判定に効く欠損", g) for g in p["gaps"]])
+
+
+def _significant(number: str) -> str | None:
+    """The number without commas, or None for what is not checked (2-digit integers such as pages and counts,
+    and years)."""
+    value = number.replace(",", "")
+    if value.isdigit() and (len(value) <= 2 or YEAR.match(value)):
+        return None
+    return value
+
+
+def check_numbers(text: str, reference: str) -> list[str]:
+    """Numbers the writer wrote that appear neither in the brief nor in the script's part of the md: a new
+    calculation or a number brought in from elsewhere (the writer quotes the brief, it does not compute)."""
+    p = parse(text)
+    written = _written(p)
+    script_part = text
+    for _, value in written:
+        if value:
+            script_part = script_part.replace(value, "")
+    known = (reference + "\n" + script_part).replace(",", "")
+    issues = []
+    for label, value in written:
+        missing = sorted({n for m in NUMBER.finditer(value or "") if (n := _significant(m.group(0))) and n not in known})
+        if missing:
+            issues.append(f"{label}: 数値 {'・'.join(missing)} が brief・md に無い（新しく計算しない。brief の値を引用する）")
+    return issues
+
+
+def validate(text: str, template: str, expected_years: list[dict], reference: str = "") -> list[str]:
+    """reference: the brief's text; when given, the numbers the writer wrote are checked against it."""
     issues = check_structure(text, template) + check_fill(text) + check_tables(text)
     if issues:
         return issues  # content checks are meaningless while the skeleton is incomplete
     p = parse(text)
     issues = [f"{label}が空" for label, value in _required_cells(p) if M.is_blank(value)]
     issues += _check_years(p, expected_years)
+    if reference:
+        issues += check_numbers(text, reference)
     if not p["changes"]:
         issues.append("6. 前回からの変更点に箇条書きが無い")
     if not p["gaps"]:

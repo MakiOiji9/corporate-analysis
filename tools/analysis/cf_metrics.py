@@ -51,6 +51,8 @@ OWN_UNAVAILABLE = ("CFの財務時系列", "収益性の財務時系列")  # col
 OWN_ITEM = f"財務時系列: 営業CF・投資CF・財務CF・当期純利益（{MIN_YEARS}年以上）"
 RETURN_UNAVAILABLE = "株主還元"
 RETURN_ITEM = f"財務時系列: 株主還元（配当金の支払額・自己株式の取得、{WINDOW}年）"
+BREAKDOWN_UNAVAILABLE = "営業CFの内訳"
+BREAKDOWN_ITEM = f"有報: 連結CF計算書の営業活動の内訳（減価償却費・売上債権の増減額・法人税等の支払額、直近{WINDOW}年）"
 
 
 # ---------- rows ----------
@@ -72,8 +74,50 @@ def cf_rows(series: dict) -> list[dict]:
                      "sales": _v(series, "sales", year), "capex": _v(series, "capex", year),
                      "acquisitions": _v(series, "acquisitions", year),
                      "dividends": _v(series, "dividends", year), "buybacks": _v(series, "buybacks", year),
+                     "pretax": _v(series, "pretax", year),
+                     **{f: _v(series, f, year) for f in S.ADJUSTMENTS},
                      "primary": all(v.primary for v in used), "source": series["cfo"][year].source})
     return rows
+
+
+# ---------- 純利益と営業CF の差の内訳 ----------
+
+GAP_ITEMS = (("depreciation", "減価償却費"), ("receivables_change", "売上債権の増減"),
+             ("inventories_change", "棚卸資産の増減"), ("tax_gap", "税金等の支払いと計上の差"))
+OTHER_MAIN = "その他（表の項目以外）"
+
+
+def _tax_gap(r: dict) -> float | None:
+    """法人税等の支払額（マイナス）+ 計上した税金等（税金等調整前当期純利益 − 純利益）."""
+    if r["taxes_paid"] is None or r["pretax"] is None or r["net_income"] is None:
+        return None
+    return r["taxes_paid"] + (r["pretax"] - r["net_income"])
+
+
+def cash_gap_rows(rows: list[dict], window: list[str]) -> list[dict]:
+    """For each year of 手順3: 営業CF − 純利益 and the CF-statement lines behind it. A year without the
+    receivables line has no breakdown (内訳なし); 'main' is the item that moved the gap most in its direction."""
+    out = []
+    for r in rows:
+        if r["year"] not in window or r["net_income"] is None:
+            continue
+        gap = r["cfo"] - r["net_income"]
+        if r["receivables_change"] is None:
+            out.append({"year": r["year"], "gap": gap, "items": None, "other": None, "main": None})
+            continue
+        items = {"depreciation": r["depreciation"], "receivables_change": r["receivables_change"],
+                 "inventories_change": r["inventories_change"], "tax_gap": _tax_gap(r)}
+        known = {k: v for k, v in items.items() if v is not None}
+        other = gap - sum(known.values())
+        sign = -1 if gap < 0 else 1
+        leaning = {k: v * sign for k, v in known.items() if v * sign > 0}
+        top = max(leaning, key=leaning.get) if leaning else None
+        if other * sign > (leaning[top] if top else 0):
+            main = OTHER_MAIN  # the residual (株式報酬・のれん償却・前受金など) moved the gap more than any line
+        else:
+            main = dict(GAP_ITEMS)[top] if top else None
+        out.append({"year": r["year"], "gap": gap, "items": items, "other": other, "main": main})
+    return out
 
 
 def cagr(first: float | None, last: float | None, years: int) -> float | None:
@@ -174,24 +218,54 @@ def working_capital(series: dict, years: list[str]) -> list[dict]:
     return out
 
 
+def supplements(window: list[dict]) -> dict:
+    """Facts the writer quotes instead of computing them: the latest two ratios, the years below 0.8x, and the
+    average without the oldest year (the year the next fiscal year pushes out of the 5-year window; the new year
+    itself is not assumed)."""
+    ratios = [r for r in window if r["ratio"] is not None]
+    recent = ratios[-2:]
+    below = [f"{r['year']} {r['ratio']:.2f}倍" for r in ratios if r["ratio"] < FAIR_RATIO]
+    rest = ratios[1:]
+    without = sum(r["ratio"] for r in rest) / len(rest) if len(ratios) == len(window) and rest else None
+    recent_text = "、".join(f"{r['year']} {r['ratio']:.2f}倍" for r in recent) or "—"
+    level = ("いずれも 1.0倍以上" if recent and all(r["ratio"] >= GOOD_RATIO for r in recent) else
+             "いずれも 0.8倍以上 1.0倍未満" if recent and all(FAIR_RATIO <= r["ratio"] < GOOD_RATIO for r in recent) else
+             "0.8倍未満を含む" if recent else "")
+    without_text = ("—（純損失の年を含むため計算しない）" if without is None else
+                    f"{window[0]['year']}（{window[0]['ratio']:.2f}倍）を除いた{len(rest)}年の平均は {without:.2f}倍"
+                    "（次の決算でこの年が5年の対象から外れる。新しい年の値は仮定していない）")
+    return {"recent_text": f"{recent_text}（{level}）" if level else recent_text,
+            "below_text": "、".join(below) or "なし", "without_oldest": None if without is None else round(without, 2),
+            "without_oldest_text": without_text}
+
+
 def step3(rows: list[dict], series: dict) -> dict:
     window = [r for r in rows if r["net_income"] is not None][-WINDOW:]
     years = [r["year"] for r in window]
     base = {"window": years, "working_capital": working_capital(series, years), "loss": False, "ratio": None,
-            "method": None, "flagged": []}
+            "method": None, "flagged": [], "average": None, "cumulative": None, "recent_text": "—",
+            "below_text": "—", "without_oldest": None, "without_oldest_text": "—",
+            "gap_rows": cash_gap_rows(rows, years)}
     if len(window) < WINDOW:
         return {**base, "rating": None,
                 "basis": f"営業CF と当期純利益が揃った年が {len(window)} 年で {WINDOW} 年に満たない",
                 "sentence": f"営業CF と当期純利益が揃った年が{len(window)}年で、{WINDOW}年平均を計算できない"}
+    total_ni = sum(r["net_income"] for r in window)
+    if total_ni <= 0:
+        return {**base, "rating": None, "loss": True, "method": "累計",
+                "basis": f"{WINDOW}年累計の当期純利益が {fmt_amount(total_ni)} でマイナス（純損失）",
+                "sentence": f"{WINDOW}年累計の当期純利益がマイナスで、営業CF対純利益比率は判定できない（純損失）"}
+    cumulative = sum(r["cfo"] for r in window) / total_ni
     if all(r["net_income"] > 0 for r in window):
-        ratio, method = sum(r["ratio"] for r in window) / len(window), f"{WINDOW}年平均"
+        average = sum(r["ratio"] for r in window) / len(window)
+        # both kept; the lower one judges (a tiny net income in one year would lift the plain average)
+        ratio, method = ((average, f"{WINDOW}年平均。累計 {cumulative:.2f}倍より低い方") if average <= cumulative
+                         else (cumulative, f"{WINDOW}年累計。平均 {average:.2f}倍より低い方"))
     else:
-        total_ni = sum(r["net_income"] for r in window)
-        if total_ni <= 0:
-            return {**base, "rating": None, "loss": True, "method": "累計",
-                    "basis": f"{WINDOW}年累計の当期純利益が {fmt_amount(total_ni)} でマイナス（純損失）",
-                    "sentence": f"{WINDOW}年累計の当期純利益がマイナスで、営業CF対純利益比率は判定できない（純損失）"}
-        ratio, method = sum(r["cfo"] for r in window) / total_ni, f"{WINDOW}年累計（純損失の年を含むため）"
+        average = None
+        ratio, method = cumulative, f"{WINDOW}年累計（純損失の年を含むため）"
+    base = {**base, "average": None if average is None else round(average, 2), "cumulative": round(cumulative, 2),
+            **supplements(window)}
     rating = "良好" if ratio >= GOOD_RATIO else "普通" if ratio >= FAIR_RATIO else "懸念"
     wc = base["working_capital"]
     sales_growth = wc[0]["cagr"]
@@ -217,8 +291,31 @@ def pattern_rows(rows: list[dict]) -> list[dict]:
             continue
         signs = (_sign(r["cfo"]), _sign(r["cfi"]), _sign(r["cff"]))
         rating, state = PATTERNS[signs]
-        out.append({"year": r["year"], "signs": list(signs), "rating": rating, "state": state})
+        out.append({"year": r["year"], "signs": list(signs), "rating": rating, "state": describe(signs, r, state)})
     return out
+
+
+RETURN_SHARE = 0.5  # 財務CF の流出のうち還元がこの割合以上なら「株主還元」と書く
+PATTERN_HINT = {("+", "−", "−"): "", ("+", "−", "+"): "成長期の型。投資成果を要確認",
+                ("+", "+", "−"): "事業再編期の型。理由を要確認", ("+", "+", "+"): "資金を積み上げている。理由を要確認"}
+
+
+def describe(signs: tuple[str, str, str], r: dict, default: str) -> str:
+    """The state in words from what the financing outflow was spent on: shareholder returns (dividends +
+    buybacks at least half of it), debt repayment, or unknown. The rating stays the framework's (by sign)."""
+    if signs[0] == "−":
+        return default
+    invest = "投資を行い" if signs[1] == "−" else "投資CF がプラス（資産の売却・回収）で"
+    if signs[2] == "+":
+        finance = "財務CF はプラス（借入・増資などで調達）"
+    else:
+        known = r["dividends"] is not None or r["buybacks"] is not None
+        returned = (r["dividends"] or 0.0) + (r["buybacks"] or 0.0)
+        use = ("株主還元" if known and returned >= -r["cff"] * RETURN_SHARE else
+               "借入の返済など" if known else "返済・還元")
+        finance = f"財務CF の流出は主に{use}"
+    hint = PATTERN_HINT[signs]
+    return f"本業で稼ぎ、{invest}、{finance}" + (f"（{hint}）" if hint else "")
 
 
 def step4(rows: list[dict]) -> dict:
@@ -247,6 +344,7 @@ def return_rows(rows: list[dict]) -> list[dict]:
         known = r["dividends"] is not None or r["buybacks"] is not None
         total = (r["dividends"] or 0.0) + (r["buybacks"] or 0.0) if known else None
         out.append({"year": r["year"], "dividends": r["dividends"], "buybacks": r["buybacks"], "total": total,
+                    "zero_filled": [k for k in ("dividends", "buybacks") if known and r[k] is None],
                     "fcf": r["fcf"],
                     "gap": total - r["fcf"] if total is not None and r["fcf"] is not None else None})
     return out
@@ -320,7 +418,52 @@ def borderline(s2: dict, s3: dict, s5: dict, rows: list[dict]) -> list[str]:
 
 # ---------- STEP 2 の他の分析 ----------
 
-def relation(s1: dict, s3: dict, profitability: dict | None) -> list[dict]:
+def relation(s1: dict, s3: dict, profitability: dict | None, s5: dict | None = None,
+             growth: dict | None = None, safety: dict | None = None) -> list[dict]:
+    """STEP 2 の他の分析（収益性 2-1・成長性 2-2・安全性 2-3）の結論とキャッシュフローの数値が食い違っていないか."""
+    return (_profitability_rows(s1, s3, profitability) + [_growth_row(s3, growth)]
+            + [_safety_row(s5 or {}, safety)])
+
+
+def _growth_row(s3: dict, growth: dict | None) -> dict:
+    """成長が売上債権・棚卸資産の積み上がりを伴っていないか."""
+    wc = {w["field"]: w for w in s3.get("working_capital", [])}
+    sales = (wc.get("sales") or {}).get("cagr")
+    faster = [w["name"] for k, w in wc.items() if k != "sales" and w["cagr"] is not None and sales is not None
+              and w["cagr"] > sales]
+    rates = "、".join(f"{w['name']} {w['cagr']:+.1f}%" for w in wc.values() if w["cagr"] is not None) or "増加率なし"
+    verdict = (growth or {}).get("verdict")
+    if not verdict:
+        result = "未実施（成長性分析の結果なし）"
+    elif sales is None:
+        result = "判断できない（売上高の増加率が無い）"
+    else:
+        result = (f"要確認（成長が{'・'.join(faster)}の積み上がりを伴う）" if faster else "整合")
+    return {"check": "成長性 ⇔ 運転資本", "step2": f"成長性 {verdict or '—'}", "cash": f"年平均増加率: {rates}",
+            "result": result}
+
+
+def _safety_row(s5: dict, safety: dict | None) -> dict:
+    """FCF を超える還元を、手元資金と借入のどちらで賄っているか."""
+    verdict = (safety or {}).get("verdict")
+    net_cash = ((safety or {}).get("step1") or {}).get("net_cash")
+    if not isinstance(net_cash, (int, float)):
+        net_cash = None  # a missing or malformed value in the safety json reads as unknown
+    cash_text = "—" if net_cash is None else f"{net_cash:,.0f}"
+    rating = s5.get("rating", "—")
+    if not verdict:
+        result = "未実施（安全性分析の結果なし）"
+    elif rating != "注意":
+        result = "整合"
+    elif net_cash is None or net_cash <= 0:
+        result = "不整合（FCF を超える還元を借入で賄っている候補）"
+    else:
+        result = "整合（手元資金で還元している。継続性は要確認）"
+    return {"check": "安全性 ⇔ 還元・FCF", "step2": f"安全性 {verdict or '—'}（ネットキャッシュ {cash_text}）",
+            "cash": f"手順5 {rating}", "result": result}
+
+
+def _profitability_rows(s1: dict, s3: dict, profitability: dict | None) -> list[dict]:
     """収益性分析（2-1）の結論とキャッシュフローの数値が食い違っていないか."""
     verdict = (profitability or {}).get("verdict")
     source = ((profitability or {}).get("step3") or {}).get("source")
@@ -359,6 +502,10 @@ def collect_requests(company, found: dict, cands: dict) -> list[dict]:
         extra.append(OWN_ITEM)
     if cands["step5"]["rating"] == "不明" and not any(RETURN_UNAVAILABLE in u for u in unavailable):
         extra.append(RETURN_ITEM)
+    s3 = cands["step3"]
+    if s3["rating"] == "懸念" and any(g["items"] is None for g in s3["gap_rows"]) \
+            and not any(BREAKDOWN_UNAVAILABLE in u for u in unavailable):
+        extra.append(BREAKDOWN_ITEM)  # the cause of the 懸念 can't be shown without the CF-statement lines
     out = [dict(r, items=list(r["items"])) for r in I.collect_requests(found)]
     for item in extra:
         hit = next((r for r in out if r["agent"] == "collect-filings"), None)
@@ -371,7 +518,7 @@ def collect_requests(company, found: dict, cands: dict) -> list[dict]:
 
 def series_digest(cands: dict) -> str:
     """Every number the result rests on: a new fiscal year or a corrected value re-opens the result."""
-    keys = ("cfo", "cfi", "cff", "net_income", "sales", "dividends", "buybacks")
+    keys = ("cfo", "cfi", "cff", "net_income", "sales", "dividends", "buybacks", "pretax") + S.ADJUSTMENTS
     rows = [[r["year"]] + [None if r[k] is None else round(r[k], 1) for k in keys] for r in cands["rows"]]
     wc = [[w["field"], w["first"], w["last"]] for w in cands["step3"]["working_capital"]]
     return A.digest(json.dumps([rows, wc], ensure_ascii=False))

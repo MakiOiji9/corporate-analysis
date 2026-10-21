@@ -1,0 +1,350 @@
+{
+ "company": "3798_uls-group",
+ "name": "ULSグループ（3798）",
+ "date": "2026-10-21",
+ "valid_until": "2027-04-19",
+ "verdict": "良好",
+ "verdict_reason": "3指標とも目安または同業平均をクリアし、悪化傾向なし",
+ "step1": {
+  "year": "2026-03",
+  "sentence": "2026-03: 自己資本比率 74.7% クリア、D/E レシオ 0.00倍 クリア、流動比率 437.3% クリア（クリア 3・未達 0・不明 0）。ネットキャッシュ 8,460 百万円で実質無借金",
+  "counts": {
+   "クリア": 3,
+   "未達": 0,
+   "不明": 0
+  },
+  "excluded": false,
+  "net_cash": 8460.0,
+  "debt_free": true,
+  "items": [
+   {
+    "key": "equity_ratio",
+    "name": "自己資本比率",
+    "value": 74.6612,
+    "peer_avg": 71.0449,
+    "target": "40%以上",
+    "by_target": true,
+    "by_peer": true,
+    "rating": "クリア",
+    "basis": "74.7%（40%以上、同業平均 71.0%）で目安をクリア"
+   },
+   {
+    "key": "de",
+    "name": "D/E レシオ",
+    "value": 0.0,
+    "peer_avg": 0.1631,
+    "target": "1倍以下",
+    "by_target": true,
+    "by_peer": true,
+    "rating": "クリア",
+    "basis": "ネットキャッシュ 8,460 百万円で実質無借金"
+   },
+   {
+    "key": "current_ratio",
+    "name": "流動比率",
+    "value": 437.3096,
+    "peer_avg": 308.0951,
+    "target": "120%以上",
+    "by_target": true,
+    "by_peer": true,
+    "rating": "クリア",
+    "basis": "437.3%（120%以上、同業平均 308.1%）で目安をクリア。150%以上で余裕あり"
+   }
+  ],
+  "peers": [
+   {
+    "name": "ノースサンド（446A）",
+    "year": "2026-01",
+    "primary": true,
+    "equity_ratio": 75.271,
+    "de": 0.0377,
+    "current_ratio": 392.7772,
+    "net_cash": 13976.0,
+    "insolvent": false
+   },
+   {
+    "name": "ライズ・コンサルティング・グループ（9168）",
+    "year": "2026-02",
+    "primary": true,
+    "equity_ratio": 75.7451,
+    "de": 0.1479,
+    "current_ratio": 250.3607,
+    "net_cash": 1657.0,
+    "insolvent": false
+   },
+   {
+    "name": "ベイカレント（6532）",
+    "year": "2026-02",
+    "primary": true,
+    "equity_ratio": 74.3169,
+    "de": 0.0022,
+    "current_ratio": 322.0763,
+    "net_cash": 72046.0,
+    "insolvent": false
+   },
+   {
+    "name": "シグマクシス・ホールディングス（6088）",
+    "year": "2026-03",
+    "primary": true,
+    "equity_ratio": 83.555,
+    "de": 0.0,
+    "current_ratio": 353.5654,
+    "net_cash": 5140.0,
+    "insolvent": false
+   },
+   {
+    "name": "エル・ティー・エス（6560）",
+    "year": "2025-12",
+    "primary": true,
+    "equity_ratio": 46.3364,
+    "de": 0.6276,
+    "current_ratio": 221.6957,
+    "net_cash": 459.0,
+    "insolvent": false
+   }
+  ],
+  "peer_avg": {
+   "equity_ratio": 71.0449,
+   "de": 0.1631,
+   "current_ratio": 308.0951
+  }
+ },
+ "step2": {
+  "rating": "悪化傾向なし",
+  "basis": "自己資本比率の低下 10pt 未満、D/E の継続的な上昇なし",
+  "sentence": "2022-03〜2026-03（5年）: 自己資本比率 79.9%→74.7%（-5.3pt）、D/E 0.00→0.00倍。悪化傾向なし",
+  "years": [
+   "2022-03",
+   "2023-03",
+   "2024-03",
+   "2025-03",
+   "2026-03"
+  ],
+  "drop": 5.3,
+  "de_rising": false
+ },
+ "step3": {
+  "rating": "許容",
+  "basis": "2021-03〜2026-03 に有利子負債が総資産の1%以上増えた年なし",
+  "sentence": "借入の目的: 2021-03〜2026-03 に有利子負債が目立って増えた年はない（許容）",
+  "years": []
+ },
+ "rows": [
+  {
+   "year": "2017-03",
+   "total_assets": 5087.62,
+   "equity": 4085.89,
+   "equity_ratio": 80.3104,
+   "debt": 0.0,
+   "de": 0.0,
+   "current_ratio": 476.0482,
+   "cash": 2333.947,
+   "net_cash": 2333.947,
+   "cfo": 486.108,
+   "cfi": -116.562,
+   "cff": -90.495,
+   "primary": true,
+   "debt_source": "2026-10-21_financials-historical.md「3-1. 千円単位の年度（2017年3月期〜2023年3月期」"
+  },
+  {
+   "year": "2018-03",
+   "total_assets": 5705.332,
+   "equity": 4526.397,
+   "equity_ratio": 79.3363,
+   "debt": 0.0,
+   "de": 0.0,
+   "current_ratio": 462.7069,
+   "cash": 3144.937,
+   "net_cash": 3144.937,
+   "cfo": 971.433,
+   "cfi": -51.347,
+   "cff": -109.096,
+   "primary": true,
+   "debt_source": "2026-10-21_financials-historical.md「3-1. 千円単位の年度（2017年3月期〜2023年3月期」"
+  },
+  {
+   "year": "2019-03",
+   "total_assets": 6579.463,
+   "equity": 5114.067,
+   "equity_ratio": 77.7277,
+   "debt": 0.0,
+   "de": 0.0,
+   "current_ratio": 422.9865,
+   "cash": 3871.319,
+   "net_cash": 3871.319,
+   "cfo": 882.613,
+   "cfi": -41.275,
+   "cff": -114.956,
+   "primary": true,
+   "debt_source": "2026-10-21_financials-historical.md「3-1. 千円単位の年度（2017年3月期〜2023年3月期」"
+  },
+  {
+   "year": "2020-03",
+   "total_assets": 7036.964,
+   "equity": 5549.201,
+   "equity_ratio": 78.8579,
+   "debt": 0.0,
+   "de": 0.0,
+   "current_ratio": 457.4878,
+   "cash": 4417.19,
+   "net_cash": 4417.19,
+   "cfo": 883.693,
+   "cfi": -10.953,
+   "cff": -326.868,
+   "primary": true,
+   "debt_source": "2026-10-21_financials-historical.md「3-1. 千円単位の年度（2017年3月期〜2023年3月期」"
+  },
+  {
+   "year": "2021-03",
+   "total_assets": 8000.751,
+   "equity": 6177.665,
+   "equity_ratio": 77.2136,
+   "debt": 0.0,
+   "de": 0.0,
+   "current_ratio": 420.4106,
+   "cash": 5160.71,
+   "net_cash": 5160.71,
+   "cfo": 1063.674,
+   "cfi": 0.942,
+   "cff": -321.096,
+   "primary": true,
+   "debt_source": "2026-10-21_financials-historical.md「3-1. 千円単位の年度（2017年3月期〜2023年3月期」"
+  },
+  {
+   "year": "2022-03",
+   "total_assets": 8775.0,
+   "equity": 7014.193,
+   "equity_ratio": 79.9338,
+   "debt": 0.0,
+   "de": 0.0,
+   "current_ratio": 491.7509,
+   "cash": 5473.573,
+   "net_cash": 5473.573,
+   "cfo": 568.0,
+   "cfi": -85.0,
+   "cff": -169.0,
+   "primary": true,
+   "debt_source": "2026-10-21_financials-historical.md「3-1. 千円単位の年度（2017年3月期〜2023年3月期」"
+  },
+  {
+   "year": "2023-03",
+   "total_assets": 9564.0,
+   "equity": 7501.742,
+   "equity_ratio": 78.4373,
+   "debt": 0.0,
+   "de": 0.0,
+   "current_ratio": 470.7648,
+   "cash": 5603.498,
+   "net_cash": 5603.498,
+   "cfo": 837.0,
+   "cfi": 45.0,
+   "cff": -752.0,
+   "primary": true,
+   "debt_source": "2026-10-21_financials-historical.md「3-1. 千円単位の年度（2017年3月期〜2023年3月期」"
+  },
+  {
+   "year": "2024-03",
+   "total_assets": 11010.0,
+   "equity": 8399.0,
+   "equity_ratio": 76.2852,
+   "debt": 0.0,
+   "de": 0.0,
+   "current_ratio": 450.3922,
+   "cash": 6022.0,
+   "net_cash": 6022.0,
+   "cfo": 756.0,
+   "cfi": -98.0,
+   "cff": -239.0,
+   "primary": true,
+   "debt_source": "2026-10-21_financials-historical.md「3-2. 百万円単位の年度（2024年3月期〜2026年3月」"
+  },
+  {
+   "year": "2025-03",
+   "total_assets": 13570.0,
+   "equity": 9792.0,
+   "equity_ratio": 72.1592,
+   "debt": 0.0,
+   "de": 0.0,
+   "current_ratio": 391.4591,
+   "cash": 7137.0,
+   "net_cash": 7137.0,
+   "cfo": 1587.0,
+   "cfi": -222.0,
+   "cff": -249.0,
+   "primary": true,
+   "debt_source": "2026-10-21_financials-historical.md「3-2. 百万円単位の年度（2024年3月期〜2026年3月」"
+  },
+  {
+   "year": "2026-03",
+   "total_assets": 15719.0,
+   "equity": 11736.0,
+   "equity_ratio": 74.6612,
+   "debt": 0.0,
+   "de": 0.0,
+   "current_ratio": 437.3096,
+   "cash": 8460.0,
+   "net_cash": 8460.0,
+   "cfo": 1994.0,
+   "cfi": -531.0,
+   "cff": -140.0,
+   "primary": true,
+   "debt_source": "2026-10-21_financials-historical.md「3-2. 百万円単位の年度（2024年3月期〜2026年3月」"
+  }
+ ],
+ "borderline": [],
+ "level_background": "会社は財務方針として「安定性」を最重視し比較的厚めの自己資本を保持するとしており（有報 第26期 p.24）、2026年3月期末は現金及び預金 8,460百万円・有利子負債残高ゼロと記載している（同 p.25）。全期間で負債は流動負債のみ（固定負債なし。2026-10-21_financials-historical.md）で、配当は配当性向20%〜30%の業績連動型（同 p.25, 51。2026年3月期は20.2%）のため、利益の多くが自己資本と現金として積み上がっている",
+ "handoff": {
+  "report_points": "安全性は良好（3指標とも目安をクリアし、悪化傾向なし）。2026年3月期末の自己資本比率 74.7%（同業平均 71.0%）、流動比率 437.3%（同 308.1%）、有利子負債 0 でネットキャッシュ 8,460百万円（総資産 15,719百万円）。2017〜2026年3月期の全期間で有利子負債は 0 で、自己資本比率は 72.2〜80.3% の範囲で推移している",
+  "policy": "中期経営計画は策定・公表していない（有報 第26期 p.23）が、有報は「安定性」を最重視し比較的厚めの自己資本を保持する方針と、配当性向20%〜30%の配当・機動的な自己株式取得の還元方針を示しており（p.24, 25, 51）、無借金と自己資本比率 70%台の実績はこの方針と一致する。配当性向は 20.0〜21.9%（2022〜2026年3月期）と方針の下限付近で、自己株式取得は 2023年3月期の 599,971千円が目立つ程度（2026-10-11_financials-historical.md 5章）",
+  "step2_checks": "キャッシュフロー: 現金及び現金同等物の増加（2022年3月期 5,474 → 2026年3月期 8,460百万円）が営業CF の積み上がりによるものか。収益性: 収益性分析の財務レバレッジ 1.36倍の低さが手元資金の厚さによるもので、総資産回転率を下げていないか。成長性: 収益性分析が挙げた採用・人件費の増加（重点施策）を、借入に頼らず自己資金で賄い続けられるか",
+  "triggers": "自己資本比率が直近5年の初年（2022年3月期 79.9%）から10pt 以上下がるか、有利子負債が計上されて現金を上回れば、悪化傾向・実質無借金でなくなり安全性は1段階下がりうる（境界に近い比較はなし）。地合いは日銀が政策金利を1.25%程度に引き上げ利上げ継続の姿勢（2026-10-19_outlook.md 3.3）だが、有利子負債ゼロのため借入コストの影響は現時点で無い"
+ },
+ "changes": [
+  "初回の分析（同日の版は、スキル改善前の規則で作成したため作り直した。結論 良好 は変わらない）",
+  "自己資本は記載値を優先する規則に変わり、2022・2024年3月期の値が逆算値から記載値になった（判定への影響なし）",
+  "境界に近い比較は、判定が動かない比較を載せない規則になり「なし」になった"
+ ],
+ "gaps": [
+  "判定に効く欠損はない（3指標とも目安を大きく上回り、自社の10年分は一次資料）",
+  "中期経営計画の資本政策の節は raw に無い（会社は中期経営計画を策定・公表していない。有報 第26期 p.23）。財務方針は有報の経営方針で代えた",
+  "2017年3月末・2018年3月末の流動資産は組替前の表示で、流動比率の 2017〜2018年とそれ以降の比較には表示差がある。手順2は直近5年で判定しており影響しない",
+  "競合のノースサンドは 2023/01 以前の指標が取れていない。ライズ・ベイカレントの有利子負債はリース負債を含まない定義（2026-10-21_competitors.md 11章）"
+ ],
+ "inputs": [
+  "companies/3798_uls-group/raw/filings/2026-10-11_2026-03_yuho.md",
+  "companies/3798_uls-group/raw/ir/2026-10-11_financials-historical.md",
+  "companies/3798_uls-group/raw/ir/2026-10-21_financials-historical.md",
+  "companies/3798_uls-group/raw/market/2026-10-13_competitors.md",
+  "companies/3798_uls-group/raw/market/2026-10-21_competitors.md"
+ ],
+ "seen": [
+  "companies/3798_uls-group/raw/filings/2026-10-11_2026-03_yuho.md",
+  "companies/3798_uls-group/raw/ir/2026-10-11_financials-historical.md",
+  "companies/3798_uls-group/raw/ir/2026-10-11_mid-term-plan.md",
+  "companies/3798_uls-group/raw/ir/2026-10-21_financials-historical.md",
+  "companies/3798_uls-group/raw/market/2026-10-13_competitors.md",
+  "companies/3798_uls-group/raw/market/2026-10-21_competitors.md"
+ ],
+ "input_digests": {
+  "self_bscf": "423d2d8ef9d3e7f828a1510dca0872122a75752c",
+  "self_bs": "423d2d8ef9d3e7f828a1510dca0872122a75752c",
+  "self_cf": "8e93291704a66af6d95a3dfa400222c41d0a71e9",
+  "self_return": "c5684a6598c725ef64a351a111eea838120dc3cf",
+  "summary": "582e51ae7252a15bbb3d54e1bad3ff84735fb301",
+  "statements": "b01cb6f37dc557f8757f7797fce30a67fe5ced51",
+  "risks": "5dddf0025403519f6851af9d6dc23b89398a0962",
+  "policy": "5b53a00b6a72f4552e7e1965f97c0171b7aaed1b",
+  "capital": "",
+  "peer_safety": "7a20d264a25d3298d2f56c1f398f0283e8e1142d",
+  "peer_roe": "f391a7f4d5bbf8d3da72ad46b760a5e75ba46175",
+  "peer_dupont": "a1679708f1354eb37be3f754394c13c9767f401c",
+  "yearly_series": "de786df06a5cfb43361fdd81064f4215fbe7ea43"
+ },
+ "profitability": {
+  "date": "2026-10-13",
+  "verdict": "良好"
+ },
+ "outlook": "market/report/2026-10-19_outlook.md",
+ "previous": null,
+ "md": "companies/3798_uls-group/analysis/safety/2026-10-21_safety.md"
+}

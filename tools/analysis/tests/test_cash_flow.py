@@ -57,7 +57,7 @@ FINANCIALS = """# 財務データ時系列 — テスト
 | 財務CF | {cff} |
 | 有形固定資産の取得による支出 | {capex} |
 | 配当金の支払額 | {div} |
-| 売上債権の増減額 | {dummy} |
+| 売上債権回転日数 | {dummy} |
 
 ## 5. 株主還元
 
@@ -192,7 +192,10 @@ def test_paren_negative_and_labels():
     assert PS.amount("△98", 1.0) == -98 and PS.amount("1,200（百万円）", 1e-3) == pytest.approx(1200)
     assert PS.field_of("営業CF") is None  # the profitability labels are unchanged
     assert PS.field_of("**営業CF**", S.CF_FIELDS) == "cfo"
-    assert PS.field_of("売上債権の増減額", S.CF_FIELDS) is None
+    assert PS.field_of("売上債権の増減額", S.CF_FIELDS) == "receivables_change"
+    assert PS.field_of("売上債権の増減額") is None and PS.field_of("税金等調整前当期純利益") is None  # profitability
+    assert PS.field_of("税金等調整前当期純利益", S.CF_FIELDS) == "pretax"
+    assert PS.field_of("売上債権", S.CF_FIELDS) == "receivables"
     assert PS.field_of("自社株買い（CF上の支出）", S.CF_FIELDS) == "buybacks"
     assert PS.field_of("連結範囲の変更を伴わない子会社株式の取得による支出", S.CF_FIELDS) is None
 
@@ -239,7 +242,8 @@ def _rows(cfo: list, cfi: list | None = None, cff: list | None = None, ni: list 
     return [{"year": f"{2017 + i}-03", "cfo": cfo[i], "cfi": cfi[i], "cff": cff[i], "fcf": cfo[i] + cfi[i],
              "net_income": ni[i], "ratio": cfo[i] / ni[i] if ni[i] > 0 else None, "sales": sales[i],
              "capex": None, "acquisitions": None, "dividends": div[i], "buybacks": buy[i], "primary": True,
-             "source": "t"} for i in range(n)]
+             "source": "t", "pretax": None, "depreciation": None, "receivables_change": None,
+             "inventories_change": None, "taxes_paid": None} for i in range(n)]
 
 
 def test_declared_dividend_in_an_earlier_file_does_not_beat_the_cash_paid(repo):
@@ -337,12 +341,149 @@ def test_judge(ratings, s5, loss, verdict):
     assert got == verdict
 
 
+def _wc(sales: float | None, receivables: float | None) -> list[dict]:
+    return [{"field": "sales", "name": "売上高", "cagr": sales},
+            {"field": "receivables", "name": "売上債権", "cagr": receivables},
+            {"field": "inventories", "name": "棚卸資産", "cagr": None}]
+
+
 def test_relation_rows():
-    rows = X.relation({"rating": "懸念"}, {"rating": "懸念", "ratio": 0.7},
-                      {"verdict": "良好", "step3": {"source": "本業由来"}})
+    s3 = {"rating": "懸念", "ratio": 0.7, "working_capital": _wc(10.0, 15.0)}
+    rows = X.relation({"rating": "懸念"}, s3, {"verdict": "良好", "step3": {"source": "本業由来"}},
+                      {"rating": "注意"}, {"verdict": "良好"}, {"verdict": "良好", "step1": {"net_cash": -5.0}})
+    assert [r["check"] for r in rows] == ["収益性が良好 ⇔ 利益の質", "ROE が本業由来 ⇔ 営業CF の安定",
+                                          "成長性 ⇔ 運転資本", "安全性 ⇔ 還元・FCF"]
     assert rows[0]["result"].startswith("不整合") and rows[1]["result"].startswith("不整合")
-    rows = X.relation({"rating": "良好"}, {"rating": "良好", "ratio": 1.2}, None)
+    assert rows[2]["result"].startswith("要確認（成長が売上債権") and rows[3]["result"].startswith("不整合")
+    rows = X.relation({"rating": "良好"}, {"rating": "良好", "ratio": 1.2, "working_capital": _wc(10.0, 5.0)}, None,
+                      {"rating": "注意"}, {"verdict": "普通"}, {"verdict": "良好", "step1": {"net_cash": 100.0}})
+    assert rows[2]["result"] == "整合" and rows[3]["result"].startswith("整合（手元資金")
+    rows = X.relation({"rating": "良好"}, {"rating": "良好", "ratio": 1.2, "working_capital": _wc(10.0, 5.0)}, None)
     assert all(r["result"].startswith("未実施") for r in rows)
+
+
+def test_cash_gap_rows_and_main_cause():
+    rows = _rows([800] * 5)
+    rows[-1] = {**rows[-1], "pretax": 1400.0, "depreciation": 100.0, "receivables_change": -350.0,
+                "taxes_paid": -500.0}
+    gaps = X.cash_gap_rows(rows, [r["year"] for r in rows])
+    assert gaps[0]["items"] is None and gaps[0]["gap"] == -200
+    last = gaps[-1]
+    assert last["items"]["tax_gap"] == -100  # paid 500, booked 400 (1,400 - 1,000)
+    assert last["other"] == pytest.approx(-200 - (100 - 350 - 100))
+    assert last["main"] == "売上債権の増減"
+
+
+def test_step3_takes_the_lower_of_average_and_cumulative():
+    # a tiny net income in one year lifts the plain average (1000x) but not the cumulative ratio
+    s3 = X.step3(_rows([1000, 300, 300, 300, 300], ni=[1, 500, 500, 500, 500]), {"sales": {}, "receivables": {},
+                                                                                "inventories": {}})
+    assert s3["average"] > 100 and s3["cumulative"] == pytest.approx(1.10, abs=0.01)
+    assert s3["ratio"] == s3["cumulative"] and s3["rating"] == "良好" and "低い方" in s3["method"]
+    s3 = X.step3(_rows([600, 700, 800, 1000, 1000], ni=[1000] * 5), {"sales": {}, "receivables": {},
+                                                                      "inventories": {}})
+    assert s3["below_text"] == "2017-03 0.60倍、2018-03 0.70倍"
+    assert s3["without_oldest"] == 0.88 and "2017-03（0.60倍）を除いた4年の平均は 0.88倍" in s3["without_oldest_text"]
+    assert s3["recent_text"].startswith("2020-03 1.00倍、2021-03 1.00倍（いずれも 1.0倍以上）")
+
+
+def test_pattern_wording_follows_the_financing_outflow():
+    rows = _rows([1000] * 3, cfi=[-100, 50, -100], cff=[-300, -300, -300], div=[250, 100, None], buy=[None, 0, None])
+    states = [p["state"] for p in X.pattern_rows(rows)]
+    assert "主に株主還元" in states[0] and "主に借入の返済など" in states[1] and "主に返済・還元" in states[2]
+    assert "投資CF がプラス（資産の売却・回収）" in states[1] and "事業再編期の型" in states[1]
+    assert [p["rating"] for p in X.pattern_rows(rows)] == ["良好", "普通", "良好"]  # the framework's ratings stay
+
+
+def test_breakdown_request_only_when_step3_is_a_concern(tmp_path, capsys):
+    company = _company(tmp_path, cfo={y: 700 for y in LATER})  # 0.70x: 懸念, no CF-statement breakdown
+    _, out = run(tmp_path, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    filings = next(r for r in out["missing_inputs"] if r["agent"] == "collect-filings")
+    assert filings["items"] == [X.BREAKDOWN_ITEM]
+    (company / "status.md").write_text("# s\n\n## 2. 未取得項目\n\n| 項目 | 理由 | 次回 |\n|---|---|---|\n"
+                                       "| 営業CFの内訳（2年分のみ） | 有報未取得 | — |\n", encoding="utf-8")
+    _, out = run(tmp_path, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["next"] == "prepare"
+
+
+def test_zero_filled_cells_are_labelled(repo, capsys):
+    text = prepared(repo, capsys).read_text(encoding="utf-8")
+    assert "| 2026-03 | 100 | 0（記載なし） | 100 |" in text
+
+
+def test_build_rejects_new_numbers_and_approximations(repo, capsys):
+    md = prepared(repo, capsys)
+    fill(md)
+    text = md.read_text(encoding="utf-8")
+    md.write_text(text.replace("背景 relation（brief による）", "純利益の約2割が現金を伴わない"), encoding="utf-8")
+    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 1 and any("概数" in i for i in out["issues"])
+    md.write_text(text.replace("背景 relation（brief による）", "比率は 0.91倍"), encoding="utf-8")
+    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 1 and any("0.91" in i for i in out["issues"])
+    md.write_text(text.replace("背景 relation（brief による）", "比率は 1.20倍で FCF 累計 4,500"), encoding="utf-8")
+    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 0, out  # numbers quoted from the md tables pass
+
+
+def _other_result(root: Path, kind: str, verdict: str, date: str, extra: dict | None = None) -> None:
+    directory = root / "companies" / "7203_toyota" / "analysis" / kind
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / f"{date}_{kind}.md").write_text("# 完成\n", encoding="utf-8")
+    result = {"verdict": verdict, "verdict_reason": "理由", **(extra or {})}
+    (directory / f"{date}_{kind}.json").write_text(json.dumps(result, ensure_ascii=False), encoding="utf-8")
+
+
+def test_growth_and_safety_feed_section_7_and_trigger(repo, capsys):
+    _other_result(repo, "growth", "良好", "2026-10-05")
+    _other_result(repo, "safety", "良好", "2026-10-05", {"step1": {"net_cash": 3000.0}})
+    md = prepared(repo, capsys)
+    text = md.read_text(encoding="utf-8")
+    assert "（成長性 良好）" in text and "（安全性 良好）" in text
+    assert "| 安全性 ⇔ 還元・FCF | 安全性 良好（ネットキャッシュ 3,000） | 手順5 問題なし | 整合 |" in text
+    fill(md)
+    run(repo, "build", "--company", "7203", capsys=capsys)
+    _other_result(repo, "safety", "普通", "2026-10-15", {"step1": {"net_cash": 3000.0}})
+    _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-16", capsys=capsys)
+    assert out["result"] == "triggered" and out["safety"]["verdict"] == "普通"
+
+
+def test_number_check_handles_bullets_dates_and_short_values(repo, capsys):
+    md = prepared(repo, capsys)
+    fill(md)
+    text = md.read_text(encoding="utf-8")
+    # two bullets: the second one's new number must still be caught
+    md.write_text(text.replace("## 9. 前回からの変更点\n\n- 初回の分析",
+                               "## 9. 前回からの変更点\n\n- 初回の分析\n- 比率が 0.95倍に改善"), encoding="utf-8")
+    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 1 and any("0.95" in i for i in out["issues"])
+    # dates, periods and 契約 are not numbers to check; a short written value does not cut the tables
+    md.write_text(text.replace("背景 relation（brief による）", "2026年3月31日の第15期、契約十分、FY24。1,200")
+                  .replace("背景 investment（brief による）", "1"), encoding="utf-8")
+    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 0, out
+
+
+def test_main_cause_is_other_when_the_residual_dominates():
+    rows = _rows([500] * 5)
+    rows[-1] = {**rows[-1], "pretax": 1000.0, "depreciation": 10.0, "receivables_change": -20.0, "taxes_paid": 0.0}
+    last = X.cash_gap_rows(rows, [r["year"] for r in rows])[-1]
+    assert last["other"] == pytest.approx(-490) and last["main"] == X.OTHER_MAIN
+
+
+def test_relation_survives_partial_jsons():
+    rows = X.relation({"rating": "良好"}, {"rating": "良好", "ratio": 1.2}, None, {"rating": "注意"},
+                      {"verdict": "良好"}, {"verdict": "良好", "step1": {"net_cash": "n/a"}})
+    assert rows[2]["result"].startswith("判断できない") and rows[3]["result"].startswith("不整合")
+
+
+def test_brief_keeps_only_the_capex_subsection(repo, capsys):
+    yuho = repo / "companies" / "7203_toyota" / "raw" / "filings" / f"{COLLECTED}_2026-03_yuho.md"
+    yuho.write_text(yuho.read_text(encoding="utf-8") + "\n## 7. 従業員数・設備投資\n\n### 従業員\n\n| 区分 | 人数 |\n"
+                    "|---|---|\n| 合計 | 820 |\n\n### 設備投資\n\n- 本社増床 283百万円\n", encoding="utf-8")
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    brief = (repo / out["brief"]).read_text(encoding="utf-8")
+    assert "本社増床 283百万円" in brief and "| 合計 | 820 |" not in brief
 
 
 def test_borderline():

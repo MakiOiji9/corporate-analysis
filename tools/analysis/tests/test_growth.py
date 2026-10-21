@@ -12,6 +12,8 @@ REPO = ANALYSIS.parents[1]
 sys.path[:0] = [str(ANALYSIS), str(REPO / "tools" / "report"), str(REPO / "tools" / "collect" / "market"),
                 str(REPO / "tools" / "collect"), str(REPO / "tools" / "guard")]
 
+import gr_doc as D  # noqa: E402
+import gr_facts as F  # noqa: E402
 import gr_inputs as I  # noqa: E402
 import gr_metrics as X  # noqa: E402
 import gr_paths as P  # noqa: E402
@@ -475,6 +477,124 @@ def test_build_rejects_temporary_for_an_unrecovered_year(tmp_path, capsys):
     fill(md)
     code, out = run(tmp_path, "build", "--company", "7203", capsys=capsys)
     assert code == 1 and any("未回復" in i for i in out["issues"])
+
+
+# ---------- improvements: recent trend, conservative rule, progress, provenance, splits ----------
+
+def test_recent_margin_decline_is_a_quality_problem():
+    sales = [100, 110, 121, 133, 146, 176, 212]  # the last 3 years grow faster than before
+    op = [10, 12, 14, 17, 20, 23, 26]  # long-term op CAGR above sales, the last 3 years below
+    rows = _rows(sales, [10, 12, 14, 17, 20, 23, 26], op=op)
+    s1 = X.step1(rows)
+    check = X.step4(s1, rows, [], "ok")["checks"][0]
+    assert check["status"] == "問題あり" and "直近3年" in check["problem"] and len(check["gaps"]) == 2
+
+
+@pytest.mark.parametrize("op_last, verdict, moved", [(149.0, "普通", True), (160.0, "良好", False)])
+def test_close_margin_comparison_moves_good_to_fair(op_last, verdict, moved):
+    sales = [100, 110, 121, 133, 146]
+    rows = _rows(sales, [100, 110, 121, 135, 150], op=[100, 110, 121, 133.5, op_last])
+    s1 = X.step1(rows)
+    s4 = X.step4(s1, rows, [], "ok")
+    got, why, reasons = X.decide(s1, [], s4, {})
+    assert got == verdict and bool(reasons) == moved
+    if moved:
+        assert "保守的に 良好 から1段階下げた" in why
+
+
+def test_close_to_zero_growth_moves_fair_to_concern():
+    s1 = X.step1(_rows([100, 100.1, 100.2, 100.3, 100.4], [100, 101, 102, 103, 104]))
+    assert X.conservative("普通", s1, {"checks": [{}, {}, {}]}) != []
+
+
+def test_near_zero_growth_moves_good_to_fair_too():
+    s1 = X.step1(_rows([100, 100.1, 100.2, 100.3, 100.4], [100, 101, 102, 103, 104]))
+    assert any("0% に近い" in r for r in X.conservative("良好", s1, {"checks": [{}, {}, {}]}))
+
+
+def test_progress_rates_need_a_positive_base():
+    assert F._change(-5, -10) is None and F._change(5, -10) is None and round(F._change(110, 100), 1) == 10.0
+    assert F._share(-1, 100) is None and F._share(10, -50) is None and F._share(25, 100) == 25.0
+
+
+def test_progress_is_none_once_the_full_year_is_reported(tmp_path):
+    company = tmp_path / "companies" / "7203_toyota"
+    (company / "data").mkdir(parents=True)
+    (company / "data" / "tdnet_facts.csv").write_text(
+        "doc_id,document,filing_date,fiscal_year_end,context,element,value,unit\n"
+        "1,短信,2026-02-10,2026-03-31,CurrentAccumulatedQ3Duration_ConsolidatedMember_ResultMember,NetSales,90,百万円\n"
+        "2,短信,,,CurrentAccumulatedQ1Duration_ConsolidatedMember_ResultMember,NetSales,10,百万円\n",
+        encoding="utf-8")
+    c = P.Company(tmp_path, company)
+    assert F.current_progress(c, {"sales": {}})["quarter"] == 3  # the blank fiscal year row is skipped
+    assert F.current_progress(c, {"sales": {"2026-03": S.Value(120, "t", True)}}) is None
+
+
+def test_number_check_reads_full_width_digits():
+    parsed = {"declines": [], "structural": "", "mtp": "", "drivers": "１２．５％", "consistency_comment": "",
+              "report_points": "", "step3_hint": "", "step2_checks": "", "triggers": "", "changes": [], "gaps": []}
+    assert D.check_numbers(parsed, "なし") and not D.check_numbers(parsed, "12.5")
+
+
+def test_number_check_refuses_numbers_not_in_the_brief():
+    parsed = {"declines": [], "structural": "変化なし", "mtp": "—", "drivers": "受注高 18,135百万円 +27.3%",
+              "consistency_comment": "整合", "report_points": "売上 CAGR 15.1%", "step3_hint": "予想 3,700百万円",
+              "step2_checks": "採用費 848百万円", "triggers": "5% を下回れば", "changes": ["初回"], "gaps": ["なし"]}
+    issues = D.check_numbers(parsed, "受注高 18,135 (+27.3%) 売上 CAGR 15.1% 経常利益 3,700")
+    assert len(issues) == 1 and "848" in issues[0] and issues[0].startswith("7. STEP 2")
+
+
+def test_split_records_and_matching(tmp_path):
+    company = tmp_path / "companies" / "7203_toyota"
+    (company / "raw" / "ir").mkdir(parents=True)
+    (company / "status.md").write_text("| 2025-10-01 | 株式分割（1株→10株） | 1株指標は分割考慮後 |\n", encoding="utf-8")
+    (company / "raw" / "ir" / "2026-10-01_financials-historical.md").write_text(
+        "注: 2013年10月の1:100分割後の値\n", encoding="utf-8")
+    records = F.split_records(P.Company(tmp_path, company))
+    assert {(r["factor"], r["date"]) for r in records} == {(10.0, "2025-10-01"), (100.0, "2013-10")}
+    note = X.split_note({"before": "2018-03", "after": "2019-03", "factor": 10.0},
+                        F.match_split({"factor": 10.0}, records))
+    assert note["matched"] and "2025-10-01 の株式分割（1株→10株、status.md）" in note["text"]
+    assert not X.split_note({"before": "a", "after": "b", "factor": 3.0}, None)["matched"]
+
+
+# ---------- regression on the real ULS data (tests/fixtures/growth_uls, frozen 2026-10-21) ----------
+
+FIXTURE = Path(__file__).resolve().parent / "fixtures" / "growth_uls"
+
+
+@pytest.fixture
+def uls(tmp_path: Path) -> Path:
+    shutil.copytree(FIXTURE, tmp_path, dirs_exist_ok=True)
+    shutil.copytree(REPO / ".ai" / "templates" / "growth", tmp_path / ".ai" / "templates" / "growth")
+    return tmp_path
+
+
+def test_uls_regression(uls, capsys):
+    company = P.Company(uls, uls / "companies" / "3798_uls-group")
+    cands = X.candidates(company, I.gather_growth(company))
+    s1, s4 = cands["step1"], cands["step4"]
+    assert round(s1["sales"]["value"], 1) == 15.1 and round(s1["eps"]["value"], 1) == 16.2
+    assert s1["rating"] == "高成長" and [d["year"] for d in cands["declines"]] == ["2024-03"]
+    assert cands["split_notes"][0]["matched"] and cands["split_notes"][0]["record"]["date"] == "2025-10-01"
+    assert round(s4["checks"][1]["organic"], 1) == 14.9 and s4["checks"][1]["status"] == "問題なし"
+    assert s4["checks"][0]["status"] == "問題あり" and "直近3年" in s4["checks"][0]["problem"]
+    assert cands["verdict"] == "普通" and cands["step3"]["rating"] == "信頼できる"
+    progress = cands["progress"]["items"]["operating_income"]
+    assert cands["progress"]["quarter"] == 1 and round(progress["yoy"], 1) == 9.5
+    _, out = run(uls, "prepare", "--company", "3798", "--date", "2026-10-22", capsys=capsys)
+    brief = (uls / out["brief"]).read_text(encoding="utf-8")
+    assert "（減収・減益の年が無い、または2年以内に回復しているため省略）" in brief  # risks left out
+    assert "採用費" in brief and "売上債権（百万）" in brief
+
+
+def test_collect_hints_name_the_chapter_and_the_originals(uls, capsys):
+    raw = uls / "companies" / "3798_uls-group" / "raw" / "ir" / "2026-10-21_financials-historical.md"
+    raw.unlink()  # back to before the growth collection: 6・7章 missing
+    _, out = run(uls, "check", "--company", "3798", "--date", "2026-10-22", capsys=capsys)
+    hints = out["missing_inputs"][0]["hints"]
+    assert "雛形 financials-historical.md「6. 減収・減益の年の会社説明」" in hints
+    assert any(h.startswith("取得済みの原本: presentation 2024-03") for h in hints)
 
 
 def test_edited_table_cannot_change_the_verdict(repo, capsys):

@@ -48,8 +48,8 @@ MATCH_MONTHS = 6
 MISMATCH_PT = 1.0
 EXCLUDED_SECTOR = re.compile(r"銀行|保険|証券|不動産|(?<!リ)リース|信託|ノンバンク|クレジット|消費者金融")
 OWN_UNAVAILABLE = "安全性の財務時系列"  # collect-filings reports a short own history under this name
-OWN_ITEM = ("貸借: 総資産・自己資本・有利子負債（借入が無ければ 0 と明記）・現金及び現金同等物・流動資産・流動負債"
-            f"（{TREND_YEARS}年以上）、CF: 営業CF・投資CF・財務CF")
+OWN_ITEM = ("財務時系列 8章「貸借・CF の主要項目（安全性）」: 総資産・自己資本・有利子負債（借入が無ければ 0（科目なし））・"
+            f"現金及び現金同等物・流動資産・流動負債・営業CF・投資CF・財務CF（{TREND_YEARS}年以上）")
 PEER_ITEM = I.SPEC["peer_safety"].label
 CLEAR, MISS, UNKNOWN = "クリア", "未達", "不明"
 WORSE, STABLE = "悪化傾向", "悪化傾向なし"
@@ -149,15 +149,16 @@ def target_text(key: str, excluded: bool) -> str:
 def assess(key: str, own: dict | None, peer: float | None, excluded: bool, unit: str = "百万円") -> dict:
     """クリア / 未達 / 不明 for one indicator, with the reason."""
     value = own[key] if own else None
-    base = {"key": key, "name": NAMES[key], "value": value, "peer_avg": peer, "target": target_text(key, excluded)}
+    base = {"key": key, "name": NAMES[key], "value": value, "peer_avg": peer, "target": target_text(key, excluded),
+            "by_target": value is not None and not excluded and meets_target(key, value),
+            "by_peer": value is not None and peer is not None and meets_peer(key, value, peer)}
     if key == "de" and own and own["net_cash"] is not None and own["net_cash"] > 0:
         return {**base, "rating": CLEAR, "basis": f"ネットキャッシュ {money(own['net_cash'])} {unit}で実質無借金"}
     if own and own["insolvent"] and key in ("equity_ratio", "de"):
         return {**base, "rating": MISS, "basis": "自己資本がマイナス（債務超過）"}
     if value is None:
         return {**base, "rating": UNKNOWN, "basis": f"自社の{NAMES[key]}を計算できない（材料不足）"}
-    by_target = not excluded and meets_target(key, value)
-    by_peer = peer is not None and meets_peer(key, value, peer)
+    by_target, by_peer = base["by_target"], base["by_peer"]
     peer_text = f"同業平均 {fmt(key, peer)}" if peer is not None else "同業比較なし"
     if by_target or by_peer:
         how = "目安をクリア" if by_target else "目安は未達だが同業平均と同等以上（業界特性として許容）"
@@ -326,18 +327,33 @@ def _why(verdict: str, s1: dict, s2: dict, s3: dict, unknown: list[str]) -> str:
 
 # ---------- borderline / warnings ----------
 
+def _near_paths(item: dict, excluded: bool) -> list[str]:
+    """The comparisons of one indicator that could flip its rating: for a クリア, the only path that clears it
+    (none when both the 目安 and the peer average clear it); for a 未達, any path within twice its band."""
+    key, value, peer = item["key"], item["value"], item["peer_avg"]
+    target_near = not excluded and abs(value - TARGETS[key]) <= BORDER[key]
+    peer_near = peer is not None and abs(value - peer) <= BORDER[key]
+    if item["rating"] == CLEAR:
+        if item["by_target"] and item["by_peer"]:
+            return []
+        return (["target"] if item["by_target"] and target_near else []) + \
+               (["peer"] if item["by_peer"] and peer_near else [])
+    return (["target"] if target_near else []) + (["peer"] if peer_near else [])
+
+
 def borderline(s1: dict, s2: dict) -> list[str]:
-    """Comparisons within twice their band: a small change in the data could move the judgement one step."""
+    """Comparisons within twice their band that could move the judgement one step (a small change in the data
+    or the next fiscal year). A comparison the indicator clears with room, or one backed by a second path, is
+    not listed."""
     out = []
     own = s1["own"]
     for item in s1["items"]:
-        key, value, peer = item["key"], item["value"], item["peer_avg"]
-        if value is None or (key == "de" and s1["debt_free"]):
+        key, value = item["key"], item["value"]
+        if value is None or item["rating"] == UNKNOWN or (key == "de" and s1["debt_free"]):
             continue
-        if not s1["excluded"] and abs(value - TARGETS[key]) <= BORDER[key]:
-            out.append(f"手順1: {item['name']} {fmt(key, value)} が目安 {item['target']} に近い")
-        if peer is not None and abs(value - peer) <= BORDER[key]:
-            out.append(f"手順1: {item['name']} {fmt(key, value)} が同業平均 {fmt(key, peer)} に近い")
+        for path in _near_paths(item, s1["excluded"]):
+            against = f"目安 {item['target']}" if path == "target" else f"同業平均 {fmt(key, item['peer_avg'])}"
+            out.append(f"手順1: {item['name']} {fmt(key, value)} が{against}に近い（{item['rating']}）")
     if own and own["net_cash"] is not None and own["total_assets"] \
             and abs(own["net_cash"]) <= NET_CASH_BORDER * own["total_assets"]:
         out.append(f"手順1: ネットキャッシュ {money(own['net_cash'])} {s1['unit']}が総資産の"

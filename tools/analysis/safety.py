@@ -300,7 +300,9 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     text = md_path.read_text(encoding="utf-8")
     # the numbers are recomputed so edited cells in the md can't change the conclusion
     cands = X.candidates(company, I.gather_safety(company))
-    issues = D.validate(text, _template(root), cands["step3"]["years"])
+    brief = company.file(date, P.BRIEF_SUFFIX)
+    reference = brief.read_text(encoding="utf-8") if brief.exists() else ""
+    issues = D.validate(text, _template(root), cands["step3"]["years"], reference)
     if issues:
         return emit({"ok": False, "md": company.rel(md_path), "issues": issues})
     parsed = D.parse(text)

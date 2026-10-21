@@ -9,12 +9,16 @@
     (一時 / 構造 / 不明) from the brief; build refuses 一時 for a year that never recovered.
   手順3 (会社計画の信頼性): 期初予想 vs 実績 per year (営業利益, else 経常利益, else 純利益). 90% 以上の年が
     過半で、直近2年が続けて未達でない → 信頼できる / それ以外 → 割り引いて扱う. Reported for STEP 3 only.
-  手順4 (成長の質): (a) 営業利益 CAGR >= 売上 CAGR, (b) sales growth not from M&A (the acquired companies'
-    annual sales taken out of the last year), (c) EPS growth not from buybacks (EPS CAGR − 純利益 CAGR <= 2pt).
-    手順1 is judged again with the organic sales CAGR / the net income CAGR where (b) / (c) fail.
+    The newest RECENT_YEARS years' average and the years below 100% are reported beside it.
+  手順4 (成長の質): (a) 営業利益 CAGR >= 売上 CAGR over the whole window and over the newest RECENT_YEARS years,
+    (b) sales growth not from M&A (the acquired companies' annual sales taken out of the last year), (c) EPS growth
+    not from buybacks (EPS CAGR − 純利益 CAGR <= 2pt). 手順1 is judged again with the organic sales CAGR / the net
+    income CAGR where (b) / (c) fail.
   手順5 (結論, in this order): 懸念: 手順1 (or the quality-adjusted 手順1) 停滞・縮小, or a 構造 year /
     判定保留: 手順1 lacks years / 普通: a quality problem / 判定保留: a 不明 year or a quality point that
     could not be checked / 良好: 高成長 or 安定成長 with none of the above.
+    Then conservative(): a comparison that decides the verdict within BORDER_PT of its line moves 良好 → 普通 and
+    普通 → 懸念 (policy.md「迷ったら低い方」).
 """
 from __future__ import annotations
 
@@ -22,11 +26,13 @@ import json
 import re
 
 import an_common as A
+import gr_facts as F
 import gr_inputs as I
 import gr_series as S
 from ff_metrics import _months_apart
 
 MIN_YEARS, MAX_YEARS = 5, 10
+RECENT_YEARS = 3  # 手順4(a) and 手順3 also look at the newest 3 years (a long CAGR hides a recent change)
 HIGH_SALES, HIGH_EPS = 5.0, 7.0
 BORDER_PT = 1.0  # a CAGR within this of a threshold is borderline
 RECOVERY_YEARS = 2
@@ -221,28 +227,60 @@ def step3(rows: list[dict]) -> dict:
     trusted = len(hits) * 2 > len(rows) and not misses_recent
     rating = "信頼できる" if trusted else "割り引いて扱う"
     avg = sum(r["rate"] for r in rows) / len(rows)
+    recent = rows[-RECENT_YEARS:]
+    recent_avg = sum(r["rate"] for r in recent) / len(recent)
+    below = [r["year"] for r in recent if r["rate"] < 100]
+    recent_text = (f"直近{len(recent)}年の平均 {recent_avg:.0f}%、100% 未満の年 {len(below)}"
+                   + (f"（{'、'.join(below)}）" if below else ""))
     why = (f"{len(rows)}年中 {len(hits)}年で達成率 {PLAN_HIT:.0f}% 以上"
-           + ("、直近2年が続けて未達" if misses_recent else ""))
-    return {"rating": rating, "rows": rows, "hits": len(hits), "average": avg, "basis": why,
-            "sentence": f"計画達成率は平均{avg:.0f}%（{why}）で、計画は{rating}"}
+           + ("、直近2年が続けて未達" if misses_recent else "") + f"。{recent_text}")
+    lean = "。直近は未達気味（予想を上振れの前提にしない）" if recent_avg < 100 or len(below) * 2 > len(recent) else ""
+    return {"rating": rating, "rows": rows, "hits": len(hits), "average": avg, "recent_average": recent_avg,
+            "recent_below": below, "basis": why,
+            "sentence": f"計画達成率は平均{avg:.0f}%（{why}）で、計画は{rating}{lean}"}
 
 
 # ---------- 手順4 ----------
 
-def _check_margin(s1: dict) -> dict:
+def _margin_long(s1: dict) -> dict:
     sales, op = s1["sales"], s1["operating_income"]
-    name = "営業利益の伸び ≥ 売上の伸び"
     if op["value"] is not None and sales["value"] is not None:
         ok = op["value"] >= sales["value"]
-        detail = f"営業利益 CAGR {op['value']:.1f}% / 売上 CAGR {sales['value']:.1f}%"
-        return {"name": name, "status": "問題なし" if ok else "問題あり", "detail": detail,
-                "problem": "" if ok else "営業利益が売上ほど伸びていない（利益率が下がっている）"}
+        return {"status": "問題なし" if ok else "問題あり", "gap": op["value"] - sales["value"],
+                "detail": f"長期（{sales['first']}〜{sales['last']}）: 営業利益 CAGR {op['value']:.1f}% / 売上 CAGR "
+                          f"{sales['value']:.1f}%",
+                "problem": "" if ok else "営業利益が売上ほど伸びていない（長期で利益率が下がっている）"}
     if op["sign"] == "+" and op["value"] is None:
-        return {"name": name, "status": "問題なし", "detail": "営業利益が赤字から黒字化（利益率は上昇）",
+        return {"status": "問題なし", "gap": None, "detail": "長期: 営業利益が赤字から黒字化（利益率は上昇）",
                 "problem": ""}
     if op["value"] is None and op["first"] is not None and op["sign"] != "+":
-        return {"name": name, "status": "問題あり", "detail": op["reason"], "problem": "直近の営業利益が赤字"}
-    return {"name": name, "status": "不明", "detail": op.get("reason") or "営業利益の時系列が無い", "problem": ""}
+        return {"status": "問題あり", "gap": None, "detail": f"長期: {op['reason']}", "problem": "直近の営業利益が赤字"}
+    return {"status": "不明", "gap": None, "detail": op.get("reason") or "営業利益の時系列が無い", "problem": ""}
+
+
+def _margin_recent(s1: dict, rows: list[dict]) -> dict | None:
+    """The same comparison over the newest RECENT_YEARS years of the window (None when it cannot be computed:
+    the long-term comparison then stands alone)."""
+    window = [r for r in rows if r["year"] in s1.get("window", [])][-(RECENT_YEARS + 1):]
+    if len(window) < RECENT_YEARS + 1:
+        return None
+    sales, op = cagr(window, "sales"), cagr(window, "operating_income")
+    if sales["value"] is None or op["value"] is None:
+        return None
+    ok = op["value"] >= sales["value"]
+    return {"status": "問題なし" if ok else "問題あり", "gap": op["value"] - sales["value"],
+            "detail": f"直近{RECENT_YEARS}年（{window[0]['year']}〜{window[-1]['year']}）: 営業利益 CAGR "
+                      f"{op['value']:.1f}% / 売上 CAGR {sales['value']:.1f}%",
+            "problem": "" if ok else f"直近{RECENT_YEARS}年は営業利益が売上ほど伸びていない（利益率が下がっている）"}
+
+
+def _check_margin(s1: dict, rows: list[dict] = ()) -> dict:
+    name = f"営業利益の伸び ≥ 売上の伸び（長期・直近{RECENT_YEARS}年）"
+    parts = [p for p in (_margin_long(s1), _margin_recent(s1, list(rows))) if p]
+    problems = [p["problem"] for p in parts if p["status"] == "問題あり"]
+    status = "問題あり" if problems else parts[0]["status"]
+    return {"name": name, "status": status, "detail": "、".join(p["detail"] for p in parts),
+            "problem": "。".join(problems), "gaps": [p["gap"] for p in parts if p["gap"] is not None]}
 
 
 def _window_years(s1: dict) -> tuple[str | None, str | None]:
@@ -280,9 +318,9 @@ def _check_ma(s1: dict, rows: list[dict], ma: list[dict], ma_status: str) -> dic
     detail = (f"M&A あり（{'、'.join(years)}、買収先の売上 計{acquired:,.0f}百万）。除いた売上 CAGR "
               f"{'—' if organic is None else f'{organic:.1f}%'}")
     if gap is None or gap > MA_GAP_PT:
-        return {"name": name, "status": "問題あり", "detail": detail, "organic": organic,
+        return {"name": name, "status": "問題あり", "detail": detail, "organic": organic, "gap": gap,
                 "problem": "売上の伸びの一部が M&A による（除いた実質の CAGR で判断し直す）"}
-    return {"name": name, "status": "問題なし", "detail": detail, "problem": "", "organic": organic}
+    return {"name": name, "status": "問題なし", "detail": detail, "problem": "", "organic": organic, "gap": gap}
 
 
 def _check_buyback(s1: dict) -> dict:
@@ -297,13 +335,13 @@ def _check_buyback(s1: dict) -> dict:
     gap = eps["value"] - ni["value"]
     detail = f"EPS CAGR {eps['value']:.1f}% / 純利益 CAGR {ni['value']:.1f}%（差 {gap:+.1f}pt）"
     if gap > BUYBACK_GAP_PT:
-        return {"name": name, "status": "問題あり", "detail": detail,
+        return {"name": name, "status": "問題あり", "detail": detail, "gap": gap,
                 "problem": "EPS の伸びの一部が自社株買い（株式数の減少）による（純利益の CAGR で判断し直す）"}
-    return {"name": name, "status": "問題なし", "detail": detail, "problem": ""}
+    return {"name": name, "status": "問題なし", "detail": detail, "problem": "", "gap": gap}
 
 
 def step4(s1: dict, rows: list[dict], ma: list[dict], ma_status: str) -> dict:
-    checks = [_check_margin(s1), _check_ma(s1, rows, ma, ma_status), _check_buyback(s1)]
+    checks = [_check_margin(s1, rows), _check_ma(s1, rows, ma, ma_status), _check_buyback(s1)]
     problems = [c["problem"] for c in checks if c["status"] == "問題あり"]
     unknown = [c["name"] for c in checks if c["status"] == "不明"]
     quality = "問題あり" if problems else "不明" if unknown else "高い"
@@ -354,6 +392,42 @@ def judge(s1: dict, declines: list[dict], s4: dict, classes: dict[str, str] | No
         return "判定保留", f"手順1は{s1['rating']}だが、{'、'.join(parts)}がある（材料不足。普通・懸念という意味ではない）"
     pending = "（減収・減益の年の分類が一時のときの候補）" if classes is None and years else ""
     return "良好", f"手順1が{s1['rating']}、構造的な減収減益要因なし、成長の質が高い{pending}"
+
+
+def conservative(verdict: str, s1: dict, s4: dict) -> list[str]:
+    """Comparisons that decide the verdict and sit within BORDER_PT of their line: policy.md「迷ったら低い方」
+    moves the verdict one step down (良好 → 普通, 普通 → 懸念). Empty when nothing is that close."""
+    reasons = []
+    near_zero = [f"{name} CAGR {c['value']:.1f}%（停滞・縮小の基準 0% に近い）"
+                 for name, c in (("売上", s1["sales"]), ("EPS" if s1["eps_key"] == "eps" else "純利益", s1["eps"]))
+                 if c.get("value") is not None and 0 <= c["value"] < BORDER_PT]
+    if verdict == "良好":
+        reasons += near_zero
+        margin, ma, buyback = s4["checks"]
+        reasons += [f"営業利益と売上の CAGR の差 {g:+.1f}pt（{BORDER_PT:.0f}pt 未満）" for g in margin.get("gaps", [])
+                    if 0 <= g < BORDER_PT]
+        gap = buyback.get("gap")
+        if gap is not None and BUYBACK_GAP_PT - BORDER_PT < gap <= BUYBACK_GAP_PT:
+            reasons.append(f"EPS と純利益の CAGR の差 {gap:+.1f}pt（基準 {BUYBACK_GAP_PT:.0f}pt に近い）")
+        gap = ma.get("gap")
+        if gap is not None and 0 < gap <= MA_GAP_PT:
+            reasons.append(f"M&A を除いた売上 CAGR との差 {gap:.1f}pt（基準 {MA_GAP_PT:.0f}pt に近い）")
+    elif verdict == "普通":
+        reasons += near_zero
+    return reasons
+
+
+LOWER = {"良好": "普通", "普通": "懸念"}
+
+
+def decide(s1: dict, declines: list[dict], s4: dict, classes: dict[str, str] | None) -> tuple[str, str, list[str]]:
+    """judge() and then conservative(): (verdict, why, the reasons it was moved down)."""
+    verdict, why = judge(s1, declines, s4, classes)
+    reasons = conservative(verdict, s1, s4)
+    if not reasons:
+        return verdict, why, []
+    return (LOWER[verdict], f"{why}。ただし境界に近いため保守的に {verdict} から1段階下げた（{'、'.join(reasons)}）",
+            reasons)
 
 
 def borderline(s1: dict, s3: dict, s4: dict) -> list[str]:
@@ -419,14 +493,64 @@ def candidates(company, found: dict) -> dict:
     s3 = step3(plans)
     ma = S.ma_rows(found["ma"])
     s4 = step4(s1, rows, ma, found["ma"].status)
-    verdict, why = judge(s1, declines, s4, None)
+    verdict, why, downgraded = decide(s1, declines, s4, None)
+    records = F.split_records(company)
     return {"series": series, "rows": rows, "splits": splits, "odd_share_jumps": odd, "plan_dropped": dropped,
+            "split_notes": [split_note(s, F.match_split(s, records)) for s in splits],
             "step1": s1, "declines": declines, "step3": s3, "ma": ma, "step4": s4,
-            "borderline": borderline(s1, s3, s4), "verdict": verdict, "why": why}
+            "progress": F.current_progress(company, series), "receivables": receivables_text(series),
+            "borderline": borderline(s1, s3, s4), "verdict": verdict, "why": why, "downgraded": downgraded}
+
+
+def split_note(split: dict, record: dict | None) -> dict:
+    """The EPS adjustment in words, checked against the announced split."""
+    k, before, after = f"{split['factor']:g}", split["before"], split["after"]
+    if record:
+        when = record["date"] or "日付不明"
+        text = (f"EPS: {when} の株式分割（1株→{k}株、{record['source']}）に合わせ、{before} 以前の EPS を {k} で割って"
+                f"直近の基準にそろえた（出典の1株指標が {before} までは分割前、{after} からは分割考慮後の値だったため。"
+                "分割日とずれるのはこのため）")
+    else:
+        text = (f"EPS: {before}→{after} で 純利益÷EPS（株式数）が約{k}倍に変わったが、status.md・raw に該当する株式分割の"
+                f"記録が無い。分割とみなして {before} 以前を {k} で割ったが、増資・単位の読み違いの可能性がある"
+                "（brief の注記で確かめ、合わなければ 9章に書く）")
+    return {**split, "matched": record is not None, "record": record, "text": text}
+
+
+def receivables_text(series: S.Series) -> str:
+    """売上債権 over the newest RECENT_YEARS years against sales (for the writer and the cash-flow handoff)."""
+    years = [y for y in sorted(series["receivables"]) if y in series["sales"]][-(RECENT_YEARS + 1):]
+    if len(years) < 2:
+        return "—（売上債権の時系列が raw に無い）"
+    rec = [{"year": y, "r": series["receivables"][y].value, "s": series["sales"][y].value} for y in years]
+    r_cagr, s_cagr = cagr(rec, "r"), cagr(rec, "s")
+    values = "、".join(f"{x['year']} {x['r']:,.0f}" for x in rec)
+    return (f"売上債権（百万）: {values}。{years[0]}〜{years[-1]} の CAGR {fmt_cagr(r_cagr)}（同期間の売上 CAGR "
+            f"{fmt_cagr(s_cagr)}）")
+
+
+CHAPTER_OF = {OWN_ITEM: "1. 損益・貸借・CF", I.SPEC["plan"].label: "4. 会社計画（期初予想）と実績",
+              DECLINE_ITEM: "6. 減収・減益の年の会社説明", I.SPEC["ma"].label: "7. M&A・連結範囲の変更"}
+
+
+def _hints(company, item: str, cands: dict) -> list[str]:
+    """Template chapter and the originals already in sources/ that cover the item (passed to the collector)."""
+    chapter = next((c for label, c in CHAPTER_OF.items() if item.startswith(label)), None)
+    out = [f"雛形 financials-historical.md「{chapter}」"] if chapter else []
+    if item.startswith(DECLINE_ITEM):
+        years = [d["year"] for d in cands["declines"]]
+    elif item.startswith(I.SPEC["ma"].label):
+        years = [r["year"] for r in cands["rows"] if r["acquisition"]] or [r["year"] for r in cands["rows"][-1:]]
+    else:
+        years = [r["year"] for r in cands["rows"][-1:]]
+    found = F.source_hints(company, years)
+    out += [f"取得済みの原本: {h}" for h in found] or [f"取得済みの原本なし（{'、'.join(years)} の有報・短信・説明資料）"]
+    return out
 
 
 def collect_requests(company, found: dict, cands: dict) -> list[dict]:
-    """Missing required sections, plus a short own history, and the company's explanation of the decline years."""
+    """Missing required sections, plus a short own history, and the company's explanation of the decline years.
+    Each request carries hints: the template chapter and the originals already saved for the years concerned."""
     unavailable = I.unavailable_items(company)
     extra: list[tuple[str, str]] = []
     if cands["step1"]["years"] < MIN_YEARS and not any(OWN_UNAVAILABLE in u for u in unavailable):
@@ -441,7 +565,7 @@ def collect_requests(company, found: dict, cands: dict) -> list[dict]:
             out.append({"agent": agent, "items": [item]})
         elif item not in hit["items"]:
             hit["items"] = hit["items"] + [item]
-    return out
+    return [dict(r, hints=[h for item in r["items"] for h in _hints(company, item, cands)]) for r in out]
 
 
 def series_digest(cands: dict) -> str:
@@ -457,9 +581,7 @@ def series_digest(cands: dict) -> str:
 
 def warnings(cands: dict) -> list[str]:
     """Signs that the series were read wrongly or adjusted (shown in the brief and prepare's output)."""
-    out = [f"EPS: {s['before']}→{s['after']} で 純利益÷EPS（株式数）が約{s['factor']:g}倍に変わった。株式分割・併合と"
-           f"みなし、{s['before']} 以前の EPS を {s['factor']:g} で割って直近の基準にそろえた（分割の事実を brief で確かめる）"
-           for s in cands["splits"]]
+    out = [n["text"] for n in cands["split_notes"]]
     out += [f"EPS: {o['before']}→{o['after']} で 純利益÷EPS（株式数）が約{o['ratio']:.3g}倍に変わった。分割としては大きすぎる"
             "ため調整していない（表の単位の読み違いの可能性。brief で確かめる）" for o in cands["odd_share_jumps"]]
     out += [f"会社計画 {r['year']}: 達成率 {r['rate']:.0f}% は予想と実績の単位の違いとみなし、手順3から除いた"

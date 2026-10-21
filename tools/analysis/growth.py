@@ -33,6 +33,7 @@ sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "marke
 import an_common as A  # noqa: E402
 import gr_brief as B  # noqa: E402
 import gr_doc as D  # noqa: E402
+import gr_facts as F  # noqa: E402
 import gr_inputs as I  # noqa: E402
 import gr_metrics as X  # noqa: E402
 import gr_paths as P  # noqa: E402
@@ -253,7 +254,9 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
         "skipped_collect": requests if blocking == "collect" else [], "warnings": warnings,
         "fill": len(A.FILL.findall(text)), "fill_keys": FILL_KEY.findall(text),
         "candidate": {"verdict": cands["verdict"], "why": cands["why"], "step1": s1["rating"],
-                      "step3": cands["step3"]["rating"], "quality": cands["step4"]["quality"]},
+                      "step3": cands["step3"]["rating"], "quality": cands["step4"]["quality"],
+                      "downgraded": cands["downgraded"]},
+        "progress": F.progress_text(cands["progress"]),
         "cagr": {"sales": _round(s1["sales"]["value"]), "operating_income": _round(s1["operating_income"]["value"]),
                  "eps": _round(s1["eps"]["value"]), "net_income": _round(s1["net_income"]["value"])},
         "decline_years": [d["year"] for d in cands["declines"]], "borderline": cands["borderline"],
@@ -319,7 +322,10 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: d
         "valid_until": P.valid_until(date), "verdict": verdict, "verdict_reason": why,
         **_step_json(cands), "step2": {"sentence": D.step2_sentence(cands, D.classes(parsed)),
                                        "structural": parsed["structural"]},
-        "rows": rows, "splits": cands["splits"], "declines": declines, "ma": cands["ma"],
+        "rows": rows, "splits": [{k: n[k] for k in ("before", "after", "factor", "matched", "record", "text")}
+                                 for n in cands["split_notes"]],
+        "progress": cands["progress"], "receivables": cands["receivables"],
+        "declines": declines, "ma": cands["ma"],
         "borderline": cands["borderline"], "consistency": consistency,
         "consistency_comment": parsed["consistency_comment"], "mtp": parsed["mtp"], "drivers": parsed["drivers"],
         "handoff": {"report_points": parsed["report_points"], "step3_hint": parsed["step3_hint"],
@@ -335,6 +341,15 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: d
     }
 
 
+def _allowed_text(root: Path, company: P.Company, date: str, found: dict, cands: dict) -> str:
+    """The numbers the writer may quote: the brief and the skeleton as prepare would write it now."""
+    brief = company.file(date, P.BRIEF_SUFFIX)
+    outlook = A.latest_outlook(root, date)
+    skeleton = D.render_skeleton(_template(root), _values(company, date, found, outlook), cands,
+                                 _consistency(company, cands))
+    return (brief.read_text(encoding="utf-8") if brief.exists() else "") + "\n" + skeleton
+
+
 def cmd_build(args: argparse.Namespace, root: Path) -> int:
     company, error = _resolve(root, args.company)
     if error:
@@ -345,21 +360,24 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     date, md_path = target
     text = md_path.read_text(encoding="utf-8")
     # the numbers are recomputed so edited cells in the md can't change the conclusion
-    cands = X.candidates(company, I.gather_growth(company))
-    issues = D.validate(text, _template(root), cands["declines"])
+    found = I.gather_growth(company)
+    cands = X.candidates(company, found)
+    issues = D.validate(text, _template(root), cands["declines"], _allowed_text(root, company, date, found, cands))
     if issues:
         return emit({"ok": False, "md": company.rel(md_path), "issues": issues})
     parsed = D.parse(text)
     year_classes = D.classes(parsed)
-    verdict, why = D.final(cands, year_classes)
+    verdict, why, downgraded = D.final(cands, year_classes)
     consistency = _consistency(company, cands)
     atomic_write_text(md_path, D.apply_conclusion(text, cands, year_classes))
     result = result_json(company, date, text, parsed, cands, consistency, verdict, why)
+    result["downgraded"] = downgraded
     json_path = company.file(date, P.JSON_SUFFIX)
     atomic_write_text(json_path, json.dumps(result, ensure_ascii=False, indent=1) + "\n")
     return emit({
         "ok": True, "md": company.rel(md_path), "json": company.rel(json_path), "date": date,
-        "verdict": verdict, "verdict_reason": why,
+        "verdict": verdict, "verdict_reason": why, "downgraded": downgraded,
+        "progress": F.progress_text(cands["progress"]),
         "step1": cands["step1"]["sentence"], "step2": result["step2"]["sentence"],
         "step3": cands["step3"]["sentence"], "step4": cands["step4"]["sentence"],
         "consistency": [f"{c['check']}: {c['result']}" for c in consistency],

@@ -21,7 +21,8 @@ from ff_inputs import Found, raw_files
 from ff_metrics import FORECAST, _yen
 from tc_metrics import _is_self
 
-FIELDS = ("sales", "net_income", "total_assets", "equity", "equity_ratio", "roe", "extra_gain", "extra_loss")
+FIELDS = ("sales", "net_income", "total_assets", "equity", "equity_derived", "equity_ratio", "roe", "extra_gain",
+          "extra_loss")
 PERCENT_FIELDS = ("equity_ratio", "roe")
 # row / column labels per field, most specific first (the first label found in a table wins)
 LABELS = {
@@ -78,6 +79,7 @@ class Fields:
     labels: dict[str, tuple[str, ...]]
     percent: tuple[str, ...]
     skip: re.Pattern
+    amount_exclude: tuple[str, ...] = AMOUNT_EXCLUDE  # an amount label with one of these is not that field
 
 
 PROFITABILITY = Fields(LABELS, PERCENT_FIELDS, SKIP_SECTION)
@@ -142,7 +144,7 @@ def field_of(label: str, fields: Fields = PROFITABILITY) -> str | None:
     for field, labels in fields.labels.items():
         if field in fields.percent:
             continue
-        if any(_names(text, lb) for lb in labels) and not any(w in text for w in AMOUNT_EXCLUDE):
+        if any(_names(text, lb) for lb in labels) and not any(w in text for w in fields.amount_exclude):
             return field
     return None
 
@@ -177,13 +179,14 @@ def _parse(field: str, cell: str, factor: float, fields: Fields = PROFITABILITY)
 
 
 def derive_equity(values: list[tuple[str, str, float]]) -> list[tuple[str, str, float]]:
-    """The values of one table (or one CSV) plus 自己資本 = 総資産 × 自己資本比率 for the years that give both but
-    no equity. Deriving within the source keeps the source order: a derived value from the 有報 still wins over an
-    explicit one from a later, weaker source. 純資産 is never used (it includes the minority interest)."""
+    """The values of one table (or one CSV) plus equity_derived = 総資産 × 自己資本比率 for the years that give both
+    but no equity. Deriving within the source keeps its strength (a primary 有報 table gives a primary derived
+    value); with_equity then prefers an explicit 自己資本 of the same strength. 純資産 is never used (it includes
+    the minority interest)."""
     by_year: dict[str, dict[str, float]] = {}
     for field, year, value in values:
         by_year.setdefault(year, {}).setdefault(field, value)
-    derived = [("equity", year, v["total_assets"] * v["equity_ratio"] / 100) for year, v in by_year.items()
+    derived = [("equity_derived", year, v["total_assets"] * v["equity_ratio"] / 100) for year, v in by_year.items()
                if "equity" not in v and "total_assets" in v and "equity_ratio" in v]
     return values + derived
 
@@ -317,10 +320,22 @@ def merge(observations: list[tuple[str, str, Value]], names: tuple[str, ...] = F
     return {f: dict(sorted(v.items())) for f, v in series.items()}
 
 
+def _equity_rank(value: Value, derived: bool) -> int:
+    """explicit primary 0 < derived primary 1 < explicit secondary 2 < derived secondary 3."""
+    return (0 if value.primary else 2) + (1 if derived else 0)
+
+
 def with_equity(series: Series) -> Series:
-    """自己資本 where only total assets and the equity ratio are known (純資産 includes the minority interest
-    and the stock options, so it is never used as equity). Returns a new Series."""
-    equity = dict(series["equity"])
+    """自己資本 per year: the explicit value, else the one derived inside a table (equity_derived), ranked by
+    _equity_rank; else total assets × the merged equity ratio (純資産 includes the minority interest and the stock
+    options, so it is never used as equity). Returns a new Series."""
+    explicit, derived = series["equity"], series.get("equity_derived", {})
+    equity = {}
+    for year in set(explicit) | set(derived):
+        options = [(_equity_rank(v, False), v) for v in (explicit.get(year),) if v is not None]
+        options += [(_equity_rank(v, True), Value(v.value, f"総資産 × 自己資本比率（{v.source}）", v.primary))
+                    for v in (derived.get(year),) if v is not None]
+        equity[year] = min(options, key=lambda o: o[0])[1]
     for year, assets in series["total_assets"].items():
         ratio = series["equity_ratio"].get(year)
         if year not in equity and ratio is not None:
@@ -334,9 +349,9 @@ def self_series(company, peer_found: Found | None = None) -> Series:
     for kind, include in (("yuho", YUHO_SECTION), ("financials-historical", None)):
         for _, path in raw_files(company, kind):
             observations += from_raw_text(path.read_text(encoding="utf-8"), path.name, include)
-    if peer_found is not None:
+    if peer_found is not None:  # the target's own row in competitors.md is a copy of its raw: it only fills gaps
         own = [r for r in peer_rows(peer_found) if _is_self(r["name"], company)]
-        observations += [(f, r["year"], v) for r in own for f, v in r["values"].items()]
+        observations += [(f, r["year"], Value(v.value, v.source, False)) for r in own for f, v in r["values"].items()]
     return with_equity(merge(observations))
 
 

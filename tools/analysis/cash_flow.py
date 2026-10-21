@@ -37,7 +37,9 @@ import cf_inputs as I  # noqa: E402
 import cf_metrics as X  # noqa: E402
 import cf_paths as P  # noqa: E402
 import mdparse as M  # noqa: E402
+import gr_paths as GP  # noqa: E402
 import pf_paths as PP  # noqa: E402
+import sf_paths as SP  # noqa: E402
 from common import atomic_write_text, utf8_stdout  # noqa: E402
 
 TEMPLATE = A.REPO_ROOT / ".ai" / "templates" / "cash-flow" / "cash-flow.md"
@@ -64,6 +66,30 @@ def _profitability_file(company: P.Company, date: str, suffix: str) -> str:
     return company.rel(PP.Company(company.root, company.path).file(date, suffix))
 
 
+# the other STEP 2 analyses used for 7章 (none of them is run from here): name -> (paths module, label, word)
+OTHERS = {"growth": (GP, "成長性分析", "成長性"), "safety": (SP, "安全性分析", "安全性")}
+
+
+def _other(company: P.Company, name: str) -> tuple[str, dict] | None:
+    module = OTHERS[name][0]
+    return module.latest_result(module.Company(company.root, company.path))
+
+
+def _other_file(company: P.Company, name: str, date: str, suffix_attr: str) -> str:
+    module = OTHERS[name][0]
+    return company.rel(module.Company(company.root, company.path).file(date, getattr(module, suffix_attr)))
+
+
+def _newer_others(company: P.Company, since: str) -> list[str]:
+    """Finished growth / safety results built after the cash-flow analysis (they change 7章)."""
+    out = []
+    for name in OTHERS:
+        result = _other(company, name)
+        if result and result[0] > since:
+            out.append(_other_file(company, name, result[0], "JSON_SUFFIX"))
+    return out
+
+
 # ---------- state ----------
 
 def evaluate(company: P.Company, today: str) -> dict:
@@ -84,12 +110,14 @@ def evaluate(company: P.Company, today: str) -> dict:
         profitability = _profitability(company)
         if profitability and profitability[0] > date:
             state["newer_raw"].append(_profitability_file(company, profitability[0], PP.JSON_SUFFIX))
+        state["newer_raw"] += _newer_others(company, date)
     if draft and (not latest or draft[0] >= latest[0]):
         state.update(result="draft", reason=f"作成途中の {company.rel(draft[1])} がある（続きから書く）")
     elif not latest:
         state.update(result="none", reason="キャッシュフロー分析の結果が無い")
     elif state["newer_raw"]:
-        state.update(result="triggered", reason="分析後に材料・数値・収益性分析が変わった: " + ", ".join(state["newer_raw"]))
+        state.update(result="triggered",
+                     reason="分析後に材料・数値・STEP 2 の他の分析が変わった: " + ", ".join(state["newer_raw"]))
     elif today > state["latest"]["valid_until"]:
         state.update(result="expired", reason=f"有効期限 {state['latest']['valid_until']} を過ぎた")
     else:
@@ -143,7 +171,8 @@ def cmd_list(args: argparse.Namespace, root: Path) -> int:
                      "last_collected": max(raw_dates) if raw_dates else None, "cash_flow": state["result"],
                      "cash_flow_date": (state["latest"] or {}).get("date"),
                      "verdict": (state["latest"] or {}).get("verdict"),
-                     "profitability": _summary(_profitability(company))})
+                     "profitability": _summary(_profitability(company)),
+                     **{name: _summary(_other(company, name)) for name in OTHERS}})
     return emit({"ok": True, "companies": rows})
 
 
@@ -158,6 +187,7 @@ def cmd_check(args: argparse.Namespace, root: Path) -> int:
     outlook = A.latest_outlook(root, today)
     return emit({"ok": True, "company": company.dirname, "name": company.display_name(), **state,
                  "profitability": _summary(_profitability(company)),
+                 **{name: _summary(_other(company, name)) for name in OTHERS},
                  "needs_full_collect": not _has_raw(company), "missing_inputs": requests,
                  "unavailable": _unavailable(found), "outlook": outlook, "outlook_stale": outlook["stale"],
                  "next": _next_step(company, state["result"], requests)})
@@ -176,14 +206,25 @@ def _values(company: P.Company, date: str, found: dict, outlook: dict) -> dict:
     return {"company": company.display_name(), "date": date,
             "brief": company.rel(company.file(date, P.BRIEF_SUFFIX)),
             "inputs": ", ".join(inputs) or "—", "valid_until": P.valid_until(date),
-            "profitability": _profitability_header(company),
+            "profitability": _profitability_header(company), "growth_safety": _others_header(company),
             "outlook": (f"{outlook['path']}（{outlook['age_days']} 日前の週）" if outlook["path"]
                         else "—（完成済みの outlook.md なし）")}
 
 
+def _others_header(company: P.Company) -> str:
+    parts = []
+    for name, (_, label, word) in OTHERS.items():
+        result = _other(company, name)
+        parts.append(f"{_other_file(company, name, result[0], 'MD_SUFFIX')}（{word} {result[1].get('verdict', '—')}）"
+                     if result else f"—（完成済みの{label}なし）")
+    return " / ".join(parts)
+
+
 def _relation(company: P.Company, cands: dict) -> list[dict]:
-    profitability = _profitability(company)
-    return X.relation(cands["step1"], cands["step3"], profitability[1] if profitability else None)
+    results = {"profitability": _profitability(company), **{name: _other(company, name) for name in OTHERS}}
+    picked = {k: (v[1] if v else None) for k, v in results.items()}
+    return X.relation(cands["step1"], cands["step3"], picked["profitability"], cands["step5"],
+                      picked["growth"], picked["safety"])
 
 
 def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
@@ -217,7 +258,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     warnings = X.warnings(cands)
     brief_path, md_path = company.file(date, P.BRIEF_SUFFIX), company.file(date, P.MD_SUFFIX)
     brief = B.render_brief(company, date, P.valid_until(date), found, cands, previous, _profitability(company),
-                           outlook, warnings)
+                           outlook, warnings, {name: _other(company, name) for name in OTHERS})
     if not kept:
         skeleton = D.render_skeleton(_template(root), _values(company, date, found, outlook), cands,
                                      _relation(company, cands))
@@ -262,12 +303,16 @@ def _step_json(cands: dict) -> dict:
     return {
         "step1": {k: s1.get(k) for k in ("rating", "basis", "sentence", "years", "first", "last", "negative_years")},
         "step2": {k: s2.get(k) for k in ("rating", "basis", "sentence", "window", "total", "positive_years", "growth")},
-        "step3": {k: s3.get(k) for k in ("rating", "basis", "sentence", "window", "ratio", "method", "loss",
-                                         "flagged", "working_capital")},
+        "step3": {**{k: s3.get(k) for k in ("rating", "basis", "sentence", "window", "ratio", "method", "loss",
+                                            "average", "cumulative", "without_oldest", "recent_text", "below_text",
+                                            "flagged", "working_capital")},
+                  "gap_rows": [{**g, "items": None if g["items"] is None else
+                                {k: (round(v, 1) if v is not None else None) for k, v in g["items"].items()}}
+                               for g in s3["gap_rows"]]},
         "step4": {k: s4.get(k) for k in ("rating", "basis", "sentence", "rows", "counts")},
         "step5": {**{k: s5.get(k) for k in ("rating", "basis", "sentence", "total_return", "total_fcf",
                                             "over_years")},
-                  "rows": _rounded(s5["rows"], ("year", "dividends", "buybacks", "total", "fcf", "gap"))},
+                  "rows": _rounded(s5["rows"], ("year", "dividends", "buybacks", "total", "fcf", "gap", "zero_filled"))},
     }
 
 
@@ -291,6 +336,7 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: d
         "seen": I.raw_seen(company),
         "input_digests": {**I.input_digests(found), SERIES_KEY: X.series_digest(cands)},
         "profitability": _summary(_profitability(company)),
+        **{name: _summary(_other(company, name)) for name in OTHERS},
         "outlook": _header_path(text, OUTLOOK_HEADER),
         "previous": {"date": previous[0], "verdict": previous[1].get("verdict")} if previous else None,
         "md": company.rel(company.file(date, P.MD_SUFFIX)),
@@ -306,7 +352,9 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
         return emit({"ok": False, "error": "cash-flow.md が無い（先に prepare）"})
     date, md_path = target
     text = md_path.read_text(encoding="utf-8")
-    issues = D.validate(text, _template(root))
+    brief_path = company.file(date, P.BRIEF_SUFFIX)
+    brief = brief_path.read_text(encoding="utf-8") if brief_path.exists() else ""
+    issues = D.validate(text, _template(root), brief)
     if issues:
         return emit({"ok": False, "md": company.rel(md_path), "issues": issues})
     # the numbers are recomputed so edited cells in the md can't change the conclusion
