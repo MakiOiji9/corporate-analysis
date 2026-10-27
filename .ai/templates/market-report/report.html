@@ -155,7 +155,7 @@ strong { font-weight: 700; }
 .messages li:nth-child(even)::before { color: var(--us); }
 
 /* KPI tiles */
-.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 22px; }
+.kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 22px; }
 .kpi { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 12px 14px 10px 16px;
   position: relative; overflow: hidden; transition: transform .25s var(--ease), box-shadow .25s; }
 .kpi:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
@@ -220,6 +220,12 @@ td { border-bottom: 1px solid var(--rule-soft); padding: 5px 8px; vertical-align
 td.r, th.r { text-align: right; white-space: nowrap; }
 td.nw { white-space: nowrap; }
 tr.group td { color: var(--ink-3); font-weight: 700; padding-top: 12px; border-bottom-color: var(--rule); }
+/* scorecard: viewpoint ratings (追い風 / 中立 / 逆風) and their weekly history */
+td.rt { text-align: center; font-weight: 700; white-space: nowrap; }
+td.r-head { background: color-mix(in srgb, var(--bull) 20%, transparent); color: var(--bull); }
+td.r-neutral { background: color-mix(in srgb, var(--neutral) 12%, transparent); color: var(--ink-2); }
+td.r-tail { background: color-mix(in srgb, var(--bear) 20%, transparent); color: var(--bear); }
+table.heat td.rt .badge { font-size: var(--step--1); padding: 1px 6px; }
 tbody tr:hover td { background: color-mix(in srgb, var(--ink) 4%, transparent); }
 
 /* timeline */

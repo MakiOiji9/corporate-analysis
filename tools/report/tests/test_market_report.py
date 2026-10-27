@@ -188,11 +188,16 @@ def repo(tmp_path: Path) -> Path:
     return tmp_path
 
 
-def _fill(text: str) -> str:
+def _fill(text: str, judgment: str = "中立") -> str:
+    """Fill every FILL; the fixture's candidates are all 中立, so the judgement must be 中立 to build."""
     def value(m: re.Match) -> str:
         key = m.group(1)
         if key.startswith("judgment-") or key.endswith("-judgment"):
-            return "慎重"
+            return judgment
+        if key.startswith("reason-"):
+            return "—"
+        if key.startswith("change-"):
+            return "変更なし"
         if key == "key-messages":
             return "- 米10年債利回りが上昇（brief.md 1.）\n- ドル円は158円台\n- **FOMC** が 10-28"
         if key == "risks":
@@ -275,6 +280,21 @@ def test_unconfirmed_calendar_rows_leave_the_lists(repo):
     assert (eps["value"], eps["note"]) == ("—", "PDF が読み取れず未確認")
     assert (aaii["value"], aaii["note"]) == ("Bullish 32.7%", "前週 30.1%")
     assert facts["extras"][0]["note"] == ""
+
+
+def test_calendar_drivers_and_consensus_are_read_by_title():
+    new = CALENDAR_US.replace("## 5. 未確認・保留事項", "## 5. 値動きの主な材料（報道）\n\n"
+                              "| 日付 | 市場の動き | 報道された材料 | 出典 | 確度 |\n|---|---|---|---|---|\n"
+                              "| 2026-10-23 | S&P500 が週間0.5%下落 | 金利先高観（報道） | https://example.com | 二次 |\n\n"
+                              "## 6. 主要統計の市場予想と会合の織り込み\n\n"
+                              "| イベント | 日付 | 市場予想 | 前回 | 出典 | 確度 |\n|---|---|---|---|---|---|\n"
+                              "| CPI | 2026-11-10 | 前年比 3.6% | 3.7% | https://example.com | 二次 |\n\n"
+                              "## 7. 未確認・保留事項")
+    cal = F.parse_calendar(new, "us")
+    assert cal["drivers"][0]["報道された材料"] == "金利先高観（報道）" and cal["drivers"][0]["market"] == "us"
+    assert cal["consensus"][0]["市場予想"] == "前年比 3.6%"
+    old = F.parse_calendar(CALENDAR_US, "us")  # a session collected before the sections existed
+    assert old["drivers"] == [] and old["consensus"] == [] and len(old["events"]) == 4
 
 
 def test_stale_indicators_are_flagged():
@@ -383,13 +403,15 @@ def test_build_reports_issues_then_renders(repo, capsys):
     outlook.write_text(_fill(outlook.read_text(encoding="utf-8")), encoding="utf-8")
     code, out = _run(repo, "build", "--week", "2026-10-12", capsys=capsys)
     assert code == 0, out
-    assert out["judgments"] == {"japan": "慎重", "us": "慎重"}
+    assert out["judgments"] == {"japan": "中立", "us": "中立"} and out["overrides"] == []
     html = (repo / out["html"]).read_text(encoding="utf-8")
-    assert '<span class="badge j-cautious">慎重</span>' in html
+    assert '<span class="badge j-neutral">中立</span>' in html
     assert "<script>alert(1)</script>" not in html and "&lt;script&gt;alert(1)&lt;/script&gt;" in html
     assert "Executive Order &lt;b&gt;X&lt;/b&gt;" in html
     assert "<strong>FOMC</strong>" in html
-    assert html.count('<section class="slide') == 13
+    assert html.count('<section class="slide') == 14 and 'id="s-scores"' in html
+    judgment = json.loads((repo / out["judgment"]).read_text(encoding="utf-8"))
+    assert judgment["viewpoints"]["japan"]["1"]["adopted"] == "中立"
     assert "${" not in html
     assert "関税措置の発表" not in html.split('id="s-fiscal"')[1].split("</section>")[0]
     assert "PDF が読み取れず未確認" in html
@@ -443,7 +465,7 @@ def test_previous_outlook_feeds_next_week(repo, capsys):
     outlook.write_text(_fill(outlook.read_text(encoding="utf-8")), encoding="utf-8")
     assert previous_outlook(Paths(repo), "2026-10-19") == outlook
     code, out = _run(repo, "prepare", "--week", "2026-10-19", "--allow-stale", capsys=capsys)
-    assert out["previous"]["japan"] == "慎重"
+    assert out["previous"]["japan"] == "中立"
     assert "前回（2026-10-12）" in (repo / "market" / "report" / "2026-10-19_outlook.md").read_text(encoding="utf-8")
 
 
@@ -473,7 +495,7 @@ def test_validate_accepts_filled_outlook(repo, capsys):
 
 def test_validate_rejects_bad_judgment_and_words(repo, capsys):
     text, template = _filled(repo, capsys)
-    bad = text.replace("| 日本 | 慎重 |", "| 日本 | やや強気 |", 1).replace("記述", "おそらく上昇", 1)
+    bad = text.replace("| 日本 | 中立 |", "| 日本 | やや強気 |", 1).replace("記述 <script>", "おそらく上昇 <script>", 1)
     bad = bad.replace("| 関税 | 日米 | 小 |", "| 関税 | 日米 | 極大 |")
     issues = O.validate(bad, template)
     assert any("総合判断（日本）" in i for i in issues)
@@ -483,10 +505,88 @@ def test_validate_rejects_bad_judgment_and_words(repo, capsys):
 
 def test_validate_flags_price_targets_and_message_count(repo, capsys):
     text, template = _filled(repo, capsys)
-    bad = text.replace("記述", "日経平均は50,000円に到達する見込み", 1).replace("- **FOMC** が 10-28", "")
+    bad = (text.replace("記述 <script>", "日経平均は50,000円に到達する見込み <script>", 1)
+           .replace("- **FOMC** が 10-28", ""))
     issues = O.validate(bad, template)
     assert any("水準の予想" in i for i in issues)
     assert any("キーメッセージ" in i for i in issues)
+
+
+def _prepared_and_filled(repo: Path, capsys, week: str = "2026-10-12", *flags: str) -> Path:
+    _run(repo, "prepare", "--week", week, *flags, capsys=capsys)
+    outlook = repo / "market" / "report" / f"{week}_outlook.md"
+    outlook.write_text(_fill(outlook.read_text(encoding="utf-8")), encoding="utf-8")
+    return outlook
+
+
+RATES_ROW_JP = "| 日本 | ② 金利・金融政策 | 中立（合計 +0） | 中立 | — |"
+
+
+def test_build_requires_a_reason_and_a_consistent_judgment_for_overrides(repo, capsys):
+    outlook = _prepared_and_filled(repo, capsys)
+    text = outlook.read_text(encoding="utf-8")
+    assert RATES_ROW_JP in text
+    outlook.write_text(text.replace(RATES_ROW_JP, "| 日本 | ② 金利・金融政策 | 中立（合計 +0） | 逆風 | — |"),
+                       encoding="utf-8")
+    code, out = _run(repo, "build", "--week", "2026-10-12", capsys=capsys)
+    assert code == 1 and any("② 金利・金融政策" in i and "理由" in i for i in out["issues"])
+    reason = "日銀公表文 2026-09-18 が引き続き利上げとする"
+    text = text.replace(RATES_ROW_JP, f"| 日本 | ② 金利・金融政策 | 中立（合計 +0） | 逆風 | {reason} |")
+    outlook.write_text(text, encoding="utf-8")
+    code, out = _run(repo, "build", "--week", "2026-10-12", capsys=capsys)
+    assert code == 1 and any("「慎重」と同じにする" in i for i in out["issues"])
+    text = text.replace("| 日本 | 中立 |", "| 日本 | 慎重 |", 1).replace("| 短期 | 日本 | 中立 |", "| 短期 | 日本 | 慎重 |")
+    outlook.write_text(text, encoding="utf-8")
+    code, out = _run(repo, "build", "--week", "2026-10-12", capsys=capsys)
+    assert code == 0, out
+    assert out["overrides"] == ["日本 ② 金利・金融政策: 中立 → 逆風"]
+
+
+def test_build_checks_short_term_and_handoff(repo, capsys):
+    outlook = _prepared_and_filled(repo, capsys)
+    text = outlook.read_text(encoding="utf-8")
+    outlook.write_text(text.replace("| 短期 | 米国 | 中立 |", "| 短期 | 米国 | 慎重 |"), encoding="utf-8")
+    code, out = _run(repo, "build", "--week", "2026-10-12", capsys=capsys)
+    assert code == 1 and any("短期・米国" in i for i in out["issues"])
+    outlook.write_text(text.replace("| 日米 | ドル円", "| 日米 | 円相場"), encoding="utf-8")
+    code, out = _run(repo, "build", "--week", "2026-10-12", capsys=capsys)
+    assert code == 1 and any("10. 企業分析への引き継ぎ" in i for i in out["issues"])
+
+
+def test_kept_draft_from_older_numbers_is_reported(repo, capsys):
+    _run(repo, "prepare", "--week", "2026-10-12", capsys=capsys)
+    outlook = repo / "market" / "report" / "2026-10-12_outlook.md"
+    text = outlook.read_text(encoding="utf-8")
+    outlook.write_text(text.replace("| 日米 | ドル円", "| 日米 | 円相場"), encoding="utf-8")  # as if the numbers moved
+    code, out = _run(repo, "prepare", "--week", "2026-10-12", capsys=capsys)
+    assert code == 0 and out["outlook_kept"] and any("--redo" in w for w in out["warnings"])
+
+
+def test_stale_series_are_not_scored(repo):
+    facts = _facts(repo)  # the fixture's JP_CPI_YOY ends 2026-10 (fresh); age it by moving the week far ahead
+    later = F.build_facts(Paths(repo), "2027-06-07", SESSION, "2027-06-07")
+    assert any(r["stale"] for r in later["indicators"]["japan"] if r["id"] == "JP_JGB10Y")
+    sig = next(s for v in later["scores"]["japan"]["viewpoints"] for s in v["signals"]
+               if s["name"] == "10年債利回りの1か月の変化")
+    assert not sig["available"]
+    assert facts["scores"]["japan"]["viewpoints"][1]["signals"][1]["available"]
+
+
+def test_period_changes_need_a_reason_next_week(repo, capsys):
+    _prepared_and_filled(repo, capsys)
+    assert _run(repo, "build", "--week", "2026-10-12", capsys=capsys)[0] == 0
+    outlook = _prepared_and_filled(repo, capsys, "2026-10-19", "--allow-stale")
+    text = outlook.read_text(encoding="utf-8")
+    assert "| 中期 | 日本 | 中立 | 変更なし |" in text
+    assert (repo / "market" / "report" / "2026-10-19_brief.md").read_text(encoding="utf-8").count("前週 中立") >= 1
+    outlook.write_text(text.replace("| 中期 | 日本 | 中立 |", "| 中期 | 日本 | 慎重 |", 1), encoding="utf-8")
+    code, out = _run(repo, "build", "--week", "2026-10-19", capsys=capsys)
+    assert code == 1 and any("9. 中期・日本" in i for i in out["issues"])
+    outlook.write_text(text, encoding="utf-8")
+    code, out = _run(repo, "build", "--week", "2026-10-19", capsys=capsys)
+    assert code == 0, out
+    html = (repo / out["html"]).read_text(encoding="utf-8")
+    assert html.count('<td class="rt r-neutral">中立</td>') >= 16  # two weeks × four viewpoints × two markets
 
 
 def test_validate_rejects_changed_headings(repo, capsys):

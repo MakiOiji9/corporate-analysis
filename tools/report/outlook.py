@@ -9,6 +9,8 @@ from __future__ import annotations
 import re
 
 import mdparse as M
+import scoring as SC
+from brief import handoff_rows
 from validate import check_fill, check_structure, check_tables
 
 JUDGMENTS = ("強気", "中立", "慎重", "弱気")
@@ -52,6 +54,12 @@ def parse(text: str) -> dict:
     events = [{"date": r.get("日付", ""), "market": r.get("市場", ""), "event": r.get("イベント", ""),
                "point": r.get("注目点", "")}
               for r in M.table_dicts(M.section(text, "6.")) if not M.is_blank(r.get("日付"))]
+    viewpoints = [{"market": MARKET_KEY.get(r.get("市場", ""), ""), "name": r.get("観点", ""),
+                   "candidate": r.get("候補", ""), "adopted": r.get("採用", ""), "reason": r.get("変えた理由", "")}
+                  for r in M.table_dicts(M.section(text, "8.")) if r.get("市場") in MARKET_KEY]
+    changes = [{"period": r.get("期間", ""), "market": MARKET_KEY.get(r.get("市場", ""), ""),
+                "before": r.get("前回", ""), "reason": r.get("変えた理由", "")}
+               for r in M.table_dicts(M.section(text, "9.")) if r.get("市場") in MARKET_KEY]
     return {
         "judgments": judgments,
         "key_messages": M.bullets(M.section(text, "2.")),
@@ -60,6 +68,9 @@ def parse(text: str) -> dict:
         "risks": risks,
         "events": events,
         "limits": M.bullets(M.section(text, "7.")),
+        "viewpoints": viewpoints,
+        "changes": changes,
+        "handoff": M.section(text, "10."),
     }
 
 
@@ -146,3 +157,106 @@ def validate(text: str, template_text: str) -> list[str]:
         return issues  # content checks are meaningless while the skeleton is incomplete
     parsed = parse(text)
     return _check_judgments(parsed) + _check_lists(parsed) + _check_words(text)
+
+
+# ---------------------------------------------------------------- checks against facts.json
+
+UNCHANGED = "変更なし"
+MIN_REASON = 8  # characters; an override needs a real basis, not a word
+
+
+def adopted_ratings(parsed: dict) -> dict[str, dict[str, str]]:
+    """{market: {"1": rating, ...}} from section 8 (the key is the leading ①〜④ of the viewpoint)."""
+    keys = {name: key for key, name in SC.VIEWPOINTS}
+    out: dict[str, dict[str, str]] = {}
+    for v in parsed["viewpoints"]:
+        key = keys.get(v["name"])
+        if key and v["market"]:
+            out.setdefault(v["market"], {})[key] = v["adopted"]
+    return out
+
+
+def _check_viewpoints(parsed: dict, facts: dict) -> list[str]:
+    issues = []
+    label = dict(MARKETS)
+    rows = {(v["market"], v["name"]): v for v in parsed["viewpoints"]}
+    for market, name in MARKETS:
+        for want in facts.get("scores", {}).get(market, {}).get("viewpoints", []):
+            got = rows.get((market, want["name"]))
+            where = f"8. {name} {want['name']}"
+            if not got:
+                issues.append(f"{where}: 行が無い")
+                continue
+            if not got["candidate"].startswith(want["rating"]):
+                issues.append(f"{where}: 候補はスクリプトの値（{want['rating']}）から変えない")
+            if got["adopted"] not in SC.RATINGS:
+                issues.append(f"{where}: 採用は {' / '.join(SC.RATINGS)} のどれか: 「{got['adopted']}」")
+            elif got["adopted"] != want["rating"] and (M.is_blank(got["reason"]) or len(got["reason"]) < MIN_REASON):
+                issues.append(f"{where}: 候補（{want['rating']}）から変えたので、理由に根拠（指標と時点か文書名）を書く")
+            elif got["adopted"] == want["rating"] and not M.is_blank(got["reason"]):
+                issues.append(f"{where}: 候補のまま採用した行の理由は「—」")
+    for market, ratings in adopted_ratings(parsed).items():
+        if len(ratings) == len(SC.VIEWPOINTS) and all(r in SC.RATINGS for r in ratings.values()):
+            want = SC.combine(ratings)
+            got = parsed["judgments"].get(market, {}).get("judgment", "")
+            if got != want:
+                issues.append(f"1. 総合判断（{label[market]}）は 8章の採用を判断基準に当てはめた「{want}」と同じにする"
+                              f"（現在「{got}」）")
+    return issues
+
+
+def _check_periods(parsed: dict) -> list[str]:
+    issues = []
+    label = dict(MARKETS)
+    now = {(r["period"], r["market"]): r["judgment"] for r in parsed["outlook"]}
+    for market, name in MARKETS:
+        short, overall = now.get(("短期", market)), parsed["judgments"].get(market, {}).get("judgment")
+        if short and overall and short != overall:
+            issues.append(f"4. 展望（短期・{name}）の判断は 1章の総合判断（{overall}）と同じにする")
+    for c in parsed["changes"]:
+        if M.is_blank(c["before"]):
+            continue
+        current = now.get((c["period"], c["market"]), "")
+        where = f"9. {c['period']}・{label.get(c['market'], '')}"
+        if current != c["before"] and (M.is_blank(c["reason"]) or c["reason"] == UNCHANGED):
+            issues.append(f"{where}: 前回 {c['before']} → 今回 {current} に変えたので、理由を書く")
+        elif current == c["before"] and c["reason"] != UNCHANGED:
+            issues.append(f"{where}: 前回と同じ判断なので「{UNCHANGED}」と書く")
+    return issues
+
+
+def check_against_facts(parsed: dict, facts: dict) -> list[str]:
+    issues = _check_viewpoints(parsed, facts) + _check_periods(parsed)
+    if handoff_rows(facts) not in parsed["handoff"]:
+        issues.append("10. 企業分析への引き継ぎがスクリプトの記入（facts.json）と違う。手で変えない")
+    return issues
+
+
+def source_warnings(parsed: dict) -> list[str]:
+    label = dict(MARKETS)
+    cells = [f"{number} {label[m]}" for number, topic in parsed["trends"].items()
+             for m in ("japan", "us") if "brief" in (topic.get(m) or {}).get("source", "")]
+    return ([f"3. 情報源に社内ファイル（brief.md）の節番号が残っている: {'、'.join(cells)}。原典の名前で書く"]
+            if cells else [])
+
+
+def judgment_payload(parsed: dict, facts: dict) -> dict:
+    """{week}_judgment.json: the adopted ratings and judgements, read by next week's prepare."""
+    adopted = adopted_ratings(parsed)
+    viewpoints = {}
+    for market, _ in MARKETS:
+        rows = {v["key"]: v for v in facts.get("scores", {}).get(market, {}).get("viewpoints", [])}
+        reasons = {v["name"]: v["reason"] for v in parsed["viewpoints"] if v["market"] == market}
+        viewpoints[market] = {key: {"name": name, "candidate": rows.get(key, {}).get("rating"),
+                                    "total": rows.get(key, {}).get("total"),
+                                    "adopted": adopted.get(market, {}).get(key),
+                                    "reason": "" if M.is_blank(reasons.get(name)) else reasons.get(name)}
+                              for key, name in SC.VIEWPOINTS}
+    return {
+        "week": facts["week"], "session": facts["session"],
+        "judgments": {m: v["judgment"] for m, v in parsed["judgments"].items()},
+        "candidates": {m: s["candidate"] for m, s in facts.get("scores", {}).items()},
+        "viewpoints": viewpoints,
+        "periods": {p: {r["market"]: r["judgment"] for r in parsed["outlook"] if r["period"] == p}
+                    for p in PERIODS},
+    }

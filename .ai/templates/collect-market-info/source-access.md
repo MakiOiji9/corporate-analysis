@@ -10,8 +10,8 @@
 | A 国家方針 | 所信表明・施政方針演説（官邸）、骨太の方針（内閣府）、新しい資本主義 実行計画（内閣官房）、エネルギー基本計画（資源エネルギー庁） | 大統領令・布告の一覧（White House）、一般教書演説 | 監視ページ → 原本・抜粋 → LLM が要旨化（一覧は要旨化しない） | `market/policy/{market}/` |
 | B 財政・税制 | 総合経済対策、税制改正の大綱、予算のポイント（財務省）、中長期の経済財政に関する試算 | CBO Budget and Economic Outlook | 同上 | 同上 |
 | C 金融政策 | 日銀 決定会合の公表文・展望レポート（基本的見解）・主な意見・議事要旨 | FOMC 声明・議事要旨、ベージュブック | 同上 | 同上 |
-| D マクロ指標 | 金利（日銀・財務省）、ドル円、CPI・雇用・賃金・GDP・鉱工業生産・景気動向指数・機械受注（e-Stat 統計ダッシュボード）、短観（日銀）、月例経済報告（要旨化） | FRED（金利・物価・雇用・GDP・小売・生産・住宅・消費者信頼感） | API → `market/data/{market}_series.csv` → 表 | セッションの `raw/indicators-*.md` |
-| E 需給・政治 | 投資部門別売買（JPX 週次 xlsx）／ 日程・支持率・予想PER は web 検索 | VIX（FRED）、CFTC 建玉 ／ 日程・支持率・予想PER・AAII は web 検索 | スクリプト + search-calendar タスク | `raw/indicators-*.md`、`raw/calendar-*.md` |
+| D マクロ指標 | 金利（日銀・財務省）、ドル円、実質実効為替レート（日銀 FM09）、CPI・雇用・賃金・GDP・鉱工業生産・景気動向指数・機械受注（e-Stat 統計ダッシュボード）、短観（日銀）、月例経済報告（要旨化） | FRED（金利・実質金利 DFII10・ブレークイーブン T10YIE・ドル指数 DTWEXBGS・物価・雇用・GDP・小売・生産・住宅・消費者信頼感）、原油（WTI DCOILWTICO・Brent DCOILBRENTEU） | API → `market/data/{market}_series.csv` → 表 | セッションの `raw/indicators-*.md` |
+| E 需給・政治 | 投資部門別売買（JPX 週次 xlsx）／ 日程・支持率・予想PER・値動きの材料・市場予想は web 検索 | VIX・HY/IG スプレッド・NFCI（FRED）、CFTC 建玉 ／ 日程・支持率・予想PER・AAII・値動きの材料・市場予想と FedWatch は web 検索 | スクリプト + search-calendar タスク | `raw/indicators-*.md`、`raw/calendar-*.md` |
 
 ## API キー
 

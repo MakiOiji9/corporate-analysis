@@ -69,7 +69,7 @@ def test_latest_is_script_only(tmp_path):
 
 def test_report_generated_files_are_script_only(tmp_path):
     root = _repo(tmp_path)
-    for kind in ("facts.json", "brief.md", "market-report.html"):
+    for kind in ("facts.json", "brief.md", "market-report.html", "judgment.json"):
         assert "スクリプト" in decide("Write", f"market/report/2026-10-05_{kind}", root, TODAY), kind
 
 

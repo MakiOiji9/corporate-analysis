@@ -26,6 +26,7 @@ HERE = Path(__file__).resolve().parent
 sys.path[:0] = [str(HERE), str(HERE.parent / "collect" / "market"), str(HERE.parent / "collect")]  # python -I
 
 import brief as B  # noqa: E402
+import consistency as K  # noqa: E402
 import facts as F  # noqa: E402
 import outlook as O  # noqa: E402
 import slides as S  # noqa: E402
@@ -63,6 +64,7 @@ def cmd_prepare(args: argparse.Namespace, paths: Paths) -> int:
         return emit({"ok": False, "week": week, "error": blocker})
     today = dt.date.today().isoformat()
     facts = F.build_facts(paths, week, status["latest_session"], today)
+    facts["moved"] = K.check(facts, paths.report_dir)
     paths.report_dir.mkdir(parents=True, exist_ok=True)
     facts_path, brief_path = paths.report_file(week, "facts.json"), paths.report_file(week, "brief.md")
     outlook_path = paths.report_file(week, "outlook.md")
@@ -72,13 +74,23 @@ def cmd_prepare(args: argparse.Namespace, paths: Paths) -> int:
     if not kept:
         template = (paths.template_dir / "outlook.md").read_text(encoding="utf-8")
         atomic_write_text(outlook_path, B.render_outlook(paths, facts, template, today))
+    warnings = [K.label(c) for c in facts["moved"] + facts["checks"]]
+    if kept and B.handoff_rows(facts) not in outlook_path.read_text(encoding="utf-8"):
+        warnings.append("作成途中の outlook.md は前の facts.json から作られた骨組みで、8章の候補・10章が今回の数値と違う。"
+                        "このまま書くと build が通らない（作り直しはユーザーの指示で prepare --redo）")
+    prev = facts["previous"] or {}
+    if prev and not prev.get("viewpoints"):
+        warnings.append(f"前回（{prev['week']} 週）の judgment.json が無いため、観点の評価にヒステリシスを使っていない")
     return emit({
         "ok": True, "week": week, "session": status["latest_session"], "stale": not status["fresh"],
         "facts": paths.rel(facts_path), "brief": paths.rel(brief_path), "outlook": paths.rel(outlook_path),
         "outlook_kept": kept, "fill": len(FILL.findall(outlook_path.read_text(encoding="utf-8"))),
         "kpis_missing": [k["label"] for k in facts["kpis"] if k["value"] is None],
         "series_failed": len(facts["series_failed"]), "events": len(facts["events"]), "docs": len(facts["docs"]),
-        "previous": facts["previous"],
+        "previous": {k: v for k, v in (facts["previous"] or {}).items() if k in ("week", "path", "japan", "us")}
+        or None,
+        "candidates": {m: s["candidate"] for m, s in facts["scores"].items()},
+        "warnings": warnings,
     })
 
 
@@ -93,20 +105,45 @@ def cmd_build(args: argparse.Namespace, paths: Paths) -> int:
     if issues:
         return emit({"ok": False, "week": week, "outlook": paths.rel(outlook_path), "issues": issues})
     facts = json.loads(facts_path.read_text(encoding="utf-8"))
+    parsed = O.parse(text)
+    issues = O.check_against_facts(parsed, facts)
+    if issues:
+        if f"収集セッション {facts['session']}" not in text:
+            issues.append(f"outlook.md の骨組みは facts.json（{facts['session']}）より前の収集から作られた。"
+                          "8章の候補・10章が合わないのはこのため（作り直しはユーザーの指示で prepare --redo）")
+        return emit({"ok": False, "week": week, "outlook": paths.rel(outlook_path), "issues": issues})
     warnings = []
     if f"収集セッション {facts['session']}" not in text:
         warnings.append(f"outlook.md の骨組みは facts.json（{facts['session']}）より前の収集から作られた。"
                         "6章の日程・7章の欠損が古い可能性がある（作り直しはユーザーの指示で prepare --redo）")
-    parsed = O.parse(text)
-    warnings += O.length_warnings(parsed)
-    html = S.render(facts, parsed, (paths.template_dir / "report.html").read_text(encoding="utf-8"))
+    warnings += O.length_warnings(parsed) + O.source_warnings(parsed)
+    payload = O.judgment_payload(parsed, facts)
+    judgment_path = paths.report_file(week, "judgment.json")
+    atomic_write_text(judgment_path, json.dumps(payload, ensure_ascii=False, indent=1) + "\n")
+    history = judgment_history(paths, week) + [payload]
+    html = S.render(facts, parsed, (paths.template_dir / "report.html").read_text(encoding="utf-8"), history)
     html_path = paths.report_file(week, "market-report.html")
     atomic_write_text(html_path, html)
     return emit({
         "ok": True, "week": week, "html": paths.rel(html_path), "outlook": paths.rel(outlook_path),
+        "judgment": paths.rel(judgment_path),
         "judgments": {m: v["judgment"] for m, v in parsed["judgments"].items()},
-        "previous": facts.get("previous"), "kb": round(len(html.encode("utf-8")) / 1024), "warnings": warnings,
+        "candidates": payload["candidates"],
+        "overrides": [f"{F.MARKET_LABEL[m]} {v['name']}: {v['candidate']} → {v['adopted']}"
+                      for m, vs in payload["viewpoints"].items() for v in vs.values()
+                      if v["adopted"] != v["candidate"]],
+        "previous": {k: v for k, v in (facts.get("previous") or {}).items() if k in ("week", "japan", "us")} or None,
+        "kb": round(len(html.encode("utf-8")) / 1024), "warnings": warnings,
     })
+
+
+HISTORY_WEEKS = 8
+
+
+def judgment_history(paths: Paths, week: str) -> list[dict]:
+    """Earlier weeks' judgment.json (oldest first), for the scorecard heatmap."""
+    found = sorted(p for p in paths.report_dir.glob("*_judgment.json") if p.name[:10] < week)
+    return [json.loads(p.read_text(encoding="utf-8")) for p in found[-(HISTORY_WEEKS - 1):]]
 
 
 def main(argv: list[str] | None = None, root: Path = REPO_ROOT) -> int:

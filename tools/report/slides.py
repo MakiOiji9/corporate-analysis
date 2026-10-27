@@ -11,14 +11,20 @@ from html import escape
 from string import Template
 
 import charts as C
+import scoring as SC
 from brief import cell
-from facts import MARKET_LABEL
+from facts import MARKET_LABEL, period_label
 
 JUDGMENT_CLASS = {"強気": "j-bull", "中立": "j-neutral", "慎重": "j-cautious", "弱気": "j-bear"}
 MARKET_CLASS = {"japan": "japan", "us": "us", "日本": "japan", "米国": "us", "日米": "both"}
-CHART_DECIMALS = {"equity": 1, "policy_rates": 2, "yields10": 2, "usdjpy": 2, "jp_prices": 1, "us_prices": 1,
+CHART_DECIMALS = {"equity": 1, "policy_rates": 2, "yields10": 2, "usdjpy": 2, "us_real": 2, "oil_dollar": 1,
+                  "jp_prices": 1, "us_prices": 1,
                   "jp_activity": 1, "us_payrolls": 0, "jp_foreign_flow": 0, "us_cot": 0}
-HORIZONS = (("短期", "今後1か月", "次回の FOMC・日銀会合まで"), ("中期", "6か月程度", ""), ("長期", "1〜3年", ""))
+HORIZONS = (("短期", "今後4週", "会合の結果で分岐"), ("中期", "6か月程度", ""), ("長期", "1〜3年", ""))
+RATING_CLASS = {SC.HEAD: "r-head", SC.NEUTRAL: "r-neutral", SC.TAIL: "r-tail"}
+VIEWPOINT_LEGEND = "観点: " + "　".join(name for _, name in SC.VIEWPOINTS)
+DASHBOARD_DERIVED = ("JP_REAL_POLICY", "US_REAL_POLICY", "US_YIELD_GAP", "JP_YIELD_GAP",
+                     "JP_NIKKEI225_MA200", "US_SP500_MA200", "US_HY_OAS_PCTL", "JP_SLOPE")
 IMPACT_LANES = (("大", "hi", "影響 大"), ("中", "mid", "影響 中"), ("小", "lo", "影響 小"))
 POLICY_EVENT = re.compile(r"FOMC|日銀|金融政策決定会合")
 EXACT_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}")  # same rule as facts.event_span ("2026-10-14 まで" is exact)
@@ -78,7 +84,8 @@ def finding(market: str, row: dict | None) -> str:
 
 def findings(parsed: dict, number: str) -> str:
     topic = parsed["trends"].get(number, {})
-    return "".join(finding(m, topic.get(m)) for m in ("japan", "us"))
+    return ("".join(finding(m, topic.get(m)) for m in ("japan", "us"))
+            + f'<p class="small muted">{esc(VIEWPOINT_LEGEND)}</p>')
 
 
 def table(header: list[str], rows: list[list[str]], right: frozenset[int] = frozenset(),
@@ -150,11 +157,80 @@ def kpi_tile(k: dict) -> str:
             f'<div class="chips">{chips}</div>{C.sparkline(k["spark"])}</div>')
 
 
+def derived_table(facts: dict) -> str:
+    by_id = {d["id"]: d for d in facts.get("derived", [])}
+    rows = []
+    for did in DASHBOARD_DERIVED:
+        d = by_id.get(did)
+        if not d:
+            continue
+        signed = not d["id"].endswith("_PCTL")
+        value = (f'{C.fmt(d["value"], d["decimals"], signed=signed)} {esc(d["unit"])}'
+                 if d["value"] is not None else "—")
+        if d["stale"]:
+            value += '<div class="muted small">古い（評価に使わない）</div>'
+        rows.append([tag(d["market"]), esc(d["label"]), value, esc(d["date"] or "—"),
+                     f'<span class="muted small">{esc(d["formula"])}</span>'])
+    return table(["市場", "計算した指標", "値", "時点", "計算式"], rows, right=frozenset({2}), nowrap=frozenset({0, 3}))
+
+
 def dashboard(facts: dict, parsed: dict) -> str:
     tiles = "".join(kpi_tile(k) for k in facts["kpis"])
     return (f'<div class="kpis">{tiles}</div>'
             f'<p class="small muted">変化: 株価・為替は騰落率、金利・スプレッド・VIX は差（ポイント）。'
-            f'小さな線は直近1年（週末値）。</p>{figure(chart_by_id(facts, "equity"), "pal-cmp")}')
+            f'小さな線は直近1年（週末値）。</p>'
+            f'<div class="grid wide-left">{figure(chart_by_id(facts, "equity"), "pal-cmp")}'
+            f'<div class="panel">{derived_table(facts)}</div></div>')
+
+
+def rating_cell(rating: str | None) -> str:
+    if not rating:
+        return '<td class="rt muted">—</td>'
+    return f'<td class="rt {RATING_CLASS.get(rating, "")}">{esc(rating)}</td>'
+
+
+def score_table(facts: dict, parsed: dict, market: str) -> str:
+    adopted = {v["name"]: v for v in parsed.get("viewpoints", []) if v["market"] == market}
+    rows = []
+    for v in facts.get("scores", {}).get(market, {}).get("viewpoints", []):
+        got = adopted.get(v["name"], {})
+        top = "、".join(f'{s["name"]} {s["value"]}' for s in v["signals"] if s["score"] != 0) or "目立つ信号なし"
+        reason = got.get("reason", "")
+        rows.append([esc(v["name"]), f'{esc(v["rating"])}<div class="muted small">合計 {v["total"]:+d}</div>'
+                     .replace("合計 -", "合計 −"),
+                     f'<b>{esc(got.get("adopted", "—"))}</b>'
+                     + (f'<div class="muted small">{esc(reason)}</div>' if reason and reason != "—" else ""),
+                     f'<span class="small">{esc(top)}</span>'])
+    return table(["観点", "候補", "採用", "効いた信号"], rows)
+
+
+def heatmap(history: list[dict], market: str) -> str:
+    if not history:
+        return ""
+    head = "".join(f'<th class="nw">{esc(h["week"][5:])}</th>' for h in history)
+    body = ""
+    for key, name in SC.VIEWPOINTS:
+        cells = "".join(rating_cell(h.get("viewpoints", {}).get(market, {}).get(key, {}).get("adopted"))
+                        for h in history)
+        body += f"<tr><td>{esc(name)}</td>{cells}</tr>"
+    overall = "".join(f'<td class="rt">{badge(h.get("judgments", {}).get(market, ""))}</td>' for h in history)
+    body += f"<tr><td><b>総合判断</b></td>{overall}</tr>"
+    return (f'<div class="table-wrap"><table class="heat"><thead><tr><th>週</th>{head}</tr></thead>'
+            f'<tbody>{body}</tbody></table></div>')
+
+
+def scorecard(facts: dict, parsed: dict, history: list[dict]) -> str:
+    cols = []
+    for market in ("japan", "us"):
+        j = parsed["judgments"].get(market, {}).get("judgment", "")
+        candidate = facts.get("scores", {}).get(market, {}).get("candidate", "—")
+        cols.append(f'<div class="stack"><div class="panel"><h3>{tag(market)} {badge(j)}'
+                    f'<span class="muted small">　候補 {esc(candidate)}</span></h3>{score_table(facts, parsed, market)}'
+                    f'</div><div class="panel"><h3>推移（採用した評価）</h3>{heatmap(history, market)}</div></div>')
+    return (f'<div class="grid cols-2">{"".join(cols)}</div>'
+            f'<p class="small muted">候補はスクリプトが信号（−1 / 0 / +1）の合計から出した評価。合計 −{SC.THRESHOLD} 以下で'
+            f'逆風、+{SC.THRESHOLD} 以上で追い風。採用は書き手が根拠を示して変えたときだけ候補と違う。'
+            f'{esc(VIEWPOINT_LEGEND)}</p>')
 
 
 def next_meetings(facts: dict) -> str:
@@ -186,6 +262,8 @@ def curve_table(facts: dict) -> str:
 def rates(facts: dict, parsed: dict) -> str:
     return (f'<div class="grid cols-2">{figure(chart_by_id(facts, "yields10"), "pal-cmp")}'
             f'{figure(chart_by_id(facts, "usdjpy"), "pal-cmp")}</div>'
+            f'<div class="grid cols-2" style="margin-top:20px">{figure(chart_by_id(facts, "us_real"), "pal-us")}'
+            f'{figure(chart_by_id(facts, "oil_dollar"), "pal-cmp")}</div>'
             f'<div class="grid cols-2" style="margin-top:20px"><div class="panel">{curve_table(facts)}</div>'
             f'<div class="stack">{findings(parsed, "3.2")}</div></div>')
 
@@ -199,7 +277,8 @@ def indicator_table(facts: dict, market: str, groups: tuple[str, ...]) -> str:
             last_group = r["group"]
             rows.append([f'<b>{esc(r["group"])}</b>', "", "", "", ""])
         d = r["decimals"]
-        date = esc(r["date"] or "—") + ('<div class="muted small">古い</div>' if r.get("stale") else "")
+        date = (esc(period_label(r["date"], r.get("frequency", "daily")) or "—")
+                + ('<div class="muted small">古い</div>' if r.get("stale") else ""))
         rows.append([f'{esc(r["name"])} <span class="muted small">{esc(r["unit"])}</span>', date,
                      C.fmt(r["value"], d), C.fmt(r["prev"], d), C.fmt(r["year"], d)])
     return table(["指標", "時点", "値", "前回", "1年前"], rows, right=frozenset({2, 3, 4}), nowrap=frozenset({1}))
@@ -239,7 +318,8 @@ def fiscal(facts: dict, parsed: dict) -> str:
 def flows(facts: dict, parsed: dict) -> str:
     extras = [[tag(e["market"]), esc(e["indicator"]),
                esc(e["value"]) + (f'<div class="muted small">{esc(e["note"])}</div>' if e.get("note") else ""),
-               esc(e["date"]), esc(e["certainty"])] for e in facts["extras"]]
+               esc(e["date"]) + ('<div class="muted small">古い</div>' if e.get("stale") else ""),
+               esc(e["certainty"])] for e in facts["extras"]]
     flow_rows = [[esc(r["name"].replace("投資部門別売買 ", "")), esc(r["date"] or "—"), C.fmt(r["value"], 0),
                   C.fmt(r["prev"], 0)] for r in facts["indicators"]["japan"] if r["group"] == "需給"]
     return (f'<div class="grid cols-2"><div class="stack">{findings(parsed, "3.1")}</div>'
@@ -322,6 +402,7 @@ def limits(facts: dict, parsed: dict) -> str:
 
 
 SLIDES = (
+    ("s-scores", "観点別の評価", "SCORECARD", "観点別の評価と推移", None),
     ("s-messages", "キーメッセージ", "KEY MESSAGES", "今週押さえるべきこと", key_messages),
     ("s-dashboard", "マーケット", "DASHBOARD", "主要マーケットの現在地", dashboard),
     ("s-monetary", "金融政策", "MONETARY POLICY", "日銀と FRB の金融政策", monetary),
@@ -340,14 +421,16 @@ SLIDES = (
 )
 
 
-def render(facts: dict, parsed: dict, template_text: str) -> str:
+def render(facts: dict, parsed: dict, template_text: str, history: list[dict] | None = None) -> str:
+    """history: judgment.json payloads, oldest first, ending with this week (scorecard heatmap)."""
     toc = [(sid, nav) for sid, nav, *_ in SLIDES]
     sections = [cover(facts, parsed, toc)]
     for i, (sid, _nav, kicker, title, fn) in enumerate(SLIDES, start=2):
         alt = " alt" if i % 2 == 0 else ""
+        body = scorecard(facts, parsed, history or []) if fn is None else fn(facts, parsed)
         sections.append(f'<section class="slide{alt}" id="{sid}" aria-labelledby="{sid}-h"><div class="inner">'
                         f'<div class="kicker"><span class="no">{i:02d}</span>{kicker}</div>'
-                        f'<h2 id="{sid}-h">{esc(title)}</h2>{fn(facts, parsed)}</div></section>')
+                        f'<h2 id="{sid}-h">{esc(title)}</h2>{body}</div></section>')
     nav = "".join(f'<a href="#{sid}" aria-label="{esc(label)}"><span>{esc(label)}</span></a>'
                   for sid, label in [("s-cover", "表紙")] + toc)
     # values are inserted once and never re-scanned, so a "$" in the content is safe

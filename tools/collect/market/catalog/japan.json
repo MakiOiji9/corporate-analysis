@@ -26,6 +26,9 @@
     {"id": "JP_USDJPY", "name": "ドル円（東京市場 9時時点）", "group": "金利・為替", "provider": "boj",
      "params": {"db": "FM08", "code": "FXERD01"}, "frequency": "daily", "transform": "level",
      "unit": "円/ドル", "decimals": 2, "source": "日本銀行 時系列統計", "source_url": "https://www.stat-search.boj.or.jp/"},
+    {"id": "JP_REER", "name": "実質実効為替レート指数（2020年=100）", "group": "金利・為替", "provider": "boj",
+     "params": {"db": "FM09", "code": "FX180110002"}, "frequency": "monthly", "transform": "level",
+     "unit": "指数", "decimals": 2, "source": "日本銀行 時系列統計", "source_url": "https://www.stat-search.boj.or.jp/"},
     {"id": "JP_CPI_YOY", "name": "消費者物価指数 総合（2025年基準）", "group": "物価", "provider": "dashboard",
      "params": {"indicator": "0703010601010030000", "cycle": "1", "seasonal": "1"}, "frequency": "monthly",
      "transform": "level", "unit": "前年同月比 %", "decimals": 1, "source": "総務省 消費者物価指数（統計ダッシュボード）",
@@ -159,7 +162,7 @@
      "url": "https://www.boj.or.jp/rss/whatsnew.xml", "title_pattern": "^金融政策決定会合議事要旨", "max_new": 1}
   ],
   "calendar": {
-    "max_searches": 8,
+    "max_searches": 12,
     "fixed_sources": [
       {"type": "boj_mpm", "url": "https://www.boj.or.jp/mopo/mpmsche_minu/index.htm"}
     ],

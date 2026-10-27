@@ -14,7 +14,7 @@ Rules (paths relative to the repository; writes outside it are not checked):
   3. companies/*/raw/**: files collected on an earlier day are immutable.
   4. While a market session is running (market/sessions/*/.running), only the files listed
      in that session's tasks.json "allowed_files" may be written.
-  5. market/report/: facts.json, brief.md and the HTML are script-only. {week}_outlook.md is
+  5. market/report/: facts.json, brief.md, judgment.json and the HTML are script-only. {week}_outlook.md is
      created by market_report.py prepare and only edited (not overwritten); once an earlier
      week's outlook is finished (no FILL left) it is immutable.
   6. companies/*/analysis/{five-forces,three-c,moat,swot,profitability,cash-flow,growth,safety}/: {date}_brief.md and
@@ -45,7 +45,7 @@ SCRIPT_ONLY = [
         r"^market/sessions/[^/]+/raw/(indicators-[^/]+|policy-digest)\.md$",
         r"^companies/[^/]+/sources/",
         r"^companies/[^/]+/data/",
-        r"^market/report/[^/]+_(facts\.json|brief\.md|market-report\.html)$",
+        r"^market/report/[^/]+_(facts\.json|brief\.md|market-report\.html|judgment\.json)$",
         r"^companies/[^/]+/analysis/(five-forces|three-c|moat|swot|profitability|cash-flow|growth|safety)/[^/]+_(brief\.md"
         r"|five-forces\.json|three-c\.json|moat\.json|swot\.json|profitability\.json|cash-flow\.json|growth\.json"
         r"|safety\.json)$",

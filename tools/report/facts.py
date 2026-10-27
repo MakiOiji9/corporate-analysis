@@ -11,7 +11,10 @@ import json
 import re
 from dataclasses import dataclass
 
+import derived as D
 import mdparse as M
+import sanity
+import scoring
 import store
 from state import Paths, previous_outlook
 
@@ -58,6 +61,8 @@ KPIS = (
     KpiSpec("US_10Y", "米国10年債利回り", "abs"),
     KpiSpec("US_VIX", "VIX", "abs"),
     KpiSpec("US_HY_OAS", "米ハイイールド債スプレッド", "abs"),
+    KpiSpec("US_WTI", "WTI 原油", "pct"),
+    KpiSpec("US_DOLLAR", "ドル指数（広義）", "pct"),
 )
 
 CHARTS = (
@@ -68,6 +73,10 @@ CHARTS = (
     ChartSpec("yields10", "10年国債利回り（2年）", "%", "line", 2,
               (("JP_JGB10Y", "日本10年"), ("US_10Y", "米国10年"))),
     ChartSpec("usdjpy", "ドル円（1年）", "円/ドル", "line", 1, (("JP_USDJPY", "ドル円"),)),
+    ChartSpec("us_real", "米国10年 名目・実質金利とブレークイーブン（2年）", "%", "line", 2,
+              (("US_10Y", "名目10年"), ("US_REAL10Y", "実質10年（TIPS）"), ("US_BEI10", "ブレークイーブン"))),
+    ChartSpec("oil_dollar", "原油・ドル指数（1年前=100）", "指数", "line", 1,
+              (("US_WTI", "WTI"), ("US_BRENT", "Brent"), ("US_DOLLAR", "ドル指数")), rebase=True),
     ChartSpec("jp_prices", "日本の消費者物価（前年同月比、3年）", "%", "line", 3,
               (("JP_CPI_YOY", "総合"), ("JP_CPI_CORE_YOY", "生鮮食品を除く"),
                ("JP_CPI_CORECORE_YOY", "生鮮食品・エネルギーを除く"))),
@@ -189,6 +198,18 @@ def build_kpis(catalogs: dict[str, dict], series: dict[str, Points]) -> list[dic
     return kpis
 
 
+def period_label(date: str | None, frequency: str) -> str | None:
+    """How a stored date reads: monthly '2026-09-01' -> '2026-09', quarterly '2026-07-01' -> '2026Q3'
+    (the quarter's first day is the storage key, not a survey date). Others are kept."""
+    if not date or not DATE_FULL.match(date):
+        return date
+    if frequency == "monthly":
+        return date[:7]
+    if frequency == "quarterly":
+        return f"{date[:4]}Q{(int(date[5:7]) - 1) // 3 + 1}"
+    return date
+
+
 def is_stale(latest: str | None, entry: dict, week: str) -> bool:
     if not latest:
         return False
@@ -203,6 +224,7 @@ def build_indicators(catalogs: dict[str, dict], series: dict[str, Points], week:
                                   entry.get("frequency", "monthly"))
         row = {"id": sid, "group": entry.get("group", ""), "name": entry["name"], "unit": entry.get("unit", ""),
                "decimals": entry.get("decimals", 1), "source": entry.get("source", ""),
+               "frequency": entry.get("frequency", "monthly"),
                "date": None, "value": None, "prev_date": None, "prev": None, "year_date": None, "year": None,
                "stale": False}
         if summary:
@@ -289,9 +311,10 @@ def calendar_rows(text: str, number: str, market: str, kind: str) -> list[dict]:
 
 
 def split_note(value: str) -> tuple[str, str]:
-    """'—（PDF が読めず）' -> ('—', 'PDF が読めず'); a value without a trailing note is kept whole."""
+    """'—（PDF が読めず）' -> ('—', 'PDF が読めず'); a value without a trailing note is kept whole.
+    Only a single trailing （…） is a note: 'Bullish 36.9%（平均 37.5%）/ … 45.8%（平均 31.5%）' stays whole."""
     m = VALUE_NOTE.match(value.strip())
-    if not m or not m.group(1):
+    if not m or not m.group(1) or "（" in m.group(1) or "（" in m.group(2) or "）" in m.group(2):
         return value.strip(), ""
     return m.group(1), m.group(2)
 
@@ -307,7 +330,23 @@ def parse_calendar(text: str, market: str) -> dict[str, list]:
     return {"events": calendar_rows(text, "1.", market, "確定") + calendar_rows(text, "2.", market, "検索"),
             "politics": [p for p in recent if event_span(p["date"])],
             "unconfirmed": [p for p in recent if not event_span(p["date"])],
-            "extras": extras}
+            "extras": extras,
+            "drivers": titled_rows(text, "値動きの主な材料", market),
+            "consensus": titled_rows(text, "市場予想と会合の織り込み", market)}
+
+
+def titled_rows(text: str, keyword: str, market: str) -> list[dict]:
+    """Rows of a section found by its title (sections added later than the numbered ones; an older
+    calendar file without the section gives [])."""
+    found = M.section_by_title(text, keyword)
+    if not found:
+        return []
+    rows = []
+    for r in M.table_dicts(found[1]):
+        if all(M.is_blank(v) for v in list(r.values())[:3]):
+            continue
+        rows.append({"market": market, **r})
+    return rows
 
 
 def upcoming(events: list[dict], week: str, days: int = CALENDAR_DAYS) -> list[dict]:
@@ -336,11 +375,20 @@ def previous_judgments(paths: Paths, week: str) -> dict | None:
     path = previous_outlook(paths, week)
     if not path:
         return None
-    out = {"week": path.name[:10], "path": paths.rel(path)}
-    for r in M.table_dicts(M.section(path.read_text(encoding="utf-8"), "1.")):
+    text = path.read_text(encoding="utf-8")
+    out: dict = {"week": path.name[:10], "path": paths.rel(path), "periods": {}, "viewpoints": None}
+    for r in M.table_dicts(M.section(text, "1.")):
         market = LABEL_MARKET.get(r.get("市場", ""))
         if market:
             out[market] = r.get("地合い判断", "")
+    for r in M.table_dicts(M.section(text, "4.")):
+        market = LABEL_MARKET.get(r.get("市場", ""))
+        if market and r.get("期間"):
+            out["periods"].setdefault(r["期間"], {})[market] = r.get("判断", "")
+    judgment = paths.report_file(out["week"], "judgment.json")
+    if judgment.exists():  # adopted ratings feed this week's hysteresis
+        views = json.loads(judgment.read_text(encoding="utf-8")).get("viewpoints", {})
+        out["viewpoints"] = {m: {k: v["adopted"] for k, v in vs.items()} for m, vs in views.items()}
     return out
 
 
@@ -353,6 +401,7 @@ def build_facts(paths: Paths, week: str, session: str, today: str) -> dict:
     catalogs, series = load_catalogs(paths), load_series(paths)
     files = latest_files(paths)
     events, politics, unconfirmed, extras, failed, review = [], [], [], [], [], []
+    drivers, consensus = [], []
     seen_status: set[str] = set()
     for market in MARKETS:
         cal = parse_calendar(read_rel(paths, files[market].get("calendar", "")), market)
@@ -360,25 +409,47 @@ def build_facts(paths: Paths, week: str, session: str, today: str) -> dict:
         politics += cal["politics"]
         unconfirmed += cal["unconfirmed"]
         extras += cal["extras"]
+        drivers += cal["drivers"]
+        consensus += cal["consensus"]
         failed += parse_failed(read_rel(paths, files[market].get("indicators", "")), market)
         status = files[market].get("status", "")
         if status and status not in seen_status:
             seen_status.add(status)
             review += parse_review(read_rel(paths, status))
-    return {
+    for e in extras:
+        e["stale"] = not M.is_blank(e["value"]) and D.is_old(D.extra_date(e["date"]), week)
+    kpis = build_kpis(catalogs, series)
+    indicators = build_indicators(catalogs, series, week)
+    stale = frozenset(r["id"] for rows in indicators.values() for r in rows if r["stale"])
+    tseries = {sid: transformed_points(pts, catalogs.get(sid, {}).get("transform", "level"))
+               for sid, pts in series.items()}
+    derived = D.build_derived(tseries, extras, week, stale)
+    previous = previous_judgments(paths, week)
+    # a series whose latest point is older than its normal publication lag is not scored (it reads as missing)
+    scores = scoring.build_scores(
+        scoring.Inputs({k["id"]: k for k in kpis if k["id"] not in stale}, {d["id"]: d for d in derived},
+                       {sid: pts for sid, pts in tseries.items() if sid not in stale}),
+        (previous or {}).get("viewpoints"))
+    facts = {
         "week": week,
         "generated": today,
         "session": session,
         "files": files,
-        "kpis": build_kpis(catalogs, series),
-        "indicators": build_indicators(catalogs, series, week),
+        "kpis": kpis,
+        "indicators": indicators,
         "charts": build_charts(catalogs, series),
         "events": upcoming(events, week),
         "politics": sorted(politics, key=lambda p: p["date"], reverse=True),
         "unconfirmed": unconfirmed,
         "extras": extras,
+        "drivers": drivers,
+        "consensus": consensus,
         "docs": latest_docs(paths),
         "series_failed": failed,
         "review_items": review,
-        "previous": previous_judgments(paths, week),
+        "derived": derived,
+        "scores": scores,
+        "previous": previous,
     }
+    facts["checks"] = sanity.check(facts)
+    return facts
