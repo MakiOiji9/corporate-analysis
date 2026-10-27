@@ -1,0 +1,117 @@
+{
+ "session": "market/sessions/2026-10-27_weekly",
+ "collected": "2026-10-27",
+ "markets": [
+  "japan",
+  "us"
+ ],
+ "mode": "update",
+ "tasks": [
+  {
+   "type": "search-calendar",
+   "market": "japan",
+   "title": "政治・イベント日程（日本）",
+   "output": "market/sessions/2026-10-27_weekly/raw/calendar-japan.md",
+   "inputs": [],
+   "max_searches": 8,
+   "template": ".ai/templates/collect-market-info/raw/calendar.md",
+   "allowed_files": [
+    "market/sessions/2026-10-27_weekly/raw/calendar-japan.md"
+   ],
+   "id": "T01"
+  },
+  {
+   "type": "search-calendar",
+   "market": "us",
+   "title": "政治・イベント日程（米国）",
+   "output": "market/sessions/2026-10-27_weekly/raw/calendar-us.md",
+   "inputs": [],
+   "max_searches": 8,
+   "template": ".ai/templates/collect-market-info/raw/calendar.md",
+   "allowed_files": [
+    "market/sessions/2026-10-27_weekly/raw/calendar-us.md"
+   ],
+   "id": "T02"
+  }
+ ],
+ "new_docs": [
+  {
+   "doc_key": "presidential-actions-2026-10-23",
+   "watch_key": "presidential-actions",
+   "layer": "A",
+   "title": "FURTHER MODIFYING THE SCOPE OF PRODUCTS OF CANADA SUBJECT TO THE ADDITIONAL DUTIES IMPOSED TO OFFSET CANADIAN DISCRIMINATION AGAINST THE COMMERCE OF THE UNITED STATES WITH RESPECT TO MOTOR VEHICLES",
+   "published": "2026-10-23",
+   "url": "https://www.whitehouse.gov/presidential-actions/2026/10/further-modifying-the-scope-of-products-of-canada-subject-to-the-additional-duties-imposed-to-offset-canadian-discrimination-against-the-commerce-of-the-united-states-with-respect-to-motor-vehicles/",
+   "page_url": "",
+   "raw_path": "market/policy/us/raw/2026-10-27_presidential-actions.md",
+   "collected": "2026-10-27",
+   "status": "listed",
+   "market": "us"
+  },
+  {
+   "doc_key": "presidential-actions-2026-10-22",
+   "watch_key": "presidential-actions",
+   "layer": "A",
+   "title": "National Seafood Month, 2026",
+   "published": "2026-10-22",
+   "url": "https://www.whitehouse.gov/presidential-actions/2026/10/national-seafood-month-2026/",
+   "page_url": "",
+   "raw_path": "market/policy/us/raw/2026-10-27_presidential-actions.md",
+   "collected": "2026-10-27",
+   "status": "listed",
+   "market": "us"
+  },
+  {
+   "doc_key": "presidential-actions-2026-10-22-2",
+   "watch_key": "presidential-actions",
+   "layer": "A",
+   "title": "DECREASING HOUSING COSTS FOR THE AMERICAN PEOPLE",
+   "published": "2026-10-22",
+   "url": "https://www.whitehouse.gov/presidential-actions/2026/10/decreasing-housing-costs-for-the-american-people/",
+   "page_url": "",
+   "raw_path": "market/policy/us/raw/2026-10-27_presidential-actions.md",
+   "collected": "2026-10-27",
+   "status": "listed",
+   "market": "us"
+  },
+  {
+   "doc_key": "presidential-actions-2026-10-22-3",
+   "watch_key": "presidential-actions",
+   "layer": "A",
+   "title": "Presidential Determination Pursuant to Section 303 of the Defense Production Act of 1950, as Amended, on Domestic Petroleum Production, Refining, and Logistics Capacity",
+   "published": "2026-10-22",
+   "url": "https://www.whitehouse.gov/presidential-actions/2026/10/presidential-determination-pursuant-to-section-303-of-the-defense-production-act-of-1950-as-amended-on-domestic-petroleum-production-refining-and-logistics-capacity-c139/",
+   "page_url": "",
+   "raw_path": "market/policy/us/raw/2026-10-27_presidential-actions.md",
+   "collected": "2026-10-27",
+   "status": "listed",
+   "market": "us"
+  },
+  {
+   "doc_key": "presidential-actions-2026-10-22-4",
+   "watch_key": "presidential-actions",
+   "layer": "A",
+   "title": "Adjusting Imports of Wind Turbines and Their Parts and Components into the United States",
+   "published": "2026-10-22",
+   "url": "https://www.whitehouse.gov/presidential-actions/2026/10/adjusting-imports-of-wind-turbines-and-their-parts-and-components-into-the-united-states/",
+   "page_url": "",
+   "raw_path": "market/policy/us/raw/2026-10-27_presidential-actions.md",
+   "collected": "2026-10-27",
+   "status": "listed",
+   "market": "us"
+  },
+  {
+   "doc_key": "presidential-actions-2026-10-19",
+   "watch_key": "presidential-actions",
+   "layer": "A",
+   "title": "Advancing Women’s Health to Improve Outcomes in All Phases of Life",
+   "published": "2026-10-19",
+   "url": "https://www.whitehouse.gov/presidential-actions/2026/10/advancing-womens-health-to-improve-outcomes-in-all-phases-of-life/",
+   "page_url": "",
+   "raw_path": "market/policy/us/raw/2026-10-27_presidential-actions.md",
+   "collected": "2026-10-27",
+   "status": "listed",
+   "market": "us"
+  }
+ ]
+}
