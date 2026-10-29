@@ -11,6 +11,7 @@ from html import escape
 from string import Template
 
 import charts as C
+import glossary as G
 import scoring as SC
 from brief import cell
 from facts import MARKET_LABEL, period_label
@@ -22,6 +23,7 @@ CHART_DECIMALS = {"equity": 1, "policy_rates": 2, "yields10": 2, "usdjpy": 2, "u
                   "jp_activity": 1, "us_payrolls": 0, "jp_foreign_flow": 0, "us_cot": 0}
 HORIZONS = (("短期", "今後4週", "会合の結果で分岐"), ("中期", "6か月程度", ""), ("長期", "1〜3年", ""))
 RATING_CLASS = {SC.HEAD: "r-head", SC.NEUTRAL: "r-neutral", SC.TAIL: "r-tail"}
+PLAIN_EVENTS = 3
 VIEWPOINT_LEGEND = "観点: " + "　".join(name for _, name in SC.VIEWPOINTS)
 DASHBOARD_DERIVED = ("JP_REAL_POLICY", "US_REAL_POLICY", "US_YIELD_GAP", "JP_YIELD_GAP",
                      "JP_NIKKEI225_MA200", "US_SP500_MA200", "US_HY_OAS_PCTL", "JP_SLOPE")
@@ -183,6 +185,65 @@ def dashboard(facts: dict, parsed: dict) -> str:
             f'<div class="panel">{derived_table(facts)}</div></div>')
 
 
+def plain(facts: dict, parsed: dict) -> str:
+    """For beginners: the judgement in everyday words, the 3-line summary and what to watch."""
+    cards = []
+    for market in ("japan", "us"):
+        j = parsed["judgments"].get(market, {}).get("judgment", "")
+        cards.append(f'<div class="panel"><h3>{tag(market)} {badge(j)}</h3>'
+                     f'<p class="small">{esc(G.JUDGEMENTS.get(j, ""))}</p></div>')
+    summary = "".join(f"<li>{esc(x)}</li>" for x in parsed.get("plain_summary", []))
+    caution = "".join(f"<li>{esc(x)}</li>" for x in parsed.get("plain_caution", []))
+    upcoming = [e for e in facts["events"] if EXACT_DATE.match(e["date"])][:PLAIN_EVENTS]
+    events = "".join(f'<li><b>{esc(e["date"][5:])}</b> {tag(e["market"])} {esc(e["event"])}</li>' for e in upcoming)
+    return (f'<div class="grid cols-2">{"".join(cards)}</div>'
+            f'<div class="grid cols-2" style="margin-top:20px">'
+            f'<div class="panel"><h3>今週を3行で</h3><ul class="plain">{summary}</ul></div>'
+            f'<div class="stack"><div class="panel"><h3>気をつけること</h3><ul class="plain">{caution}</ul></div>'
+            f'<div class="panel"><h3>近く予定されている出来事</h3><ul class="plain small">{events}</ul></div></div></div>'
+            f'<p class="small muted">判断は株式市場全体の地合いの目安で、個別の銘柄の売買を勧めるものではありません。'
+            f'用語は最後のスライドの用語集を参照。</p>')
+
+
+def sector_bars(sec: dict) -> str:
+    rows = sorted((r for r in sec["rows"] if r["rel1"] is not None), key=lambda r: r["rel1"], reverse=True)
+    if not rows:
+        return '<p class="muted">業種のデータなし</p>'
+    scale = max(abs(r["rel1"]) for r in rows) or 1
+    body = []
+    for r in rows:
+        width = abs(r["rel1"]) / scale * 50  # half of the track per side
+        side = "pos" if r["rel1"] >= 0 else "neg"
+        body.append(f'<tr><td class="nw">{esc(r["name"])}</td><td class="hbar-cell"><div class="hbar">'
+                    f'<i class="{side}" style="width:{width:.1f}%"></i></div></td>'
+                    f'<td class="r">{C.fmt(r["rel1"], 1, signed=True)}</td>'
+                    f'<td class="r muted">{C.fmt(r["m1"], 1, signed=True)}</td></tr>')
+    return ('<div class="table-wrap"><table class="sectors"><thead><tr><th>業種</th><th>指数との差（1か月）</th>'
+            f'<th class="r">差</th><th class="r">騰落率</th></tr></thead><tbody>{"".join(body)}</tbody></table></div>')
+
+
+def sectors_slide(facts: dict, parsed: dict) -> str:
+    cols = []
+    for market in ("japan", "us"):
+        sec = (facts.get("sectors") or {}).get(market)
+        if not sec:
+            cols.append(f'<div class="panel">{tag(market)}<p class="muted">業種のデータなし</p></div>')
+            continue
+        cols.append(f'<div class="panel"><h3>{tag(market)} {esc(sec["index"])} 1か月 '
+                    f'{C.fmt(sec["index_m1"], 1, signed=True)}%</h3>{sector_bars(sec)}</div>')
+    return (f'<div class="grid cols-2">{"".join(cols)}</div>'
+            f'<p class="small muted">業種 ETF（米国 Select Sector SPDR、日本 NEXT FUNDS TOPIX-17）の終値から計算'
+            f'（Yahoo Finance）。棒は同じ期間の指数との差。業種が動いた理由は含まない。</p>')
+
+
+def glossary_panel(facts: dict, parsed: dict, text: str) -> str:
+    terms = G.terms_in(text)
+    if not terms:
+        return ""
+    items = "".join(f"<dt>{esc(t)}</dt><dd>{esc(d)}</dd>" for t, d in terms)
+    return f'<div class="panel" style="margin-top:20px"><h3>用語集</h3><dl class="glossary">{items}</dl></div>'
+
+
 def rating_cell(rating: str | None) -> str:
     if not rating:
         return '<td class="rt muted">—</td>'
@@ -196,8 +257,9 @@ def score_table(facts: dict, parsed: dict, market: str) -> str:
         got = adopted.get(v["name"], {})
         top = "、".join(f'{s["name"]} {s["value"]}' for s in v["signals"] if s["score"] != 0) or "目立つ信号なし"
         reason = got.get("reason", "")
-        rows.append([esc(v["name"]), f'{esc(v["rating"])}<div class="muted small">合計 {v["total"]:+d}</div>'
-                     .replace("合計 -", "合計 −"),
+        note = f'<div class="muted small">{esc(v["adjusted"])}</div>' if v.get("adjusted") else ""
+        rows.append([esc(v["name"]), f'{esc(v["rating"])}<div class="muted small">合計 '
+                     f'{esc(SC.total_text(v["total"]))}</div>{note}',
                      f'<b>{esc(got.get("adopted", "—"))}</b>'
                      + (f'<div class="muted small">{esc(reason)}</div>' if reason and reason != "—" else ""),
                      f'<span class="small">{esc(top)}</span>'])
@@ -402,9 +464,10 @@ def limits(facts: dict, parsed: dict) -> str:
 
 
 SLIDES = (
-    ("s-scores", "観点別の評価", "SCORECARD", "観点別の評価と推移", None),
+    ("s-plain", "今週のポイント", "FOR BEGINNERS", "今週のポイント（はじめての方へ）", plain),
     ("s-messages", "キーメッセージ", "KEY MESSAGES", "今週押さえるべきこと", key_messages),
     ("s-dashboard", "マーケット", "DASHBOARD", "主要マーケットの現在地", dashboard),
+    ("s-sectors", "業種", "SECTORS", "業種の動き（指数との差）", sectors_slide),
     ("s-monetary", "金融政策", "MONETARY POLICY", "日銀と FRB の金融政策", monetary),
     ("s-rates", "金利・為替", "RATES & FX", "金利と為替", rates),
     ("s-japan", "日本マクロ", "JAPAN MACRO", "日本経済：物価・雇用・景気",
@@ -416,18 +479,23 @@ SLIDES = (
     ("s-flows", "需給", "FLOWS & VALUATION", "需給・バリュエーション", flows),
     ("s-calendar", "日程", "CALENDAR", "今後12週のイベント", calendar),
     ("s-outlook", "展望", "OUTLOOK", "短期・中期・長期の展望", horizons),
+    ("s-scores", "観点別の評価", "SCORECARD", "観点別の評価と推移", None),
     ("s-risks", "リスク", "RISK MAP", "リスクマップ", risk_map),
     ("s-limits", "データと出典", "DATA & SOURCES", "データの限界と出典", limits),
 )
 
 
-def render(facts: dict, parsed: dict, template_text: str, history: list[dict] | None = None) -> str:
-    """history: judgment.json payloads, oldest first, ending with this week (scorecard heatmap)."""
+def render(facts: dict, parsed: dict, template_text: str, history: list[dict] | None = None,
+           outlook_text: str = "") -> str:
+    """history: judgment.json payloads, oldest first, ending with this week (scorecard heatmap).
+    outlook_text: the filled outlook.md, to pick the glossary terms this week's text uses."""
     toc = [(sid, nav) for sid, nav, *_ in SLIDES]
     sections = [cover(facts, parsed, toc)]
     for i, (sid, _nav, kicker, title, fn) in enumerate(SLIDES, start=2):
         alt = " alt" if i % 2 == 0 else ""
         body = scorecard(facts, parsed, history or []) if fn is None else fn(facts, parsed)
+        if sid == "s-limits":
+            body += glossary_panel(facts, parsed, outlook_text)
         sections.append(f'<section class="slide{alt}" id="{sid}" aria-labelledby="{sid}-h"><div class="inner">'
                         f'<div class="kicker"><span class="no">{i:02d}</span>{kicker}</div>'
                         f'<h2 id="{sid}-h">{esc(title)}</h2>{body}</div></section>')

@@ -90,7 +90,18 @@
     {"id": "US_COT_ES_NET", "name": "CFTC 建玉 E-mini S&P500 非商業部門ネット", "group": "需給", "provider": "cftc",
      "params": {"contract": "13874A"}, "frequency": "weekly", "transform": "level",
      "unit": "枚（プラスはネットロング）", "decimals": 0, "source": "CFTC Commitments of Traders",
-     "source_url": "https://publicreporting.cftc.gov/"}
+     "source_url": "https://publicreporting.cftc.gov/"},
+    {"id": "US_SEC_XLE", "name": "エネルギー", "group": "業種", "display": "sectors", "provider": "yahoo", "params": {"symbol": "XLE"}, "frequency": "daily", "transform": "level", "unit": "ドル", "decimals": 2, "source": "Select Sector SPDR ETF（Yahoo Finance）", "source_url": "https://finance.yahoo.com/quote/XLE"},
+    {"id": "US_SEC_XLF", "name": "金融", "group": "業種", "display": "sectors", "provider": "yahoo", "params": {"symbol": "XLF"}, "frequency": "daily", "transform": "level", "unit": "ドル", "decimals": 2, "source": "Select Sector SPDR ETF（Yahoo Finance）", "source_url": "https://finance.yahoo.com/quote/XLF"},
+    {"id": "US_SEC_XLK", "name": "情報技術", "group": "業種", "display": "sectors", "provider": "yahoo", "params": {"symbol": "XLK"}, "frequency": "daily", "transform": "level", "unit": "ドル", "decimals": 2, "source": "Select Sector SPDR ETF（Yahoo Finance）", "source_url": "https://finance.yahoo.com/quote/XLK"},
+    {"id": "US_SEC_XLV", "name": "ヘルスケア", "group": "業種", "display": "sectors", "provider": "yahoo", "params": {"symbol": "XLV"}, "frequency": "daily", "transform": "level", "unit": "ドル", "decimals": 2, "source": "Select Sector SPDR ETF（Yahoo Finance）", "source_url": "https://finance.yahoo.com/quote/XLV"},
+    {"id": "US_SEC_XLI", "name": "資本財", "group": "業種", "display": "sectors", "provider": "yahoo", "params": {"symbol": "XLI"}, "frequency": "daily", "transform": "level", "unit": "ドル", "decimals": 2, "source": "Select Sector SPDR ETF（Yahoo Finance）", "source_url": "https://finance.yahoo.com/quote/XLI"},
+    {"id": "US_SEC_XLY", "name": "一般消費財", "group": "業種", "display": "sectors", "provider": "yahoo", "params": {"symbol": "XLY"}, "frequency": "daily", "transform": "level", "unit": "ドル", "decimals": 2, "source": "Select Sector SPDR ETF（Yahoo Finance）", "source_url": "https://finance.yahoo.com/quote/XLY"},
+    {"id": "US_SEC_XLP", "name": "生活必需品", "group": "業種", "display": "sectors", "provider": "yahoo", "params": {"symbol": "XLP"}, "frequency": "daily", "transform": "level", "unit": "ドル", "decimals": 2, "source": "Select Sector SPDR ETF（Yahoo Finance）", "source_url": "https://finance.yahoo.com/quote/XLP"},
+    {"id": "US_SEC_XLU", "name": "公益", "group": "業種", "display": "sectors", "provider": "yahoo", "params": {"symbol": "XLU"}, "frequency": "daily", "transform": "level", "unit": "ドル", "decimals": 2, "source": "Select Sector SPDR ETF（Yahoo Finance）", "source_url": "https://finance.yahoo.com/quote/XLU"},
+    {"id": "US_SEC_XLB", "name": "素材", "group": "業種", "display": "sectors", "provider": "yahoo", "params": {"symbol": "XLB"}, "frequency": "daily", "transform": "level", "unit": "ドル", "decimals": 2, "source": "Select Sector SPDR ETF（Yahoo Finance）", "source_url": "https://finance.yahoo.com/quote/XLB"},
+    {"id": "US_SEC_XLRE", "name": "不動産", "group": "業種", "display": "sectors", "provider": "yahoo", "params": {"symbol": "XLRE"}, "frequency": "daily", "transform": "level", "unit": "ドル", "decimals": 2, "source": "Select Sector SPDR ETF（Yahoo Finance）", "source_url": "https://finance.yahoo.com/quote/XLRE"},
+    {"id": "US_SEC_XLC", "name": "コミュニケーション", "group": "業種", "display": "sectors", "provider": "yahoo", "params": {"symbol": "XLC"}, "frequency": "daily", "transform": "level", "unit": "ドル", "decimals": 2, "source": "Select Sector SPDR ETF（Yahoo Finance）", "source_url": "https://finance.yahoo.com/quote/XLC"}
   ],
   "watch": [
     {"key": "presidential-actions", "layer": "A", "kind": "list", "type": "rss",

@@ -77,9 +77,10 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 |---|---|---|
 | `market_report.py check [--week YYYY-MM-DD]` | 今週の収集があるか（LATEST.md の最新セッションの日付 ≥ 週の月曜）、収集が実行中か、この週の outlook.md の状態 | 1行の JSON |
 | `market_report.py prepare [--week …] [--redo] [--allow-stale]` | 数値・チャート系列・日程・文書の要点を集め、計算した指標・観点ごとの評価の候補・前週との食い違い・データの点検とともに、執筆の材料と outlook.md の骨組み（FILL 欄）を作る。作成途中の outlook.md は残す | `{週}_facts.json`・`{週}_brief.md`・`{週}_outlook.md` |
-| `market_report.py build [--week …]` | outlook.md を検証（構造・FILL・判断の語・禁止表現に加え、候補を変えた理由、採用と総合判断の一致、前回からの変更理由、引き継ぎの表が facts.json と同じか）し、単一 HTML と判断の記録を出力 | `{週}_market-report.html`・`{週}_judgment.json` |
+| `market_report.py build [--week …]` | outlook.md を検証（構造・FILL・判断の語・禁止表現に加え、候補を変えた理由、採用と総合判断の一致、前回からの変更理由、引き継ぎと業種の表が facts.json と同じか、やさしい要約の個数と専門用語）し、単一 HTML（16枚）と判断の記録を出力 | `{週}_market-report.html`・`{週}_judgment.json` |
+| `market_report.py backtest [--years 10]` | 過去の毎週金曜を、その日までに公表済みのデータだけで評価し直し、候補・観点・信号ごとにその後の指数の騰落率を集計する | `market/report/backtest/{日付}_backtest.md`・`.json` |
 
-モジュール: `state.py`（週・鮮度）、`facts.py`（数値・系列・日程の集計。`collect/market/store.py` を再利用）、`derived.py`（実質金利・長短金利差・移動平均からの乖離・HY スプレッドの位置・益利回りと10年債の差）、`scoring.py`（観点ごとの信号・しきい値・ヒステリシス・総合判断の表）、`consistency.py`（前週の facts.json との日程の食い違い）、`sanity.py`（データの妥当性の点検）、`brief.py`（材料と骨組み）、`outlook.py`（検証。`collect/market/validate.py` を再利用）、`charts.py`（インライン SVG）、`slides.py`（HTML）。テンプレートは `.ai/templates/market-report/`。
+モジュール: `state.py`（週・鮮度）、`facts.py`（数値・系列・日程の集計。`collect/market/store.py` を再利用）、`derived.py`（実質金利・長短金利差・移動平均からの乖離・HY スプレッドの位置・益利回りと10年債の差）、`scoring.py`（観点ごとの信号・しきい値・ヒステリシス・総合判断の表）、`consistency.py`（前週の facts.json との日程の食い違い）、`sanity.py`（データの妥当性の点検）、`sectors.py`（業種 ETF の騰落と指数との差）、`glossary.py`（初心者向けの用語集と判断の語の説明）、`backtest.py`（過去データでの検証）、`brief.py`（材料と骨組み）、`outlook.py`（検証。`collect/market/validate.py` を再利用）、`charts.py`（インライン SVG）、`slides.py`（HTML）。テンプレートは `.ai/templates/market-report/`。
 
 ### 企業分析用（`tools/analysis/`）
 

@@ -11,6 +11,7 @@ Providers (catalog "provider" field):
   fred       FRED API（FRED_API_KEY 必須）             params: id
   cftc       CFTC COT (Socrata, キー不要)              params: contract
   jpx_flows  JPX 投資部門別売買状況 週次 xlsx（キー不要） params: investor
+  yahoo      Yahoo Finance chart API（非公式・キー不要。業種 ETF の日次終値） params: symbol
 """
 from __future__ import annotations
 
@@ -30,6 +31,7 @@ MOF_JGB_URLS = (
 )
 FRED_API = "https://api.stlouisfed.org/fred/series/observations"
 CFTC_API = "https://publicreporting.cftc.gov/resource/6dca-aqww.json"
+YAHOO_CHART = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"  # unofficial, no key
 JPX_FLOWS_PAGE = "https://www.jpx.co.jp/markets/statistics-equities/investor-type/index.html"
 JPX_ORIGIN = "https://www.jpx.co.jp"
 JPX_WEEKLY_FILE = re.compile(r'href="([^"]*stock_1_w_(\d{8})_(\d{8})\.xlsx)"')
@@ -157,6 +159,27 @@ def parse_fred(payload: dict, series_id: str) -> list[Obs]:
             if (n := _num(o.get("value"))) is not None]
 
 
+def parse_yahoo(payload: dict, series_id: str) -> list[Obs]:
+    """Daily closes from the Yahoo Finance chart API; dates are the exchange's local trading days."""
+    chart = payload.get("chart") or {}
+    if chart.get("error") or not chart.get("result"):
+        raise ProviderError(f"Yahoo chart API: {(chart.get('error') or {}).get('description', 'no result')}")
+    result = chart["result"][0]
+    offset = int((result.get("meta") or {}).get("gmtoffset") or 0)
+    closes = ((result.get("indicators") or {}).get("quote") or [{}])[0].get("close") or []
+    out: dict[str, Obs] = {}
+    for ts, close in zip(result.get("timestamp") or [], closes):
+        number = _num(close)
+        if number is not None:
+            day = dt.datetime.fromtimestamp(int(ts) + offset, tz=dt.timezone.utc).date().isoformat()
+            out[day] = Obs(series_id, day, number)  # a later bar of the same day wins
+    return [out[d] for d in sorted(out)]
+
+
+def epoch(date: str) -> int:
+    return int(dt.datetime.fromisoformat(date).replace(tzinfo=dt.timezone.utc).timestamp())
+
+
 def parse_cftc(rows: list[dict], series_id: str) -> list[Obs]:
     out = []
     for r in rows:
@@ -249,10 +272,16 @@ def fetch(entry: dict, start: str, get: Getter) -> list[Obs]:
                                      "observation_start": start})
         return parse_fred(resp.json(), sid)
     if provider == "cftc":
+        weeks = (dt.date.today() - dt.date.fromisoformat(start)).days // 7 + 5  # one report a week
         resp = get(CFTC_API, params={"cftc_contract_market_code": p["contract"],
-                                     "$order": "report_date_as_yyyy_mm_dd DESC", "$limit": 60,
+                                     "$order": "report_date_as_yyyy_mm_dd DESC", "$limit": max(60, weeks),
                                      "$where": f"report_date_as_yyyy_mm_dd >= '{start}T00:00:00'"})
         return parse_cftc(resp.json(), sid)
+    if provider == "yahoo":
+        resp = get(YAHOO_CHART.format(symbol=p["symbol"]),
+                   params={"period1": epoch(start), "period2": epoch(dt.date.today().isoformat()) + 86400,
+                           "interval": "1d", "events": "history"})
+        return [o for o in parse_yahoo(resp.json(), sid) if o.date >= start]
     raise ProviderError(f"unknown provider {provider}")
 
 

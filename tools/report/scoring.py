@@ -8,8 +8,10 @@ The writer adopts the candidates or overrides one with a reason; build re-applie
 """
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+import datetime as dt
+from dataclasses import asdict, dataclass, replace
 
+import store
 from derived import Points, last, shifted, value_before
 
 HEAD, NEUTRAL, TAIL = "追い風", "中立", "逆風"
@@ -47,7 +49,10 @@ YIELD_GAP_LOW, YIELD_GAP_HIGH = 1.0, 3.0         # earnings yield - 10-year yiel
 HY_MONTH_UP, HY_MONTH_DOWN, HY_PCTL_HIGH, HY_PCTL_LOW = 0.50, -0.30, 80.0, 20.0
 IG_MONTH_UP, IG_MONTH_DOWN, IG_DAYS = 0.20, -0.10, 30   # investment-grade spread over 1 month, %pt
 VIX_HIGH, VIX_LOW = 25.0, 15.0
+OIL_YOY_HIGH, OIL_YOY_LOW = 30.0, -30.0           # WTI year-on-year, % (③ for both markets)
 EPS = 1e-9                                       # float tolerance at the thresholds
+HALF_WEIGHT_DAYS = 45   # a monthly figure whose month ended this long before the report week counts half
+DIVERGENCE_NOTE = "株と信用のずれ（HY スプレッドが逆風の信号なので ① を追い風から中立に下げた）"
 
 
 @dataclass(frozen=True)
@@ -57,6 +62,20 @@ class Signal:
     rule: str         # the thresholds
     score: int
     available: bool = True
+    date: str | None = None   # the data point's date, for signals built on monthly / quarterly figures
+    weight: float = 1.0       # 0.5 when that point is HALF_WEIGHT_DAYS old (score_market sets it)
+
+    @property
+    def points(self) -> float:
+        return self.score * self.weight
+
+
+def total_text(total: float) -> str:
+    """'+2' / '−1.5' / '+0' as shown in the brief, outlook 8. and the slides."""
+    if abs(total) < EPS:
+        return "+0"
+    text = f"{total:+.0f}" if float(total).is_integer() else f"{total:+.1f}"
+    return text.replace("-", "−")
 
 
 def missing(name: str, rule: str) -> Signal:
@@ -78,6 +97,7 @@ class Inputs:
     kpis: dict[str, dict]
     derived: dict[str, dict]
     series: dict[str, Points]
+    asof: str | None = None   # the report week's Monday (or the backtest date) for the half weight
 
     def derived_value(self, did: str) -> float | None:
         d = self.derived.get(did)
@@ -183,17 +203,18 @@ def inflation_signal(market: str, data: Inputs) -> Signal:
         return missing(name, rule)
     v = round(p[1], 1)  # the brief shows one decimal; judge the number the reader sees
     return Signal(name, f"{v:.1f}%（{p[0][:7]}）", rule,
-                  three_way(v, v >= INFLATION_HIGH or v < INFLATION_LOW, lo <= v <= hi))
+                  three_way(v, v >= INFLATION_HIGH or v < INFLATION_LOW, lo <= v <= hi), date=p[0])
 
 
 def unemployment_signal(market: str, data: Inputs) -> Signal:
     rule = f"{UNEMP_POINTS}か月で +{UNEMP_UP:g} 以上で −1、{UNEMP_DOWN:g} 以下で +1"
-    pair = change_over(data.series.get(UNEMPLOYMENT[market], []), UNEMP_POINTS)
+    pts = data.series.get(UNEMPLOYMENT[market], [])
+    pair = change_over(pts, UNEMP_POINTS)
     if not pair:
         return missing("失業率の3か月の変化", rule)
     delta = pair[1] - pair[0]
-    return Signal("失業率の3か月の変化", f"{pair[0]:.1f} → {pair[1]:.1f}%", rule,
-                  three_way(delta, delta >= UNEMP_UP - EPS, delta <= UNEMP_DOWN + EPS))
+    return Signal("失業率の3か月の変化", f"{pair[0]:.1f} → {pair[1]:.1f}%（{pts[-1][0][:7]}）", rule,
+                  three_way(delta, delta >= UNEMP_UP - EPS, delta <= UNEMP_DOWN + EPS), date=pts[-1][0])
 
 
 def level_signal(name: str, sid: str, data: Inputs, bad: float, good: float, unit: str) -> Signal:
@@ -202,7 +223,7 @@ def level_signal(name: str, sid: str, data: Inputs, bad: float, good: float, uni
     if not p:
         return missing(name, rule)
     v = round(p[1], 1)  # judge the number the reader sees
-    return Signal(name, f"{v:.1f}{unit}（{p[0][:7]}）", rule, three_way(v, v < bad, v > good))
+    return Signal(name, f"{v:.1f}{unit}（{p[0][:7]}）", rule, three_way(v, v < bad, v > good), date=p[0])
 
 
 def payroll_signal(data: Inputs) -> Signal:
@@ -211,16 +232,33 @@ def payroll_signal(data: Inputs) -> Signal:
     if len(pts) < NFP_POINTS:
         return missing("雇用者数前月差の3か月平均", rule)
     avg = round(sum(v for _, v in pts[-NFP_POINTS:]) / NFP_POINTS)
-    return Signal("雇用者数前月差の3か月平均", f"{avg:.0f}千人", rule, three_way(avg, avg < NFP_WEAK, avg > NFP_STRONG))
+    return Signal("雇用者数前月差の3か月平均", f"{avg:.0f}千人（{pts[-1][0][:7]}まで）", rule,
+                  three_way(avg, avg < NFP_WEAK, avg > NFP_STRONG), date=pts[-1][0])
 
 
 def ci_signal(sid: str, name: str, data: Inputs) -> Signal:
     rule = f"{CI_POINTS}か月で低下なら −1、上昇なら +1"
-    pair = change_over(data.series.get(sid, []), CI_POINTS)
+    pts = data.series.get(sid, [])
+    pair = change_over(pts, CI_POINTS)
     if not pair:
         return missing(f"{name}の3か月の変化", rule)
     delta = pair[1] - pair[0]
-    return Signal(f"{name}の3か月の変化", f"{pair[0]:.1f} → {pair[1]:.1f}", rule, three_way(delta, delta < 0, delta > 0))
+    return Signal(f"{name}の3か月の変化", f"{pair[0]:.1f} → {pair[1]:.1f}（{pts[-1][0][:7]}）", rule,
+                  three_way(delta, delta < 0, delta > 0), date=pts[-1][0])
+
+
+def oil_signal(data: Inputs) -> Signal:
+    """WTI against a year earlier: a large rise feeds inflation in both markets."""
+    name = "原油（WTI）の前年比"
+    rule = f"≥ +{OIL_YOY_HIGH:g}% で −1（物価の上振れ要因）、≤ {OIL_YOY_LOW:g}% で +1"
+    pts = data.series.get("US_WTI", [])
+    now = last(pts)
+    before = value_before(pts, store._shift(now[0], years=-1)) if now else None
+    if not now or not before or before[1] <= 0 or before[0] < store._shift(now[0], years=-1, days=-10):
+        return missing(name, rule)
+    yoy = round((now[1] / before[1] - 1) * 100, 1)
+    return Signal(name, f"{fmt(yoy, 1, '%')}（{now[1]:.2f}ドル、{now[0]}）", rule,
+                  three_way(yoy, yoy >= OIL_YOY_HIGH, yoy <= OIL_YOY_LOW))
 
 
 def macro_signals(market: str, data: Inputs) -> list[Signal]:
@@ -228,9 +266,10 @@ def macro_signals(market: str, data: Inputs) -> list[Signal]:
     if market == "us":
         return out + [payroll_signal(data),
                       level_signal("小売売上高（前年比）", "US_RETAIL_YOY", data, RETAIL_BAD, RETAIL_GOOD, "%"),
-                      level_signal("鉱工業生産（前年比）", "US_INDPRO_YOY", data, INDPRO_BAD, INDPRO_GOOD, "%")]
+                      level_signal("鉱工業生産（前年比）", "US_INDPRO_YOY", data, INDPRO_BAD, INDPRO_GOOD, "%"),
+                      oil_signal(data)]
     return out + [ci_signal("JP_CI_COINCIDENT", "景気動向指数 一致", data),
-                  ci_signal("JP_CI_LEADING", "景気動向指数 先行", data)]
+                  ci_signal("JP_CI_LEADING", "景気動向指数 先行", data), oil_signal(data)]
 
 
 # ---------------------------------------------------------------- ④ valuation and sentiment
@@ -287,7 +326,27 @@ def ig_signal(data: Inputs) -> Signal:
 SIGNALS = {"1": equity_signals, "2": rate_signals, "3": macro_signals, "4": valuation_signals}
 
 
-def rate(total: int, previous: str | None) -> tuple[str, bool]:
+def weighted(signals: list[Signal], asof: str | None) -> list[Signal]:
+    """Half weight for a monthly signal whose month ended more than HALF_WEIGHT_DAYS before asof.
+    The age runs from the month end (the stored date is the 1st), so a figure for September counts
+    in full through mid-November, while an August figure read in late October counts half."""
+    if not asof:
+        return signals
+    return [replace(s, weight=0.5) if s.date and age_days(month_end(s.date), asof) > HALF_WEIGHT_DAYS else s
+            for s in signals]
+
+
+def month_end(date: str) -> str:
+    d = dt.date.fromisoformat(date)
+    nxt = (d.replace(day=28) + dt.timedelta(days=4)).replace(day=1)
+    return (nxt - dt.timedelta(days=1)).isoformat()
+
+
+def age_days(date: str, asof: str) -> int:
+    return (dt.date.fromisoformat(asof) - dt.date.fromisoformat(date)).days
+
+
+def rate(total: float, previous: str | None) -> tuple[str, bool]:
     """(rating, hysteresis applied). Entering needs ±THRESHOLD; leaving needs the total back at 0."""
     raw = TAIL if total <= -THRESHOLD else (HEAD if total >= THRESHOLD else NEUTRAL)
     if raw == NEUTRAL and previous == TAIL and total < 0:
@@ -310,16 +369,30 @@ def combine(ratings: dict[str, str]) -> str:
     return "中立"
 
 
+def adjust_divergence(market: str, viewpoints: list[dict]) -> None:
+    """US only: ① 追い風 while the HY spread signal is −1 is a warning, not a tailwind (→ 中立).
+    Japan has no credit-spread series, so it is left as is."""
+    if market != "us":
+        return
+    equity = viewpoints[0]
+    hy = next((s for s in viewpoints[3]["signals"] if s["name"] == "HY スプレッド"), None)
+    if equity["rating"] == HEAD and hy and hy["score"] == -1:
+        # the adjusted 中立 is what next week's hysteresis starts from; a held 追い風 is dropped on purpose
+        equity["rating"], equity["adjusted"], equity["held"] = NEUTRAL, DIVERGENCE_NOTE, False
+
+
 def score_market(market: str, data: Inputs, previous: dict[str, str] | None) -> dict:
     viewpoints = []
     for key, name in VIEWPOINTS:
-        signals = SIGNALS[key](market, data)
-        total = sum(s.score for s in signals)
+        signals = weighted(SIGNALS[key](market, data), data.asof)
+        total = round(sum(s.points for s in signals), 2)
         before = (previous or {}).get(key)
         rating, held = rate(total, before)
         viewpoints.append({"key": key, "name": name, "total": total, "rating": rating, "held": held,
-                           "previous": before, "signals": [asdict(s) for s in signals],
+                           "previous": before, "adjusted": "",
+                           "signals": [{**asdict(s), "points": s.points} for s in signals],
                            "missing": [s.name for s in signals if not s.available]})
+    adjust_divergence(market, viewpoints)
     return {"viewpoints": viewpoints, "candidate": combine({v["key"]: v["rating"] for v in viewpoints})}
 
 

@@ -226,6 +226,18 @@ td.r-head { background: color-mix(in srgb, var(--bull) 20%, transparent); color:
 td.r-neutral { background: color-mix(in srgb, var(--neutral) 12%, transparent); color: var(--ink-2); }
 td.r-tail { background: color-mix(in srgb, var(--bear) 20%, transparent); color: var(--bear); }
 table.heat td.rt .badge { font-size: var(--step--1); padding: 1px 6px; }
+/* sectors: a bar per sector, centred on zero (the gap against the index) */
+td.hbar-cell { width: 45%; }
+.hbar { position: relative; height: 12px; background: var(--surface-2); border-radius: 3px; }
+.hbar::after { content: ""; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--ink-3); }
+.hbar i { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
+.hbar i.pos { left: 50%; background: var(--pos); }
+.hbar i.neg { right: 50%; background: var(--neg); }
+/* glossary on the last slide */
+dl.glossary { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; font-size: var(--step--1); }
+dl.glossary dt { font-weight: 700; white-space: nowrap; }
+dl.glossary dd { margin: 0; color: var(--ink-2); }
+@media (max-width: 720px) { dl.glossary { grid-template-columns: 1fr; } dl.glossary dt { margin-top: 6px; } }
 tbody tr:hover td { background: color-mix(in srgb, var(--ink) 4%, transparent); }
 
 /* timeline */

@@ -111,15 +111,18 @@ def derived_rows(facts: dict) -> list[list[object]]:
 
 
 def score_lines(facts: dict) -> list[str]:
-    lines = [f"信号は −1 / 0 / +1。観点の合計が −{SC.THRESHOLD} 以下で逆風、+{SC.THRESHOLD} 以上で追い風、"
+    lines = [f"信号は −1 / 0 / +1。月次データでその月の末日から{SC.HALF_WEIGHT_DAYS}日を超えるものは半分の重み。"
+             f"観点の合計が −{SC.THRESHOLD} 以下で逆風、+{SC.THRESHOLD} 以上で追い風、"
              "それ以外は中立。前週が逆風（追い風）の観点は、合計が 0 に戻るまで逆風（追い風）を保つ。"
+             "米国は ① が追い風でも HY スプレッドの信号が −1 なら中立に下げる（株と信用のずれ）。"
              "取れない信号は 0 点（推測しない）。総合判断の候補は判断基準の表をスクリプトが当てはめた結果。", ""]
     for market, label in (("japan", "日本"), ("us", "米国")):
         score = facts.get("scores", {}).get(market)
         if not score:
             continue
         rows = [[v["name"], s["name"], s["value"], s["rule"].replace("-", "−"),
-                 f"{s['score']:+d}".replace("-", "−") if s["score"] else "0"]
+                 (SC.total_text(s.get("points", s["score"])) if s["score"] else "0")
+                 + ("（古い時点のため半分）" if s.get("weight", 1) < 1 and s["score"] else "")]
                 for v in score["viewpoints"] for s in v["signals"]]
         lines += [f"### 12.{1 if market == 'japan' else 2} {label}（総合判断の候補: {score['candidate']}）", "",
                   table(["観点", "信号", "見たもの", "規則", "点数"], rows), ""]
@@ -127,8 +130,9 @@ def score_lines(facts: dict) -> list[str]:
             held = "。前週の評価を保った（ヒステリシス）" if v["held"] else ""
             prev = f"、前週 {v['previous']}" if v["previous"] else ""
             gaps = f"。未取得: {'、'.join(v['missing'])}" if v["missing"] else ""
-            lines.append(f"- {v['name']}: 合計 {v['total']:+d} → 候補 **{v['rating']}**{prev}{held}{gaps}"
-                         .replace("合計 -", "合計 −"))
+            adjusted = f"。{v['adjusted']}" if v.get("adjusted") else ""
+            lines.append(f"- {v['name']}: 合計 {SC.total_text(v['total'])} → 候補 **{v['rating']}**"
+                         f"{prev}{held}{adjusted}{gaps}")
         lines.append("")
     return lines
 
@@ -269,6 +273,7 @@ def render_brief(paths: Paths, facts: dict) -> str:
               table(["市場", "イベント", "日付", "市場予想", "前回", "出典", "確度"],
                     [[MARKET_LABEL.get(c["market"], ""), c.get("イベント"), c.get("日付"), c.get("市場予想"),
                       c.get("前回"), c.get("出典"), c.get("確度")] for c in facts.get("consensus", [])])]
+    lines += sector_table_lines(facts)
     return "\n".join(lines) + "\n"
 
 
@@ -299,7 +304,7 @@ def viewpoint_rows(facts: dict) -> str:
     rows = []
     for market, label in (("japan", "日本"), ("us", "米国")):
         for v in facts.get("scores", {}).get(market, {}).get("viewpoints", []):
-            total = f"{v['total']:+d}".replace("-", "−")
+            total = SC.total_text(v["total"]) + ("、ずれの調整" if v.get("adjusted") else "")
             rows.append(f"| {label} | {v['name']} | {v['rating']}（合計 {total}） | {v['rating']} "
                         f"| <!-- FILL:reason-{market}-{v['key']} 採用を変えたときだけ根拠（指標と時点、または文書名）。"
                         "変えなければ — --> |")
@@ -330,6 +335,44 @@ def _indicator(facts: dict, sid: str) -> dict:
 
 def _derived(facts: dict, did: str) -> dict:
     return next((d for d in facts.get("derived", []) if d["id"] == did), {})
+
+
+def _pct(value: float | None) -> str:
+    return f"{fmt(value, 1, signed=True)}%" if value is not None else M.DASH
+
+
+def sector_rows(facts: dict) -> str:
+    """Section 12 of outlook.md (script-filled): the three strongest and weakest sectors per market."""
+    out = []
+    for market, label in (("japan", "日本"), ("us", "米国")):
+        sec = (facts.get("sectors") or {}).get(market)
+        if not sec:
+            continue
+        by_id = {r["id"]: r for r in sec["rows"]}
+        for kind, ids in (("上位", sec["top"]), ("下位", sec["bottom"])):
+            for sid in ids:
+                r = by_id[sid]
+                out.append(row([label, kind, r["name"], _pct(r["m1"]), _pct(r["rel1"]), _pct(r["m3"]),
+                                r["date"] or M.DASH]))
+    return "\n".join(out) or row([M.DASH, M.DASH, "業種のデータなし", M.DASH, M.DASH, M.DASH, M.DASH])
+
+
+def sector_table_lines(facts: dict) -> list[str]:
+    """Brief 15: every sector, strongest first by the 1-month gap against the index."""
+    lines = ["", "## 15. 業種の動き（業種 ETF の終値から計算）", "",
+             "指数との差は、同じ期間の指数（日経平均・S&P500）の騰落率との差。動いた理由は含まない"
+             "（理由を書けるのは 14.1 の報道に出典があるときだけ）。"]
+    for market, label in (("japan", "日本"), ("us", "米国")):
+        sec = (facts.get("sectors") or {}).get(market)
+        if not sec:
+            continue
+        rows = sorted(sec["rows"], key=lambda r: r["rel1"] if r["rel1"] is not None else -1e9, reverse=True)
+        lines += ["", f"### 15.{1 if market == 'japan' else 2} {label}（{sec['index']} 1か月 {_pct(sec['index_m1'])}・"
+                      f"3か月 {_pct(sec['index_m3'])}）", "",
+                  table(["業種", "ETF", "時点", "1か月", "指数との差（1か月）", "3か月", "指数との差（3か月）", "出典"],
+                        [[r["name"], r["symbol"], r["date"] or M.DASH, _pct(r["m1"]), _pct(r["rel1"]),
+                          _pct(r["m3"]), _pct(r["rel3"]), r["source"]] for r in rows])]
+    return lines
 
 
 def handoff_rows(facts: dict) -> str:
@@ -380,6 +423,6 @@ def render_outlook(paths: Paths, facts: dict, template: str, today: str) -> str:
         "prev_japan": prev.get("japan", M.DASH), "prev_us": prev.get("us", M.DASH),
         "event_rows": outlook_event_rows(facts), "limits": limits_bullets(facts),
         "viewpoint_rows": viewpoint_rows(facts), "change_rows": change_rows(facts),
-        "handoff_rows": handoff_rows(facts),
+        "handoff_rows": handoff_rows(facts), "sector_rows": sector_rows(facts),
     }
     return Template(template).safe_substitute(values)

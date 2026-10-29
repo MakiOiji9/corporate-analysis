@@ -68,6 +68,36 @@ def test_parse_cftc_net_is_long_minus_short_sorted():
     assert [(o.date, o.value) for o in obs] == [("2026-09-29", 100000.0), ("2026-10-06", -154070.0)]
 
 
+def test_parse_yahoo_uses_exchange_local_dates_and_skips_nulls():
+    # 2026-10-23 09:00 JST = 2026-10-23T00:00Z; gmtoffset +9h keeps it on the 23rd
+    payload = {"chart": {"error": None, "result": [{
+        "meta": {"gmtoffset": 32400},
+        "timestamp": [1792713600, 1792800000, 1792886400],
+        "indicators": {"quote": [{"close": [48500.0, None, 48740.0]}]}}]}}
+    obs = S.parse_yahoo(payload, "JP_SEC_1617")
+    assert [(o.date, o.value) for o in obs] == [("2026-10-23", 48500.0), ("2026-10-25", 48740.0)]
+    with pytest.raises(S.ProviderError):
+        S.parse_yahoo({"chart": {"result": None, "error": {"description": "No data found"}}}, "X")
+
+
+def test_fetch_yahoo_passes_the_symbol_and_period():
+    calls = []
+
+    class Resp:
+        def json(self):
+            return {"chart": {"error": None, "result": [{"meta": {"gmtoffset": 0}, "timestamp": [1792713600],
+                                                         "indicators": {"quote": [{"close": [68.4]}]}}]}}
+
+    def get(url, params=None, **_):
+        calls.append((url, params))
+        return Resp()
+
+    entry = {"id": "US_SEC_XLE", "provider": "yahoo", "params": {"symbol": "XLE"}}
+    obs = S.fetch(entry, "2026-01-01", get)
+    assert calls[0][0].endswith("/chart/XLE") and calls[0][1]["period1"] == S.epoch("2026-01-01")
+    assert [(o.date, o.value) for o in obs] == [("2026-10-23", 68.4)]
+
+
 def test_jpx_weekly_links_newest_first():
     html = ('<a href="/x/stock_1_w_20260914_20260918.xlsx">a</a>'
             '<a href="/y/stock_1_w_20260928_20261002.xlsx">b</a>'

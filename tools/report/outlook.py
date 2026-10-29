@@ -8,9 +8,10 @@ from __future__ import annotations
 
 import re
 
+import glossary as G
 import mdparse as M
 import scoring as SC
-from brief import handoff_rows
+from brief import handoff_rows, sector_rows
 from validate import check_fill, check_structure, check_tables
 
 JUDGMENTS = ("強気", "中立", "慎重", "弱気")
@@ -71,7 +72,15 @@ def parse(text: str) -> dict:
         "viewpoints": viewpoints,
         "changes": changes,
         "handoff": M.section(text, "10."),
+        "plain_summary": _sub_bullets(text, "今週を3行で"),
+        "plain_caution": _sub_bullets(text, "気をつけること"),
+        "sector_table": M.section(text, "12."),
     }
+
+
+def _sub_bullets(text: str, keyword: str) -> list[str]:
+    found = M.section_by_title(text, keyword, level=3)
+    return M.bullets(found[1]) if found else []
 
 
 def _body(text: str) -> str:
@@ -229,7 +238,34 @@ def check_against_facts(parsed: dict, facts: dict) -> list[str]:
     issues = _check_viewpoints(parsed, facts) + _check_periods(parsed)
     if handoff_rows(facts) not in parsed["handoff"]:
         issues.append("10. 企業分析への引き継ぎがスクリプトの記入（facts.json）と違う。手で変えない")
+    if "sectors" in facts and sector_rows(facts) not in parsed["sector_table"]:
+        issues.append("12. 業種の動きがスクリプトの記入（facts.json）と違う。手で変えない")
+    return issues + _check_plain(parsed)
+
+
+PLAIN_SUMMARY, PLAIN_CAUTION, LIMIT_PLAIN = 3, 1, 60
+
+
+def _check_plain(parsed: dict) -> list[str]:
+    issues = []
+    if len(parsed["plain_summary"]) != PLAIN_SUMMARY:
+        issues.append(f"11. 今週を3行で は箇条書き {PLAIN_SUMMARY} つ（現在 {len(parsed['plain_summary'])}）")
+    if len(parsed["plain_caution"]) != PLAIN_CAUTION:
+        issues.append(f"11. 気をつけること は箇条書き {PLAIN_CAUTION} つ（現在 {len(parsed['plain_caution'])}）")
     return issues
+
+
+def plain_warnings(parsed: dict) -> list[str]:
+    """Beginner section: jargon from the glossary and over-long items (warnings; build still succeeds)."""
+    items = parsed["plain_summary"] + parsed["plain_caution"]
+    jargon = sorted({t for item in items for t in G.jargon_in(item)})
+    long = [i for i, item in enumerate(items, start=1) if _length(item) > LIMIT_PLAIN]
+    out = []
+    if jargon:
+        out.append(f"11. やさしい要約に専門用語がある: {'、'.join(jargon)}。ふだんの言葉に言い換える")
+    if long:
+        out.append(f"11. やさしい要約の {len(long)} 項目が目安 {LIMIT_PLAIN} 字を超える")
+    return out
 
 
 def source_warnings(parsed: dict) -> list[str]:

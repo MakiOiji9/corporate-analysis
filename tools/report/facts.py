@@ -15,6 +15,7 @@ import derived as D
 import mdparse as M
 import sanity
 import scoring
+import sectors as sectors_mod
 import store
 from state import Paths, previous_outlook
 
@@ -218,8 +219,11 @@ def is_stale(latest: str | None, entry: dict, week: str) -> bool:
 
 
 def build_indicators(catalogs: dict[str, dict], series: dict[str, Points], week: str) -> dict[str, list[dict]]:
+    """Indicator table rows per market. Sector ETFs ("display": "sectors") get their own table."""
     out: dict[str, list[dict]] = {m: [] for m in MARKETS}
     for sid, entry in catalogs.items():
+        if entry.get("display") == "sectors":
+            continue
         summary = store.summarize(series.get(sid, []), entry.get("transform", "level"),
                                   entry.get("frequency", "monthly"))
         row = {"id": sid, "group": entry.get("group", ""), "name": entry["name"], "unit": entry.get("unit", ""),
@@ -428,7 +432,7 @@ def build_facts(paths: Paths, week: str, session: str, today: str) -> dict:
     # a series whose latest point is older than its normal publication lag is not scored (it reads as missing)
     scores = scoring.build_scores(
         scoring.Inputs({k["id"]: k for k in kpis if k["id"] not in stale}, {d["id"]: d for d in derived},
-                       {sid: pts for sid, pts in tseries.items() if sid not in stale}),
+                       {sid: pts for sid, pts in tseries.items() if sid not in stale}, asof=week),
         (previous or {}).get("viewpoints"))
     facts = {
         "week": week,
@@ -449,6 +453,7 @@ def build_facts(paths: Paths, week: str, session: str, today: str) -> dict:
         "review_items": review,
         "derived": derived,
         "scores": scores,
+        "sectors": sectors_mod.build_sectors(catalogs, series),
         "previous": previous,
     }
     facts["checks"] = sanity.check(facts)

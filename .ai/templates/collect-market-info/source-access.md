@@ -36,6 +36,7 @@
 | `dashboard` | `indicator`, `cycle`（1=月 2=四半期 3=年）, `seasonal`（1=原数値 2=季節調整値。省略可） | `market_collect.py search dashboard --word 有効求人倍率` |
 | `mof_jgb` | `tenor`（`2年` `10年` など CSV の列名） | — |
 | `fred` | `id`（FRED の series ID） | https://fred.stlouisfed.org/ で検索 |
+| `yahoo` | `symbol`（Yahoo Finance のシンボル。日本株は `1617.T` のように `.T` を付ける） | https://finance.yahoo.com/ で検索。非公式の chart API（キー不要）で、業種 ETF（`"display": "sectors"`）の日次終値を取る。仕様が変わると取れなくなり、status.md に失敗が残る |
 | `cftc` | `contract`（CFTC contract market code。E-mini S&P500 = 13874A） | — |
 | `jpx_flows` | `investor`（xlsx の投資部門名に含まれる語。例 `海外投資家`） | — |
 

@@ -94,6 +94,47 @@ def test_inflation_band_and_unemployment_rise():
     assert sigs["基調インフレ（コアPCE）"] == -1 and sigs["失業率の3か月の変化"] == -1
 
 
+def test_oil_year_on_year_signal():
+    pts = [("2025-10-20", 58.0), ("2026-10-20", 107.9)]
+    sig = SC.oil_signal(_data(US_WTI=pts))
+    assert sig.score == -1 and "+86.0%" in sig.value
+    assert SC.oil_signal(_data(US_WTI=[("2025-10-20", 100.0), ("2026-10-20", 65.0)])).score == 1
+    assert not SC.oil_signal(_data(US_WTI=[("2026-01-01", 60.0), ("2026-10-20", 107.9)])).available  # no year-ago point
+
+
+def test_old_monthly_points_count_half():
+    data = SC.Inputs({}, {}, {"JP_CI_COINCIDENT": [("a", 1.0), ("b", 1.0), ("c", 1.0), ("2026-08-01", 2.0)],
+                              "JP_CI_LEADING": [("a", 1.0), ("b", 1.0), ("c", 1.0), ("2026-10-01", 2.0)]},
+                     asof="2026-10-26")
+    macro = SC.score_market("japan", data, None)["viewpoints"][2]
+    points = {s["name"]: s["points"] for s in macro["signals"]}
+    assert points["景気動向指数 一致の3か月の変化"] == 0.5 and points["景気動向指数 先行の3か月の変化"] == 1
+    assert macro["total"] == 1.5 and macro["rating"] == N
+    assert SC.total_text(1.5) == "+1.5" and SC.total_text(-2.0) == "−2" and SC.total_text(0) == "+0"
+    # counted from the month end: a September figure is full weight through mid-November
+    assert SC.weighted([SC.Signal("x", "", "", 1, date="2026-09-01")], "2026-11-14")[0].weight == 1
+    assert SC.weighted([SC.Signal("x", "", "", 1, date="2026-09-01")], "2026-11-16")[0].weight == 0.5
+    assert SC.month_end("2026-02-01") == "2026-02-28"
+
+
+def _divergence_data(hy_month: float) -> SC.Inputs:
+    kpis = {"US_SP500": _kpi(1, -2.0, 6.0), "US_HY_OAS": {"changes": {"1m": {"delta": hy_month}}},
+            "JP_NIKKEI225": _kpi(1, -2.0, 6.0)}
+    return SC.Inputs(kpis, {}, {})
+
+
+def test_equity_tailwind_is_cut_when_credit_widens_us_only():
+    us = SC.score_market("us", _divergence_data(0.65), None)["viewpoints"][0]
+    assert us["rating"] == N and us["adjusted"]
+    calm = SC.score_market("us", _divergence_data(0.05), None)["viewpoints"][0]
+    assert calm["rating"] == H and not calm["adjusted"]
+    jp = SC.score_market("japan", _divergence_data(0.65), None)["viewpoints"][0]
+    assert jp["rating"] == H and not jp["adjusted"]
+    held = SC.Inputs({"US_SP500": _kpi(1, -2.0, 0.0), "US_HY_OAS": {"changes": {"1m": {"delta": 0.65}}}}, {}, {})
+    us_held = SC.score_market("us", held, {"1": H})["viewpoints"][0]  # total +1 would be held as 追い風
+    assert us_held["rating"] == N and not us_held["held"]
+
+
 def test_previous_ratings_feed_hysteresis():
     data = SC.Inputs(kpis={"US_SP500": _kpi(1, -9.0, -5.0)}, derived={}, series={})  # total −1
     fresh = SC.score_market("us", data, None)["viewpoints"][0]

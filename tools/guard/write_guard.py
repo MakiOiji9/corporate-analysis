@@ -46,6 +46,7 @@ SCRIPT_ONLY = [
         r"^companies/[^/]+/sources/",
         r"^companies/[^/]+/data/",
         r"^market/report/[^/]+_(facts\.json|brief\.md|market-report\.html|judgment\.json)$",
+        r"^market/report/backtest/",
         r"^companies/[^/]+/analysis/(five-forces|three-c|moat|swot|profitability|cash-flow|growth|safety)/[^/]+_(brief\.md"
         r"|five-forces\.json|three-c\.json|moat\.json|swot\.json|profitability\.json|cash-flow\.json|growth\.json"
         r"|safety\.json)$",

@@ -22,4 +22,5 @@ python -I tools/guard/write_guard.py --check <編集するファイルのパス>
 
 - このスキルで編集してよいのは `market/report/{週}_outlook.md` の `<!-- FILL:... -->` の部分（と build が指摘した箇所）だけ。ファイルの新規作成・全体の書き換えはしない
 - `facts.json`・`brief.md`・`judgment.json`・`*_market-report.html` はスクリプトが作る。手で直さない
-- outlook.md の 8章の「採用」は候補を変えるときだけ書き換えてよい（理由を書く）。10章はスクリプトの記入なので変えない
+- outlook.md の 8章の「採用」は候補を変えるときだけ書き換えてよい（理由を書く）。10章・12章はスクリプトの記入なので変えない
+- `market/report/backtest/` は `market_report.py backtest` が作る。手で直さない

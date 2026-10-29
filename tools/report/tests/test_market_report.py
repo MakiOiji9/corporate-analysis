@@ -198,6 +198,10 @@ def _fill(text: str, judgment: str = "中立") -> str:
             return "—"
         if key.startswith("change-"):
             return "変更なし"
+        if key == "plain-summary":
+            return "- 日本の株は先週より下がった\n- 米国の株は高い水準のまま\n- 今週は米国で金利を決める会合がある"
+        if key == "plain-caution":
+            return "- 10月28日の米国の会合の結果で値動きが大きくなりうる"
         if key == "key-messages":
             return "- 米10年債利回りが上昇（brief.md 1.）\n- ドル円は158円台\n- **FOMC** が 10-28"
         if key == "risks":
@@ -409,7 +413,10 @@ def test_build_reports_issues_then_renders(repo, capsys):
     assert "<script>alert(1)</script>" not in html and "&lt;script&gt;alert(1)&lt;/script&gt;" in html
     assert "Executive Order &lt;b&gt;X&lt;/b&gt;" in html
     assert "<strong>FOMC</strong>" in html
-    assert html.count('<section class="slide') == 14 and 'id="s-scores"' in html
+    assert html.count('<section class="slide') == 16
+    assert all(f'id="{sid}"' in html for sid in ("s-plain", "s-sectors", "s-scores"))
+    assert html.index('id="s-plain"') < html.index('id="s-messages"') < html.index('id="s-scores"')
+    assert "今週を3行で" in html and "FOMC" in html.split('class="glossary"')[1]  # glossary lists terms in use
     judgment = json.loads((repo / out["judgment"]).read_text(encoding="utf-8"))
     assert judgment["viewpoints"]["japan"]["1"]["adopted"] == "中立"
     assert "${" not in html
@@ -570,6 +577,26 @@ def test_stale_series_are_not_scored(repo):
                if s["name"] == "10年債利回りの1か月の変化")
     assert not sig["available"]
     assert facts["scores"]["japan"]["viewpoints"][1]["signals"][1]["available"]
+
+
+def test_plain_summary_needs_three_items_and_warns_on_jargon(repo, capsys):
+    outlook = _prepared_and_filled(repo, capsys)
+    text = outlook.read_text(encoding="utf-8")
+    outlook.write_text(text.replace("- 米国の株は高い水準のまま\n", ""), encoding="utf-8")
+    code, out = _run(repo, "build", "--week", "2026-10-12", capsys=capsys)
+    assert code == 1 and any("今週を3行で" in i for i in out["issues"])
+    outlook.write_text(text.replace("米国の株は高い水準のまま", "米国は HYスプレッドが広がった"), encoding="utf-8")
+    code, out = _run(repo, "build", "--week", "2026-10-12", capsys=capsys)
+    assert code == 0 and any("専門用語" in w and "HY スプレッド" in w for w in out["warnings"])
+
+
+def test_sector_table_is_script_owned(repo, capsys):
+    outlook = _prepared_and_filled(repo, capsys)
+    text = outlook.read_text(encoding="utf-8")
+    assert "業種のデータなし" in text  # the fixture has no sector series
+    outlook.write_text(text.replace("業種のデータなし", "エネルギー"), encoding="utf-8")
+    code, out = _run(repo, "build", "--week", "2026-10-12", capsys=capsys)
+    assert code == 1 and any("12. 業種の動き" in i for i in out["issues"])
 
 
 def test_period_changes_need_a_reason_next_week(repo, capsys):

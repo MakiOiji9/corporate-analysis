@@ -25,6 +25,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path[:0] = [str(HERE), str(HERE.parent / "collect" / "market"), str(HERE.parent / "collect")]  # python -I
 
+import backtest as BT  # noqa: E402
 import brief as B  # noqa: E402
 import consistency as K  # noqa: E402
 import facts as F  # noqa: E402
@@ -116,12 +117,17 @@ def cmd_build(args: argparse.Namespace, paths: Paths) -> int:
     if f"収集セッション {facts['session']}" not in text:
         warnings.append(f"outlook.md の骨組みは facts.json（{facts['session']}）より前の収集から作られた。"
                         "6章の日程・7章の欠損が古い可能性がある（作り直しはユーザーの指示で prepare --redo）")
-    warnings += O.length_warnings(parsed) + O.source_warnings(parsed)
+    warnings += O.length_warnings(parsed) + O.source_warnings(parsed) + O.plain_warnings(parsed)
     payload = O.judgment_payload(parsed, facts)
     judgment_path = paths.report_file(week, "judgment.json")
     atomic_write_text(judgment_path, json.dumps(payload, ensure_ascii=False, indent=1) + "\n")
     history = judgment_history(paths, week) + [payload]
-    html = S.render(facts, parsed, (paths.template_dir / "report.html").read_text(encoding="utf-8"), history)
+    # words a reader meets in the deck: the written text (template instructions dropped) and the KPI labels
+    template_lines = set((paths.template_dir / "outlook.md").read_text(encoding="utf-8").splitlines())
+    written = "\n".join(line for line in text.splitlines() if line not in template_lines and not line.startswith(">"))
+    shown = written + " " + " ".join(k["label"] for k in facts["kpis"])
+    html = S.render(facts, parsed, (paths.template_dir / "report.html").read_text(encoding="utf-8"), history,
+                    shown)
     html_path = paths.report_file(week, "market-report.html")
     atomic_write_text(html_path, html)
     return emit({
@@ -134,6 +140,24 @@ def cmd_build(args: argparse.Namespace, paths: Paths) -> int:
                       if v["adopted"] != v["candidate"]],
         "previous": {k: v for k, v in (facts.get("previous") or {}).items() if k in ("week", "japan", "us")} or None,
         "kb": round(len(html.encode("utf-8")) / 1024), "warnings": warnings,
+    })
+
+
+def cmd_backtest(args: argparse.Namespace, paths: Paths) -> int:
+    today = dt.date.today().isoformat()
+    weeks = BT.replay(paths, args.years, today)
+    summary = BT.summarize(weeks)
+    out_dir = paths.report_dir / "backtest"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    md_path, json_path = out_dir / f"{today}_backtest.md", out_dir / f"{today}_backtest.json"
+    atomic_write_text(md_path, BT.render(summary, args.years, today, weeks))
+    atomic_write_text(json_path, json.dumps({"generated": today, "years": args.years, "summary": summary,
+                                             "weeks": weeks}, ensure_ascii=False, indent=1) + "\n")
+    return emit({
+        "ok": True, "md": paths.rel(md_path), "json": paths.rel(json_path), "weeks": len(weeks),
+        "candidates": {m: {j: s["by_judgement"][j]["r13"]["n"] for j in BT.JUDGEMENT_ORDER}
+                       for m, s in summary.items()},
+        "inverted": BT.inverted(summary),
     })
 
 
@@ -156,12 +180,14 @@ def main(argv: list[str] | None = None, root: Path = REPO_ROOT) -> int:
         if name == "prepare":
             p.add_argument("--redo", action="store_true", help="完成済み・作成中の outlook.md を骨組みに戻す")
             p.add_argument("--allow-stale", action="store_true", help="今週の収集が無くても作る（ユーザーの指示時のみ）")
+    p = sub.add_parser("backtest")
+    p.add_argument("--years", type=int, default=10, help="さかのぼる年数（既定 10）")
     args = parser.parse_args(argv)
     try:
-        parse_week(args.week)
+        parse_week(getattr(args, "week", None))
     except ValueError:
-        return emit({"ok": False, "error": f"--week は YYYY-MM-DD で指定する: {args.week}"})
-    handler = {"check": cmd_check, "prepare": cmd_prepare, "build": cmd_build}[args.cmd]
+        return emit({"ok": False, "error": f"--week は YYYY-MM-DD で指定する: {getattr(args, 'week', None)}"})
+    handler = {"check": cmd_check, "prepare": cmd_prepare, "build": cmd_build, "backtest": cmd_backtest}[args.cmd]
     return handler(args, Paths(root))
 
 
