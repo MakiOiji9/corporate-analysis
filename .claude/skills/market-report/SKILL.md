@@ -1,6 +1,6 @@
 ---
 name: market-report
-description: 地合いレポート作成スキル。collect-market-info が集めた日米の時系列・指標・日程・政策文書の要旨を統合し、市場動向と短期・中期・長期の展望をまとめたプレゼンテーション形式の単一 HTML（market/report/{週の月曜}_market-report.html）と、企業分析が参照する地合い判断 outlook.md を作る。材料が今週の収集でなければ先に collect-market-info を実行する。週次の地合いレポートが欲しいとき、日米の市場動向や地合い判断（強気/中立/慎重/弱気）をまとめたいときに使う。
+description: 地合いレポート作成スキル。collect-market-info が集めた日米の時系列・指標・日程・政策文書の要旨を統合し、市場動向と短期・中期・長期の展望をまとめたプレゼンテーション形式の単一 HTML（market/report/{週の月曜}_market-report.html）と、企業分析が参照する地合い判断 outlook.md を作る。材料が今週の収集でなければ先に collect-market-info を実行する。週次の地合いレポートが欲しいとき、日米の市場動向や地合い（金融環境・景気・市場のストレスの3軸と、注意の度合い 平常/注意/警戒）をまとめたいときに使う。
 argument-hint: "[week=YYYY-MM-DD] [redo]"
 ---
 

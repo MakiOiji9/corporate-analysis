@@ -226,6 +226,12 @@ td.r-head { background: color-mix(in srgb, var(--bull) 20%, transparent); color:
 td.r-neutral { background: color-mix(in srgb, var(--neutral) 12%, transparent); color: var(--ink-2); }
 td.r-tail { background: color-mix(in srgb, var(--bear) 20%, transparent); color: var(--bear); }
 table.heat td.rt .badge { font-size: var(--step--1); padding: 1px 6px; }
+/* cover: the three axis labels under the attention badge */
+.axis-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
+.axis-chip { font-size: var(--step--1); border-radius: 999px; padding: 2px 10px; background: var(--surface-2); color: var(--ink-2); }
+.axis-chip i { font-style: normal; color: var(--ink-3); margin-right: 6px; }
+.axis-chip.r-tail { background: color-mix(in srgb, var(--bear) 18%, transparent); color: var(--bear); }
+.axis-chip.r-head { background: color-mix(in srgb, var(--bull) 18%, transparent); color: var(--bull); }
 /* sectors: a bar per sector, centred on zero (the gap against the index) */
 td.hbar-cell { width: 45%; }
 .hbar { position: relative; height: 12px; background: var(--surface-2); border-radius: 3px; }

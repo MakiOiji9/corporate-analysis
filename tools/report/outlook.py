@@ -1,8 +1,8 @@
 """Read and check a filled {week}_outlook.md.
 
 Structure, leftover FILL markers and table shape reuse tools/collect/market/validate.py.
-On top of that: the four judgement words, 3-5 key messages, risk rows, and phrases the
-policy forbids (recommendations, guesses, price targets).
+On top of that: the attention words (平常 / 注意 / 警戒) and the three axis labels, 3-5 key messages,
+risk rows, and phrases the policy forbids (recommendations, guesses, price targets).
 """
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ import scoring as SC
 from brief import handoff_rows, sector_rows
 from validate import check_fill, check_structure, check_tables
 
-JUDGMENTS = ("強気", "中立", "慎重", "弱気")
+JUDGMENTS = SC.ATTENTION_WORDS
 IMPACTS = ("大", "中", "小")
 RISK_MARKETS = ("日本", "米国", "日米")
 PERIODS = ("短期", "中期", "長期")
@@ -35,7 +35,8 @@ OUTLOOK_FIELDS = (("scenario", "基本シナリオ"), ("upside", "上振れ要�
 
 def parse(text: str) -> dict:
     s1 = M.table_dicts(M.section(text, "1."))
-    judgments = {MARKET_KEY[r["市場"]]: {"judgment": r.get("地合い判断", ""), "summary": r.get("判断の要約", "")}
+    judgments = {MARKET_KEY[r["市場"]]: {"judgment": r.get("注意の度合い", ""), "summary": r.get("判断の要約", ""),
+                                       "axes": {key: r.get(name, "") for key, name, _ in SC.AXES}}
                  for r in s1 if r.get("市場") in MARKET_KEY}
     trends = {}
     for number, title in TOPICS:
@@ -55,7 +56,7 @@ def parse(text: str) -> dict:
     events = [{"date": r.get("日付", ""), "market": r.get("市場", ""), "event": r.get("イベント", ""),
                "point": r.get("注目点", "")}
               for r in M.table_dicts(M.section(text, "6.")) if not M.is_blank(r.get("日付"))]
-    viewpoints = [{"market": MARKET_KEY.get(r.get("市場", ""), ""), "name": r.get("観点", ""),
+    viewpoints = [{"market": MARKET_KEY.get(r.get("市場", ""), ""), "name": r.get("軸", ""),
                    "candidate": r.get("候補", ""), "adopted": r.get("採用", ""), "reason": r.get("変えた理由", "")}
                   for r in M.table_dicts(M.section(text, "8.")) if r.get("市場") in MARKET_KEY]
     changes = [{"period": r.get("期間", ""), "market": MARKET_KEY.get(r.get("市場", ""), ""),
@@ -89,14 +90,20 @@ def _body(text: str) -> str:
 
 def _check_judgments(parsed: dict) -> list[str]:
     issues = []
+    words = " / ".join(JUDGMENTS)
     for market, label in MARKETS:
-        j = parsed["judgments"].get(market, {}).get("judgment", "")
+        row = parsed["judgments"].get(market, {})
+        j = row.get("judgment", "")
         if j not in JUDGMENTS:
-            issues.append(f"1. 総合判断（{label}）が4段階の語ではない: 「{j}」")
+            issues.append(f"1. 注意の度合い（{label}）は {words} のどれか: 「{j}」")
+        for key, name, labels in SC.AXES:
+            got = (row.get("axes") or {}).get(key, "")
+            if got not in labels:
+                issues.append(f"1. {name}（{label}）は {' / '.join(labels)} のどれか: 「{got}」")
     cells = {(r["period"], r["market"]) for r in parsed["outlook"]}
     issues += [f"4. 展望に {period}・{label} の行が無い"
                for period in PERIODS for market, label in MARKETS if (period, market) not in cells]
-    issues += [f"4. 展望（{r['period']}・{r['market']}）の判断が4段階の語ではない: 「{r['judgment']}」"
+    issues += [f"4. 展望（{r['period']}・{r['market']}）の判断は {words} のどれか: 「{r['judgment']}」"
                for r in parsed["outlook"] if r["judgment"] not in JUDGMENTS]
     return issues
 
@@ -175,8 +182,8 @@ MIN_REASON = 8  # characters; an override needs a real basis, not a word
 
 
 def adopted_ratings(parsed: dict) -> dict[str, dict[str, str]]:
-    """{market: {"1": rating, ...}} from section 8 (the key is the leading ①〜④ of the viewpoint)."""
-    keys = {name: key for key, name in SC.VIEWPOINTS}
+    """{market: {"money": label, ...}} from section 8 (rows are matched by the axis name)."""
+    keys = {name: key for key, name, _ in SC.AXES}
     out: dict[str, dict[str, str]] = {}
     for v in parsed["viewpoints"]:
         key = keys.get(v["name"])
@@ -185,32 +192,39 @@ def adopted_ratings(parsed: dict) -> dict[str, dict[str, str]]:
     return out
 
 
+def _check_axis_row(where: str, got: dict, want: dict) -> list[str]:
+    labels = SC.AXIS_LABELS[want["key"]]
+    if not got["candidate"].startswith(want["rating"]):
+        return [f"{where}: 候補はスクリプトの値（{want['rating']}）から変えない"]
+    if got["adopted"] not in labels:
+        return [f"{where}: 採用は {' / '.join(labels)} のどれか: 「{got['adopted']}」"]
+    if got["adopted"] != want["rating"] and (M.is_blank(got["reason"]) or len(got["reason"]) < MIN_REASON):
+        return [f"{where}: 候補（{want['rating']}）から変えたので、理由に根拠（指標と時点か文書名）を書く"]
+    if got["adopted"] == want["rating"] and not M.is_blank(got["reason"]):
+        return [f"{where}: 候補のまま採用した行の理由は「—」"]
+    return []
+
+
 def _check_viewpoints(parsed: dict, facts: dict) -> list[str]:
     issues = []
     label = dict(MARKETS)
     rows = {(v["market"], v["name"]): v for v in parsed["viewpoints"]}
     for market, name in MARKETS:
-        for want in facts.get("scores", {}).get(market, {}).get("viewpoints", []):
+        for want in facts.get("scores", {}).get(market, {}).get("axes", []):
             got = rows.get((market, want["name"]))
             where = f"8. {name} {want['name']}"
-            if not got:
-                issues.append(f"{where}: 行が無い")
-                continue
-            if not got["candidate"].startswith(want["rating"]):
-                issues.append(f"{where}: 候補はスクリプトの値（{want['rating']}）から変えない")
-            if got["adopted"] not in SC.RATINGS:
-                issues.append(f"{where}: 採用は {' / '.join(SC.RATINGS)} のどれか: 「{got['adopted']}」")
-            elif got["adopted"] != want["rating"] and (M.is_blank(got["reason"]) or len(got["reason"]) < MIN_REASON):
-                issues.append(f"{where}: 候補（{want['rating']}）から変えたので、理由に根拠（指標と時点か文書名）を書く")
-            elif got["adopted"] == want["rating"] and not M.is_blank(got["reason"]):
-                issues.append(f"{where}: 候補のまま採用した行の理由は「—」")
+            issues += [f"{where}: 行が無い"] if not got else _check_axis_row(where, got, want)
     for market, ratings in adopted_ratings(parsed).items():
-        if len(ratings) == len(SC.VIEWPOINTS) and all(r in SC.RATINGS for r in ratings.values()):
-            want = SC.combine(ratings)
-            got = parsed["judgments"].get(market, {}).get("judgment", "")
-            if got != want:
-                issues.append(f"1. 総合判断（{label[market]}）は 8章の採用を判断基準に当てはめた「{want}」と同じにする"
-                              f"（現在「{got}」）")
+        if len(ratings) != len(SC.AXES) or any(r not in SC.AXIS_LABELS[k] for k, r in ratings.items()):
+            continue
+        row = parsed["judgments"].get(market, {})
+        for key, axis_name, _ in SC.AXES:
+            if (row.get("axes") or {}).get(key) != ratings[key]:
+                issues.append(f"1. {axis_name}（{label[market]}）は 8章の採用「{ratings[key]}」と同じにする")
+        want = SC.attention(ratings)
+        if row.get("judgment", "") != want:
+            issues.append(f"1. 注意の度合い（{label[market]}）は 8章の採用から決まる「{want}」と同じにする"
+                          f"（現在「{row.get('judgment', '')}」）")
     return issues
 
 
@@ -221,9 +235,9 @@ def _check_periods(parsed: dict) -> list[str]:
     for market, name in MARKETS:
         short, overall = now.get(("短期", market)), parsed["judgments"].get(market, {}).get("judgment")
         if short and overall and short != overall:
-            issues.append(f"4. 展望（短期・{name}）の判断は 1章の総合判断（{overall}）と同じにする")
+            issues.append(f"4. 展望（短期・{name}）の判断は 1章の注意の度合い（{overall}）と同じにする")
     for c in parsed["changes"]:
-        if M.is_blank(c["before"]):
+        if M.is_blank(c["before"]) or c["before"] not in JUDGMENTS:  # first week, or the former scale
             continue
         current = now.get((c["period"], c["market"]), "")
         where = f"9. {c['period']}・{label.get(c['market'], '')}"
@@ -279,20 +293,20 @@ def source_warnings(parsed: dict) -> list[str]:
 def judgment_payload(parsed: dict, facts: dict) -> dict:
     """{week}_judgment.json: the adopted ratings and judgements, read by next week's prepare."""
     adopted = adopted_ratings(parsed)
-    viewpoints = {}
+    axes = {}
     for market, _ in MARKETS:
-        rows = {v["key"]: v for v in facts.get("scores", {}).get(market, {}).get("viewpoints", [])}
+        rows = {a["key"]: a for a in facts.get("scores", {}).get(market, {}).get("axes", [])}
         reasons = {v["name"]: v["reason"] for v in parsed["viewpoints"] if v["market"] == market}
-        viewpoints[market] = {key: {"name": name, "candidate": rows.get(key, {}).get("rating"),
-                                    "total": rows.get(key, {}).get("total"),
-                                    "adopted": adopted.get(market, {}).get(key),
-                                    "reason": "" if M.is_blank(reasons.get(name)) else reasons.get(name)}
-                              for key, name in SC.VIEWPOINTS}
+        axes[market] = {key: {"name": name, "candidate": rows.get(key, {}).get("rating"),
+                              "total": rows.get(key, {}).get("total"),
+                              "adopted": adopted.get(market, {}).get(key),
+                              "reason": "" if M.is_blank(reasons.get(name)) else reasons.get(name)}
+                        for key, name, _ in SC.AXES}
     return {
         "week": facts["week"], "session": facts["session"],
         "judgments": {m: v["judgment"] for m, v in parsed["judgments"].items()},
         "candidates": {m: s["candidate"] for m, s in facts.get("scores", {}).items()},
-        "viewpoints": viewpoints,
+        "axes": axes,
         "periods": {p: {r["market"]: r["judgment"] for r in parsed["outlook"] if r["period"] == p}
                     for p in PERIODS},
     }

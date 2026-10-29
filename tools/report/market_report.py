@@ -76,12 +76,13 @@ def cmd_prepare(args: argparse.Namespace, paths: Paths) -> int:
         template = (paths.template_dir / "outlook.md").read_text(encoding="utf-8")
         atomic_write_text(outlook_path, B.render_outlook(paths, facts, template, today))
     warnings = [K.label(c) for c in facts["moved"] + facts["checks"]]
-    if kept and B.handoff_rows(facts) not in outlook_path.read_text(encoding="utf-8"):
+    kept_text = outlook_path.read_text(encoding="utf-8") if kept else ""
+    if kept and (B.handoff_rows(facts) not in kept_text or "| 注意の度合い | 金融環境 |" not in kept_text):
         warnings.append("作成途中の outlook.md は前の facts.json から作られた骨組みで、8章の候補・10章が今回の数値と違う。"
                         "このまま書くと build が通らない（作り直しはユーザーの指示で prepare --redo）")
     prev = facts["previous"] or {}
     if prev and not prev.get("viewpoints"):
-        warnings.append(f"前回（{prev['week']} 週）の judgment.json が無いため、観点の評価にヒステリシスを使っていない")
+        warnings.append(f"前回（{prev['week']} 週）の judgment.json（3つの軸）が無いため、軸の評価にヒステリシスを使っていない")
     return emit({
         "ok": True, "week": week, "session": status["latest_session"], "stale": not status["fresh"],
         "facts": paths.rel(facts_path), "brief": paths.rel(brief_path), "outlook": paths.rel(outlook_path),
@@ -136,7 +137,7 @@ def cmd_build(args: argparse.Namespace, paths: Paths) -> int:
         "judgments": {m: v["judgment"] for m, v in parsed["judgments"].items()},
         "candidates": payload["candidates"],
         "overrides": [f"{F.MARKET_LABEL[m]} {v['name']}: {v['candidate']} → {v['adopted']}"
-                      for m, vs in payload["viewpoints"].items() for v in vs.values()
+                      for m, vs in payload["axes"].items() for v in vs.values()
                       if v["adopted"] != v["candidate"]],
         "previous": {k: v for k, v in (facts.get("previous") or {}).items() if k in ("week", "japan", "us")} or None,
         "kb": round(len(html.encode("utf-8")) / 1024), "warnings": warnings,
@@ -153,12 +154,8 @@ def cmd_backtest(args: argparse.Namespace, paths: Paths) -> int:
     atomic_write_text(md_path, BT.render(summary, args.years, today, weeks))
     atomic_write_text(json_path, json.dumps({"generated": today, "years": args.years, "summary": summary,
                                              "weeks": weeks}, ensure_ascii=False, indent=1) + "\n")
-    return emit({
-        "ok": True, "md": paths.rel(md_path), "json": paths.rel(json_path), "weeks": len(weeks),
-        "candidates": {m: {j: s["by_judgement"][j]["r13"]["n"] for j in BT.JUDGEMENT_ORDER}
-                       for m, s in summary.items()},
-        "inverted": BT.inverted(summary),
-    })
+    return emit({"ok": True, "md": paths.rel(md_path), "json": paths.rel(json_path), "weeks": len(weeks),
+                 "verdicts": BT.verdicts(summary)})
 
 
 HISTORY_WEEKS = 8

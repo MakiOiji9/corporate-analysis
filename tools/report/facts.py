@@ -383,16 +383,16 @@ def previous_judgments(paths: Paths, week: str) -> dict | None:
     out: dict = {"week": path.name[:10], "path": paths.rel(path), "periods": {}, "viewpoints": None}
     for r in M.table_dicts(M.section(text, "1.")):
         market = LABEL_MARKET.get(r.get("市場", ""))
-        if market:
-            out[market] = r.get("地合い判断", "")
+        if market:  # 注意の度合い since the three-axis outlook; 地合い判断 (強気〜弱気) before it
+            out[market] = r.get("注意の度合い") or r.get("地合い判断", "")
     for r in M.table_dicts(M.section(text, "4.")):
         market = LABEL_MARKET.get(r.get("市場", ""))
         if market and r.get("期間"):
             out["periods"].setdefault(r["期間"], {})[market] = r.get("判断", "")
     judgment = paths.report_file(out["week"], "judgment.json")
-    if judgment.exists():  # adopted ratings feed this week's hysteresis
-        views = json.loads(judgment.read_text(encoding="utf-8")).get("viewpoints", {})
-        out["viewpoints"] = {m: {k: v["adopted"] for k, v in vs.items()} for m, vs in views.items()}
+    if judgment.exists():  # adopted axis labels feed this week's hysteresis (older files have none)
+        axes = json.loads(judgment.read_text(encoding="utf-8")).get("axes") or {}
+        out["viewpoints"] = {m: {k: v["adopted"] for k, v in vs.items()} for m, vs in axes.items()} or None
     return out
 
 

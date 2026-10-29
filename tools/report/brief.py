@@ -111,29 +111,30 @@ def derived_rows(facts: dict) -> list[list[object]]:
 
 
 def score_lines(facts: dict) -> list[str]:
-    lines = [f"信号は −1 / 0 / +1。月次データでその月の末日から{SC.HALF_WEIGHT_DAYS}日を超えるものは半分の重み。"
-             f"観点の合計が −{SC.THRESHOLD} 以下で逆風、+{SC.THRESHOLD} 以上で追い風、"
-             "それ以外は中立。前週が逆風（追い風）の観点は、合計が 0 に戻るまで逆風（追い風）を保つ。"
-             "米国は ① が追い風でも HY スプレッドの信号が −1 なら中立に下げる（株と信用のずれ）。"
-             "取れない信号は 0 点（推測しない）。総合判断の候補は判断基準の表をスクリプトが当てはめた結果。", ""]
+    labels = "、".join(f"{SC.AXIS_NAME[k]}は +{SC.THRESHOLD} 以上で{ls[0]}・−{SC.THRESHOLD} 以下で{ls[2]}"
+                      for k, _, ls in SC.AXES)
+    lines = ["地合いの説明であり、先行きの株価の予測ではない。信号は −1 / 0 / +1 で、どの軸も +1 が注意の側"
+             f"（引き締め・減速・ストレス）。月次データでその月の末日から{SC.HALF_WEIGHT_DAYS}日を超えるものは半分の重み。"
+             f"{labels}、それ以外は中間。前週が端の評価だった軸は、合計が 0 に戻るまでその評価を保つ。"
+             "取れない信号は 0 点（推測しない）。注意の度合いは、ストレスが高い、または引き締めかつ減速なら警戒、"
+             "引き締めか減速のどちらかなら注意、それ以外は平常。", ""]
     for market, label in (("japan", "日本"), ("us", "米国")):
         score = facts.get("scores", {}).get(market)
-        if not score:
+        if not score or "axes" not in score:
             continue
-        rows = [[v["name"], s["name"], s["value"], s["rule"].replace("-", "−"),
+        rows = [[a["name"], s["name"], s["value"], s["rule"].replace("-", "−"),
                  (SC.total_text(s.get("points", s["score"])) if s["score"] else "0")
                  + ("（古い時点のため半分）" if s.get("weight", 1) < 1 and s["score"] else "")]
-                for v in score["viewpoints"] for s in v["signals"]]
-        lines += [f"### 12.{1 if market == 'japan' else 2} {label}（総合判断の候補: {score['candidate']}）", "",
-                  table(["観点", "信号", "見たもの", "規則", "点数"], rows), ""]
-        for v in score["viewpoints"]:
-            held = "。前週の評価を保った（ヒステリシス）" if v["held"] else ""
-            prev = f"、前週 {v['previous']}" if v["previous"] else ""
-            gaps = f"。未取得: {'、'.join(v['missing'])}" if v["missing"] else ""
-            adjusted = f"。{v['adjusted']}" if v.get("adjusted") else ""
-            lines.append(f"- {v['name']}: 合計 {SC.total_text(v['total'])} → 候補 **{v['rating']}**"
-                         f"{prev}{held}{adjusted}{gaps}")
-        lines.append("")
+                for a in score["axes"] for s in a["signals"]]
+        lines += [f"### 12.{1 if market == 'japan' else 2} {label}（注意の度合いの候補: {score['candidate']}）", "",
+                  table(["軸", "信号", "見たもの", "規則", "点数"], rows), ""]
+        for a in score["axes"]:
+            held = "。前週の評価を保った（ヒステリシス）" if a["held"] else ""
+            prev = f"、前週 {a['previous']}" if a["previous"] else ""
+            gaps = f"。未取得: {'、'.join(a['missing'])}" if a["missing"] else ""
+            lines.append(f"- {a['name']}: 合計 {SC.total_text(a['total'])} → 候補 **{a['rating']}**{prev}{held}{gaps}")
+        lines += ["", f"参考（軸には入れない。短期の反転が知られている・割高さは緊張の度合いではない）: "
+                      + "、".join(f"{r['name']} {r['value']}" for r in score.get("reference", [])), ""]
     return lines
 
 
@@ -252,13 +253,13 @@ def render_brief(paths: Paths, facts: dict) -> str:
               table(["ファイル", "内容"], [[r["file"], clip(r["content"], REVIEW_CHARS)] for r in review[:REVIEW_MAX]]),
               "", "## 10. 前回の判断", ""]
     if prev:
-        lines.append(f"- {prev['week']} 週（{prev['path']}）: 日本 {prev.get('japan', M.DASH)} / "
-                     f"米国 {prev.get('us', M.DASH)}")
+        lines.append(f"- {prev['week']} 週（{prev['path']}）: 日本 {previous_word(prev, 'japan')} / "
+                     f"米国 {previous_word(prev, 'us')}")
     else:
         lines.append("- 前回の outlook.md なし（初回）")
     lines += ["", "## 11. 計算した指標（スクリプトが計算。outlook.md にはこの値を転記する）", "",
               table(["市場", "指標", "時点", "値", "計算式", "入力", "注記"], derived_rows(facts)),
-              "", "## 12. 観点の評価候補", ""]
+              "", "## 12. 3つの軸の評価候補", ""]
     lines += score_lines(facts)
     lines += ["## 13. 前週との食い違い・データの点検（要確認）", "",
               table(["市場", "項目", "内容"], check_rows(facts)),
@@ -301,28 +302,40 @@ def limits_bullets(facts: dict) -> str:
 
 
 def viewpoint_rows(facts: dict) -> str:
+    """Section 8 of outlook.md: one row per market and axis; 採用 starts as the candidate."""
     rows = []
     for market, label in (("japan", "日本"), ("us", "米国")):
-        for v in facts.get("scores", {}).get(market, {}).get("viewpoints", []):
-            total = SC.total_text(v["total"]) + ("、ずれの調整" if v.get("adjusted") else "")
-            rows.append(f"| {label} | {v['name']} | {v['rating']}（合計 {total}） | {v['rating']} "
-                        f"| <!-- FILL:reason-{market}-{v['key']} 採用を変えたときだけ根拠（指標と時点、または文書名）。"
+        for a in facts.get("scores", {}).get(market, {}).get("axes", []):
+            rows.append(f"| {label} | {a['name']} | {a['rating']}（合計 {SC.total_text(a['total'])}） | {a['rating']} "
+                        f"| <!-- FILL:reason-{market}-{a['key']} 採用を変えたときだけ根拠（指標と時点、または文書名）。"
                         "変えなければ — --> |")
     return "\n".join(rows) or row([M.DASH] * 5)
 
 
+OLD_SCALE = "—（判断の基準を変更）"
+
+
 def change_rows(facts: dict) -> str:
+    """Section 9: the previous week's 4章 judgements; a judgement on the former 強気〜弱気 scale cannot be
+    compared, so the row is filled by the script."""
     periods = (facts.get("previous") or {}).get("periods") or {}
     rows = []
     for period, key in (("短期", "short"), ("中期", "mid"), ("長期", "long")):
         for market, label in (("japan", "日本"), ("us", "米国")):
             before = periods.get(period, {}).get(market)
-            if before:
+            if before and before in SC.ATTENTION_WORDS:
                 rows.append(f"| {period} | {label} | {cell(before)} | <!-- FILL:change-{key}-{market} "
                             "4章の判断を前回から変えたら理由。変えなければ「変更なし」 --> |")
+            elif before:
+                rows.append(f"| {period} | {label} | {cell(before)}（旧基準） | {OLD_SCALE} |")
             else:
                 rows.append(f"| {period} | {label} | {M.DASH} | 初回 |")
     return "\n".join(rows)
+
+
+def previous_word(prev: dict, market: str) -> str:
+    word = prev.get(market) or M.DASH
+    return word if word in SC.ATTENTION_WORDS or word == M.DASH else f"{word}（旧基準）"
 
 
 def _kpi(facts: dict, sid: str) -> dict:
@@ -420,7 +433,7 @@ def render_outlook(paths: Paths, facts: dict, template: str, today: str) -> str:
         "brief": paths.rel(paths.report_file(week, "brief.md")),
         "html": paths.rel(paths.report_file(week, "market-report.html")),
         "prev_week": prev.get("week", "なし"),
-        "prev_japan": prev.get("japan", M.DASH), "prev_us": prev.get("us", M.DASH),
+        "prev_japan": previous_word(prev, "japan"), "prev_us": previous_word(prev, "us"),
         "event_rows": outlook_event_rows(facts), "limits": limits_bullets(facts),
         "viewpoint_rows": viewpoint_rows(facts), "change_rows": change_rows(facts),
         "handoff_rows": handoff_rows(facts), "sector_rows": sector_rows(facts),

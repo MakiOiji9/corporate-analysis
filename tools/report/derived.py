@@ -143,6 +143,33 @@ def ma_items(series: dict[str, Points]) -> list[dict]:
     return out
 
 
+RV_DAYS, TRADING_DAYS = 20, 252
+
+
+def realized_vol(points: Points, days: int = RV_DAYS) -> tuple[str, float] | None:
+    """(date, annualised standard deviation of the last `days` daily % changes)."""
+    if len(points) <= days:
+        return None
+    window = points[-days - 1:]
+    changes = [(b / a - 1) * 100 for (_, a), (_, b) in zip(window, window[1:]) if a]
+    if len(changes) < 2:
+        return None
+    mean = sum(changes) / len(changes)
+    var = sum((c - mean) ** 2 for c in changes) / (len(changes) - 1)
+    return points[-1][0], var ** 0.5 * TRADING_DAYS ** 0.5
+
+
+def rv_items(series: dict[str, Points], stale_ids: frozenset[str] = frozenset()) -> list[dict]:
+    out = []
+    for sid, name, market in (("JP_NIKKEI225", "日経平均", "japan"), ("US_SP500", "S&P500", "us")):
+        rv = realized_vol(series.get(sid, []))
+        out.append(item(f"{sid}_RV{RV_DAYS}", f"{name} の値動きの大きさ（{RV_DAYS}日の実現変動率、年率）", market,
+                        rv[1] if rv else None, "%", rv[0] if rv else None,
+                        f"直近{RV_DAYS}日の日次騰落率の標準偏差 × √{TRADING_DAYS}",
+                        [_input(sid, last(series.get(sid, [])))], stale=sid in stale_ids, decimals=1))
+    return out
+
+
 def hy_percentile(series: dict[str, Points]) -> dict:
     found = percentile(series.get("US_HY_OAS", []))
     label = "米HYスプレッドの過去5年での位置"
@@ -166,7 +193,7 @@ def build_derived(series: dict[str, Points], extras: list[dict], week: str,
         difference("JP_SLOPE", "日本 長短金利差（10年−2年）", "japan", series, "JP_JGB10Y", "JP_JGB2Y",
                    "10年国債利回り − 2年国債利回り", stale_ids),
     ]
-    out += ma_items(series)
+    out += ma_items(series) + rv_items(series, stale_ids)
     out += [hy_percentile(series), yield_gap("japan", series, extras, week), yield_gap("us", series, extras, week),
             per_vs_average(extras, week)]
     return out
