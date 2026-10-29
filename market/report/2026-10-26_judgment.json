@@ -1,9 +1,9 @@
 {
  "week": "2026-10-26",
- "session": "2026-10-27_weekly-r2",
+ "session": "2026-10-29_weekly-r3",
  "judgments": {
   "japan": "中立",
-  "us": "慎重"
+  "us": "中立"
  },
  "candidates": {
   "japan": "中立",
@@ -13,29 +13,29 @@
   "japan": {
    "1": {
     "name": "① 株価・需給",
-    "candidate": "逆風",
-    "total": -3,
-    "adopted": "逆風",
+    "candidate": "中立",
+    "total": 0.0,
+    "adopted": "中立",
     "reason": ""
    },
    "2": {
     "name": "② 金利・金融政策",
     "candidate": "中立",
-    "total": 0,
+    "total": 0.0,
     "adopted": "中立",
     "reason": ""
    },
    "3": {
     "name": "③ マクロ",
-    "candidate": "追い風",
-    "total": 3,
-    "adopted": "追い風",
+    "candidate": "中立",
+    "total": 1.0,
+    "adopted": "中立",
     "reason": ""
    },
    "4": {
     "name": "④ バリュエーション・センチメント",
     "candidate": "中立",
-    "total": 0,
+    "total": 0.0,
     "adopted": "中立",
     "reason": ""
    }
@@ -44,29 +44,29 @@
    "1": {
     "name": "① 株価・需給",
     "candidate": "追い風",
-    "total": 2,
+    "total": 2.0,
     "adopted": "追い風",
     "reason": ""
    },
    "2": {
     "name": "② 金利・金融政策",
     "candidate": "中立",
-    "total": -1,
+    "total": -1.0,
     "adopted": "逆風",
-    "reason": "FOMC議事要旨 2026-10-07 で大半の参加者が年内もう1回の利上げを適切とした。実質10年金利 2.66%（2026-10-23）・実質政策金利 +0.99% と実質金利が高い"
+    "reason": "FOMC声明 2026-10-28 で2名が利上げを支持して反対し、インフレは高止まりとした。実質政策金利 +0.99%（2026-10-26）"
    },
    "3": {
     "name": "③ マクロ",
     "candidate": "中立",
-    "total": 1,
+    "total": 0.5,
     "adopted": "中立",
     "reason": ""
    },
    "4": {
     "name": "④ バリュエーション・センチメント",
-    "candidate": "逆風",
-    "total": -2,
-    "adopted": "逆風",
+    "candidate": "中立",
+    "total": -1.0,
+    "adopted": "中立",
     "reason": ""
    }
   }
@@ -74,7 +74,7 @@
  "periods": {
   "短期": {
    "japan": "中立",
-   "us": "慎重"
+   "us": "中立"
   },
   "中期": {
    "japan": "中立",

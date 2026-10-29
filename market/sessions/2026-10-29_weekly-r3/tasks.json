@@ -1,0 +1,110 @@
+{
+ "session": "market/sessions/2026-10-29_weekly-r3",
+ "collected": "2026-10-29",
+ "markets": [
+  "japan",
+  "us"
+ ],
+ "mode": "full",
+ "tasks": [
+  {
+   "type": "summarize-doc",
+   "docs": [
+    {
+     "market": "japan",
+     "title": "月例経済報告（2026-10-27）",
+     "doc_key": "monthly-report-2026-10-27",
+     "output": "market/policy/japan/raw/2026-10-29_monthly-report-2026-10-27.md",
+     "inputs": [
+      "market/policy/japan/sources/2026-10-29/main.pdf.excerpt.txt",
+      "market/policy/japan/raw/2026-10-11_monthly-report-2026-09-29.md"
+     ],
+     "template": ".ai/templates/collect-market-info/raw/policy-doc.md"
+    },
+    {
+     "market": "us",
+     "title": "Federal Reserve issues FOMC statement",
+     "doc_key": "fomc-statement-2026-10-28",
+     "output": "market/policy/us/raw/2026-10-29_fomc-statement-2026-10-28.md",
+     "inputs": [
+      "market/policy/us/sources/2026-10-29/monetary20261028a.htm.excerpt.txt",
+      "market/policy/us/raw/2026-10-11_fomc-statement-2026-09-16.md"
+     ],
+     "template": ".ai/templates/collect-market-info/raw/monetary-doc.md"
+    }
+   ],
+   "allowed_files": [
+    "market/policy/japan/raw/2026-10-29_monthly-report-2026-10-27.md",
+    "market/policy/us/raw/2026-10-29_fomc-statement-2026-10-28.md"
+   ],
+   "id": "T01"
+  },
+  {
+   "type": "search-calendar",
+   "market": "japan",
+   "title": "政治・イベント日程（日本）",
+   "output": "market/sessions/2026-10-29_weekly-r3/raw/calendar-japan.md",
+   "inputs": [],
+   "max_searches": 12,
+   "template": ".ai/templates/collect-market-info/raw/calendar.md",
+   "allowed_files": [
+    "market/sessions/2026-10-29_weekly-r3/raw/calendar-japan.md"
+   ],
+   "id": "T02"
+  },
+  {
+   "type": "search-calendar",
+   "market": "us",
+   "title": "政治・イベント日程（米国）",
+   "output": "market/sessions/2026-10-29_weekly-r3/raw/calendar-us.md",
+   "inputs": [],
+   "max_searches": 12,
+   "template": ".ai/templates/collect-market-info/raw/calendar.md",
+   "allowed_files": [
+    "market/sessions/2026-10-29_weekly-r3/raw/calendar-us.md"
+   ],
+   "id": "T03"
+  }
+ ],
+ "new_docs": [
+  {
+   "doc_key": "monthly-report-2026-10-27",
+   "watch_key": "monthly-report",
+   "layer": "D",
+   "title": "月例経済報告（2026-10-27）",
+   "published": "2026-10-27",
+   "url": "https://www5.cao.go.jp/keizai3/getsurei/2026/1027getsurei/main.pdf",
+   "page_url": "",
+   "raw_path": "market/policy/japan/raw/2026-10-29_monthly-report-2026-10-27.md",
+   "collected": "2026-10-29",
+   "status": "pending",
+   "market": "japan"
+  },
+  {
+   "doc_key": "presidential-actions-2026-10-28",
+   "watch_key": "presidential-actions",
+   "layer": "A",
+   "title": "ADJUSTING IMPORTS OF ROBOTICS, INDUSTRIAL MACHINERY, AND THEIR PARTS AND COMPONENTS INTO THE UNITED STATES",
+   "published": "2026-10-28",
+   "url": "https://www.whitehouse.gov/presidential-actions/2026/10/adjusting-imports-of-robotics-industrial-machinery-and-their-parts-and-components-into-the-united-states/",
+   "page_url": "",
+   "raw_path": "market/policy/us/raw/2026-10-29_presidential-actions.md",
+   "collected": "2026-10-29",
+   "status": "listed",
+   "market": "us"
+  },
+  {
+   "doc_key": "fomc-statement-2026-10-28",
+   "watch_key": "fomc-statement",
+   "layer": "C",
+   "title": "Federal Reserve issues FOMC statement",
+   "published": "2026-10-28",
+   "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
+   "page_url": "",
+   "raw_path": "market/policy/us/raw/2026-10-29_fomc-statement-2026-10-28.md",
+   "collected": "2026-10-29",
+   "status": "pending",
+   "market": "us"
+  }
+ ]
+}
