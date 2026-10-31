@@ -49,6 +49,8 @@ RESULTS = {
                           "rule": {"axis1": {"low": 11.3, "high": 32.6, "position": 17}}},
                   "pbr": {"rating": "割安", "sentence": "PBR 2.56倍"}, "peg": {"rating": "妥当", "sentence": "PEG 1.08"},
                   "ev": {"rating": "割安", "sentence": "EV/EBITDA 6.9倍"}, "sheet": "PER 割安／STEP 3 割安",
+                  "peers": [{"name": "アルファ社", "per_actual": 10.0, "per_forecast": 9.0, "pbr": 1.2,
+                             "ev_ebitda_calc": 5.0, "cagr": 8.0, "roe": 12.0}],
                   "flip_prices": ["PER: 割高圏になる株価 1,035円 以上"]},
 }
 
@@ -137,11 +139,15 @@ FILLED = {
 }
 
 
+FACTOR_WORDS = "地合い・株価の位置・直近の決算の進捗・株価の割安さ・成長性・収益性・キャッシュフロー・安全性・業界の魅力度・" \
+               "勝てる理由・強みの持続性・強みで脅威に対抗できるか"
+
+
 def _fill(text: str, horizons: dict) -> str:
     def repl(m: re.Match) -> str:
         key = m.group(1)
         if key in horizons:
-            return f"{horizons[key]}。条件をすべて満たす。"
+            return f"{horizons[key]}。{FACTOR_WORDS}を確かめた。"
         return FILLED.get(key, "投資の理由は実績で選ばれること。")
     return FILL_ANY.sub(repl, text)
 
@@ -211,6 +217,30 @@ def test_prepare_fill_build_flow(repo, capsys):
     assert not again["ok"] and "--redo" in again["error"]
 
 
+def test_html_shows_3c_swot_peers_dividends_and_tooltips(repo, capsys):
+    company = _company(repo)
+    out = _prepare(repo, capsys)
+    md = company / "reports" / f"{TODAY}_company-report.md"
+    md.write_text(_fill(md.read_text(encoding="utf-8"), out["horizons"]), encoding="utf-8")
+    assert _run(repo, capsys, "build", "--company", "3798")["ok"]
+    html = (company / "reports" / f"{TODAY}_company-report.html").read_text(encoding="utf-8")
+    assert "期間ごとの良い点・悪い点" in html and 'class="gauge"' in html
+    assert 'class="swot"' in html and "SWOT分析" in html
+    assert "同業比較" in html and "株主還元" in html and "成長の見通し" in html
+    assert 'class="term"' in html
+    assert not re.search(r'data-tip="[^"]*<span', html)  # a tooltip never lands inside an attribute
+    assert '<svg' in html and not re.search(r"<svg[^>]*>[^<]*<span class=\"term\"", html)
+
+
+def test_annotate_wraps_first_term_per_section_only():
+    import cr_sections as CS
+    html = ('<section id="a"><p>ROE が高い。ROE は上昇。</p><svg><text>ROE</text></svg></section>'
+            '<section id="b"><p>ROE と PER</p><dt>PER</dt></section>')
+    out = CS.annotate(html)
+    assert out.count('data-tip=') == 3  # ROE in a, ROE and PER in b (the glossary's own dt is skipped)
+    assert "<text>ROE</text>" in out
+
+
 def test_html_escapes_written_text(repo, capsys):
     company = _company(repo)
     out = _prepare(repo, capsys)
@@ -238,18 +268,34 @@ def test_build_rejects_changed_verdicts_and_forbidden_words(repo, capsys):
     assert any("4.3" in i for i in issues)
 
 
-def test_cash_flow_concern_passes_every_horizon(repo, capsys):
-    _company(repo, {"cash-flow": {"verdict": "懸念"}})
+def test_one_cash_flow_concern_is_weighed_not_a_knockout(repo, capsys):
+    _company(repo, {"cash-flow": {"verdict": "懸念",
+                                  "step3": {"rating": "懸念", "sentence": "営業CF対純利益比率 0.77倍"}}})
+    out = _prepare(repo, capsys)
+    assert out["step2"] == "A"  # 良好3・懸念1 = +0.5
+    assert out["horizons"] == {"short": "投資検討", "mid": "投資検討", "long": "投資検討"}
+
+
+def test_serious_red_flag_passes_every_horizon(repo, capsys):
+    _company(repo, {"cash-flow": {"verdict": "懸念", "step1": {"rating": "懸念", "sentence": "営業CF がマイナス"}}})
     out = _prepare(repo, capsys)
     assert out["step2"] == "C"
     assert out["horizons"] == {"short": "見送り", "mid": "見送り", "long": "見送り"}
 
 
-def test_pending_three_c_gives_provisional_verdicts(repo, capsys):
+def test_horizons_weigh_differently(repo, capsys):
+    _company(repo, {"moat": {"verdict": "なし"}, "three-c": {"verdict": "あいまい"},
+                    "five-forces": {"attractiveness": "低"}, "profitability": {"verdict": "普通"},
+                    "growth": {"verdict": "普通"}})
+    out = _prepare(repo, capsys)
+    assert out["horizons"]["short"] == "投資検討" and out["horizons"]["long"] != "投資検討"
+
+
+def test_pending_three_c_keeps_step1_provisional_but_scores_the_horizons(repo, capsys):
     _company(repo, {"three-c": {"verdict": "判定保留"}})
     out = _prepare(repo, capsys)
     assert out["step1"] == "B（暫定）"
-    assert out["horizons"]["long"] == "判定保留（暫定: 投資検討）"
+    assert out["horizons"]["long"] == "投資検討"  # the pending 3C counts as 0 in the long-horizon score
 
 
 def test_kept_draft_follows_new_verdicts(repo, capsys):
@@ -263,7 +309,7 @@ def test_kept_draft_follows_new_verdicts(repo, capsys):
     text = md.read_text(encoding="utf-8")
     facts = json.loads((company / "reports" / f"{TODAY}_company-report_facts.json").read_text(encoding="utf-8"))
     assert out["kept"] and "書いた。" in text
-    assert D.horizon_rows(facts) in text and "| 長期（3年以上） | ウォッチ |" in text
+    assert D.horizon_rows(facts) in text and facts["step3"]["verdict"] == "割高"
 
 
 def test_write_guard_report_files(repo):

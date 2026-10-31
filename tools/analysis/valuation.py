@@ -30,6 +30,7 @@ TOOLS = HERE.parent
 sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "market"), str(TOOLS / "collect")]
 
 import an_common as A  # noqa: E402
+import freshness as T  # noqa: E402
 import gr_paths as GP  # noqa: E402
 import growth as GR  # noqa: E402
 import mdparse as M  # noqa: E402
@@ -68,6 +69,18 @@ def _summary(result: tuple[str, dict] | None) -> dict | None:
 
 # ---------- state ----------
 
+def _upstream_changes(company: P.Company, result: dict) -> list[str]:
+    """Upstream analyses (growth, the other STEP 2 analyses, SWOT) whose conclusion differs from the one this result
+    recorded at build. Only the conclusion counts: a re-run that reaches the same verdict re-opens nothing."""
+    recorded = result.get("upstream") or {}
+    labels = {k: lb for k, _, lb in X.UPSTREAM}
+    out = []
+    for key, value in X.others(company).items():
+        before, after = (recorded.get(key) or {}).get("verdict"), (value or {}).get("verdict")
+        if before != after:
+            out.append(f"{labels.get(key, key)}分析の結論が {before or '未実施'} → {after or '未実施'} に変わった")
+    return out
+
 def evaluate(company: P.Company, today: str) -> dict:
     """result: fresh / expired / triggered / draft / none, with the latest result and draft."""
     latest = P.latest_result(company)
@@ -77,25 +90,14 @@ def evaluate(company: P.Company, today: str) -> dict:
         date, result = latest
         state["latest"] = {"date": date, "md": company.rel(company.file(date, P.MD_SUFFIX)),
                            "json": company.rel(company.file(date, P.JSON_SUFFIX)),
-                           "verdict": result.get("verdict"), "valid_until": result.get("valid_until") or P.valid_until(date)}
-        digests = result.get("input_digests") or {}
-        found = I.gather_valuation(company)
-        state["newer_raw"] = I.changed_input_files(company, found, digests)
-        measures = (result.get("pbr") or {}).get("measures")
-        if digests.get(SERIES_KEY, "") != X.series_digest(X.candidates(company, found, today, measures)):
-            state["newer_raw"].append("（数値: 株価・EPS・BPS・年次の財務・競合の倍率）")
-        recorded = result.get("upstream") or {}
-        for key, value in X.others(company).items():  # growth, the other STEP 2 analyses and the SWOT
-            if (value or None) != (recorded.get(key) or None):
-                label = dict((k, lb) for k, _, lb in X.UPSTREAM)[key]
-                state["newer_raw"].append(f"（{label}分析の結果: {(recorded.get(key) or {}).get('date', '未実施')} → "
-                                          f"{(value or {}).get('date', '未実施')}）")
+                           "verdict": result.get("verdict"), "valid_until": P.valid_until(date)}
+        state["newer_raw"] = T.triggers(company, date, "annual_results") + _upstream_changes(company, result)
     if draft and (not latest or draft[0] >= latest[0]):
         state.update(result="draft", reason=f"作成途中の {company.rel(draft[1])} がある（続きから書く）")
     elif not latest:
         state.update(result="none", reason="バリュエーション分析の結果が無い")
     elif state["newer_raw"]:
-        state.update(result="triggered", reason="分析後に材料・数値・成長性分析が変わった: " + ", ".join(state["newer_raw"]))
+        state.update(result="triggered", reason="; ".join(state["newer_raw"]))
     elif today > state["latest"]["valid_until"]:
         state.update(result="expired", reason=f"有効期限 {state['latest']['valid_until']} を過ぎた（株価が動いている）")
     else:
@@ -326,6 +328,8 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: d
     return {
         "company": company.dirname, "name": company.display_name(), "date": date,
         "valid_until": P.valid_until(date), "verdict": cands["verdict"], "verdict_reason": cands["why"],
+        "conservative": ([f"点数になった指標が {next(iter(s3['scores']))} だけ（材料不足のため1指標で判定）"]
+                         if s3.get("single") else []),
         "price": {"value": base["price"]["price"], "date": base["price"]["date"], "currency": base["price"]["currency"]},
         **_items_json(cands),
         "step3": {"ratings": s3["ratings"], "scores": s3["scores"], "average": _round(s3["average"]),

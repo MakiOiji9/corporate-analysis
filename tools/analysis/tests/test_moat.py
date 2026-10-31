@@ -396,27 +396,30 @@ def test_full_cycle_then_fresh_triggered_and_expired(repo, capsys):
     assert out["verdict"] == "広い" and out["backing"] == "強い"
     assert out["effective_moats"] == ["スイッチングコスト", "規制・特許・許認可"]
     result = json.loads((md.parent / f"{DAY}_moat.json").read_text(encoding="utf-8"))
-    assert result["valid_until"] == "2027-04-10" and result["three_c"]["verdict"] == "明確"
+    assert result["valid_until"] == "2027-10-12" and result["three_c"]["verdict"] == "明確"
     assert "**広い**" in md.read_text(encoding="utf-8")
 
     _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
     assert out["next"] == "report_existing"
-    _, out = run(repo, "check", "--company", "7203", "--date", "2027-04-11", capsys=capsys)
+    _, out = run(repo, "check", "--company", "7203", "--date", "2027-10-13", capsys=capsys)
     assert out["result"] == "expired"
 
-    _three_c(repo, date="2026-10-20")
+    _three_c(repo, date="2026-10-20")  # the same conclusion again
     _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-21", capsys=capsys)
-    assert out["result"] == "triggered" and out["newer_raw"][-1].endswith("2026-10-20_three-c.json")
+    assert out["result"] == "fresh", out
+    _three_c(repo, date="2026-10-21", verdict="あいまい")
+    _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-22", capsys=capsys)
+    assert out["result"] == "triggered" and "明確 → あいまい" in out["newer_raw"][-1]
 
 
-def test_newer_financials_triggers(repo, capsys):
+def test_newer_financials_of_the_same_period_do_not_trigger(repo, capsys):
     md = prepared(repo, capsys)
     fill(md)
     run(repo, "build", "--company", "7203", capsys=capsys)
     (repo / "companies" / "7203_toyota" / "raw" / "ir" / "2026-10-15_financials-historical.md").write_text(
-        FINANCIALS.format(rows=_rows(range(2017, 2028), 3, SELF_MARGIN)), encoding="utf-8")  # a new fiscal year
+        FINANCIALS.format(rows=_rows(range(2017, 2028), 3, SELF_MARGIN)), encoding="utf-8")
     _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-16", capsys=capsys)
-    assert out["result"] == "triggered"
+    assert out["result"] == "fresh", out  # STEP 1 waits for the next 有報
 
 
 @pytest.mark.parametrize("moats, share, timing, verdict", [
@@ -446,14 +449,17 @@ def test_no_backing_corrects_claimed_moats(tmp_path, capsys):
     assert "「該当なし」に修正" in md.read_text(encoding="utf-8")
 
 
-def test_pending_when_margins_cannot_be_compared(tmp_path, capsys):
+def test_no_moat_when_margins_cannot_be_compared(tmp_path, capsys):
     _templates(tmp_path)
     _company(tmp_path, alpha_years=[], beta_years=[])
     _three_c(tmp_path)
     md = prepared(tmp_path, capsys)
     fill(md)
     _, out = run(tmp_path, "build", "--company", "7203", capsys=capsys)
-    assert out["verdict"] == "判定保留" and out["backing"] == "不明"
+    assert out["verdict"] == "なし" and out["backing"] == "不明" and out["effective_moats"] == []
+    assert "保守的" in out["verdict_reason"]
+    result = json.loads((md.parent / f"{DAY}_moat.json").read_text(encoding="utf-8"))
+    assert result["conservative"]
 
 
 def test_no_risk_row(repo, capsys):
@@ -493,7 +499,8 @@ def test_second_analysis_requires_change_reason(repo, capsys):
     md = prepared(repo, capsys)
     fill(md)
     run(repo, "build", "--company", "7203", capsys=capsys)
-    later = "2027-05-01"
+    later = "2026-11-01"
+    _three_c(repo, date="2026-10-20", verdict="あいまい")  # a changed upstream conclusion re-opens the moat
     md2 = prepared(repo, capsys, date=later)
     assert "スイッチングコスト 該当" in md2.read_text(encoding="utf-8")
     fill(md2, rows=moat_rows(switching="該当なし", license="該当"), changes="- スイッチングコストを見直した")
@@ -586,28 +593,24 @@ def test_short_peer_history_requests_collection_once(tmp_path, capsys):
     assert out["next"] == "prepare"
 
 
-def test_only_changed_sections_that_the_analysis_used_trigger(repo, capsys):
+def test_peer_updates_do_not_trigger(repo, capsys):
     md = prepared(repo, capsys)
     fill(md)
     run(repo, "build", "--company", "7203", capsys=capsys)
     assert "input_digests" in json.loads((md.parent / f"{DAY}_moat.json").read_text(encoding="utf-8"))
-    _raw(repo, "market", "2026-10-15_competitors.md",
-         "# 差分\n\n## 6. PER・PBR\n\n| 会社 | PER |\n|---|---|\n| トヨタ | 10 |\n\n" + COST)
-    _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-16", capsys=capsys)
-    assert out["result"] == "fresh", out  # unused section + identical cost table
-    changed = _raw(repo, "market", "2026-10-16_competitors.md", COST.replace("70.0%", "69.0%"))
+    _raw(repo, "market", "2026-10-16_competitors.md", COST.replace("70.0%", "69.0%"))
     _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-17", capsys=capsys)
-    assert out["result"] == "triggered" and out["newer_raw"] == [changed.relative_to(repo).as_posix()]
+    assert out["result"] == "fresh", out
 
 
-def test_new_fiscal_year_outside_the_read_sections_still_triggers(repo, capsys):
+def test_new_fiscal_year_yuho_triggers(repo, capsys):
     md = prepared(repo, capsys)
     fill(md)
     run(repo, "build", "--company", "7203", capsys=capsys)
     _raw(repo, "filings", "2026-10-15_2027-03_yuho.md", YUHO + "\n## 1. 主要な経営指標等の推移\n\n"
          "| 年度 | 売上高 | 営業利益 |\n|---|---|---|\n| 2027/03 | 100 | 12 |\n")
     _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-16", capsys=capsys)
-    assert out["result"] == "triggered" and any("営業利益率" in p for p in out["newer_raw"]), out
+    assert out["result"] == "triggered" and any("新しい期の有報" in p for p in out["newer_raw"]), out
 
 
 def test_resuming_a_started_draft_is_not_gated(tmp_path, capsys):

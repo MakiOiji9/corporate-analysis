@@ -37,6 +37,7 @@ import sw_brief as B  # noqa: E402
 import sw_doc as D  # noqa: E402
 import sw_inputs as I  # noqa: E402
 import sw_metrics as X  # noqa: E402
+import freshness as T  # noqa: E402
 import sw_paths as P  # noqa: E402
 import tc_paths as TP  # noqa: E402
 from common import atomic_write_text, utf8_stdout  # noqa: E402
@@ -93,17 +94,15 @@ def evaluate(company: P.Company, today: str) -> dict:
         date, result = latest
         state["latest"] = {"date": date, "md": company.rel(company.file(date, P.MD_SUFFIX)),
                            "json": company.rel(company.file(date, P.JSON_SUFFIX)),
-                           "verdict": result.get("verdict"), "valid_until": result.get("valid_until") or P.valid_until(date)}
-        state["newer_raw"] = I.changed_input_files(company, I.gather_swot(company), result.get("input_digests") or {})
-        for kind, found in upstream(company).items():
-            if found and found[0] > date:
-                state["newer_raw"].append(_upstream_file(company, kind, found[0]))
+                           "verdict": result.get("verdict"), "valid_until": P.valid_until(date)}
+        state["newer_raw"] = T.triggers(company, date, "annual",
+                                        [("ファイブフォース", FP), ("3C", TP), ("モート", MP)])
     if draft and (not latest or draft[0] >= latest[0]):
         state.update(result="draft", reason=f"作成途中の {company.rel(draft[1])} がある（続きから書く）")
     elif not latest:
         state.update(result="none", reason="SWOT分析の結果が無い")
     elif state["newer_raw"]:
-        state.update(result="triggered", reason="分析後に新しい raw・上流の分析がある: " + ", ".join(state["newer_raw"]))
+        state.update(result="triggered", reason="; ".join(state["newer_raw"]))
     elif today > state["latest"]["valid_until"]:
         state.update(result="expired", reason=f"有効期限 {state['latest']['valid_until']} を過ぎた")
     else:
@@ -298,6 +297,7 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, judged: 
         "top_strength": judged["top_strength"], "top_threat": judged["top_threat"],
         "answer": parsed["answer"], "answer_reason": parsed["answer_reason"], "measure": parsed["measure"],
         "sentence": parsed["sentence"], "verdict": judged["verdict"], "verdict_reason": judged["why"],
+        "conservative": judged["conservative"],
         "handoff": {"step2_checks": parsed["step2_checks"], "summary": parsed["summary"],
                     "triggers": parsed["triggers"]},
         "changes": parsed["changes"], "gaps": parsed["gaps"],

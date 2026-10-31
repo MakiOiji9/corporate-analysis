@@ -343,12 +343,12 @@ DECLINE_2023 = [{"year": "2023-03"}]
 @pytest.mark.parametrize("s1, s4, classes, verdict", [
     (GOOD_S1, CLEAN_S4, {"2023-03": "一時"}, "良好"),
     (GOOD_S1, CLEAN_S4, {"2023-03": "構造"}, "懸念"),
-    (GOOD_S1, CLEAN_S4, {"2023-03": "不明"}, "判定保留"),
+    (GOOD_S1, CLEAN_S4, {"2023-03": "不明"}, "懸念"),       # an unknown cause is read as 構造
     ({"rating": "停滞・縮小", "basis": "b"}, CLEAN_S4, {"2023-03": "一時"}, "懸念"),
     ({"rating": None, "basis": "b"}, CLEAN_S4, {"2023-03": "一時"}, "判定保留"),
     ({"rating": None, "basis": "b"}, CLEAN_S4, {"2023-03": "構造"}, "懸念"),
-    (GOOD_S1, {**CLEAN_S4, "problems": ["p"]}, {"2023-03": "不明"}, "普通"),
-    (GOOD_S1, {**CLEAN_S4, "unknown": ["M&A"]}, {"2023-03": "一時"}, "判定保留"),
+    (GOOD_S1, {**CLEAN_S4, "problems": ["p"]}, {"2023-03": "不明"}, "懸念"),
+    (GOOD_S1, {**CLEAN_S4, "unknown": ["M&A"]}, {"2023-03": "一時"}, "普通"),  # unchecked quality: 問題あり
     (GOOD_S1, {"adjusted": {"rating": "停滞・縮小", "basis": "b"}, "problems": ["p"], "unknown": []}, {}, "懸念"),
 ])
 def test_judge(s1, s4, classes, verdict):
@@ -444,14 +444,21 @@ def test_full_cycle_then_fresh_and_triggered(repo, capsys):
     newer = repo / "companies" / "7203_toyota" / "raw" / "ir" / "2026-10-25_financials-historical.md"
     newer.write_text(financials(sales=SALES[:-1] + [1500]), encoding="utf-8")
     _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-26", capsys=capsys)
+    assert out["result"] == "fresh", out  # a correction inside the same period waits for the next results
+    filings = repo / "companies" / "7203_toyota" / "raw" / "filings"
+    filings.mkdir(parents=True, exist_ok=True)
+    (filings / "2026-10-27_2027-03_yuho.md").write_text("# 有価証券報告書\n", encoding="utf-8")
+    _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-28", capsys=capsys)
     assert out["result"] == "triggered" and out["next"] == "prepare"
 
 
-@pytest.mark.parametrize("cls, verdict", [("構造", "懸念"), ("不明", "判定保留")])
+@pytest.mark.parametrize("cls, verdict", [("構造", "懸念"), ("不明", "懸念")])
 def test_class_decides_the_verdict(repo, capsys, cls, verdict):
     fill(prepared(repo, capsys), cls)
     _, out = run(repo, "build", "--company", "7203", capsys=capsys)
     assert out["verdict"] == verdict
+    result = json.loads((repo / out["json"]).read_text(encoding="utf-8"))
+    assert bool(result["conservative"]) == (cls == "不明")
 
 
 def test_build_rejects_bad_class_removed_row_and_words(repo, capsys):

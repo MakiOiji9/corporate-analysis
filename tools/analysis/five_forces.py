@@ -35,6 +35,7 @@ import ff_doc as D  # noqa: E402
 import ff_inputs as I  # noqa: E402
 import ff_metrics as X  # noqa: E402
 import ff_paths as P  # noqa: E402
+import freshness as T  # noqa: E402
 import mdparse as M  # noqa: E402
 from common import atomic_write_text, utf8_stdout  # noqa: E402
 
@@ -64,17 +65,14 @@ def evaluate(company: P.Company, today: str) -> dict:
         state["latest"] = {"date": date, "md": company.rel(company.file(date, P.MD_SUFFIX)),
                            "json": company.rel(company.file(date, P.JSON_SUFFIX)),
                            "attractiveness": result.get("attractiveness"), "total": result.get("total"),
-                           "valid_until": result.get("valid_until") or P.valid_until(date)}
-        digests = result.get("input_digests")
-        state["newer_raw"] = (I.changed_input_files(company, I.gather(company), digests) if digests is not None
-                              else I.newer_trigger_files(company, date, result.get("inputs") or (),
-                                                         seen=result.get("seen") or ()))  # results built before digests
+                           "valid_until": P.valid_until(date)}
+        state["newer_raw"] = T.triggers(company, date, "annual")  # new 有報 period, industry data, mid-term plan
     if draft and (not latest or draft[0] >= latest[0]):
         state.update(result="draft", reason=f"作成途中の {company.rel(draft[1])} がある（続きから書く）")
     elif not latest:
         state.update(result="none", reason="ファイブフォース分析の結果が無い")
     elif state["newer_raw"]:
-        state.update(result="triggered", reason="分析後に新しい raw が収集された: " + ", ".join(state["newer_raw"]))
+        state.update(result="triggered", reason="; ".join(state["newer_raw"]))
     elif today > state["latest"]["valid_until"]:
         state.update(result="expired", reason=f"有効期限 {state['latest']['valid_until']} を過ぎた")
     else:

@@ -9,7 +9,8 @@
   裏付けなし turns every 該当 of 手順1 into 該当なし (the framework's correction rule).
   モートの強さ (手順4), first match wins:
     なし: no 該当 moat
-    判定保留: 裏付け 不明 (material missing; distinct from なし)
+    なし: 裏付け 不明 — a moat without numbers to back it is not 該当 (1-3「裏付けの無いモートは該当しない」);
+          decided on the conservative side and recorded in conservative
     なし: 裏付け なし
     広い: 2+ moats, 裏付け 強い, no factor that may break a moat within 5 years
     狭い: otherwise (1 moat with backing / 2+ with weak backing / a factor within 5 years -> the less favourable)
@@ -216,10 +217,15 @@ def judge(parsed: dict, margin: dict) -> dict:
     corrected = support == "なし" and bool(claimed)
     effective = [] if support == "なし" else claimed
     near = [r["factor"] for r in parsed["risks"] if r["timing"] == NEAR]
+    conservative: list[str] = []
     if not claimed:
         verdict, why = "なし", "該当するモートが無い"
     elif support == "不明":
-        verdict, why = PENDING, "数字の裏付けを確かめる材料が無い（材料不足。モートが無いという意味ではない）"
+        effective = []
+        verdict = "なし"
+        why = (f"数字の裏付けを確かめる材料が無い（{support_why}）。裏付けの無いモートは該当しないため、"
+               f"{'・'.join(claimed)} を該当なしとして判定（材料不足のため保守的に判定）")
+        conservative.append("営業利益率の同業比較ができず、裏付け 不明 → 該当なし とみなした")
     elif support == "なし":
         verdict, why = "なし", f"数字の裏付けなし（{support_why}）のため、該当としたモートを「該当なし」に修正"
     elif len(effective) >= 2 and support == "強い" and not near:
@@ -234,7 +240,8 @@ def judge(parsed: dict, margin: dict) -> dict:
             lacking.append("5年以内に崩しうる要因あり")
         verdict, why = "狭い", "、".join(lacking)
     return {"verdict": verdict, "why": why, "backing": support, "backing_why": support_why,
-            "claimed": claimed, "effective": effective, "corrected": corrected, "near_risks": near}
+            "claimed": claimed, "effective": effective, "corrected": corrected, "near_risks": near,
+            "conservative": conservative}
 
 
 def conclusion_section(judged: dict, margin: dict, share_trend: str) -> str:

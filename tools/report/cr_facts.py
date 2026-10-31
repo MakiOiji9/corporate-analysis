@@ -6,6 +6,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import cr_extras as X
+import cr_factors as F
 import cr_judge as J
 import cr_prices as CP
 import cr_status as S
@@ -39,9 +41,18 @@ def _five_forces(r: dict) -> dict:
 
 
 def _three_c(r: dict) -> dict:
+    customer = r.get("customer") or {}
     return {"win_reason": r.get("win_reason"), "top_kbf": r.get("top_kbf"),
-            "customer": _get(r, "customer", "conclusion"), "competitor": _get(r, "competitor", "rating"),
-            "growth": _get(r, "growth", "rating")}
+            "customer": customer.get("conclusion"), "customers": customer.get("customers"),
+            "kbf": r.get("kbf") or customer.get("kbf") or [], "market": customer.get("seen"),
+            "competitor": _get(r, "competitor", "rating"), "competitor_reason": _get(r, "competitor", "conclusion"),
+            "growth": _get(r, "growth", "rating"), "growth_reason": _get(r, "growth", "reason"),
+            "kbf_table": [{"kbf": k.get("kbf"), "self": k.get("self"), "peers": k.get("peers") or {},
+                           "basis": k.get("basis")} for k in r.get("kbf_table") or []],
+            "comparison": [{k: c.get(k) for k in ("name", "self", "year", "sales", "margin", "share", "cagr")}
+                           for c in r.get("comparison") or []],
+            "strengths": _get(r, "handoff", "strengths"), "weaknesses": _get(r, "handoff", "weaknesses"),
+            "company_conclusion": r.get("company_conclusion")}
 
 
 def _moat(r: dict) -> dict:
@@ -58,8 +69,10 @@ def _swot(r: dict) -> dict:
 
 
 def _profitability(r: dict) -> dict:
+    last = (_get(r, "step2", "rows") or [{}])[-1] or {}
     return {"roe_average": _get(r, "step1", "average"), "roe_minimum": _get(r, "step1", "minimum"),
             "margin": {k: _get(r, "step2", k) for k in ("year", "self", "avg", "diff", "trend")},
+            "peer_margins": [{"name": p.get("name"), "margin": p.get("margin")} for p in last.get("peers") or []],
             "source": _get(r, "step3", "source"),
             "roe_rows": [{"year": x.get("year"), "roe": x.get("roe")} for x in r.get("roe_rows") or []]}
 
@@ -68,7 +81,9 @@ def _growth(r: dict) -> dict:
     return {"sales_cagr": _get(r, "step1", "sales_cagr"), "eps_cagr": _get(r, "step1", "eps_cagr"),
             "growth_type": _get(r, "step1", "rating"), "plan": _get(r, "step3", "rating"),
             "plan_average": _get(r, "step3", "average"), "quality": _get(r, "step4", "quality"),
-            "progress": r.get("progress"),
+            "quality_sentence": _get(r, "step4", "sentence"), "progress": r.get("progress"), "mtp": r.get("mtp"),
+            "cagr": {k: _get(r, "step1", "cagr", k, "value") for k in ("sales", "operating_income", "eps")},
+            "cagr_span": [_get(r, "step1", "cagr", "sales", "first"), _get(r, "step1", "cagr", "sales", "last")],
             "rows": [{k: x.get(k) for k in ("year", "sales", "operating_income", "net_income", "eps")}
                      for x in r.get("rows") or []]}
 
@@ -77,7 +92,8 @@ def _safety(r: dict) -> dict:
     s1 = r.get("step1") or {}
     return {"items": [{k: i.get(k) for k in ("name", "value", "peer_avg", "rating", "target")}
                       for i in s1.get("items") or []],
-            "net_cash": s1.get("net_cash"), "debt_free": s1.get("debt_free"), "trend": _get(r, "step2", "rating")}
+            "net_cash": s1.get("net_cash"), "debt_free": s1.get("debt_free"), "trend": _get(r, "step2", "rating"),
+            "peers": [{"name": p.get("name"), "equity_ratio": p.get("equity_ratio")} for p in s1.get("peers") or []]}
 
 
 def _cash_flow(r: dict) -> dict:
@@ -95,7 +111,11 @@ def _valuation(r: dict) -> dict:
     return {"price": r.get("price"), "items": items, "sheet": r.get("sheet"), "flip_prices": r.get("flip_prices") or [],
             "per_actual": _get(r, "per", "per_actual"), "per_forecast": _get(r, "per", "per_forecast"),
             "pbr": _get(r, "pbr", "pbr"), "per_range": {k: axis.get(k) for k in ("low", "high", "position")},
-            "cheap_reason": _get(r, "handoff", "cheap_reason"), "final_check": _get(r, "step3", "final_check")}
+            "cheap_reason": _get(r, "handoff", "cheap_reason"), "final_check": _get(r, "step3", "final_check"),
+            "average": _get(r, "step3", "average"), "raw_verdict": _get(r, "step3", "raw_verdict"),
+            "ev_ebitda": _get(r, "ev", "value"), "eps_used": _get(r, "per", "eps", "eps_used"),
+            "peers": [{k: p.get(k) for k in ("name", "per_actual", "per_forecast", "pbr", "ev_ebitda_calc", "cagr", "roe")}
+                      for p in r.get("peers") or []]}
 
 
 DETAILS = {"five_forces": _five_forces, "three_c": _three_c, "moat": _moat, "swot": _swot,
@@ -113,7 +133,7 @@ def analysis(step: S.Step, company: S.Company) -> dict:
     gaps = [g for g in r.get("gaps") or [] if not M.is_blank(g) and g != "なし"]
     return {**base, "date": date, "verdict": r.get(step.verdict_key), "reason": r.get("verdict_reason") or "",
             "points": _get(r, "handoff", "report_points") or "", "gaps": gaps, "md": r.get("md"),
-            "detail": DETAILS[step.key](r)}
+            "conservative": r.get("conservative") or [], "detail": DETAILS[step.key](r)}
 
 
 # ---------------------------------------------------------------- outlook / review
@@ -147,17 +167,20 @@ def judgements(found: dict[str, dict], prices: dict, outlook: dict) -> dict:
     margin_diff = _get(found["profitability"], "detail", "margin", "diff")
     s1 = J.step1(v["five_forces"], v["three_c"], v["moat"], v["swot"])
     mismatch = J.mismatches(v["moat"], v["three_c"], v["profitability"], margin_diff)
+    flags = J.red_flags(_get(found["cash_flow"], "detail", "steps") or [], v["safety"],
+                        _get(found["safety"], "detail", "trend"))
     s2 = J.step2({"収益性": v["profitability"], "成長性": v["growth"], "安全性": v["safety"],
-                  "キャッシュフロー": v["cash_flow"]}, mismatch)
-    s3 = v["valuation"]
-    long = J.long_term(s1, s2, s3)
-    growth = found["growth"]["detail"]
-    rows = outlook["rows"]
-    mid = J.mid_term(long, growth.get("progress"), _get(rows, "中期", "judgment"), growth.get("plan"), s3)
-    position, gap = CP.short_inputs(prices)
-    short = J.short_term(long, _get(rows, "短期", "judgment"), position, gap)
-    return {"step1": s1, "step2": {**s2, "mismatch": mismatch}, "step3": {"verdict": s3},
-            "horizons": {"short": short, "mid": mid, "long": long}}
+                  "キャッシュフロー": v["cash_flow"]}, mismatch, flags)
+    s3 = F.step3_verdict(found["valuation"])
+    factors = F.build(found, prices, outlook)
+    horizons = {h: {**J.horizon_score(h, factors[h], flags, s1["grade"]),
+                    "sensitivity": J.sensitivity(h, factors[h], flags, s1["grade"])} for h in factors}
+    final_check = _get(found["valuation"], "detail", "final_check") or {}
+    note = "割安だが理由あり（" + "・".join(final_check.get("concerns") or []) + "）" \
+        if s3 == "割安" and final_check.get("concerns") else ""
+    return {"step1": s1, "step2": {**s2, "mismatch": mismatch, "flags": flags},
+            "step3": {"verdict": s3, "note": note}, "horizons": horizons,
+            "matrix": J.matrix_reference(s1, s2, s3)}
 
 
 def gaps(found: dict[str, dict]) -> list[dict]:
@@ -175,7 +198,11 @@ def build(root: Path, company: S.Company, today: str, status: dict) -> dict:
     market = market_of(company)
     prices = CP.summarize(company.path)
     outlook = {**status["outlook"], **outlook_rows(root, status["outlook"], market)}
-    return {
+    price = _get(found["valuation"], "detail", "price") or {}
+    per_forecast = _get(found["valuation"], "detail", "per_forecast")
+    extras = {"dividends": X.dividends(company.path, price.get("value"), per_forecast),
+              "peers": X.peer_table(found, company.display_name())}
+    return {**extras,
         "company": company.dirname, "ticker": company.ticker, "name": company.display_name(), "market": market,
         "date": today, "unit": unit_label(company), "price": _get(found["valuation"], "detail", "price") or {},
         "analyses": found, "prices": prices, "outlook": outlook, "review": next_review(company),

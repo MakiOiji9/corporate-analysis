@@ -383,13 +383,15 @@ def judge(s1: dict, declines: list[dict], s4: dict, classes: dict[str, str] | No
         return "懸念", f"構造的な減収・減益の要因あり（{'、'.join(structural)}）"
     if s1["rating"] is None:
         return "判定保留", f"手順1を判定できない（{s1['basis']}）"
+    unknown = [y for y in years if filled.get(y) == "不明"] if classes is not None else []
+    if unknown:  # a cause that cannot be told is read as 構造 (never as the favourable 一時)
+        return "懸念", (f"減収・減益の原因が不明の年（{'、'.join(unknown)}）を構造的な要因とみなした"
+                      "（材料不足のため保守的に判定）")
     if s4["problems"]:
         return "普通", f"手順1は{s1['rating']}だが、成長の質に問題あり（{'。'.join(s4['problems'])}）"
-    unknown = [y for y in years if filled.get(y) == "不明"] if classes is not None else []
-    if unknown or s4["unknown"]:
-        parts = ([f"減収・減益の原因が不明の年（{'、'.join(unknown)}）"] if unknown else []) + \
-                ([f"成長の質の確認ができない点（{'・'.join(s4['unknown'])}）"] if s4["unknown"] else [])
-        return "判定保留", f"手順1は{s1['rating']}だが、{'、'.join(parts)}がある（材料不足。普通・懸念という意味ではない）"
+    if s4["unknown"]:  # a quality point that cannot be checked is read as 問題あり
+        return "普通", (f"手順1は{s1['rating']}だが、成長の質の確認ができない点（{'・'.join(s4['unknown'])}）を"
+                      "問題ありとみなした（材料不足のため保守的に判定）")
     pending = "（減収・減益の年の分類が一時のときの候補）" if classes is None and years else ""
     return "良好", f"手順1が{s1['rating']}、構造的な減収減益要因なし、成長の質が高い{pending}"
 
@@ -418,6 +420,13 @@ def conservative(verdict: str, s1: dict, s4: dict) -> list[str]:
 
 
 LOWER = {"良好": "普通", "普通": "懸念"}
+
+
+def unknown_notes(declines: list[dict], s4: dict, classes: dict[str, str] | None) -> list[str]:
+    """How the unknowns were read on the conservative side (recorded in the result's conservative)."""
+    filled = classes or {}
+    notes = [f"{d['year']} の減収・減益の原因が不明 → 構造とみなした" for d in declines if filled.get(d["year"]) == "不明"]
+    return notes + [f"成長の質の「{u}」を確かめられない → 問題ありとみなした" for u in s4.get("unknown") or []]
 
 
 def decide(s1: dict, declines: list[dict], s4: dict, classes: dict[str, str] | None) -> tuple[str, str, list[str]]:

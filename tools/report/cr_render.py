@@ -12,6 +12,7 @@ import charts as C
 import cr_doc as D
 import cr_glossary as G
 import cr_judge as J
+import cr_sections as X
 from slides import esc, table
 
 VERDICT_CLASS = {J.CONSIDER: "v-consider", J.WATCH: "v-watch", J.PASS: "v-pass", J.PENDING: "v-pending"}
@@ -19,13 +20,16 @@ SPANS = {"short": "〜3ヶ月", "mid": "6ヶ月〜1年", "long": "3年以上"}
 PERIODS = {"short": "短期", "mid": "中期", "long": "長期"}
 OK_HTML = {True: '<span class="ok-yes">○ 満たす</span>', False: '<span class="ok-no">× 満たさない</span>',
            None: '<span class="ok-unk">不明</span>'}
-TOC = (("conclusion", "結論"), ("reasons", "判定の根拠"), ("step1", "STEP 1 事業"), ("step2", "STEP 2 財務"),
-       ("step3", "STEP 3 株価"), ("price", "株価のレンジ"), ("thesis", "投資の理由"), ("gaps", "材料不足"),
-       ("glossary", "用語集"))
-PLAIN_HORIZONS = (("短期", "〜3ヶ月", "地合いと株価の位置（52週レンジ・移動平均）を見る。値動きの影響が大きく、根拠は弱い。"),
-                  ("中期", "6ヶ月〜1年", "長期の判定に、直近の決算の進み具合と地合いを加える。"),
-                  ("長期", "3年以上", "事業（STEP 1）・財務（STEP 2）・株価（STEP 3）を判定マトリクスで組み合わせる。"
-                   "フレームワークの基本の形。"))
+TOC = (("conclusion", "結論"), ("reasons", "期間ごとの良い点・悪い点"), ("step1", "STEP 1 事業"),
+       ("step2", "STEP 2 財務"), ("step3", "STEP 3 株価"), ("price", "株価のレンジ"), ("thesis", "投資の理由"),
+       ("gaps", "材料不足"), ("glossary", "用語集"))
+PLAIN_HORIZONS = (("短期", "〜3ヶ月", "地合い・株価の位置と勢い・直近の決算の進み具合・割安さを重く見る。値動きの影響が大きく、根拠は弱い。"),
+                  ("中期", "6ヶ月〜1年", "割安さと業績の勢い（成長性・決算の進捗）を重く見て、財務と地合いも加える。"),
+                  ("長期", "3年以上", "事業の強さ（勝てる理由・モート・業界）を重く見て、財務と割安さを加える。"
+                   "フレームワークの判定マトリクスも参考に示す。"))
+WEIGHT_NOTE = (f"各要素を +1（良い）・0（中間）・−1（悪い）の点数にし、期間ごとの重みで平均した。"
+               f"+{J.UP} 以上で投資検討、{J.DOWN} 以下で見送り、その間はウォッチ。"
+               "営業CF のマイナスが続く・FCF の累計がマイナス・安全性の悪化などの深刻な赤信号は、点数にかかわらず見送り。")
 DISCLAIMER = ("本レポートは公表資料と収集データをもとに企業分析フレームワークの手順で整理したもので、投資の勧誘・推奨ではありません。"
               "判定は作成日時点の材料による位置づけで、将来の株価を予想するものではありません。最終的な投資判断はご自身で行ってください。")
 
@@ -76,9 +80,13 @@ def masthead(facts: dict) -> str:
 
 def _card(key: str, h: dict) -> str:
     word = h["verdict"]
-    prov = f'<div class="prov">暫定の目安: {esc(h["provisional"])}</div>' if h["provisional"] else ""
+    score = "—" if h["score"] is None else f'{h["score"]:+.2f}'
+    good = "・".join(r["label"].split("（")[0] for r in h["good"][:2]) or "なし"
+    bad = "・".join(r["label"].split("（")[0] for r in h["bad"][:2]) or "なし"
     return (f'<div class="vcard {VERDICT_CLASS.get(word, "")}"><div class="period">{esc(PERIODS[key])}'
-            f'（{esc(SPANS[key])}）</div><div class="word">{esc(word)}</div>{prov}<p class="why">{esc(h["why"])}</p></div>')
+            f'（{esc(SPANS[key])}）</div><div class="word">{esc(word)}<span class="vscore">{esc(score)}</span></div>'
+            f'{X.gauge(h["score"])}<p class="why"><span class="ok-yes">＋</span> {esc(good)}<br>'
+            f'<span class="ok-no">−</span> {esc(bad)}</p></div>')
 
 
 def _stale_notice(facts: dict) -> str:
@@ -97,21 +105,18 @@ def conclusion(facts: dict, parsed: dict) -> str:
     legend = "".join(f"<dt>{badge(w)}</dt><dd>{esc(t)}</dd>" for w, t in G.VERDICTS.items())
     spans = "".join(f"<p><b>{esc(n)}</b>（{esc(s)}）: {esc(t)}</p>" for n, s, t in PLAIN_HORIZONS)
     reading = (f'<h3>判定の読み方</h3><div class="cols"><div class="panel"><dl class="gloss">{legend}</dl></div>'
-               f'<div class="panel small">{spans}<p>短期・中期は長期より良い判定にしない。</p></div></div>')
+               f'<div class="panel small">{spans}<p>{esc(WEIGHT_NOTE)}</p></div></div>')
     about = f'<h3>この会社をひと言で</h3><div class="prose">{_paragraphs(parsed["about"])}</div>'
     return _section("conclusion", "01", "結論", "3つの期間それぞれで、今この会社に投資してよいかを判定した。",
                     cards + summary + about + reading)
 
 
 def reasons(facts: dict, parsed: dict) -> str:
-    body = ""
-    for key in ("short", "mid", "long"):
-        h = facts["horizons"][key]
-        note = f'<p class="small muted">{esc(h["note"])}</p>' if h["note"] else ""
-        body += (f'<h3>{esc(PERIODS[key])}（{esc(SPANS[key])}） {badge(h["verdict"])}</h3>'
-                 f'<div class="prose">{_paragraphs(parsed[key])}</div>{note}{_conditions(h["rows"])}')
-    return _section("reasons", "02", "判定の根拠", "各期間の判定を決めた条件。○は満たす、×は満たさない、不明は材料が無い"
-                    "（不明は良い方に読まない）。", body)
+    body = "".join(X.horizon_block(PERIODS[key], SPANS[key], facts["horizons"][key], _paragraphs(parsed[key]),
+                                   facts.get("matrix") if key == "long" else None)
+                   for key in ("short", "mid", "long"))
+    return _section("reasons", "02", "期間ごとの良い点・悪い点",
+                    "期間ごとに重視する要素が違う。点数を押し上げた要素が良い点、押し下げた要素が悪い点。" + WEIGHT_NOTE, body)
 
 
 # ---------------------------------------------------------------- STEP 1-3
@@ -120,8 +125,9 @@ def _stepcards(facts: dict, keys: tuple[str, ...]) -> str:
     cards = ""
     for key in keys:
         a = facts["analyses"][key]
+        flag = '<span class="cons">保守的に判定</span>' if a.get("conservative") else ""
         cards += (f'<div class="stepcard"><div class="label">{esc(a["step"])} {esc(a["label"])}'
-                  f'（{esc(a["date"] or "未実施")}）</div><div class="res">{esc(a["verdict"] or "—")}</div>'
+                  f'（{esc(a["date"] or "未実施")}）</div><div class="res">{esc(a["verdict"] or "—")}{flag}</div>'
                   f'<p>{esc(a["reason"])}</p></div>')
     return f'<div class="steps">{cards}</div>'
 
@@ -134,20 +140,21 @@ def _stephead(grade: dict, title: str) -> str:
 
 def step1(facts: dict) -> str:
     d = facts["analyses"]
-    ff, sw = d["five_forces"]["detail"], d["swot"]["detail"]
+    ff = d["five_forces"]["detail"]
     forces = table(["要因", "強さ", "理由"], [[esc(f["name"]), esc(f["rating"]), esc(f["reason"])]
                                           for f in ff.get("factors") or []])
-    s, t = sw.get("top_strength") or {}, sw.get("top_threat") or {}
-    swot = (f'<p><b>最大の強み</b>（{esc(s.get("id"))}、影響 {esc(s.get("impact"))}）: {esc(s.get("fact"))}</p>'
-            f'<p><b>最大の脅威</b>（{esc(t.get("id"))}、影響 {esc(t.get("impact"))}）: {esc(t.get("fact"))}</p>'
-            f'<p>{esc(sw.get("sentence"))}</p>')
     inner = (_conditions(facts["step1"]["rows"]) + f"<h3>業界の5つの力（{esc(ff.get('industry'))}）</h3>" + forces
-             + f"<h3>勝てる理由</h3><p>{esc(d['three_c']['detail'].get('win_reason'))}</p>"
              + f"<h3>モート（強みの持続性）</h3><p>{esc(d['moat']['detail'].get('durability'))}</p>"
-             + "<h3>SWOT</h3>" + swot)
+             + _conservative(d["moat"]))
     body = (_stephead(facts["step1"], "STEP 1 総合") + _stepcards(facts, ("five_forces", "three_c", "moat", "swot"))
-            + _details("詳しく見る（A の条件・5つの力・強みと脅威）", inner))
+            + X.three_c_block(d["three_c"]["detail"], d["three_c"]) + X.swot_grid(d["swot"]["detail"], d["swot"])
+            + _details("詳しく見る（A の条件・業界の5つの力・モート）", inner))
     return _section("step1", "03", "STEP 1 事業と競争環境", "儲けやすい業界か、選ばれる理由があるか、その強みは続くか。", body)
+
+
+def _conservative(a: dict) -> str:
+    notes = a.get("conservative") or []
+    return (f'<p class="small"><b>保守的に判定（材料不足）</b>: {esc("。".join(notes))}</p>' if notes else "")
 
 
 def _year_date(year: str) -> str:
@@ -187,7 +194,8 @@ def step2(facts: dict) -> str:
     inner = (_conditions(facts["step2"]["rows"]) + "<h3>各分析の要点</h3>" + points + "<h3>安全性の3指標</h3>" + safety
              + "<h3>キャッシュフローの5つの確認</h3>" + cfsteps)
     body = (_stephead(facts["step2"], "STEP 2 総合") + _stepcards(facts, ("profitability", "growth", "safety", "cash_flow"))
-            + _financial_charts(facts) + _details("詳しく見る（A の条件・各分析の要点・安全性・キャッシュフロー）", inner))
+            + _financial_charts(facts) + X.growth_block(facts) + X.dividends_block(facts)
+            + _details("詳しく見る（A の条件・各分析の要点・安全性・キャッシュフロー）", inner))
     return _section("step2", "04", "STEP 2 財務", "稼ぐ力・伸びる力・つぶれにくさ・お金の流れを数字で確かめる。", body)
 
 
@@ -197,12 +205,14 @@ def step3(facts: dict) -> str:
     cards = "".join(f'<div class="stepcard"><div class="label">{esc(name)}</div>'
                     f'<div class="res">{esc(item.get("rating") or "—")}</div><p>{esc(item.get("sentence"))}</p></div>'
                     for name, item in (detail.get("items") or {}).items())
-    head = (f'<div class="stephead"><div><h3>STEP 3: {badge(v["verdict"])}</h3><p>{esc(v["reason"])}</p>'
-            f'<p class="muted">{esc(detail.get("sheet"))}</p></div></div>')
+    s3 = facts["step3"]
+    note = f'<p class="notice">{esc(s3["note"])}</p>' if s3.get("note") else ""
+    head = (f'<div class="stephead"><div><h3>STEP 3: {badge(s3["verdict"])}</h3><p>{esc(v["reason"])}</p>'
+            f'<p class="muted">{esc(detail.get("sheet"))}</p></div></div>{note}')
     flips = _list(detail.get("flip_prices") or [])
     cheap = (f"<h3>安い理由として説明できること</h3><p>{esc(detail['cheap_reason'])}</p>"
              if detail.get("cheap_reason") else "")
-    body = (head + f'<div class="steps">{cards}</div>'
+    body = (head + f'<div class="steps">{cards}</div>' + X.peers_block(facts)
             + _details("判定が変わる株価・安い理由", f"<h3>判定が変わる株価</h3>{flips}{cheap}"))
     return _section("step3", "05", "STEP 3 株価の妥当性", "今の株価は、過去の水準と同業他社に比べて安いか高いか。"
                     "割安・割高は現時点の位置づけで、将来の株価の予想ではない。", body)
@@ -305,8 +315,9 @@ def glossary(text: str) -> str:
 
 
 def render(template: str, facts: dict, parsed: dict, md_text: str) -> str:
-    body = (masthead(facts) + "<main>" + conclusion(facts, parsed) + reasons(facts, parsed) + step1(facts)
-            + step2(facts) + step3(facts) + price_section(facts) + thesis(facts, parsed) + gaps(facts)
+    main = X.annotate(conclusion(facts, parsed) + reasons(facts, parsed) + step1(facts) + step2(facts) + step3(facts)
+                      + price_section(facts) + thesis(facts, parsed) + gaps(facts))
+    body = (masthead(facts) + "<main>" + main
             + glossary(md_text + D.render_brief(facts, "").split(D.WRITING_RULES)[0])
             + f'</main><footer><div class="wrap"><p>{esc(DISCLAIMER)}</p>'
               f'<p>生成: tools/report/company_report.py build（{esc(facts["date"])}）</p></div></footer>')

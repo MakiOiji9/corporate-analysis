@@ -36,6 +36,7 @@ import gr_doc as D  # noqa: E402
 import gr_facts as F  # noqa: E402
 import gr_inputs as I  # noqa: E402
 import gr_metrics as X  # noqa: E402
+import freshness as T  # noqa: E402
 import gr_paths as P  # noqa: E402
 import mdparse as M  # noqa: E402
 import sw_paths as SP  # noqa: E402
@@ -87,19 +88,14 @@ def evaluate(company: P.Company, today: str) -> dict:
         date, result = latest
         state["latest"] = {"date": date, "md": company.rel(company.file(date, P.MD_SUFFIX)),
                            "json": company.rel(company.file(date, P.JSON_SUFFIX)),
-                           "verdict": result.get("verdict"), "valid_until": result.get("valid_until") or P.valid_until(date)}
-        digests = result.get("input_digests") or {}
-        found = I.gather_growth(company)
-        state["newer_raw"] = I.changed_input_files(company, found, digests)
-        if digests.get(SERIES_KEY, "") != X.series_digest(X.candidates(company, found)):
-            state["newer_raw"].append("（年次の数値: data/*.csv・有報・財務時系列）")
-        state["newer_raw"] += [path for d, path in _upstream_files(company) if d > date]
+                           "verdict": result.get("verdict"), "valid_until": P.valid_until(date)}
+        state["newer_raw"] = T.triggers(company, date, "quarter", [("3C", TP), ("SWOT", SP)])
     if draft and (not latest or draft[0] >= latest[0]):
         state.update(result="draft", reason=f"作成途中の {company.rel(draft[1])} がある（続きから書く）")
     elif not latest:
         state.update(result="none", reason="成長性分析の結果が無い")
     elif state["newer_raw"]:
-        state.update(result="triggered", reason="分析後に材料・数値・上流の分析が変わった: " + ", ".join(state["newer_raw"]))
+        state.update(result="triggered", reason="; ".join(state["newer_raw"]))
     elif today > state["latest"]["valid_until"]:
         state.update(result="expired", reason=f"有効期限 {state['latest']['valid_until']} を過ぎた")
     else:
@@ -372,6 +368,7 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     atomic_write_text(md_path, D.apply_conclusion(text, cands, year_classes))
     result = result_json(company, date, text, parsed, cands, consistency, verdict, why)
     result["downgraded"] = downgraded
+    result["conservative"] = X.unknown_notes(cands["declines"], cands["step4"], year_classes)
     json_path = company.file(date, P.JSON_SUFFIX)
     atomic_write_text(json_path, json.dumps(result, ensure_ascii=False, indent=1) + "\n")
     return emit({

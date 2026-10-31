@@ -1,3 +1,4 @@
+import datetime as dt
 import json
 import re
 import shutil
@@ -306,10 +307,13 @@ def test_combine_single_axis_and_none():
     ({"a": R.LOW, "b": R.FAIR}, R.LOW),  # +0.5
     ({"a": R.HIGH, "b": R.FAIR}, R.HIGH),  # -0.5
     ({"a": R.LOW, "b": R.FAIR, "c": R.FAIR}, R.FAIR),  # +0.33
-    ({"a": R.LOW, "b": R.NA, "c": R.PENDING}, R.PENDING),  # one scored
+    ({"a": R.LOW, "b": R.NA, "c": R.PENDING}, R.LOW),  # one scored: judged on it (材料不足のため1指標)
+    ({"a": R.NA, "b": R.PENDING}, R.PENDING),  # nothing scored
 ])
 def test_score(ratings, verdict):
-    assert R.score(ratings)["verdict"] == verdict
+    result = R.score(ratings)
+    assert result["verdict"] == verdict
+    assert result["single"] == (len(result["scores"]) == 1)
 
 
 # ---------- va_series ----------
@@ -459,12 +463,13 @@ def test_ev_ebitda_value_history_and_divergence():
     assert div["reasons"] == ["現金が多い（ネットキャッシュがプラス）"]
 
 
-def test_step3_final_check_raises_a_cheap_verdict():
+def test_step3_final_check_notes_but_does_not_raise():
     items = {k: {"rating": R.LOW} for k, _ in X.INDICATORS}
     assert X.step3(items, {})["verdict"] == R.LOW
-    raised = X.step3(items, {"cash_flow": {"verdict": "懸念"}})
-    assert raised["verdict"] == R.FAIR and raised["final_check"]["raised"]
-    assert X.step3(items, {"swot": {"verdict": "No"}})["verdict"] == R.FAIR
+    noted = X.step3(items, {"cash_flow": {"verdict": "懸念"}})
+    assert noted["verdict"] == R.LOW and noted["final_check"]["noted"] and not noted["final_check"]["raised"]
+    assert "割安だが理由あり" in noted["why"]
+    assert X.step3(items, {"swot": {"verdict": "No"}})["verdict"] == R.LOW
 
 
 # ---------- end to end ----------
@@ -540,13 +545,13 @@ def test_build_rejects_new_numbers_and_approximations(repo, capsys):
     assert "9.87" in joined and "概数" in joined
 
 
-def test_a_concern_in_step2_turns_cheap_into_fair(repo, capsys):
+def test_a_concern_in_step2_is_noted_not_double_counted(repo, capsys):
     write_result(repo, "cash-flow", "懸念")
     md = prepared(repo, capsys)
     fill(md)
     code, out = run(repo, "build", "--company", "7203", capsys=capsys)
-    assert code == 0 and out["verdict"] == R.FAIR
-    assert "キャッシュフローが懸念" in out["verdict_reason"]
+    assert code == 0 and out["verdict"] == R.LOW  # STEP 2 already counts the concern
+    assert "キャッシュフローが懸念" in out["verdict_reason"] and "割安だが理由あり" in out["verdict_reason"]
 
 
 def test_value_trap_answer_decides_the_pbr(tmp_path, monkeypatch, capsys):
@@ -567,14 +572,17 @@ def test_value_trap_answer_decides_the_pbr(tmp_path, monkeypatch, capsys):
     assert out["PBR"].startswith(R.FAIR) and out["measures"] == "なし"
 
 
-def test_new_price_triggers_a_reanalysis(repo, capsys):
+def test_new_price_waits_for_the_validity_period(repo, capsys):
     md = prepared(repo, capsys)
     fill(md)
     assert run(repo, "build", "--company", "7203", capsys=capsys)[0] == 0
     newer = repo / "companies" / "7203_toyota" / "raw" / "ir" / f"{DAY}_valuation-data.md"
     newer.write_text(valuation_data(price=1100, price_date=DAY), encoding="utf-8")
     _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
-    assert out["result"] == "triggered"
+    assert out["result"] == "fresh", out  # the price unit is the 7-day validity
+    later = (dt.date.fromisoformat(DAY) + dt.timedelta(days=8)).isoformat()
+    _, out = run(repo, "check", "--company", "7203", "--date", later, capsys=capsys)
+    assert out["result"] == "expired"
 
 
 def test_a_new_upstream_result_triggers_a_reanalysis(repo, capsys):

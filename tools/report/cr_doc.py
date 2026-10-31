@@ -19,7 +19,7 @@ HORIZONS = (("short", "短期（〜3ヶ月）"), ("mid", "中期（6ヶ月〜1�
 TEXT_KEYS = (("about", "2."), ("short", "3.1"), ("mid", "3.2"), ("long", "3.3"),
              ("thesis", "4.1"), ("break", "4.2"), ("watch", "4.3"))
 LIST_KEYS = ("break", "watch")
-LIMITS = {"about": 200, "short": 250, "mid": 250, "long": 300, "thesis": 200}
+LIMITS = {"about": 200, "short": 300, "mid": 300, "long": 350, "thesis": 200}
 SUMMARY_TITLE, SUMMARY_LINES, SUMMARY_LIMIT = "3行まとめ", 3, 60
 LIST_RANGE = (2, 4)
 OK_MARK = {True: "○", False: "×", None: "不明"}
@@ -31,15 +31,23 @@ def cell(text: object) -> str:
 
 
 def verdict_label(h: dict) -> str:
-    return f"{J.PENDING}（暫定: {h['provisional']}）" if h["provisional"] else h["verdict"]
+    return f"{J.PENDING}（暫定: {h['provisional']}）" if h.get("provisional") else h["verdict"]
+
+
+def score_text(score: float | None) -> str:
+    return "—" if score is None else f"{score:+.2f}"
+
+
+def short_label(label: str) -> str:
+    """'株価の割安さ（STEP 3）' -> '株価の割安さ' (what a sentence about the factor names)."""
+    return label.split("（")[0]
 
 
 def horizon_rows(facts: dict) -> str:
     rows = []
     for key, label in HORIZONS:
         h = facts["horizons"][key]
-        why = h["why"] + (f"（{h['note']}）" if h["note"] and key == "long" else "")
-        rows.append(f"| {label} | {verdict_label(h)} | {cell(why)} |")
+        rows.append(f"| {label} | {verdict_label(h)} | {score_text(h['score'])} | {cell(h['why'])} |")
     return "\n".join(rows)
 
 
@@ -76,6 +84,16 @@ def _analyses(facts: dict) -> list[str]:
     lines += [f"- 判定が変わる株価: {p}" for p in v.get("flip_prices") or []]
     if v.get("cheap_reason"):
         lines.append(f"- 安い理由として説明できること: {v['cheap_reason']}")
+    div = facts.get("dividends") or {}
+    if div.get("source"):
+        lines += ["", "### 株主還元", "",
+                  f"- 1株配当: 実績 {div.get('actual')}円、会社予想 {div.get('forecast')}円。配当利回り "
+                  f"{div.get('yield')}%、配当性向（予想）{div.get('payout_forecast')}%"]
+    med = (facts.get("peers") or {}).get("median") or {}
+    if med:
+        lines += ["", "### 同業の中央値（同業比較の表）", "",
+                  "- " + "、".join(f"{label} {med.get(key)}" for key, label, _ in (facts["peers"].get("columns") or [])
+                                   if med.get(key) is not None)]
     return lines
 
 
@@ -85,12 +103,37 @@ def _horizons(facts: dict) -> list[str]:
         s = facts[key]
         lines += [f"### {name}: {s['grade']}{'（暫定。判定保留を含む）' if s['pending'] else ''}", "",
                   f"理由: {s['why']}", ""] + _condition_table(s["rows"]) + [""]
-    lines += [f"### STEP 3: {facts['step3']['verdict'] or '—'}", ""]
+    note = f"（{facts['step3']['note']}）" if facts["step3"].get("note") else ""
+    lines += [f"### STEP 3: {facts['step3']['verdict'] or '—'}{note}", ""]
     for key, label in HORIZONS:
-        h = facts["horizons"][key]
-        note = f"。{h['note']}" if h["note"] else ""
-        lines += [f"### {label}: {verdict_label(h)}", "", f"理由: {h['why']}{note}", ""]
-        lines += _condition_table(h["rows"]) + [""]
+        lines += _horizon_lines(facts, key, label)
+    m = facts.get("matrix") or {}
+    lines += ["### 長期の参考: フレームワークの判定マトリクス", "",
+              f"- {m.get('verdict', '—')}{'（' + m['note'] + '）' if m.get('note') else ''}。{m.get('why', '')}", ""]
+    return lines
+
+
+def _points(rows: list[dict]) -> list[str]:
+    return [f"- {r['label']}（重み {r['weight']}%、点数 {r['score']:+.1f}、寄与 {r['contribution']:+.3f}）: {r['value']}。"
+            f"{r['reason']}（{r['source']}）" for r in rows]
+
+
+def _horizon_lines(facts: dict, key: str, label: str) -> list[str]:
+    h = facts["horizons"][key]
+    lines = [f"### {label}: {verdict_label(h)}（点数 {score_text(h['score'])}）", "", f"理由: {h['why']}", ""]
+    lines += _table(["要素", "重み", "点数", "寄与", "値", "情報源"],
+                    [[r["label"] + ("（判定保留）" if r["pending"] else ""), f"{r['weight']}%",
+                      "不明" if r["score"] is None else f"{r['score']:+.1f}",
+                      "—" if r["contribution"] is None else f"{r['contribution']:+.3f}", r["value"], r["source"]]
+                     for r in h["rows"]])
+    lines += ["", "良い点（点数を押し上げた要素）:"] + (_points(h["good"]) or ["- なし"])
+    lines += ["", "悪い点（点数を押し下げた要素）:"] + (_points(h["bad"]) or ["- なし"])
+    s = h.get("sensitivity") or {}
+    movers = [f"{m['label']}が{m['direction']} {m['verdict']}" for m in s.get("movers") or []]
+    distance = [f"投資検討まであと {s['to_up']:+.2f}" if s.get("to_up") is not None else "",
+                f"見送りまであと {s['to_down']:.2f}" if s.get("to_down") is not None else ""]
+    lines += ["", "判定を動かす要因: " + ("、".join(d for d in distance if d) or "—")
+              + ("。" + "、".join(movers) if movers else "。1段の変化で判定が変わる要素は無い"), ""]
     return lines
 
 
@@ -226,9 +269,15 @@ def validate(text: str, template: str, facts: dict) -> tuple[list[str], list[str
             issues.append(f"{names[key]} は箇条書きで{LIST_RANGE[0]}〜{LIST_RANGE[1]}行（今 {len(parsed[key])} 行）")
     issues += [f"{names[key]} が空" for key in LIMITS if M.is_blank(parsed[key])]
     for key, label in HORIZONS:
-        word = facts["horizons"][key]["verdict"]
-        if not M.is_blank(parsed[key]) and word not in parsed[key]:
-            issues.append(f"{label}の説明に判定（{word}）が無い（判定語から書き始める）")
+        h = facts["horizons"][key]
+        if M.is_blank(parsed[key]):
+            continue
+        if h["verdict"] not in parsed[key]:
+            issues.append(f"{label}の説明に判定（{h['verdict']}）が無い（判定語から書き始める）")
+        for side, rows in (("良い点", h.get("good") or []), ("悪い点", h.get("bad") or [])):
+            names = [short_label(r["label"]) for r in rows]
+            if names and not any(n in parsed[key] for n in names):
+                issues.append(f"{label}の説明に{side}（{'・'.join(names)} のどれか）が無い（根拠の数値と一緒に書く）")
     issues += O._check_words(_body(text))
     warnings = [f"{names[k]} が {len(parsed[k])} 字（目安 {n} 字以内）" for k, n in LIMITS.items() if len(parsed[k]) > n]
     warnings += [f"3行まとめの{i}行目が {len(s)} 字（目安 {SUMMARY_LIMIT} 字以内）"

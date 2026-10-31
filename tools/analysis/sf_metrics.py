@@ -288,23 +288,31 @@ def _options(value: str, unknown: str, choices: tuple[str, ...]) -> tuple[str, .
     return choices if value == unknown else (value,)
 
 
+WORST_FIRST = ("懸念", "普通", "良好")
+
+
+def unknown_parts(s1: dict, s2: dict, s3: dict) -> list[str]:
+    unknown = [NAMES[i["key"]] for i in s1["items"] if i["rating"] == UNKNOWN]
+    return unknown + [label for label, s in (("推移", s2), ("借入の目的", s3)) if s["rating"] == UNKNOWN]
+
+
 def judge(s1: dict, s2: dict, s3: dict) -> tuple[str, str]:
-    """(良好/普通/懸念/判定保留, why)."""
+    """(良好/普通/懸念/判定保留, why). Every value an unknown could take is tried; when the outcomes differ the
+    worst one is taken (policy.md 行動指針6). 判定保留 only when none of the three indicators is known."""
     ratings = {i["key"]: i["rating"] for i in s1["items"]}
     unknown = [NAMES[k] for k, r in ratings.items() if r == UNKNOWN]
-    if len(unknown) >= 2:
-        return "判定保留", f"{'・'.join(unknown)}を判定できない（自社または競合の材料不足。普通・懸念という意味ではない）"
+    if ratings and len(unknown) == len(ratings):
+        return "判定保留", f"{'・'.join(unknown)}をすべて判定できない（判断に使える事実が無い）"
     keys = list(ratings)
     choices = [_options(ratings[k], UNKNOWN, (CLEAR, MISS)) for k in keys]
     outcomes = {_rule(dict(zip(keys, combo)), trend, purpose)
                 for combo in itertools.product(*choices)
                 for trend in _options(s2["rating"], UNKNOWN, (STABLE, WORSE))
                 for purpose in _options(s3["rating"], UNKNOWN, (OK_PURPOSE, BAD_PURPOSE))}
+    verdict = next(v for v in WORST_FIRST if v in outcomes)
     if len(outcomes) > 1:
-        missing = unknown + [label for label, s in (("推移", s2), ("借入の目的", s3)) if s["rating"] == UNKNOWN]
-        return "判定保留", (f"{'・'.join(missing)}が不明で、良好・普通・懸念を決められない"
-                         "（材料不足。普通・懸念という意味ではない）")
-    verdict = outcomes.pop()
+        return verdict, (f"{'・'.join(unknown_parts(s1, s2, s3))}が不明で結論が分かれるため、最も悪い「{verdict}」を採った"
+                         "（材料不足のため保守的に判定）")
     return verdict, _why(verdict, s1, s2, s3, unknown)
 
 
@@ -394,7 +402,8 @@ def candidates(company, found: dict) -> dict:
     verdict, why = judge(s1, s2, s3)
     return {"series": series, "rows": rows, "peer_names": [p["name"] for p in peers],
             "step1": s1, "step2": s2, "step3": s3, "borderline": borderline(s1, s2), "verdict": verdict,
-            "why": why}
+            "why": why, "conservative": ([f"{p}が不明 → 結論が分かれ、最も悪い方を採った" for p in unknown_parts(s1, s2, s3)]
+                                         if "保守的" in why else [])}
 
 
 def collect_requests(company, found: dict, cands: dict) -> list[dict]:

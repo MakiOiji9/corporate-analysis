@@ -377,40 +377,35 @@ def test_full_cycle_then_fresh_triggered_expired(repo, capsys):
     _, out = run(repo, "check", "--company", "7203", "--date", "2027-10-13", capsys=capsys)
     assert out["result"] == "expired" and out["next"] == "prepare" and out["outlook_stale"]
 
-    _company(repo, collected="2026-11-01")  # the same yuho / industry / competitors again
+    filings = repo / "companies" / "7203_toyota" / "raw" / "filings"
+    (filings / "2026-11-01_2026-03_yuho.md").write_text(YUHO.format(ratio="25.0%"), encoding="utf-8")
     _, out = run(repo, "check", "--company", "7203", "--date", "2026-12-01", capsys=capsys)
-    assert out["result"] == "fresh", out
-    _company(repo, ratio="25.0%", collected="2026-11-02")  # a newer yuho with another customer ratio
-    _, out = run(repo, "check", "--company", "7203", "--date", "2026-12-01", capsys=capsys)
-    assert out["result"] == "triggered" and out["newer_raw"] == [
-        "companies/7203_toyota/raw/filings/2026-11-02_2026-03_yuho.md"]
+    assert out["result"] == "fresh", out  # the same fiscal period again: waits for the validity period
+    (filings / "2027-06-20_2027-03_yuho.md").write_text(YUHO.format(ratio="25.0%"), encoding="utf-8")
+    _, out = run(repo, "check", "--company", "7203", "--date", "2027-07-01", capsys=capsys)
+    assert out["result"] == "triggered" and "2027-03" in out["newer_raw"][0]
 
 
-def test_same_values_again_do_not_trigger_but_changed_values_do(repo, capsys):
-    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
-    fill(repo / out["md"], ALL_MID)
-    run(repo, "build", "--company", "7203", capsys=capsys)
-    _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
-    assert out["result"] == "fresh"  # the analysis used every raw there is
-    market = repo / "companies" / "7203_toyota" / "raw" / "market"
-    (market / f"{DAY}_competitors.md").write_text(COMPETITORS, encoding="utf-8")
-    _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
-    assert out["result"] == "fresh"
-    (market / f"{DAY}_competitors.md").write_text(COMPETITORS.replace("| 500 | 50 |", "| 520 | 60 |"), encoding="utf-8")
-    _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
-    assert out["result"] == "triggered" and out["newer_raw"] == [f"companies/7203_toyota/raw/market/{DAY}_competitors.md"]
-
-
-def test_a_section_without_usable_content_does_not_trigger(repo, capsys):
+def test_peer_updates_do_not_trigger(repo, capsys):
     _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
     fill(repo / out["md"], ALL_MID)
     run(repo, "build", "--company", "7203", capsys=capsys)
     market = repo / "companies" / "7203_toyota" / "raw" / "market"
-    (market / "2026-10-20_industry-overview.md").write_text(
-        "# 差分\n\n## 5. 顧客の購買決定要因\n\n—\n\n## 7. 業界全体の利益率の推移\n\n| 年 | 利益率 |\n|---|---|\n| — | — |\n",
-        encoding="utf-8")
+    (market / "2026-10-20_competitors.md").write_text(COMPETITORS.replace("| 500 | 50 |", "| 520 | 60 |"),
+                                                      encoding="utf-8")
     _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-21", capsys=capsys)
-    assert out["result"] == "fresh", out  # optional sections went from missing to blank: nothing new to read
+    assert out["result"] == "fresh", out  # peers and prices are re-collected often; STEP 1 waits a year
+
+
+def test_new_industry_data_triggers(repo, capsys):
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    fill(repo / out["md"], ALL_MID)
+    run(repo, "build", "--company", "7203", capsys=capsys)
+    market = repo / "companies" / "7203_toyota" / "raw" / "market"
+    (market / "2026-10-20_industry-overview.md").write_text("# 業界\n\n## 1. 市場規模と成長率\n\n- 2兆円\n",
+                                                            encoding="utf-8")
+    _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-21", capsys=capsys)
+    assert out["result"] == "triggered" and "業界データ" in out["newer_raw"][0]
 
 
 def test_prepare_refuses_missing_inputs_unless_collection_was_given_up(tmp_path, capsys):

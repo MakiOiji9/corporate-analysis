@@ -455,19 +455,21 @@ def step3(items: dict[str, dict], upstream: dict) -> dict:
     concerns = [label for key, _, label in STEP2 if (upstream.get(key) or {}).get("verdict") == CONCERN]
     swot_no = (upstream.get("swot") or {}).get("verdict") == SWOT_NO
     not_done = [label for key, _, label in UPSTREAM if not upstream.get(key)]
-    raised = raw == R.LOW and (bool(concerns) or swot_no)
+    # 手順3 no longer moves the verdict: STEP 2 / SWOT already count those concerns, so raising 割安 to 妥当 here
+    # would count them twice. A cheap price with such a concern is noted as 「割安だが理由あり」.
+    noted = raw == R.LOW and (bool(concerns) or swot_no)
     reasons = ([f"STEP 2 で{'・'.join(concerns)}が懸念"] if concerns else []) + (["SWOT の結論が No"] if swot_no else [])
-    if raised:
-        why = f"{scored['basis']}で割安だが、{'、'.join(reasons)}のため妥当に引き上げる（手順3）"
+    if noted:
+        why = f"{scored['basis']}で割安。ただし割安だが理由あり（{'、'.join(reasons)}。手順3）"
     elif raw == R.LOW and not_done:
         why = f"{scored['basis']}。手順3: {'・'.join(not_done)}が未実施のため懸念を確認できない（割安のまま）"
     elif raw == R.LOW:
         why = f"{scored['basis']}。手順3: STEP 2 の懸念・SWOT の No なし"
     else:
         why = scored["basis"]
-    return {"ratings": ratings, **scored, "raw_verdict": raw, "verdict": R.FAIR if raised else raw, "why": why,
-            "final_check": {"concerns": concerns, "swot_no": swot_no, "not_done": not_done, "raised": raised,
-                            "applies": raw == R.LOW}}
+    return {"ratings": ratings, **scored, "raw_verdict": raw, "verdict": raw, "why": why,
+            "final_check": {"concerns": concerns, "swot_no": swot_no, "not_done": not_done, "raised": False,
+                            "noted": noted, "applies": raw == R.LOW}}
 
 
 # ---------- price thresholds ----------

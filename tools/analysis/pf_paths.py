@@ -10,7 +10,7 @@ from pathlib import Path
 
 import an_common as A
 
-VALID_DAYS = 180
+VALID_DAYS = 200  # half a year plus the filing lag; redone with each interim / full-year result (freshness.py "half")
 ANALYSIS_SUBDIR = ("analysis", "profitability")
 MD_SUFFIX, JSON_SUFFIX, BRIEF_SUFFIX = "_profitability.md", "_profitability.json", "_brief.md"
 

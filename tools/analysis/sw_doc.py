@@ -5,10 +5,12 @@
     analysis (effective_moats) is a strength (S). build refuses an md that leaves one out.
   最大の強み / 最大の脅威 (手順2): the strength is picked among the 大 items, the threat among the 大 items
     (中 when there is no 大). build checks the picks against the impact column.
-  SWOT の結論 (手順3), first match wins:
-    判定保留: every strength or every threat is rated 不明, or no threat is 大/中 while one is 不明
-              (material missing; distinct from No, and 不明 is never read as the favourable 小)
-    No:       no strength rated 大 (nothing to stand against the threat)
+  SWOT の結論 (手順3), first match wins (an unknown impact is read on the conservative side: a strength as 小,
+  a threat as 大; recorded in conservative):
+    判定保留: no strength or no threat is listed at all (nothing to decide with)
+    No:       no strength rated 大 (nothing to stand against the threat; every strength 不明 counts as 小)
+    条件付き / No: no threat rated 大/中 but one is 不明 — read as 大, so never Yes: 条件付き when the company's
+              measure is written, otherwise No
     Yes:      no threat rated 大 or 中
     otherwise the writer's answer (Yes / 条件付き / No); 条件付き needs the company's measure.
 """
@@ -199,16 +201,22 @@ def _check_pick(parsed: dict, quadrant: str, key: str, label: str) -> list[str]:
 
 
 def pending_reasons(parsed: dict) -> list[str]:
-    out = []
-    for quadrant in ("S", "T"):
-        rows = items_of(parsed, quadrant)
-        if rows and all(r["impact"] == UNKNOWN for r in rows):
-            out.append(f"{QUADRANT_NAME[quadrant]}の影響度がすべて不明")
-    threats = items_of(parsed, "T")
-    if (not eligible(parsed, "T") and any(r["impact"] == UNKNOWN for r in threats)
-            and not all(r["impact"] == UNKNOWN for r in threats)):
-        out.append("中以上の脅威は無いが、影響度が不明の脅威がある（良い方に解釈して Yes にしない）")
-    return out
+    """判定保留 only when there is nothing to decide with: no strength or no threat listed at all."""
+    return [f"{QUADRANT_NAME[q]}が1件も無い" for q in ("S", "T") if not items_of(parsed, q)]
+
+
+def conservative_notes(parsed: dict) -> list[str]:
+    """How the unknown impacts were read (a strength as 小, a threat as 大)."""
+    notes = []
+    for quadrant, read_as in (("S", "小"), ("T", "大")):
+        unknown = [r["id"] for r in items_of(parsed, quadrant) if r["impact"] == UNKNOWN]
+        if unknown:
+            notes.append(f"影響度が不明の{QUADRANT_NAME[quadrant]}（{'・'.join(unknown)}）は「{read_as}」とみなした")
+    return notes
+
+
+def _unknown_threat_only(parsed: dict) -> bool:
+    return not eligible(parsed, "T") and any(r["impact"] == UNKNOWN for r in items_of(parsed, "T"))
 
 
 def forced_answer(parsed: dict) -> tuple[str | None, str]:
@@ -216,7 +224,11 @@ def forced_answer(parsed: dict) -> tuple[str | None, str]:
     if pending_reasons(parsed):
         return None, ""
     if parsed["top_strength"] == NONE:
-        return "No", "影響度「大」の強みが無い（最大の脅威に対抗できる強みが無い）"
+        return "No", "影響度「大」の強みが無い（最大の脅威に対抗できる強みが無い。影響度が不明の強みは「小」とみなす）"
+    if parsed["top_threat"] == NONE and _unknown_threat_only(parsed):
+        if not M.is_blank(parsed["measure"]):
+            return "条件付き", "影響度が不明の脅威を「大」とみなし、会社の施策がある（材料不足のため保守的に判定）"
+        return "No", "影響度が不明の脅威を「大」とみなし、対抗する施策が書けない（材料不足のため保守的に判定）"
     if parsed["top_threat"] == NONE:
         return "Yes", "影響度が中以上の脅威が無い"
     return None, ""
@@ -285,12 +297,13 @@ def judge(parsed: dict) -> dict:
     pending = pending_reasons(parsed)
     forced, why = forced_answer(parsed)
     if pending:
-        verdict, why = PENDING, "、".join(pending) + "（材料不足。No とは区別する）"
+        verdict, why = PENDING, "、".join(pending) + "（判断に使える事実が無い）"
     elif forced:
         verdict = forced
     else:
         verdict, why = parsed["answer"], parsed["answer_reason"]
-    return {"verdict": verdict, "why": why, "top_strength": strength, "top_threat": threat}
+    return {"verdict": verdict, "why": why, "top_strength": strength, "top_threat": threat,
+            "conservative": [] if pending else conservative_notes(parsed)}
 
 
 def _pick_cell(pick: dict) -> str:

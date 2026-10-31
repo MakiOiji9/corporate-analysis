@@ -141,11 +141,11 @@ def _company(root: Path, cagr: str = "5.0%", kbf: str = "- 品質と価格が重
     return company
 
 
-def _five_forces(root: Path, date: str = FF_DAY) -> None:
+def _five_forces(root: Path, date: str = FF_DAY, attractiveness: str = "中") -> None:
     directory = root / "companies" / "7203_toyota" / "analysis" / "five-forces"
     directory.mkdir(parents=True, exist_ok=True)
     (directory / f"{date}_five-forces.md").write_text("# ファイブフォース\n\n完成\n", encoding="utf-8")
-    result = {"attractiveness": "中", "total": 5, "industry": "自動車業界", "valid_until": "2027-10-05",
+    result = {"attractiveness": attractiveness, "total": 5, "industry": "自動車業界", "valid_until": "2027-10-05",
               "factors": [{"key": "rivalry", "name": "業界内の競争", "rating": "中", "reason": "拮抗"}]}
     (directory / f"{date}_five-forces.json").write_text(json.dumps(result, ensure_ascii=False), encoding="utf-8")
 
@@ -338,54 +338,40 @@ def test_full_cycle_then_fresh_expired_and_triggered(repo, capsys):
     code, out = run(repo, "build", "--company", "7203", capsys=capsys)
     assert code == 0 and out["verdict"] == "明確" and out["top_kbf_win"]
     result = json.loads((repo / out["json"]).read_text(encoding="utf-8"))
-    assert result["valid_until"] == "2027-04-10" and result["kbf"] == ["品質", "価格"]
+    assert result["valid_until"] == "2027-10-12" and result["kbf"] == ["品質", "価格"]
     assert result["kbf_table"][0]["peers"] == {"アルファ社（1111）": "△", "ベータ社（2222）": "×"}
     assert result["five_forces"]["attractiveness"] == "中" and result["outlook"] == "market/report/2026-10-05_outlook.md"
     assert "| 勝てる理由 | **明確**:" in md.read_text(encoding="utf-8")
     code, again = run(repo, "build", "--company", "7203", capsys=capsys)  # idempotent
     assert code == 0 and again["verdict"] == "明確"
 
-    _, out = run(repo, "check", "--company", "7203", "--date", "2027-04-10", capsys=capsys)
+    _, out = run(repo, "check", "--company", "7203", "--date", "2027-10-12", capsys=capsys)
     assert out["result"] == "fresh" and out["next"] == "report_existing"
     code, out = run(repo, "prepare", "--company", "7203", "--date", "2026-12-01", capsys=capsys)
     assert code == 1 and "--redo" in out["error"]
-    _, out = run(repo, "check", "--company", "7203", "--date", "2027-04-11", capsys=capsys)
+    _, out = run(repo, "check", "--company", "7203", "--date", "2027-10-13", capsys=capsys)
     assert out["result"] == "expired"
 
-    _five_forces(repo, "2026-11-01")
+    _five_forces(repo, "2026-11-01")  # redone with the same conclusion: nothing to redo here
     _, out = run(repo, "check", "--company", "7203", "--date", "2026-12-01", capsys=capsys)
-    assert out["result"] == "triggered" and out["newer_raw"][-1].endswith("2026-11-01_five-forces.json")
+    assert out["result"] == "fresh", out
+    _five_forces(repo, "2026-11-02", attractiveness="高")
+    _, out = run(repo, "check", "--company", "7203", "--date", "2026-12-01", capsys=capsys)
+    assert out["result"] == "triggered" and "中 → 高" in out["newer_raw"][-1]
 
 
-def test_newer_business_overview_triggers(repo, capsys):
+def test_business_overview_and_peer_updates_do_not_trigger(repo, capsys):
     _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
     fill(repo / out["md"])
     run(repo, "build", "--company", "7203", capsys=capsys)
     path = repo / "companies" / "7203_toyota" / "raw" / "ir" / "2026-11-01_business-overview.md"
     path.write_text(BUSINESS.replace("個人顧客が中心", "法人顧客が中心"), encoding="utf-8")
-    _, out = run(repo, "check", "--company", "7203", "--date", "2026-12-01", capsys=capsys)
-    assert out["result"] == "triggered" and out["newer_raw"] == [
-        "companies/7203_toyota/raw/ir/2026-11-01_business-overview.md"]
-
-
-def test_same_values_again_do_not_trigger_but_changed_values_do(repo, capsys):
-    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
-    fill(repo / out["md"])
-    run(repo, "build", "--company", "7203", capsys=capsys)
-    _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
-    assert out["result"] == "fresh"  # the analysis used every raw there is
     market = repo / "companies" / "7203_toyota" / "raw" / "market"
     original = (market / "2026-10-01_competitors.md").read_text(encoding="utf-8")
-    peer_figures = "## 2." + original.split("## 2.", 1)[1].split("## 4.", 1)[0]
-    (market / f"{DAY}_competitors.md").write_text(
-        "# 差分\n\n## 9. 売上原価率・販管費率（コスト構造の比較）\n\n| 会社 | 原価率 |\n|---|---|\n| トヨタ | 70% |\n\n"
-        + peer_figures, encoding="utf-8")
-    _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
-    assert out["result"] == "fresh", out  # a section 3C does not read + the same peer figures again
-    (market / f"{DAY}_competitors.md").write_text(original.replace("| 50億円 | 2億円 |", "| 55億円 | 3億円 |"),
-                                                 encoding="utf-8")
-    _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
-    assert out["result"] == "triggered" and out["newer_raw"] == [f"companies/7203_toyota/raw/market/{DAY}_competitors.md"]
+    (market / "2026-11-01_competitors.md").write_text(original.replace("| 50億円 | 2億円 |", "| 55億円 | 3億円 |"),
+                                                      encoding="utf-8")
+    _, out = run(repo, "check", "--company", "7203", "--date", "2026-12-01", capsys=capsys)
+    assert out["result"] == "fresh", out  # STEP 1 waits for a new 有報 period or new industry data
 
 
 def test_prepare_refuses_until_five_forces_is_fresh(tmp_path, capsys):
@@ -417,22 +403,26 @@ def test_verdict(repo, capsys, top, a, competitor, win, verdict):
 
 
 @pytest.mark.parametrize("top, a, b, competitor, win, verdict", [
-    ("？", "△", "×", "同等", "なし（材料不足）", "判定保留"),       # the target cannot be compared
-    ("○", "？", "？", "同等", None, "判定保留"),                 # every compared peer is unknown
+    ("？", "△", "×", "同等", "なし（材料不足）", "あいまい"),       # ？ counts as △; 同等 decides (never 明確)
+    ("○", "？", "？", "優位", None, "あいまい"),                 # every compared peer unknown: not proven superior
+    ("？", "？", "？", "不明", "なし（材料不足）", "判定保留"),      # no fact to decide with at all
     ("？", "？", "？", "劣位", "なし（材料不足）", "なし"),        # a proven 劣位 outranks missing material
     ("○", "？", "×", "同等", "なし（埋まらない）", "なし"),        # comparable (B is ×): なし stays なし
 ])
-def test_pending_when_the_top_kbf_cannot_be_compared(repo, capsys, top, a, b, competitor, win, verdict):
+def test_conservative_when_the_top_kbf_cannot_be_compared(repo, capsys, top, a, b, competitor, win, verdict):
     _company(repo, shares=NO_SHARES)  # free candidate (同等, not fixed) so 劣位 can be written
     _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
     extra = {"win_reason": win} if win else {}
-    reason = "迷った: 下位寄り" if competitor == "劣位" else "中位"
+    reason = {"劣位": "迷った: 下位寄り", "優位": "候補と異なる理由: 上位の実績"}.get(competitor, "中位")
     fill(repo / out["md"], top=top, a=a, b=b, competitor_rating=competitor, competitor_reason=reason, **extra)
     code, out = run(repo, "build", "--company", "7203", capsys=capsys)
     assert code == 0, out
     assert out["verdict"] == verdict
+    result = json.loads((repo / out["json"]).read_text(encoding="utf-8"))
+    if verdict == "あいまい":
+        assert "保守的" in out["verdict_reason"] and result["conservative"]
     if verdict == "判定保留":
-        assert "材料" in out["verdict_reason"] and "| 勝てる理由 | **判定保留**:" in (repo / out["md"]).read_text(
+        assert "事実が無い" in out["verdict_reason"] and "| 勝てる理由 | **判定保留**:" in (repo / out["md"]).read_text(
             encoding="utf-8")
 
 
@@ -489,8 +479,9 @@ def test_second_analysis_requires_change_reason(repo, capsys):
     _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
     fill(repo / out["md"])
     run(repo, "build", "--company", "7203", capsys=capsys)
-    _, out = run(repo, "prepare", "--company", "7203", "--date", "2027-05-01", capsys=capsys)
-    assert out["previous"] == DAY
+    _five_forces(repo, "2026-11-02", attractiveness="高")  # a changed upstream conclusion re-opens the 3C
+    _, out = run(repo, "prepare", "--company", "7203", "--date", "2026-12-01", capsys=capsys)
+    assert out["previous"] == DAY, out
     md = repo / out["md"]
     assert f"| 前回の評価 | 高（{DAY}） |" in md.read_text(encoding="utf-8")
     assert f"前回の結果: {DAY}（勝てる理由 明確" in (repo / out["brief"]).read_text(encoding="utf-8")

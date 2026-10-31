@@ -10,7 +10,7 @@ from pathlib import Path
 
 import an_common as A
 
-VALID_DAYS = 180
+VALID_DAYS = 120  # a quarter plus the filing lag; redone with each new 決算短信 (freshness.py "quarter")
 ANALYSIS_SUBDIR = ("analysis", "growth")
 MD_SUFFIX, JSON_SUFFIX, BRIEF_SUFFIX = "_growth.md", "_growth.json", "_brief.md"
 

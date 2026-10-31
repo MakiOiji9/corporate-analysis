@@ -36,6 +36,7 @@ import cf_doc as D  # noqa: E402
 import cf_inputs as I  # noqa: E402
 import cf_metrics as X  # noqa: E402
 import cf_paths as P  # noqa: E402
+import freshness as T  # noqa: E402
 import mdparse as M  # noqa: E402
 import gr_paths as GP  # noqa: E402
 import pf_paths as PP  # noqa: E402
@@ -101,23 +102,15 @@ def evaluate(company: P.Company, today: str) -> dict:
         date, result = latest
         state["latest"] = {"date": date, "md": company.rel(company.file(date, P.MD_SUFFIX)),
                            "json": company.rel(company.file(date, P.JSON_SUFFIX)),
-                           "verdict": result.get("verdict"), "valid_until": result.get("valid_until") or P.valid_until(date)}
-        digests = result.get("input_digests") or {}
-        found = I.gather_cash_flow(company)
-        state["newer_raw"] = I.changed_input_files(company, found, digests)
-        if digests.get(SERIES_KEY, "") != X.series_digest(X.candidates(company)):
-            state["newer_raw"].append("（年次の数値: data/*.csv・有報・財務時系列）")
-        profitability = _profitability(company)
-        if profitability and profitability[0] > date:
-            state["newer_raw"].append(_profitability_file(company, profitability[0], PP.JSON_SUFFIX))
-        state["newer_raw"] += _newer_others(company, date)
+                           "verdict": result.get("verdict"), "valid_until": P.valid_until(date)}
+        state["newer_raw"] = T.triggers(company, date, "half",
+                                        [("収益性", PP), ("成長性", GP), ("安全性", SP)])
     if draft and (not latest or draft[0] >= latest[0]):
         state.update(result="draft", reason=f"作成途中の {company.rel(draft[1])} がある（続きから書く）")
     elif not latest:
         state.update(result="none", reason="キャッシュフロー分析の結果が無い")
     elif state["newer_raw"]:
-        state.update(result="triggered",
-                     reason="分析後に材料・数値・STEP 2 の他の分析が変わった: " + ", ".join(state["newer_raw"]))
+        state.update(result="triggered", reason="; ".join(state["newer_raw"]))
     elif today > state["latest"]["valid_until"]:
         state.update(result="expired", reason=f"有効期限 {state['latest']['valid_until']} を過ぎた")
     else:
@@ -322,6 +315,7 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: d
     return {
         "company": company.dirname, "name": company.display_name(), "date": date,
         "valid_until": P.valid_until(date), "verdict": cands["verdict"], "verdict_reason": cands["why"],
+        "conservative": cands["conservative"],
         **_step_json(cands),
         "cf_rows": _rounded(cands["rows"], ("year", "cfo", "cfi", "cff", "fcf", "net_income", "ratio", "sales",
                                             "capex", "acquisitions", "dividends", "buybacks", "primary", "source")),

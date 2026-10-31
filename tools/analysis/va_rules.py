@@ -144,10 +144,14 @@ def more_expensive(a: str, b: str) -> str:
 def score(ratings: dict[str, str]) -> dict:
     """{scores, average, verdict, basis} over the indicators' ratings (name -> rating)."""
     scored = {name: SCORE[r] for name, r in ratings.items() if r in SCORE}
-    if len(scored) < MIN_SCORED:
-        return {"scores": scored, "average": None, "verdict": PENDING,
-                "basis": f"点数になった指標が{len(scored)}つ（{MIN_SCORED}つ以上で判定。材料不足・評価対象外が多い）"}
+    if not scored:
+        return {"scores": scored, "average": None, "verdict": PENDING, "single": False,
+                "basis": "点数になった指標が無い（判断に使える事実が無い）"}
     average = sum(scored.values()) / len(scored)
     verdict = LOW if average >= VERDICT_BAND else HIGH if average <= -VERDICT_BAND else FAIR
-    return {"scores": scored, "average": average, "verdict": verdict,
-            "basis": f"{len(scored)} 指標の平均点 {average:+.2f}（+{VERDICT_BAND} 以上で割安、−{VERDICT_BAND} 以下で割高）"}
+    single = len(scored) < MIN_SCORED
+    note = (f"。{next(iter(scored))}だけで判定（ほかの指標は材料不足・評価対象外。材料不足のため1指標で判定）"
+            if single else "")
+    return {"scores": scored, "average": average, "verdict": verdict, "single": single,
+            "basis": f"{len(scored)} 指標の平均点 {average:+.2f}（+{VERDICT_BAND} 以上で割安、−{VERDICT_BAND} 以下で割高）"
+                     f"{note}"}

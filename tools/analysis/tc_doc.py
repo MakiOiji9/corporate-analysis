@@ -2,7 +2,10 @@
 
 Conclusion follows 企業分析フレームワーク.md 1-2 手順4, decided here (not by the writer), first match wins:
   なし: 競合との比較が 劣位（数値の裏付けがある不利は材料不足より優先）
-  判定保留: 最重要KBF の比較が成立しない（自社が ？、または比較した競合が全員 ？）。「なし」と区別する
+  最重要KBF の比較が成立しない（自社が ？、または比較した競合が全員 ？）とき、？ を △ とみなして手順2 で決める
+  （材料不足のときは根拠のある範囲で保守側。conservative に記録）:
+    判定保留: 競合との比較も 不明（判断に使える事実が無い）
+    あいまい: 競合との比較が 同等・優位（優れるとは示せないので 明確 にはしない）
   なし: 勝てる理由が「なし」
   明確: 最重要KBF で自社が ○ かつ比較した競合が全員 △/×（○・？ が無い）、かつ 競合との比較が 優位
   あいまい: それ以外（競合との比較が 不明 の場合も 明確 にしない）
@@ -212,10 +215,16 @@ def judge(parsed: dict, peer_count: int) -> dict:
     top_win = top["self"] == "○" and bool(peers) and all(m in ("△", "×") for m in peers)
     comp = parsed["competitor"]["rating"]
     no_reason = parsed["win_reason"].strip().startswith(NO_REASON)
+    conservative: list[str] = []
     if comp == "劣位":
         verdict, why = "なし", "競合との比較が「劣位」"
+    elif not_comparable(top["self"], peers) and comp not in ("同等", "優位"):
+        verdict, why = PENDING, "最重要KBFで自社と競合を比べる材料も、競合との比較の材料も無い（判断に使える事実が無い）"
     elif not_comparable(top["self"], peers):
-        verdict, why = PENDING, "最重要KBFで自社と競合を比べる材料が無い（材料不足。勝てる理由が無いという意味ではない）"
+        verdict = "あいまい"
+        why = (f"最重要KBF（{top['kbf'] or '—'}）で自社と競合を比べる材料が無いため ？ を △ とみなし、"
+               f"競合との比較「{comp}」で判定（材料不足のため保守的に判定。明確にはしない）")
+        conservative.append(f"最重要KBF（{top['kbf'] or '—'}）の比較が ？ → △ とみなした")
     elif no_reason:
         verdict, why = "なし", "勝てる理由が書けない"
     elif top_win and comp == "優位":
@@ -226,7 +235,8 @@ def judge(parsed: dict, peer_count: int) -> dict:
             lacking.append(f"競合との比較が「{comp}」")
         verdict, why = "あいまい", "、".join(lacking)
     marks = "、".join([f"自社 {top['self']}"] + [f"{PEER_LABELS[i]} {m}" for i, m in enumerate(peers)])
-    return {"verdict": verdict, "why": why, "top_kbf": top["kbf"], "top_kbf_win": top_win, "top_kbf_marks": marks}
+    return {"verdict": verdict, "why": why, "top_kbf": top["kbf"], "top_kbf_win": top_win, "top_kbf_marks": marks,
+            "conservative": conservative}
 
 
 def conclusion_section(judged: dict, comp_rating: str, cand: dict) -> str:

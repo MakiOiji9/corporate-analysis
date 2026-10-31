@@ -36,6 +36,7 @@ import mt_brief as B  # noqa: E402
 import mt_doc as D  # noqa: E402
 import mt_inputs as I  # noqa: E402
 import mt_metrics as X  # noqa: E402
+import freshness as T  # noqa: E402
 import mt_paths as P  # noqa: E402
 import tc_paths as TP  # noqa: E402
 import three_c as TC  # noqa: E402
@@ -75,25 +76,14 @@ def evaluate(company: P.Company, today: str) -> dict:
         date, result = latest
         state["latest"] = {"date": date, "md": company.rel(company.file(date, P.MD_SUFFIX)),
                            "json": company.rel(company.file(date, P.JSON_SUFFIX)),
-                           "verdict": result.get("verdict"), "valid_until": result.get("valid_until") or P.valid_until(date)}
-        digests = result.get("input_digests")
-        if digests is None:  # results built before digests
-            state["newer_raw"] = I.newer_trigger_files(company, date, result.get("inputs") or (),
-                                                       result.get("seen") or ())
-        else:
-            found = I.gather_moat(company)
-            state["newer_raw"] = I.changed_input_files(company, found, digests)
-            if digests.get(MARGIN_KEY, "") != X.margin_digest(X.candidates(company, found)):
-                state["newer_raw"].append("（営業利益率の時系列: data/*.csv・財務時系列・有報・競合）")
-        tc = TP.latest_result(_tc_company(company))
-        if tc and tc[0] > date:
-            state["newer_raw"].append(company.rel(_tc_company(company).file(tc[0], TP.JSON_SUFFIX)))
+                           "verdict": result.get("verdict"), "valid_until": P.valid_until(date)}
+        state["newer_raw"] = T.triggers(company, date, "annual", [("3C", TP)])
     if draft and (not latest or draft[0] >= latest[0]):
         state.update(result="draft", reason=f"作成途中の {company.rel(draft[1])} がある（続きから書く）")
     elif not latest:
         state.update(result="none", reason="モート分析の結果が無い")
     elif state["newer_raw"]:
-        state.update(result="triggered", reason="分析後に新しい raw・3C分析がある: " + ", ".join(state["newer_raw"]))
+        state.update(result="triggered", reason="; ".join(state["newer_raw"]))
     elif today > state["latest"]["valid_until"]:
         state.update(result="expired", reason=f"有効期限 {state['latest']['valid_until']} を過ぎた")
     else:
@@ -299,7 +289,8 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: d
         "costs": cands["costs"], "share": parsed["share"], "risks": parsed["risks"],
         "durability": parsed["durability"], "backing": judged["backing"], "backing_reason": judged["backing_why"],
         "effective_moats": judged["effective"], "corrected": judged["corrected"], "near_risks": judged["near_risks"],
-        "verdict": judged["verdict"], "verdict_reason": judged["why"], "triggers": parsed["triggers"],
+        "verdict": judged["verdict"], "verdict_reason": judged["why"], "conservative": judged["conservative"],
+        "triggers": parsed["triggers"],
         "handoff": {"strengths": parsed["strengths"], "threats": parsed["threats"],
                     "step2_checks": parsed["step2_checks"]},
         "changes": parsed["changes"], "gaps": parsed["gaps"],

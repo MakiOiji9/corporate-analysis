@@ -271,7 +271,10 @@ def _roe_rows(values: list[float], loss_year: int | None = None) -> list[dict]:
 @pytest.mark.parametrize("values, loss, rating", [
     ([10, 10, 10, 10, 10], None, "良好"), ([5, 15, 15, 5, 10], None, "良好"),
     ([4, 16, 10, 10, 10], None, "普通"), ([9, 9, 9, 9, 9], None, "普通"), ([8, 8, 8, 8, 8], None, "普通"),
-    ([7.9] * 5, None, "懸念"), ([12, 12, 12, 12, 12], 2, "懸念"), ([12, 12, 12, 12], None, None)])
+    ([7.9] * 5, None, "懸念"), ([12, 12, 12, 12, 12], 2, "懸念"),
+    ([12, 12, 12, 12], None, "普通"),   # 4 years: judged, but never 良好 (材料不足のため保守的)
+    ([7, 7, 7], None, "懸念"),          # 3 years are enough to see a concern
+    ([12, 12], None, None)])            # fewer than 3 years: 判定保留
 def test_step1_rules(values, loss, rating):
     assert X.step1(_roe_rows(values, loss))["rating"] == rating
 
@@ -341,11 +344,11 @@ def test_step3_without_peers(leverage, source):
 @pytest.mark.parametrize("s1, s2, s3, verdict", [
     ("良好", "上回る", "本業由来", "良好"), ("良好", "同等", "本業由来", "良好"),
     ("良好", "下回る", "本業由来", "普通"), ("良好", "上回る", "特定できず", "普通"),
-    ("良好", None, "本業由来", "判定保留"), ("良好", "上回る", "不明", "判定保留"),
+    ("良好", None, "本業由来", "普通"), ("良好", "上回る", "不明", "普通"),  # unknown comparison: never 良好
     ("普通", None, "不明", "普通"), ("懸念", "上回る", "本業由来", "懸念"),
     ("良好", "上回る", "借入依存", "懸念"), (None, "上回る", "本業由来", "判定保留")])
 def test_judge(s1, s2, s3, verdict):
-    got, _ = X.judge({"rating": s1, "basis": "b"}, {"rating": s2}, {"source": s3, "basis": "b"})
+    got, _, _ = X.judge({"rating": s1, "basis": "b"}, {"rating": s2}, {"source": s3, "basis": "b"})
     assert got == verdict
 
 
@@ -475,18 +478,23 @@ def test_full_cycle_then_fresh_and_triggered(repo, capsys):
     assert result["step1"]["rating"] == "良好" and result["change_years"][0]["background"].startswith("背景")
     _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
     assert out["next"] == "report_existing"
-    # a later collection that changes the peers' numbers re-opens the result
+    # peers' numbers collected later wait for the validity period; a new full-year result re-opens the result
     newer = repo / "companies" / "7203_toyota" / "raw" / "market" / "2026-10-20_competitors.md"
     newer.write_text(COMPETITORS.format(alpha=_peer_margins(3, 5), beta=_peer_margins(2, 7),
                                         dupont=dupont_rows(alpha_ni=9)), encoding="utf-8")
     _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-21", capsys=capsys)
-    assert out["result"] == "triggered" and out["next"] == "prepare"
+    assert out["result"] == "fresh", out
+    filings = repo / "companies" / "7203_toyota" / "raw" / "filings"
+    filings.mkdir(parents=True, exist_ok=True)
+    (filings / "2026-10-22_2027-03_yuho.md").write_text("# 有価証券報告書\n", encoding="utf-8")
+    _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-23", capsys=capsys)
+    assert out["result"] == "triggered" and "新しい決算" in out["newer_raw"][0]
 
 
-def test_expired_after_180_days(repo, capsys):
+def test_expired_after_200_days(repo, capsys):
     fill(prepared(repo, capsys))
     run(repo, "build", "--company", "7203", capsys=capsys)
-    later = (dt.date.fromisoformat(DAY) + dt.timedelta(days=181)).isoformat()
+    later = (dt.date.fromisoformat(DAY) + dt.timedelta(days=201)).isoformat()
     _, out = run(repo, "check", "--company", "7203", "--date", later, capsys=capsys)
     assert out["result"] == "expired"
 

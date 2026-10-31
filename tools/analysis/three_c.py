@@ -31,6 +31,7 @@ sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "marke
 
 import an_common as A  # noqa: E402
 import ff_paths as FP  # noqa: E402
+import freshness as T  # noqa: E402
 import five_forces as FF  # noqa: E402
 import mdparse as M  # noqa: E402
 import tc_brief as B  # noqa: E402
@@ -69,20 +70,14 @@ def evaluate(company: P.Company, today: str) -> dict:
         date, result = latest
         state["latest"] = {"date": date, "md": company.rel(company.file(date, P.MD_SUFFIX)),
                            "json": company.rel(company.file(date, P.JSON_SUFFIX)),
-                           "verdict": result.get("verdict"), "valid_until": result.get("valid_until") or P.valid_until(date)}
-        digests = result.get("input_digests")
-        state["newer_raw"] = (I.changed_input_files(company, I.gather_3c(company), digests) if digests is not None
-                              else I.newer_trigger_files(company, date, result.get("inputs") or (),
-                                                         result.get("seen") or ()))  # results built before digests
-        ff = FP.latest_result(_ff_company(company))
-        if ff and ff[0] > date:
-            state["newer_raw"].append(company.rel(_ff_company(company).file(ff[0], FP.JSON_SUFFIX)))
+                           "verdict": result.get("verdict"), "valid_until": P.valid_until(date)}
+        state["newer_raw"] = T.triggers(company, date, "annual", [("ファイブフォース", FP)])
     if draft and (not latest or draft[0] >= latest[0]):
         state.update(result="draft", reason=f"作成途中の {company.rel(draft[1])} がある（続きから書く）")
     elif not latest:
         state.update(result="none", reason="3C分析の結果が無い")
     elif state["newer_raw"]:
-        state.update(result="triggered", reason="分析後に新しい raw・ファイブフォースがある: " + ", ".join(state["newer_raw"]))
+        state.update(result="triggered", reason="; ".join(state["newer_raw"]))
     elif today > state["latest"]["valid_until"]:
         state.update(result="expired", reason=f"有効期限 {state['latest']['valid_until']} を過ぎた")
     else:
@@ -260,7 +255,7 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: d
         "comparison": cands["rows"], "kbf_table": kbf_rows, "company_conclusion": parsed["company_conclusion"],
         "top_kbf": judged["top_kbf"], "top_kbf_win": judged["top_kbf_win"],
         "win_reason": parsed["win_reason"], "verdict": judged["verdict"], "verdict_reason": judged["why"],
-        "triggers": parsed["triggers"],
+        "conservative": judged["conservative"], "triggers": parsed["triggers"],
         "handoff": {"strengths": parsed["strengths"], "weaknesses": parsed["weaknesses"],
                     "moat_checks": parsed["moat_checks"]},
         "changes": parsed["changes"], "gaps": parsed["gaps"],

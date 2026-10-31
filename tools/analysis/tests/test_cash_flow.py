@@ -330,7 +330,7 @@ def test_step5_rules():
     (("良好", "良好", "良好", "良好"), "注意", False, "普通"),
     (("良好", "普通", "良好", "良好"), "問題なし", False, "普通"),
     (("良好", "良好", None, "良好"), "問題なし", True, "普通"),  # 純損失
-    (("良好", "良好", None, "良好"), "問題なし", False, "判定保留"),  # 材料不足
+    (("良好", "良好", None, "良好"), "問題なし", False, "懸念"),  # 材料不足: an unjudged step is read as 懸念
     ((None, "良好", "良好", "良好"), "問題なし", False, "判定保留"),
     ((None, "良好", "良好", "懸念"), "問題なし", False, "懸念"),
     (("良好", "良好", "懸念", "良好"), "問題なし", False, "懸念")])
@@ -593,10 +593,15 @@ def test_full_cycle_then_fresh_and_triggered(repo, capsys):
     assert result["step3"]["ratio"] == 1.2 and result["handoff"]["triggers"].startswith("背景")
     _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
     assert out["next"] == "report_existing"
-    # a later 財務時系列 with a corrected operating CF re-opens the result
+    # a corrected operating CF inside the same period waits; a new full-year result re-opens the result
     later = repo / "companies" / "7203_toyota" / "raw" / "ir" / "2026-10-20_financials-historical.md"
     later.write_text(_raw(cfo={y: 900 for y in LATER})[0], encoding="utf-8")
     _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-21", capsys=capsys)
+    assert out["result"] == "fresh", out
+    filings = repo / "companies" / "7203_toyota" / "raw" / "filings"
+    filings.mkdir(parents=True, exist_ok=True)
+    (filings / "2026-10-22_2027-03_yuho.md").write_text("# 有価証券報告書\n", encoding="utf-8")
+    _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-23", capsys=capsys)
     assert out["result"] == "triggered" and out["next"] == "prepare"
 
 
@@ -608,10 +613,10 @@ def test_newer_profitability_result_triggers(repo, capsys):
     assert out["result"] == "triggered"
 
 
-def test_expired_after_180_days(repo, capsys):
+def test_expired_after_200_days(repo, capsys):
     fill(prepared(repo, capsys))
     run(repo, "build", "--company", "7203", capsys=capsys)
-    later = (dt.date.fromisoformat(DAY) + dt.timedelta(days=181)).isoformat()
+    later = (dt.date.fromisoformat(DAY) + dt.timedelta(days=201)).isoformat()
     _, out = run(repo, "check", "--company", "7203", "--date", later, capsys=capsys)
     assert out["result"] == "expired"
 

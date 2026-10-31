@@ -30,6 +30,7 @@ import pf_series as S
 from ff_metrics import _months_apart, peer_margins
 
 MIN_YEARS, MAX_YEARS = 5, 10
+JUDGE_MIN_YEARS = 3  # fewer years than MIN_YEARS are judged conservatively (never 良好); fewer than this is 判定保留
 GOOD_AVG, FAIR_AVG, GOOD_MIN = 10.0, 8.0, 5.0
 TREND_PT = 1.0  # 直近3年・5年の方向: a change within this is 横ばい / 安定
 SAME_PT = 1.0  # 営業利益率・純利益率の同業比較: within this is 同等
@@ -112,10 +113,19 @@ def _direction(values: list[float], flat: float, words: tuple[str, str, str]) ->
 def step1(rows: list[dict]) -> dict:
     values = [r["roe"] for r in rows]
     losses = [r["year"] for r in rows if (r["net_income"] is not None and r["net_income"] < 0) or r["roe"] < 0]
-    if len(rows) < MIN_YEARS:
+    if len(rows) < JUDGE_MIN_YEARS:
         return {"rating": None, "years": len(rows), "losses": losses,
-                "basis": f"ROE が取れた年が {len(rows)} 年で {MIN_YEARS} 年に満たない",
-                "sentence": f"ROE が取れた年が{len(rows)}年で、{MIN_YEARS}年に満たず判定できない"}
+                "basis": f"ROE が取れた年が {len(rows)} 年で {JUDGE_MIN_YEARS} 年に満たない",
+                "sentence": f"ROE が取れた年が{len(rows)}年で、{JUDGE_MIN_YEARS}年に満たず判定できない"}
+    result = _step1_rating(rows, values, losses)
+    if len(rows) < MIN_YEARS and result["rating"] == "良好":  # a short history never earns 良好
+        result.update(rating="普通", basis=f"{result['basis']}。ただし {len(rows)} 年分だけで {MIN_YEARS} 年に満たないため"
+                                           "良好にはしない（材料不足のため保守的に判定）",
+                      short=True)
+    return result
+
+
+def _step1_rating(rows: list[dict], values: list[float], losses: list[str]) -> dict:
     avg = sum(values) / len(values)
     low = min(rows, key=lambda r: r["roe"])
     recent = values[-3:]
@@ -317,25 +327,29 @@ def adjusted_step1(roes: list[dict], one_off: list[dict]) -> dict | None:
 
 # ---------- 手順4 / STEP 1 ----------
 
-def judge(s1: dict, s2: dict, s3: dict) -> tuple[str, str]:
-    """(良好/普通/懸念/判定保留, why)."""
+def judge(s1: dict, s2: dict, s3: dict) -> tuple[str, str, list[str]]:
+    """(良好/普通/懸念/判定保留, why, conservative notes). An unknown comparison is read as not met (never 良好);
+    判定保留 only when the ROE itself cannot be judged (fewer than JUDGE_MIN_YEARS years)."""
+    notes = [f"ROE が {s1['years']} 年分だけのため良好にしない"] if s1.get("short") else []
     if s1["rating"] == "懸念":
-        return "懸念", f"手順1が懸念（{s1['basis']}）"
+        return "懸念", f"手順1が懸念（{s1['basis']}）", notes
     if s3["source"] == "借入依存":
-        return "懸念", f"ROE が借入依存（{s3['basis']}）"
+        return "懸念", f"ROE が借入依存（{s3['basis']}）", notes
     if s1["rating"] is None:
-        return "判定保留", f"手順1を判定できない（{s1['basis']}）"
+        return "判定保留", f"手順1を判定できない（{s1['basis']}）", notes
     if s1["rating"] == "普通":
-        return "普通", f"手順1が普通（{s1['basis']}）"
+        return "普通", f"手順1が普通（{s1['basis']}）", notes
     if s2["rating"] == "下回る":
-        return "普通", "手順1は良好だが、営業利益率が同業平均を下回る"
+        return "普通", "手順1は良好だが、営業利益率が同業平均を下回る", notes
     if s3["source"] == "特定できず":
-        return "普通", "手順1は良好だが、純利益率・回転率とも同業平均を上回らず本業由来と言えない"
+        return "普通", "手順1は良好だが、純利益率・回転率とも同業平均を上回らず本業由来と言えない", notes
     unknown = [label for label, missing in (("営業利益率の同業比較", s2["rating"] is None),
                                             ("ROE の源泉の同業比較", s3["source"] == "不明")) if missing]
     if unknown:
-        return "判定保留", f"手順1は良好だが、{'・'.join(unknown)}ができない（競合の材料不足。普通・懸念という意味ではない）"
-    return "良好", "手順1が良好、営業利益率が同業平均以上、ROE の源泉が本業由来"
+        notes += [f"{label}ができず、満たさないとみなした" for label in unknown]
+        return ("普通", f"手順1は良好だが、{'・'.join(unknown)}ができない（競合の材料不足のため保守的に普通と判定）",
+                notes)
+    return "良好", "手順1が良好、営業利益率が同業平均以上、ROE の源泉が本業由来", notes
 
 
 def borderline(s1: dict, s2: dict, s3: dict) -> list[str]:
@@ -401,12 +415,12 @@ def candidates(company, found: dict) -> dict:
     roes = roe_rows(series, own)
     comparison = peer_comparison(own, S.peer_series(company, found["peer_dupont"]))
     s1, s2, s3 = step1(roes), step2(company, found), step3(own, comparison)
-    verdict, why = judge(s1, s2, s3)
+    verdict, why, conservative = judge(s1, s2, s3)
     one_off = one_off_rows(series, [r["year"] for r in roes], own)
     return {"series": series, "dupont": own, "roe_rows": roes, "step1": s1, "step2": s2, "step3": s3,
             "changes": change_years(own, series, s2["margins"]), "one_off": one_off,
             "one_off_step1": adjusted_step1(roes, one_off), "borderline": borderline(s1, s2, s3),
-            "verdict": verdict, "why": why}
+            "verdict": verdict, "why": why, "conservative": conservative}
 
 
 def collect_requests(company, found: dict, cands: dict) -> list[dict]:

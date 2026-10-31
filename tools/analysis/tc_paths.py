@@ -10,7 +10,7 @@ from pathlib import Path
 
 import an_common as A
 
-VALID_DAYS = 180
+VALID_DAYS = 365  # STEP 1: redone with a new 有報 period / industry data (freshness.py "annual")
 ANALYSIS_SUBDIR = ("analysis", "three-c")
 MD_SUFFIX, JSON_SUFFIX, BRIEF_SUFFIX = "_three-c.md", "_three-c.json", "_brief.md"
 

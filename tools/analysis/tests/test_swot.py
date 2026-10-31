@@ -306,27 +306,45 @@ def test_full_cycle_then_fresh_triggered_and_expired(repo, capsys):
     assert out["verdict"] == "条件付き" and out["top_strength"]["id"] == "S1" and out["top_threat"]["id"] == "T1"
     assert out["counts"] == {"S": 1, "W": 1, "O": 1, "T": 1}
     result = json.loads((md.parent / f"{DAY}_swot.json").read_text(encoding="utf-8"))
-    assert result["valid_until"] == "2027-04-10" and result["upstream"]["moat"]["verdict"] == "狭い"
+    assert result["valid_until"] == "2027-10-12" and result["upstream"]["moat"]["verdict"] == "狭い"
     assert result["quadrants"]["T"][0]["origin"] == "1-1 新規参入の脅威"
     assert "**条件付き**" in md.read_text(encoding="utf-8")
 
     _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
     assert out["next"] == "report_existing"
-    _, out = run(repo, "check", "--company", "7203", "--date", "2027-04-11", capsys=capsys)
+    _, out = run(repo, "check", "--company", "7203", "--date", "2027-10-13", capsys=capsys)
     assert out["result"] == "expired"
 
-    _upstream(repo, moat_day="2026-10-20")
+    _upstream(repo, moat_day="2026-10-20")  # the moat redone with the same conclusion
     _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-21", capsys=capsys)
-    assert out["result"] == "triggered" and out["newer_raw"][-1].endswith("2026-10-20_moat.json")
+    assert out["result"] == "fresh", out
+    _result(repo, "moat", "2026-10-21", {"verdict": "なし", "valid_until": "2099-01-01", "inputs": []})
+    _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-22", capsys=capsys)
+    assert out["result"] == "triggered" and "狭い → なし" in out["newer_raw"][-1]
 
 
-def test_changed_risk_section_triggers(repo, capsys):
-    fill(prepared(repo, capsys))
-    build(repo, capsys)
+def _newer_period_yuho(repo: Path) -> Path:
     path = repo / "companies" / COMPANY_DIR / "raw" / "filings" / "2026-10-15_2027-03_yuho.md"
     path.write_text(YUHO.replace("EV への移行", "EV への移行と半導体不足"), encoding="utf-8")
+    return path
+
+
+def _moat_changed(repo: Path, day: str = "2026-10-19") -> None:
+    """The moat redone with another conclusion (and otherwise the same answers): re-opens the SWOT."""
+    _result(repo, "moat", day, {
+        "verdict": "広い", "verdict_reason": "該当が2つ", "valid_until": "2099-01-01", "inputs": [],
+        "effective_moats": ["スイッチングコスト"],
+        "moats": [{"type": "スイッチングコスト", "rating": "該当", "basis": "継続率 93%"}],
+        "risks": [{"factor": "EV 化", "timing": "5〜10年"}], "durability": "10年程度",
+        "handoff": {"strengths": "スイッチングコスト", "threats": "EV 化"}})
+
+
+def test_new_period_yuho_triggers(repo, capsys):
+    fill(prepared(repo, capsys))
+    build(repo, capsys)
+    _newer_period_yuho(repo)
     _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-16", capsys=capsys)
-    assert out["result"] == "triggered" and out["newer_raw"] == [path.relative_to(repo).as_posix()]
+    assert out["result"] == "triggered" and "新しい期の有報" in out["newer_raw"][0]
 
 
 @pytest.mark.parametrize("kwargs, verdict", [
@@ -336,7 +354,9 @@ def test_changed_risk_section_triggers(repo, capsys):
       "sentence": "なし により、T1 に対して耐えられない。理由：大きな強みが無い"}, "No"),
     ({"t": T_ROW.replace("| 大 |", "| 小 |"), "top_threat": "なし", "answer": "Yes", "measure": "—",
       "sentence": "S1 により、なし に対して耐えられる。理由：中以上の脅威が無い"}, "Yes"),
-    ({"t": T_ROW.replace("| 大 |", "| 不明 |"), "top_threat": "なし"}, "判定保留"),
+    ({"t": T_ROW.replace("| 大 |", "| 不明 |"), "top_threat": "なし"}, "条件付き"),  # 不明 read as 大, measure given
+    ({"t": T_ROW.replace("| 大 |", "| 不明 |"), "top_threat": "なし", "answer": "No", "measure": "—",
+      "sentence": "S1 により、なし に対して耐えられない。理由：施策が無い"}, "No"),
 ])
 def test_verdict(repo, capsys, kwargs, verdict):
     fill(prepared(repo, capsys), **kwargs)
@@ -402,8 +422,8 @@ def test_flags(repo, capsys):
 def test_second_analysis_requires_change_reason(repo, capsys):
     fill(prepared(repo, capsys))
     build(repo, capsys)
-    later = "2027-05-01"
-    _outlook(repo, "2027-04-26")
+    later = "2026-10-20"
+    _moat_changed(repo)
     md2 = prepared(repo, capsys, date=later)
     assert "強み S1・脅威 T1（2026-10-12）" in md2.read_text(encoding="utf-8")
     fill(md2, answer="No", measure="—", sentence="S1 により、T1 に対して耐えられない。理由：採用が遅れた",
@@ -470,8 +490,10 @@ def test_unknown_threat_is_not_read_as_no_threat(repo, capsys):
         .replace("| 大 |", "| 小 |")
     fill(prepared(repo, capsys), t=t, top_threat="なし")
     code, out = build(repo, capsys)
-    assert code == 0 and out["verdict"] == "判定保留"
-    assert "書き手の暫定の見方" in (repo / out["md"]).read_text(encoding="utf-8")
+    assert code == 0 and out["verdict"] == "条件付き", out  # never Yes: the unknown threat is read as 大
+    assert "保守的" in out["verdict_reason"]
+    result = json.loads((repo / out["json"]).read_text(encoding="utf-8"))
+    assert result["conservative"] == ["影響度が不明の脅威（T1）は「大」とみなした"]
 
 
 @pytest.mark.parametrize("kwargs, message", [
@@ -496,8 +518,8 @@ def test_required_row_with_note_matches(repo, capsys):
 def test_skeleton_shows_previous_answer(repo, capsys):
     fill(prepared(repo, capsys))
     build(repo, capsys)
-    _outlook(repo, "2027-04-26")
-    text = prepared(repo, capsys, date="2027-05-01").read_text(encoding="utf-8")
+    _moat_changed(repo)
+    text = prepared(repo, capsys, date="2026-10-20").read_text(encoding="utf-8")
     assert "条件付き（結論 条件付き。2026-10-12）" in text
 
 

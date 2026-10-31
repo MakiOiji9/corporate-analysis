@@ -37,6 +37,7 @@ import sf_brief as B  # noqa: E402
 import sf_doc as D  # noqa: E402
 import sf_inputs as I  # noqa: E402
 import sf_metrics as X  # noqa: E402
+import freshness as T  # noqa: E402
 import sf_paths as P  # noqa: E402
 from common import atomic_write_text, utf8_stdout  # noqa: E402
 
@@ -75,18 +76,14 @@ def evaluate(company: P.Company, today: str) -> dict:
         date, result = latest
         state["latest"] = {"date": date, "md": company.rel(company.file(date, P.MD_SUFFIX)),
                            "json": company.rel(company.file(date, P.JSON_SUFFIX)),
-                           "verdict": result.get("verdict"), "valid_until": result.get("valid_until") or P.valid_until(date)}
-        digests = result.get("input_digests") or {}
-        found = I.gather_safety(company)
-        state["newer_raw"] = I.changed_input_files(company, found, digests)
-        if digests.get(SERIES_KEY, "") != X.series_digest(X.candidates(company, found)):
-            state["newer_raw"].append("（年次の数値: data/*.csv・有報・財務時系列・競合）")
+                           "verdict": result.get("verdict"), "valid_until": P.valid_until(date)}
+        state["newer_raw"] = T.triggers(company, date, "quarter")
     if draft and (not latest or draft[0] >= latest[0]):
         state.update(result="draft", reason=f"作成途中の {company.rel(draft[1])} がある（続きから書く）")
     elif not latest:
         state.update(result="none", reason="安全性分析の結果が無い")
     elif state["newer_raw"]:
-        state.update(result="triggered", reason="分析後に材料・数値が変わった: " + ", ".join(state["newer_raw"]))
+        state.update(result="triggered", reason="; ".join(state["newer_raw"]))
     elif today > state["latest"]["valid_until"]:
         state.update(result="expired", reason=f"有効期限 {state['latest']['valid_until']} を過ぎた")
     else:
@@ -273,6 +270,7 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: d
     return {
         "company": company.dirname, "name": company.display_name(), "date": date,
         "valid_until": P.valid_until(date), "verdict": cands["verdict"], "verdict_reason": cands["why"],
+        "conservative": cands["conservative"],
         **steps,
         "rows": [{k: _round(r[k]) for k in keys} for r in cands["rows"]],
         "borderline": cands["borderline"], "level_background": parsed["level_background"],

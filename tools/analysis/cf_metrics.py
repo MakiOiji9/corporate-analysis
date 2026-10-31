@@ -376,6 +376,12 @@ def step5(rows: list[dict]) -> dict:
 
 # ---------- 手順6 ----------
 
+def unjudged_steps(s1: dict, s2: dict, s3: dict, s4: dict) -> list[str]:
+    """手順2〜4 that could not be judged for a reason other than a net loss."""
+    steps = (("手順2", s2), ("手順3", s3), ("手順4", s4))
+    return [name for name, s in steps if s["rating"] is None and not s.get("loss")] if s1["rating"] else []
+
+
 def judge(s1: dict, s2: dict, s3: dict, s4: dict, s5: dict) -> tuple[str, str]:
     """(良好/普通/懸念/判定保留, why)."""
     steps = (("手順1", s1), ("手順2", s2), ("手順3", s3), ("手順4", s4))
@@ -384,9 +390,9 @@ def judge(s1: dict, s2: dict, s3: dict, s4: dict, s5: dict) -> tuple[str, str]:
         return "懸念", f"{'・'.join(bad)}が懸念"
     if s1["rating"] is None:
         return "判定保留", f"手順1を判定できない（{s1['basis']}）"
-    missing = [name for name, s in steps if s["rating"] is None and not s.get("loss")]
-    if missing:
-        return "判定保留", f"{'・'.join(missing)}を判定できない（材料不足。普通・懸念という意味ではない）"
+    missing = unjudged_steps(s1, s2, s3, s4)
+    if missing:  # a step that cannot be judged is read as 懸念 (never as the favourable side)
+        return "懸念", f"{'・'.join(missing)}を判定できず懸念とみなした（材料不足のため保守的に判定）"
     if all(s["rating"] == "良好" for _, s in steps) and s5["rating"] in ("問題なし", "対象外"):
         return "良好", f"手順1〜4がすべて良好で、株主還元は{s5['rating']}"
     reasons = [f"{name}が普通" for name, s in steps if s["rating"] == "普通"]
@@ -491,7 +497,8 @@ def candidates(company) -> dict:
     s1, s2, s3, s4, s5 = step1(rows), step2(rows), step3(rows, series), step4(rows), step5(rows)
     verdict, why = judge(s1, s2, s3, s4, s5)
     return {"series": series, "rows": rows, "step1": s1, "step2": s2, "step3": s3, "step4": s4, "step5": s5,
-            "borderline": borderline(s2, s3, s5, rows), "verdict": verdict, "why": why}
+            "borderline": borderline(s2, s3, s5, rows), "verdict": verdict, "why": why,
+            "conservative": [f"{name}を判定できず → 懸念とみなした" for name in unjudged_steps(s1, s2, s3, s4)]}
 
 
 def collect_requests(company, found: dict, cands: dict) -> list[dict]:

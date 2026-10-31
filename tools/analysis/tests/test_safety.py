@@ -321,12 +321,13 @@ def _s1(*ratings: str) -> dict:
     (("クリア", "クリア", "クリア"), "悪化傾向", "懸念", "懸念"),
     (("未達", "クリア", "クリア"), "悪化傾向なし", "許容", "普通"),
     (("未達", "未達", "クリア"), "悪化傾向なし", "許容", "懸念"),
-    (("不明", "不明", "クリア"), "悪化傾向なし", "許容", "判定保留"),
-    (("不明", "クリア", "クリア"), "悪化傾向なし", "許容", "判定保留"),  # 良好 or 普通
+    (("不明", "不明", "クリア"), "悪化傾向なし", "許容", "懸念"),   # 普通 or 懸念: the worst is taken
+    (("不明", "クリア", "クリア"), "悪化傾向なし", "許容", "普通"),  # 良好 or 普通
     (("不明", "未達", "未達"), "悪化傾向なし", "許容", "懸念"),  # 懸念 either way
-    (("未達", "不明", "クリア"), "悪化傾向", "許容", "判定保留"),  # 普通 or 懸念
+    (("未達", "不明", "クリア"), "悪化傾向", "許容", "懸念"),  # 普通 or 懸念
     (("クリア", "クリア", "クリア"), "悪化傾向なし", "不明", "良好"),  # the purpose only matters with 悪化傾向
-    (("クリア", "クリア", "クリア"), "不明", "許容", "判定保留"),
+    (("クリア", "クリア", "クリア"), "不明", "許容", "普通"),       # 良好 or 普通
+    (("不明", "不明", "不明"), "悪化傾向なし", "許容", "判定保留"),  # no indicator known at all
 ])
 def test_judge(ratings, trend, purpose, verdict):
     got, why = X.judge(_s1(*ratings), {"rating": trend, "basis": "b"}, {"rating": purpose, "basis": "b"})
@@ -421,14 +422,30 @@ def test_build_rejects_a_removed_purpose_row(repo, capsys):
     assert code == 1 and any("3章の年度" in i or "表に行がない" in i for i in out["issues"])
 
 
-def test_new_numbers_trigger_a_reanalysis(repo, capsys):
+def test_new_results_trigger_a_reanalysis(repo, capsys):
     md = prepared(repo, capsys)
     fill(md)
     assert run(repo, "build", "--company", "7203", capsys=capsys)[0] == 0
     path = repo / "companies" / "7203_toyota" / "raw" / "ir" / f"{COLLECTED}_financials-historical.md"
     path.write_text(financials(current_liabilities=6000), encoding="utf-8")
     _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
-    assert out["result"] == "triggered"
+    assert out["result"] == "fresh", out  # a correction inside the same period waits for the next results
+    data = repo / "companies" / "7203_toyota" / "data"
+    data.mkdir(parents=True, exist_ok=True)
+    (data / "tdnet_facts.csv").write_text(
+        "doc_id,document,filing_date,fiscal_year_end,context,element,value,unit\n"
+        "q1,第１四半期決算短信〔日本基準〕（連結）,2026年8月1日,2027-03-31,CurrentAccumulatedQ1Instant,"
+        "QuarterlyPeriod,1,\n", encoding="utf-8")
+    _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["result"] == "fresh", out  # filed before the analysis: already known
+    (data / "tdnet_facts.csv").write_text(
+        "doc_id,document,filing_date,fiscal_year_end,context,element,value,unit\n"
+        "q1,第１四半期決算短信〔日本基準〕（連結）,2026年8月1日,2027-03-31,CurrentAccumulatedQ1Instant,"
+        "QuarterlyPeriod,1,\n"
+        "q2,第２四半期（中間期）決算短信〔日本基準〕（連結）,2026年11月10日,2027-03-31,"
+        "CurrentAccumulatedQ2Instant,QuarterlyPeriod,2,\n", encoding="utf-8")
+    _, out = run(repo, "check", "--company", "7203", "--date", "2026-11-11", capsys=capsys)
+    assert out["result"] == "triggered" and "第2四半期" in out["newer_raw"][0]
 
 
 def test_untouched_draft_is_regenerated(repo, capsys):
