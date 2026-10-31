@@ -20,7 +20,7 @@ import write_guard as WG  # noqa: E402
 TODAY = "2026-10-31"
 DIR = "3798_uls-group"
 FILL_ANY = re.compile(r"<!--\s*FILL:([\w-]+)[^>]*-->")
-STALE: dict = {"key": None}  # the analysis the fake evaluate() reports as not fresh
+STALE: dict = {"key": None, "result": "triggered"}  # the analysis the fake evaluate() reports as not fresh
 
 RESULTS = {
     "five-forces": {"attractiveness": "中", "total": 6, "industry": "IT コンサルティング",
@@ -107,12 +107,12 @@ def repo(tmp_path, monkeypatch):
     shutil.copytree(REPO / ".ai" / "templates" / "company-report", tmp_path / ".ai" / "templates" / "company-report")
     (tmp_path / "market" / "report").mkdir(parents=True)
     (tmp_path / "market" / "report" / "2026-10-26_outlook.md").write_text(OUTLOOK, encoding="utf-8")
-    STALE["key"] = None
+    STALE.update(key=None, result="triggered")
 
     def step_state(step, company, today):
         found = S.latest(step, company)
         return {"key": step.key, "skill": step.skill, "label": step.label, "step": step.number,
-                "result": "triggered" if step.key == STALE["key"] else "fresh", "reason": "",
+                "result": STALE["result"] if step.key == STALE["key"] else "fresh", "reason": "新しい raw がある",
                 "date": found[0] if found else None, "verdict": found[1].get(step.verdict_key) if found else None}
 
     monkeypatch.setattr(S, "step_state", step_state)
@@ -154,6 +154,30 @@ def test_check_reports_first_not_fresh_skill(repo, capsys):
     assert [s["skill"] for s in out["steps"]] == [s.skill for s in S.STEPS]
     gate = _prepare(repo, capsys)
     assert not gate["ok"] and "moat" in gate["error"]
+
+
+def test_use_existing_skips_triggered_analyses(repo, capsys):
+    company = _company(repo)
+    STALE["key"] = "moat"
+    out = _run(repo, capsys, "check", "--company", "3798", "--date", TODAY, "--use-existing")
+    assert out["next"] == "prepare"
+    gate = _prepare(repo, capsys)
+    assert not gate["ok"] and "--use-existing" in gate["error"]
+    prepared = _run(repo, capsys, "prepare", "--company", "3798", "--date", TODAY, "--skip-prices", "--use-existing")
+    assert prepared["ok"] and prepared["used_existing"] == ["moat（2026-10-20）"]
+    md = company / "reports" / f"{TODAY}_company-report.md"
+    md.write_text(_fill(md.read_text(encoding="utf-8"), prepared["horizons"]), encoding="utf-8")
+    assert _run(repo, capsys, "build", "--company", "3798")["ok"]
+    html = (company / "reports" / f"{TODAY}_company-report.html").read_text(encoding="utf-8")
+    assert 'class="notice"' in html and "作り直していない分析" in html
+
+
+def test_use_existing_still_runs_expired(repo, capsys):
+    _company(repo)
+    STALE["key"] = "moat"
+    STALE["result"] = "expired"
+    out = _run(repo, capsys, "check", "--company", "3798", "--date", TODAY, "--use-existing")
+    assert out["next"] == "moat"
 
 
 def test_stale_outlook_asks_for_market_report(repo, capsys):

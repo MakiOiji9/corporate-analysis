@@ -1,6 +1,6 @@
 ---
 description: 企業分析レポート。企業分析フレームワーク.md の STEP 1〜3（five-forces・three-c・moat・swot・profitability・growth・safety・cash-flow・valuation）を依存の順に実行し（鮮度が新しい分析はスキップ）、STEP 1・2 の総合判定（A/B/C）と判定マトリクスから短期（〜3ヶ月）・中期（6ヶ月〜1年）・長期（3年以上）の判定（投資検討/ウォッチ/見送り/判定保留）を根拠つきで出し、株価の過去レンジ（52週・3年・5年・10年）と合わせて、初心者からプロまで読める日付付きの単一 HTML（companies/{ticker}_{name}/reports/{日付}_company-report.html）にまとめる。
-argument-hint: "[{銘柄コード|企業ディレクトリ名|社名の一部}] [redo]  ※省略時は companies/ から選択"
+argument-hint: "[{銘柄コード|企業ディレクトリ名|社名の一部}] [redo] [use-existing]  ※省略時は companies/ から選択。use-existing は材料が変わった分析を作り直さない"
 ---
 
 `.ai/prompts/company-report.md` を読み、その手順に厳密に従って実行する。

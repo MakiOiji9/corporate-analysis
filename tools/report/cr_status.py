@@ -104,9 +104,16 @@ def report_state(company: Company) -> dict:
     return {"date": date, "state": state, "md": company.rel(path)}
 
 
-def next_step(steps: list[dict], outlook: dict, report: dict, today: str, redo: bool) -> str:
-    """The first analysis that is not fresh, then the outlook, then the report itself."""
-    pending = next((s for s in steps if s["result"] != "fresh"), None)
+def usable(step: dict, use_existing: bool) -> bool:
+    """A result the report may use: fresh, or (with use_existing) triggered — built, still valid, but newer
+    material exists. Expired, missing and draft analyses always run."""
+    return step["result"] == "fresh" or (use_existing and step["result"] == "triggered")
+
+
+def next_step(steps: list[dict], outlook: dict, report: dict, today: str, redo: bool,
+              use_existing: bool = False) -> str:
+    """The first analysis that is not usable, then the outlook, then the report itself."""
+    pending = next((s for s in steps if not usable(s, use_existing)), None)
     if pending:
         return pending["skill"]
     if outlook.get("stale"):
@@ -119,9 +126,9 @@ def next_step(steps: list[dict], outlook: dict, report: dict, today: str, redo: 
     return "prepare"
 
 
-def check(root: Path, company: Company, today: str, redo: bool = False) -> dict:
+def check(root: Path, company: Company, today: str, redo: bool = False, use_existing: bool = False) -> dict:
     steps = [step_state(step, company, today) for step in STEPS]
     outlook = A.latest_outlook(root, today)
     report = report_state(company)
     return {"steps": steps, "outlook": outlook, "report": report,
-            "next": next_step(steps, outlook, report, today, redo)}
+            "next": next_step(steps, outlook, report, today, redo, use_existing)}

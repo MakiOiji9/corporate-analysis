@@ -1,0 +1,124 @@
+{
+ "company": "3798_uls-group",
+ "name": "ULSグループ（3798）",
+ "date": "2026-10-31",
+ "market": "日本",
+ "horizons": {
+  "short": {
+   "verdict": "見送り",
+   "provisional": null,
+   "why": "長期が見送りのため短期も見送り"
+  },
+  "mid": {
+   "verdict": "見送り",
+   "provisional": null,
+   "why": "長期が見送りのため中期も見送り"
+  },
+  "long": {
+   "verdict": "見送り",
+   "provisional": null,
+   "why": "STEP 2 が C のため、株価にかかわらず見送り（判定マトリクス）"
+  }
+ },
+ "step1": {
+  "grade": "B",
+  "pending": true,
+  "why": "A の条件を満たさない: 勝てる理由が明確、モートが広い、SWOT が Yes（勝てる理由が判定保留のため STEP 1 は確定しない。A にも C にもしない）"
+ },
+ "step2": {
+  "grade": "C",
+  "pending": false,
+  "why": "キャッシュフローが懸念（C の条件）",
+  "mismatch": []
+ },
+ "step3": {
+  "verdict": "妥当"
+ },
+ "price": {
+  "value": 541.0,
+  "date": "2026-10-30",
+  "currency": "円"
+ },
+ "price_range": {
+  "source": "prices",
+  "current": 541.0,
+  "first": "2016-10-24",
+  "last": "2026-10-30",
+  "position_52w": 23.5
+ },
+ "analyses": {
+  "five_forces": {
+   "date": "2026-10-13",
+   "verdict": "中"
+  },
+  "three_c": {
+   "date": "2026-10-13",
+   "verdict": "判定保留"
+  },
+  "moat": {
+   "date": "2026-10-13",
+   "verdict": "なし"
+  },
+  "swot": {
+   "date": "2026-10-13",
+   "verdict": "条件付き"
+  },
+  "profitability": {
+   "date": "2026-10-13",
+   "verdict": "良好"
+  },
+  "growth": {
+   "date": "2026-10-31",
+   "verdict": "普通"
+  },
+  "safety": {
+   "date": "2026-10-21",
+   "verdict": "良好"
+  },
+  "cash_flow": {
+   "date": "2026-10-21",
+   "verdict": "懸念"
+  },
+  "valuation": {
+   "date": "2026-10-31",
+   "verdict": "妥当"
+  }
+ },
+ "outlook": "market/report/2026-10-26_outlook.md",
+ "review": "2027年3月期 中間決算の発表（前年は 2025-11-07。日付は IR カレンダーで要確認）",
+ "warnings": [],
+ "used_existing": [
+  {
+   "skill": "five-forces",
+   "date": "2026-10-13",
+   "reason": "分析後に新しい raw が収集された: companies/3798_uls-group/raw/market/2026-10-31_competitors.md, companies/3798_uls-group/raw/market/2026-10-21_competitors.md"
+  },
+  {
+   "skill": "three-c",
+   "date": "2026-10-13",
+   "reason": "分析後に新しい raw・ファイブフォースがある: companies/3798_uls-group/raw/market/2026-10-31_competitors.md, companies/3798_uls-group/raw/market/2026-10-21_competitors.md"
+  },
+  {
+   "skill": "moat",
+   "date": "2026-10-13",
+   "reason": "分析後に新しい raw・3C分析がある: companies/3798_uls-group/raw/ir/2026-10-21_financials-historical.md, companies/3798_uls-group/raw/market/2026-10-31_competitors.md, companies/3798_uls-group/raw/market/2026-10-21_competitors.md"
+  },
+  {
+   "skill": "profitability",
+   "date": "2026-10-13",
+   "reason": "分析後に材料・数値・上流の分析が変わった: companies/3798_uls-group/raw/ir/2026-10-21_financials-historical.md, companies/3798_uls-group/raw/market/2026-10-13_competitors.md, （年次の数値: data/*.csv・有報・財務時系列・競合）"
+  },
+  {
+   "skill": "cash-flow",
+   "date": "2026-10-21",
+   "reason": "分析後に材料・数値・STEP 2 の他の分析が変わった: companies/3798_uls-group/analysis/growth/2026-10-31_growth.json"
+  },
+  {
+   "skill": "valuation",
+   "date": "2026-10-31",
+   "reason": "分析後に材料・数値・成長性分析が変わった: （数値: 株価・EPS・BPS・年次の財務・競合の倍率）"
+  }
+ ],
+ "md": "companies/3798_uls-group/reports/2026-10-31_company-report.md",
+ "html": "companies/3798_uls-group/reports/2026-10-31_company-report.html"
+}

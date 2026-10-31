@@ -89,7 +89,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 | コマンド | 用途 | 主な出力 |
 |---|---|---|
 | `company_report.py list` | `companies/` の企業と、鮮度が新しくない分析（`not_fresh`）・最新のレポートの日付と状態 | 1行の JSON |
-| `company_report.py check --company X [--redo]` | 9つの分析（five-forces → three-c → moat → swot → profitability → growth → safety → cash-flow → valuation。鮮度は各スクリプトの `evaluate()`）、地合い判断の古さ（35日）、今日のレポートの状態から `next`（最初の新しくない分析のスキル名 / market-report / prepare / write / build / report_existing） | 1行の JSON |
+| `company_report.py check --company X [--redo] [--use-existing]`（`--use-existing` は triggered の分析を作り直さず既存の結果を使う。prepare も同じ） | 9つの分析（five-forces → three-c → moat → swot → profitability → growth → safety → cash-flow → valuation。鮮度は各スクリプトの `evaluate()`）、地合い判断の古さ（35日）、今日のレポートの状態から `next`（最初の新しくない分析のスキル名 / market-report / prepare / write / build / report_existing） | 1行の JSON |
 | `company_report.py prepare --company X [--redo] [--skip-prices] [--skip-market-report]` | 株価を取得し（`tools/collect/stock_prices.py`）、STEP 1・2 の総合判定（A/B/C）、判定マトリクス、短期・中期・長期の判定と条件表、株価のレンジ・移動平均を計算して facts.json に保存し、執筆の材料と md の骨組み（1章の判定の表はスクリプト、文章は FILL）を作る。作成途中の md は文章を残して判定の表だけを更新する | `{日付}_company-report_facts.json`・`_brief.md`・`.md` |
 | `company_report.py build --company X [--date …]` | md を検証（構造・FILL・判定の表が facts.json と同じか・3行まとめと箇条書きの数・各期間の説明が判定語を含むか・禁止表現）し、単一 HTML（判定カード・根拠の表・STEP 1〜3・財務と株価のチャート・用語集）と要約の json を出力 | `{日付}_company-report.html`・`.json` |
 

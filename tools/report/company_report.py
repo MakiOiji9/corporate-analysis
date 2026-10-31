@@ -98,17 +98,19 @@ def cmd_check(args: argparse.Namespace, root: Path) -> int:
     if error:
         return emit(error)
     today = _today(args)
-    status = S.check(root, company, today, args.redo)
+    status = S.check(root, company, today, args.redo, args.use_existing)
     return emit({"ok": True, "company": company.dirname, "name": company.display_name(), "date": today,
                  "steps": _compact(status["steps"]), "outlook": status["outlook"], "report": status["report"],
                  "next": status["next"]})
 
 
 def _prepare_gate(status: dict, args: argparse.Namespace) -> str | None:
-    pending = [s for s in status["steps"] if s["result"] != "fresh"]
+    pending = [s for s in status["steps"] if not S.usable(s, args.use_existing)]
     if pending:
         first = pending[0]
-        return (f"先に {first['skill']} を最後まで実行する（{first['result']}: {first['reason']}）。"
+        hint = "" if args.use_existing or first["result"] != "triggered" else \
+            "（作り直さずに既存の結果を使うなら --use-existing）"
+        return (f"先に {first['skill']} を最後まで実行する（{first['result']}: {first['reason']}）{hint}。"
                 f"新しくないもの: {', '.join(s['skill'] for s in pending)}")
     if status["outlook"].get("stale") and not args.skip_market_report:
         return ("地合い判断（outlook.md）が無いか35日より古い。先に market-report を実行する"
@@ -129,7 +131,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     if error:
         return emit(error)
     today = _today(args)
-    status = S.check(root, company, today, args.redo)
+    status = S.check(root, company, today, args.redo, args.use_existing)
     gate = _prepare_gate(status, args)
     if gate:
         return emit({"ok": False, "error": gate, "next": status["next"], "steps": _compact(status["steps"])})
@@ -153,6 +155,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
         "step3": facts["step3"]["verdict"],
         "horizons": {k: D.verdict_label(h) for k, h in facts["horizons"].items()},
         "outlook": facts["outlook"].get("path"), "outlook_stale": facts["outlook"].get("stale"),
+        "used_existing": [f"{s['skill']}（{s['date']}）" for s in facts["stale"]],
     })
 
 
@@ -178,6 +181,7 @@ def result_json(company: S.Company, facts: dict, date: str, warnings: list[str])
                         "last": p.get("last"), "position_52w": w52["position"] if w52 else None},
         "analyses": {k: {"date": a["date"], "verdict": a["verdict"]} for k, a in facts["analyses"].items()},
         "outlook": facts["outlook"].get("path"), "review": facts["review"], "warnings": warnings,
+        "used_existing": [{k: s[k] for k in ("skill", "date", "reason")} for s in facts.get("stale") or []],
         "md": company.rel(company.file(date, S.MD_SUFFIX)), "html": company.rel(company.file(date, S.HTML_SUFFIX)),
     }
 
@@ -219,6 +223,9 @@ def main(argv: list[str] | None = None, root: Path = A.REPO_ROOT) -> int:
         p.add_argument("--date", help="YYYY-MM-DD（check/prepare: 今日の代わり、build: 対象のレポートの日付）")
         if name in ("check", "prepare"):
             p.add_argument("--redo", action="store_true", help="今日の build 済み・作成途中のレポートがあっても作り直す")
+            p.add_argument("--use-existing", action="store_true",
+                           help="分析後に材料が変わった（triggered）分析を作り直さず既存の結果で進む（レポートに明記）。"
+                                "期限切れ・未実施・作成途中の分析は実行する")
         if name == "prepare":
             p.add_argument("--skip-prices", action="store_true", help="株価を取りに行かない（data/prices.csv をそのまま使う）")
             p.add_argument("--skip-market-report", action="store_true",

@@ -81,8 +81,18 @@ def _card(key: str, h: dict) -> str:
             f'（{esc(SPANS[key])}）</div><div class="word">{esc(word)}</div>{prov}<p class="why">{esc(h["why"])}</p></div>')
 
 
+def _stale_notice(facts: dict) -> str:
+    stale = facts.get("stale") or []
+    if not stale:
+        return ""
+    names = "、".join(f"{s['label']}（{s['date']}）" for s in stale)
+    return (f'<div class="notice"><b>注意</b>: {esc(names)} は、分析の後に新しい材料が集まったが作り直していない'
+            "（既存の結果で判定した）。理由は「材料不足と使った分析」の節を参照。</div>")
+
+
 def conclusion(facts: dict, parsed: dict) -> str:
-    cards = '<div class="verdicts">' + "".join(_card(k, facts["horizons"][k]) for k in ("short", "mid", "long")) + "</div>"
+    cards = _stale_notice(facts) + '<div class="verdicts">' + "".join(
+        _card(k, facts["horizons"][k]) for k in ("short", "mid", "long")) + "</div>"
     summary = '<ol class="summary">' + "".join(f"<li>{esc(s)}</li>" for s in parsed["summary"]) + "</ol>"
     legend = "".join(f"<dt>{badge(w)}</dt><dd>{esc(t)}</dd>" for w, t in G.VERDICTS.items())
     spans = "".join(f"<p><b>{esc(n)}</b>（{esc(s)}）: {esc(t)}</p>" for n, s, t in PLAIN_HORIZONS)
@@ -278,7 +288,11 @@ def _link(facts: dict, md: str | None) -> str:
 def gaps(facts: dict) -> str:
     rows = [[esc(a["step"]), esc(a["label"]), esc(a["date"] or "未実施"), esc(a["verdict"] or "—"), _link(facts, a["md"])]
             for a in facts["analyses"].values()]
-    body = (_list([f"{g['label']}: {g['gap']}" for g in facts["gaps"]]) + "<h3>このレポートが使った分析</h3>"
+    stale = facts.get("stale") or []
+    stale_html = ("<h3>作り直していない分析（既存の結果を使用）</h3>"
+                  + _list([f"{s['label']}（{s['date']}、{s['result']}）: {s['reason']}" for s in stale]) if stale else "")
+    body = (_list([f"{g['label']}: {g['gap']}" for g in facts["gaps"]]) + stale_html
+            + "<h3>このレポートが使った分析</h3>"
             + table(["STEP", "分析", "分析日", "結論", "ファイル"], rows, nowrap=frozenset({2})))
     return _section("gaps", "08", "材料不足と使った分析", "判定に影響しうる、まだ確かめられていない点。", body)
 

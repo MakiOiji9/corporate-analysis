@@ -83,6 +83,7 @@ def _safety(r: dict) -> dict:
 def _cash_flow(r: dict) -> dict:
     return {"steps": [{"rating": _get(r, k, "rating"), "sentence": _get(r, k, "sentence")}
                       for k in ("step1", "step2", "step3", "step4", "step5")],
+            "ratio": _get(r, "step3", "ratio"),
             "rows": [{k: x.get(k) for k in ("year", "cfo", "cfi", "fcf", "net_income", "ratio")}
                      for x in r.get("cf_rows") or []]}
 
@@ -179,4 +180,6 @@ def build(root: Path, company: S.Company, today: str, status: dict) -> dict:
         "date": today, "unit": unit_label(company), "price": _get(found["valuation"], "detail", "price") or {},
         "analyses": found, "prices": prices, "outlook": outlook, "review": next_review(company),
         **judgements(found, prices, outlook), "gaps": gaps(found), "steps": status["steps"],
+        "stale": [{k: s[k] for k in ("skill", "label", "step", "date", "result", "reason")}
+                  for s in status["steps"] if s["result"] != "fresh"],
     }

@@ -31,6 +31,7 @@ LLM が受け持つのは、(1) 鮮度が新しくない分析スキルを順に
 |---|---|---|
 | `company` | 銘柄コード（`3798`）・企業ディレクトリ名（`3798_uls-group`）・社名の一部 | 手順 0 で選んでもらう |
 | `redo` | 今日のレポートが build 済みでも作り直す（ユーザーが指示したときだけ。分析スキルの redo ではない） | なし |
+| `use-existing` | 分析後に材料が変わった（`triggered`）分析を作り直さず、既存の結果でレポートを作る。期限切れ（`expired`）・未実施（`none`）・作成途中（`draft`）の分析はこれまでどおり実行する。既存の結果を使った分析はレポートの冒頭と8章に理由つきで明記される | なし（作り直す） |
 
 ---
 
@@ -52,8 +53,10 @@ $PY -I tools/report/company_report.py list
 ### 1. 鮮度確認とスキルの実行（スクリプト ⇄ スキル）
 
 ```
-$PY -I tools/report/company_report.py check --company {company} [--redo]
+$PY -I tools/report/company_report.py check --company {company} [--redo] [--use-existing]
 ```
+
+`use-existing` の指示があるときは、check と prepare の両方に `--use-existing` を付ける（付けると `triggered` の分析は `next` に出ない）。
 
 `steps` が9つの分析の状態（依存の順。`result` は各分析スクリプト自身の判定: `fresh` 有効 / `expired` 期限切れ / `triggered` 材料・上流が変わった / `draft` 作成途中 / `none` 未実施）。`next` に従う。
 
@@ -77,7 +80,7 @@ $PY -I tools/report/company_report.py check --company {company} [--redo]
 ### 2. 準備（スクリプト）
 
 ```
-$PY -I tools/report/company_report.py prepare --company {company} [--redo] [--skip-market-report]
+$PY -I tools/report/company_report.py prepare --company {company} [--redo] [--use-existing] [--skip-market-report]
 ```
 
 - 株価を取得して `data/prices.csv` を更新し（`prices.ok`。取れなければ raw の年次の高値・安値表で代える: `price_source: fallback`）、判定をすべて計算して facts.json・brief.md・md の骨組みを作る
@@ -86,6 +89,7 @@ $PY -I tools/report/company_report.py prepare --company {company} [--redo] [--sk
 - 作成途中の md（FILL が残っている）は文章を残し、1章の判定の表だけを最新の判定に置き換える（`kept: true`）
 - `--skip-market-report` は、market-report を実行しても地合い判断を作れなかったときだけ使う（brief に「地合い判断が古い」と出る）
 - `prices.ok: false` は完了報告の「警告」行に書く（株価の取得を再試行しない）
+- `used_existing` は作り直さずに使った分析。完了報告の「スキップした分析」に「既存の結果を使用（材料が変わった）」として書く
 
 ### 3. 執筆（LLM）
 

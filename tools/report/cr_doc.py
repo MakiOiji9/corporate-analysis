@@ -102,7 +102,7 @@ def _prices(facts: dict) -> list[str]:
         lines.append("- 日々の株価（data/prices.csv）が無い。"
                      + (f"{table['source']} の「{table['title']}」を載せる" if table else "株価のレンジは不明"))
         return lines
-    lines.append(f"- 期間: {p['first']}〜{p['last']}（{p['days']} 営業日、分割調整済み）。現在 {C.fmt(p['current'], 0)}")
+    lines += [f"- 期間: {p['first']}〜{p['last']}（{p['days']} 営業日、分割調整済み）。現在 {C.fmt(p['current'], 0)}", ""]
     lines += _table(["期間", "高値（日付）", "安値（日付）", "現在の位置", "高値から"],
                     [[w["label"] + ("（取得期間のみ）" if w["partial"] else ""),
                       f"{C.fmt(w['high'], 0)}（{w['high_date']}）", f"{C.fmt(w['low'], 0)}（{w['low_date']}）",
@@ -123,9 +123,10 @@ def break_candidates(facts: dict) -> list[str]:
     roe = (d["profitability"]["detail"].get("roe_rows") or [])[-1:]
     if roe and roe[0].get("roe") is not None:
         out.append(f"ROE が2期連続で8%を下回る（{roe[0]['year']} は {roe[0]['roe']}%）")
-    cf = (d["cash_flow"]["detail"].get("rows") or [])[-1:]
-    if cf and cf[0].get("ratio") is not None:
-        out.append(f"営業CF対純利益比率が0.8倍を下回る状態が続く（{cf[0]['year']} は {cf[0]['ratio']}倍）")
+    ratio = d["cash_flow"]["detail"].get("ratio")
+    if ratio is not None:
+        out.append(f"営業CF対純利益比率（5年平均と累計の低い方）が0.8倍を下回ったまま（今は {ratio}倍。"
+                   "キャッシュフロー分析の判定に使った値）")
     g = d["growth"]["detail"]
     if g.get("plan_average") is not None:
         out.append(f"会社計画の達成率が90%を下回る年が続く（過去の平均 {g['plan_average']:.0f}%、{g.get('plan') or '—'}）")
@@ -149,7 +150,16 @@ def _premise(facts: dict) -> list[str]:
             lines.append(f"  - {period}: {row['judgment']}。{row['scenario']}（下振れ要因: {row['downside']}）")
     if o.get("stale"):
         lines.append("  - 注意: 地合い判断が35日より古い")
-    return lines + [f"- 次回の見直し: {facts['review']}", ""]
+    latest = (facts["analyses"]["growth"]["detail"].get("rows") or [{}])[-1]
+    if latest.get("year"):
+        lines.append(f"- 主要な数字（{latest['year']}、成長性分析）: 売上高 {C.fmt(latest.get('sales'), 0)}・"
+                     f"営業利益 {C.fmt(latest.get('operating_income'), 0)}・純利益 {C.fmt(latest.get('net_income'), 0)}"
+                     f"（{facts['unit']}）、EPS {C.fmt(latest.get('eps'), 1)}")
+    lines.append(f"- 次回の見直し: {facts['review']}")
+    for s in facts.get("stale") or []:
+        lines.append(f"- 注意: {s['label']}（{s['date']}）は分析後に材料が変わったが作り直していない（{s['reason']}）。"
+                     "4.3 に確かめることとして書く")
+    return lines + [""]
 
 
 def render_brief(facts: dict, md_rel: str) -> str:
