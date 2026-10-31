@@ -17,10 +17,10 @@ Rules (paths relative to the repository; writes outside it are not checked):
   5. market/report/: facts.json, brief.md, judgment.json and the HTML are script-only. {week}_outlook.md is
      created by market_report.py prepare and only edited (not overwritten); once an earlier
      week's outlook is finished (no FILL left) it is immutable.
-  6. companies/*/analysis/{five-forces,three-c,moat,swot,profitability,cash-flow,growth,safety}/: {date}_brief.md and
-     {date}_{kind}.json are script-only. {date}_{kind}.md is created by the analysis script's prepare (five_forces.py /
-     three_c.py / moat.py / swot.py / profitability.py / cash_flow.py / growth.py / safety.py) and only edited (not
-     overwritten);
+  6. companies/*/analysis/{five-forces,three-c,moat,swot,profitability,cash-flow,growth,safety,valuation}/:
+     {date}_brief.md and {date}_{kind}.json are script-only. {date}_{kind}.md is created by the analysis script's
+     prepare (five_forces.py / three_c.py / moat.py / swot.py / profitability.py / cash_flow.py / growth.py /
+     safety.py / valuation.py) and only edited (not overwritten);
      once an earlier day's analysis is built (its json exists) it is immutable.
 """
 from __future__ import annotations
@@ -47,16 +47,16 @@ SCRIPT_ONLY = [
         r"^companies/[^/]+/data/",
         r"^market/report/[^/]+_(facts\.json|brief\.md|market-report\.html|judgment\.json)$",
         r"^market/report/backtest/",
-        r"^companies/[^/]+/analysis/(five-forces|three-c|moat|swot|profitability|cash-flow|growth|safety)/[^/]+_(brief\.md"
-        r"|five-forces\.json|three-c\.json|moat\.json|swot\.json|profitability\.json|cash-flow\.json|growth\.json"
-        r"|safety\.json)$",
+        r"^companies/[^/]+/analysis/(five-forces|three-c|moat|swot|profitability|cash-flow|growth|safety|valuation)/"
+        r"[^/]+_(brief\.md|five-forces\.json|three-c\.json|moat\.json|swot\.json|profitability\.json|cash-flow\.json"
+        r"|growth\.json|safety\.json|valuation\.json)$",
     )
 ]
 ANALYSIS_SCRIPT = {"five-forces": "five_forces.py", "three-c": "three_c.py", "moat": "moat.py", "swot": "swot.py",
                    "profitability": "profitability.py", "cash-flow": "cash_flow.py",
-                   "growth": "growth.py", "safety": "safety.py"}
+                   "growth": "growth.py", "safety": "safety.py", "valuation": "valuation.py"}
 ANALYSIS_MD = re.compile(
-    r"^companies/[^/]+/analysis/(five-forces|three-c|moat|swot|profitability|cash-flow|growth|safety)/"
+    r"^companies/[^/]+/analysis/(five-forces|three-c|moat|swot|profitability|cash-flow|growth|safety|valuation)/"
     r"(\d{4}-\d{2}-\d{2})"
     r"_(?P<kind>[\w-]+)\.md$")
 MARKET_RAW = re.compile(r"^market/(policy/[^/]+|sessions/[^/]+)/raw/[^/]+\.md$")

@@ -1,6 +1,6 @@
 # データ鮮度・未取得項目 — ULSグループ
 
-**最終更新**: 2026-10-21（mode=update、collect-filings。growth スキルの指定項目のみ: financials-historical.md 6章「減収・減益の年の会社説明」・7章「M&A・連結範囲の変更」を raw/ir/2026-10-21_financials-historical.md に新規収集。前回 2026-10-13 以降の EDINET 提出書類なし）。同日、safety スキルの指定項目で collect-filings（financials-historical.md 3章「貸借・CF の主要項目」: 2017〜2026年3月期の有利子負債の行・自己資本・現金及び現金同等物・流動資産・流動負債・3CF）と collect-peers-valuation（competitors.md 11章「安全性の指標」: 自社と競合5社）を raw/ir/2026-10-21_financials-historical.md・raw/market/2026-10-21_competitors.md に追加。同日、cash-flow スキルの指定項目で collect-filings（financials-historical.md 1章「損益・貸借・CF」のうち営業CF の内訳: 2017〜2026年3月期の税金等調整前当期純利益・減価償却費・売上債権の増減額・棚卸資産の増減額・法人税等の支払額）を raw/ir/2026-10-21_financials-historical.md に追記
+**最終更新**: 2026-10-31（mode=update、collect-peers-valuation。valuation スキルの指定項目のみ: 株価のみ（自社 raw/ir/2026-10-31_valuation-data.md 1〜3章、競合 raw/market/2026-10-31_competitors.md 6章。基準日 2026-10-30 終値）と competitors.md 12章「EV/EBITDA の材料」（自社と競合5社）。前回 2026-10-21 以降の EDINET 提出書類なし）。以前: 2026-10-21（mode=update、collect-filings。growth スキルの指定項目のみ: financials-historical.md 6章「減収・減益の年の会社説明」・7章「M&A・連結範囲の変更」を raw/ir/2026-10-21_financials-historical.md に新規収集。前回 2026-10-13 以降の EDINET 提出書類なし）。同日、safety スキルの指定項目で collect-filings（financials-historical.md 3章「貸借・CF の主要項目」: 2017〜2026年3月期の有利子負債の行・自己資本・現金及び現金同等物・流動資産・流動負債・3CF）と collect-peers-valuation（competitors.md 11章「安全性の指標」: 自社と競合5社）を raw/ir/2026-10-21_financials-historical.md・raw/market/2026-10-21_competitors.md に追加。同日、cash-flow スキルの指定項目で collect-filings（financials-historical.md 1章「損益・貸借・CF」のうち営業CF の内訳: 2017〜2026年3月期の税金等調整前当期純利益・減価償却費・売上債権の増減額・棚卸資産の増減額・法人税等の支払額）を raw/ir/2026-10-21_financials-historical.md に追記
 
 > collect-company-info を実行するたびに上書きする。`mode=update` はまずこのファイルと `sources/manifest.csv` を読む。
 
@@ -8,7 +8,7 @@
 
 | 区分 | 最新データの時点 | 取得日 | raw ファイル | 次回更新トリガー |
 |---|---|---|---|---|
-| 株価・株価指標 | 2026-10-09 終値 | 2026-10-11 | raw/ir/2026-10-11_valuation-data.md | 再実行のたび |
+| 株価・株価指標 | 2026-10-30 終値（自社・競合とも） | 2026-10-31 | raw/ir/2026-10-31_valuation-data.md（1〜3章）、raw/market/2026-10-31_competitors.md（6章・12章）。年次レンジ・アナリスト予想は raw/ir/2026-10-11_valuation-data.md | 再実行のたび（valuation は基準日が7日より古いと取り直しを求める） |
 | 四半期決算 | 2027年3月期 1Q（2026-08-12 公表） | 2026-10-11 | data/tdnet_facts.csv | 2027年3月期 中間決算の発表（前年は 2025-11-07。日付は IR カレンダーで要確認） |
 | 通期決算・会社予想 | 2026年3月期（予想は2027年3月期） | 2026-10-11 | raw/ir/2026-10-11_financials-historical.md | 本決算発表（例年5月中旬） |
 | 貸借・CF の時系列（安全性） | 2017年3月期〜2026年3月期（10年。有利子負債は全期間 0（科目なし）） | 2026-10-21 | raw/ir/2026-10-21_financials-historical.md（3章のみ。1章・4〜5章は 2026-10-11 版、6章・7章は同日の成長性の差分） | 本決算発表・有報提出 |
@@ -24,7 +24,8 @@
 |---|---|---|
 | 2019・2020年3月期の財務の細目（売上原価・販管費） | BS・CF の主要項目は 2026-10-21 に第19期 S100G59I・第20期 S100IVUU で取得済み。売上原価・販管費は未転記 | EDINET API（`edinet.py list --code 3798 --fy-end-month 3 --years 8`）。キーが無ければ EDINET DB の IR資料一覧の未表示分を確認 |
 | 2022年3月期の期初予想（経常利益 1,600 以外）、2019年3月期の期中修正 | 一次資料を未取得 | IRBANK 適時開示一覧で2021年5月・2019年2月頃の開示番号を調べ、短信 PDF を fetch.py |
-| EV/EBITDA（現在値・過去推移、当社・競合） | 無料の情報源に掲載なし | — （計算方針をユーザーと決めるまで保留） |
+| EV/EBITDA（現在値・過去推移、当社・競合） | 無料の情報源に掲載なし。valuation スキルが部品から算出する方針になり、材料（competitors.md 12章）を 2026-10-31 に6社とも取得済み | 再収集不要（算出値を使う） |
+| 株式交換後の自己株式を除く発行済株式数（ULS） | 2026-10-01 の簡易株式交換で自己株式を交付したが交付株式数が未確認（株式数は 2026-06-30 の 56,608,380株のまま。上限は 63,885,000株） | 2026-07-29 の TDnet 原本（簡易株式交換の開示）、または中間決算短信の期末株式数 |
 | PER・PBR の年次平均 | IRBANK は年次の高値・安値のみ | — |
 | 市場シェア・業界全体の利益率・購買決定要因の定量データ | 公表統計が見つからない | JISA「情報サービス産業 基本統計調査」、IDC の原発表を直接確認 |
 | 営業利益率の長期推移（ノースサンド、3年分のみ）・（ライズ・コンサルティング・グループ、5年分のみ） | 上場が新しい（ノースサンド 2025-11、ライズは2022/02期以降のみ開示）。モート分析の古い年度は数値のある競合だけの平均になる | 新規上場時の有価証券届出書の5期推移（EDINET）。ノースサンドは1年後に4期程度 |

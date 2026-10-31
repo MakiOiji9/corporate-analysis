@@ -1,0 +1,408 @@
+{
+ "company": "3798_uls-group",
+ "name": "ULSグループ（3798）",
+ "date": "2026-10-31",
+ "valid_until": "2027-04-29",
+ "verdict": "普通",
+ "verdict_reason": "手順1は高成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））",
+ "step1": {
+  "rating": "高成長",
+  "basis": "売上 CAGR 5% 以上かつ EPS CAGR 7% 以上",
+  "sentence": "売上 CAGR 15.1%、営業利益 CAGR 15.3%、EPS CAGR 16.2%（2017-03〜2026-03）で高成長",
+  "years": 10,
+  "first": "2017-03",
+  "last": "2026-03",
+  "eps_basis": "eps",
+  "sales_cagr": 15.1,
+  "eps_cagr": 16.2,
+  "cagr": {
+   "sales": {
+    "value": 15.1,
+    "first": "2017-03",
+    "last": "2026-03",
+    "reason": ""
+   },
+   "operating_income": {
+    "value": 15.3,
+    "first": "2017-03",
+    "last": "2026-03",
+    "reason": ""
+   },
+   "eps": {
+    "value": 16.2,
+    "first": "2017-03",
+    "last": "2026-03",
+    "reason": ""
+   },
+   "net_income": {
+    "value": 15.8,
+    "first": "2017-03",
+    "last": "2026-03",
+    "reason": ""
+   }
+  }
+ },
+ "step3": {
+  "rating": "信頼できる",
+  "basis": "9年中 9年で達成率 90% 以上。直近3年の平均 104%、100% 未満の年 2（2024-03、2026-03）",
+  "sentence": "計画達成率は平均123%（9年中 9年で達成率 90% 以上。直近3年の平均 104%、100% 未満の年 2（2024-03、2026-03））で、計画は信頼できる。直近は未達気味（予想を上振れの前提にしない）",
+  "average": 123.5,
+  "rows": [
+   {
+    "year": "2018-03",
+    "metric": "営業利益",
+    "forecast": 650.0,
+    "actual": 888.0,
+    "rate": 136.6,
+    "sales_rate": 110.5,
+    "source": "2026-10-11_financials-historical.md「6. 会社計画（期初業績予想）と実績」",
+    "primary": true
+   },
+   {
+    "year": "2019-03",
+    "metric": "営業利益",
+    "forecast": 660.0,
+    "actual": 1156.0,
+    "rate": 175.2,
+    "sales_rate": 121.5,
+    "source": "2026-10-11_financials-historical.md「6. 会社計画（期初業績予想）と実績」",
+    "primary": false
+   },
+   {
+    "year": "2020-03",
+    "metric": "営業利益",
+    "forecast": 910.0,
+    "actual": 1331.0,
+    "rate": 146.3,
+    "sales_rate": 117.4,
+    "source": "2026-10-11_financials-historical.md「6. 会社計画（期初業績予想）と実績」",
+    "primary": false
+   },
+   {
+    "year": "2021-03",
+    "metric": "営業利益",
+    "forecast": 1000.0,
+    "actual": 1416.0,
+    "rate": 141.6,
+    "sales_rate": 122.9,
+    "source": "2026-10-11_financials-historical.md「6. 会社計画（期初業績予想）と実績」",
+    "primary": true
+   },
+   {
+    "year": "2022-03",
+    "metric": "経常利益",
+    "forecast": 1600.0,
+    "actual": 1607.0,
+    "rate": 100.4,
+    "sales_rate": null,
+    "source": "2026-10-11_financials-historical.md「6. 会社計画（期初業績予想）と実績」",
+    "primary": false
+   },
+   {
+    "year": "2023-03",
+    "metric": "営業利益",
+    "forecast": 1750.0,
+    "actual": 1727.0,
+    "rate": 98.7,
+    "sales_rate": 103.5,
+    "source": "2026-10-11_financials-historical.md「6. 会社計画（期初業績予想）と実績」",
+    "primary": false
+   },
+   {
+    "year": "2024-03",
+    "metric": "営業利益",
+    "forecast": 1850.0,
+    "actual": 1757.0,
+    "rate": 95.0,
+    "sales_rate": 103.3,
+    "source": "2026-10-11_financials-historical.md「6. 会社計画（期初業績予想）と実績」",
+    "primary": false
+   },
+   {
+    "year": "2025-03",
+    "metric": "営業利益",
+    "forecast": 2200.0,
+    "actual": 2623.0,
+    "rate": 119.2,
+    "sales_rate": 105.0,
+    "source": "2026-10-11_financials-historical.md「6. 会社計画（期初業績予想）と実績」",
+    "primary": false
+   },
+   {
+    "year": "2026-03",
+    "metric": "営業利益",
+    "forecast": 3100.0,
+    "actual": 3046.0,
+    "rate": 98.3,
+    "sales_rate": 104.4,
+    "source": "2026-10-11_financials-historical.md「6. 会社計画（期初業績予想）と実績」",
+    "primary": true
+   }
+  ]
+ },
+ "step4": {
+  "quality": "問題あり",
+  "sentence": "成長の質に問題あり: 直近3年は営業利益が売上ほど伸びていない（利益率が下がっている）",
+  "problems": [
+   "直近3年は営業利益が売上ほど伸びていない（利益率が下がっている）"
+  ],
+  "unknown": [],
+  "adjusted": null,
+  "checks": [
+   {
+    "name": "営業利益の伸び ≥ 売上の伸び（長期・直近3年）",
+    "status": "問題あり",
+    "detail": "長期（2017-03〜2026-03）: 営業利益 CAGR 15.3% / 売上 CAGR 15.1%、直近3年（2023-03〜2026-03）: 営業利益 CAGR 20.8% / 売上 CAGR 24.9%"
+   },
+   {
+    "name": "売上増が M&A 頼みでない",
+    "status": "問題なし",
+    "detail": "M&A あり（2021-03、買収先の売上 計246百万）。除いた売上 CAGR 14.9%"
+   },
+   {
+    "name": "EPS の伸びが自社株買い頼みでない",
+    "status": "問題なし",
+    "detail": "EPS CAGR 16.2% / 純利益 CAGR 15.8%（差 +0.3pt）"
+   }
+  ]
+ },
+ "step2": {
+  "sentence": "減収・減益の年 1 年（一時 2024-03）で構造要因なし",
+  "structural": "構造的な減収・減益の要因は見当たらない。2024-03 の EPS の減少は前期の特別利益が無くなった一時要因で、翌 2025-03 に EPS は +44.5% で回復した"
+ },
+ "rows": [
+  {
+   "year": "2017-03",
+   "sales": 4677.09,
+   "operating_income": 842.62,
+   "net_income": 539.68,
+   "eps": 9.4,
+   "source": "2026-10-11_financials-historical.md「2-1. 千円単位の年度」",
+   "primary": true
+  },
+  {
+   "year": "2018-03",
+   "sales": 5085.04,
+   "operating_income": 888.78,
+   "net_income": 555.71,
+   "eps": 9.68,
+   "source": "2026-10-11_financials-historical.md「2-1. 千円単位の年度」",
+   "primary": true
+  },
+  {
+   "year": "2019-03",
+   "sales": 5830.0,
+   "operating_income": 1160.0,
+   "net_income": 698.0,
+   "eps": 12.16,
+   "source": "2026-10-11_financials-historical.md「1. 10年サマリー（IRBANK、二次情報）」",
+   "primary": false
+  },
+  {
+   "year": "2020-03",
+   "sales": 6390.0,
+   "operating_income": 1330.0,
+   "net_income": 738.0,
+   "eps": 12.86,
+   "source": "2026-10-11_financials-historical.md「1. 10年サマリー（IRBANK、二次情報）」",
+   "primary": false
+  },
+  {
+   "year": "2021-03",
+   "sales": 7191.34,
+   "operating_income": 1416.84,
+   "net_income": 891.98,
+   "eps": 15.92,
+   "source": "2026-10-11_financials-historical.md「2-1. 千円単位の年度」",
+   "primary": true
+  },
+  {
+   "year": "2022-03",
+   "sales": 7367.0,
+   "operating_income": 1606.22,
+   "net_income": 998.0,
+   "eps": 17.83,
+   "source": "2026-10-11_2026-03_yuho.md「1. 主要な経営指標等の推移（連結）（p.2）」",
+   "primary": true
+  },
+  {
+   "year": "2023-03",
+   "sales": 8515.0,
+   "operating_income": 1727.85,
+   "net_income": 1233.0,
+   "eps": 22.46,
+   "source": "2026-10-11_2026-03_yuho.md「1. 主要な経営指標等の推移（連結）（p.2）」",
+   "primary": true
+  },
+  {
+   "year": "2024-03",
+   "sales": 10382.0,
+   "operating_income": 1757.0,
+   "net_income": 1131.0,
+   "eps": 20.58,
+   "source": "2026-10-11_2026-03_yuho.md「1. 主要な経営指標等の推移（連結）（p.2）」",
+   "primary": true
+  },
+  {
+   "year": "2025-03",
+   "sales": 13203.0,
+   "operating_income": 2623.0,
+   "net_income": 1635.0,
+   "eps": 29.74,
+   "source": "data/tdnet_facts.csv（決算短信）",
+   "primary": true
+  },
+  {
+   "year": "2026-03",
+   "sales": 16600.0,
+   "operating_income": 3046.0,
+   "net_income": 2027.0,
+   "eps": 36.2,
+   "source": "data/tdnet_facts.csv（決算短信）",
+   "primary": true
+  }
+ ],
+ "splits": [
+  {
+   "before": "2018-03",
+   "after": "2019-03",
+   "factor": 10.0,
+   "matched": true,
+   "record": {
+    "factor": 10.0,
+    "date": "2025-10-01",
+    "source": "status.md"
+   },
+   "text": "EPS: 2025-10-01 の株式分割（1株→10株、status.md）に合わせ、2018-03 以前の EPS を 10 で割って直近の基準にそろえた（出典の1株指標が 2018-03 までは分割前、2019-03 からは分割考慮後の値だったため。分割日とずれるのはこのため）"
+  }
+ ],
+ "progress": {
+  "fy": "2027-03",
+  "quarter": 1,
+  "filing_date": "2026年８月12日",
+  "items": {
+   "sales": {
+    "name": "売上高",
+    "cum": 4304.0,
+    "prior": 3804.0,
+    "forecast": 20200.0,
+    "last_actual": 16600.0,
+    "yoy": 13.144058885383814,
+    "forecast_growth": 21.68674698795181,
+    "progress": 21.306930693069308,
+    "prior_progress": 22.915662650602407
+   },
+   "operating_income": {
+    "name": "営業利益",
+    "cum": 979.0,
+    "prior": 894.0,
+    "forecast": 3700.0,
+    "last_actual": 3046.0,
+    "yoy": 9.507829977628646,
+    "forecast_growth": 21.47078135259357,
+    "progress": 26.45945945945946,
+    "prior_progress": 29.349967170059095
+   }
+  }
+ },
+ "receivables": "売上債権（百万）: 2023-03 2,780、2024-03 3,688、2025-03 4,847、2026-03 5,200。2023-03〜2026-03 の CAGR 23.2%（同期間の売上 CAGR 24.9%）",
+ "declines": [
+  {
+   "year": "2024-03",
+   "recovery": "回復",
+   "metrics": [
+    {
+     "name": "EPS",
+     "change": -8.4,
+     "recovery": "回復",
+     "recovered": "2025-03"
+    }
+   ],
+   "reason": "前連結会計年度に計上した特別利益（投資有価証券売却益 197百万円）が当連結会計年度は無かったため純利益が減少したと会社は説明しており、売上高は+21.9%、営業利益は+1.7%で増加していた（有報 第24期 S100TQHJ p.17・p.21）",
+   "class": "一時",
+   "swot": "—（構造要因ではない）"
+  }
+ ],
+ "ma": [
+  {
+   "year": "2021-03",
+   "target": "株式会社アークウェイ（システム・ビジネスコンサルティング。2004年設立）の株式 160株（80.0%）を森屋英治氏・森屋ゆかり氏から取得",
+   "sales": 246.0
+  },
+  {
+   "year": "2017-03",
+   "target": "連結範囲を広げる子会社化・事業譲受は確認できず（連結子会社数: 2018年3月期 2社、2021年3月期〜2026年3月期 3社。有報の「企業結合等関係」は確認した各期（2018・2022〜2026年3月期）「該当事項はありません」）",
+   "sales": null
+  }
+ ],
+ "borderline": [
+  "手順4: 営業利益 CAGR 15.3% と売上 CAGR 15.1% の差が 1pt 以内"
+ ],
+ "consistency": [
+  {
+   "check": "市場成長性が高い ⇔ 売上成長",
+   "step1": "市場の成長性 高（3C の市場成長率 9.1%）",
+   "step2": "売上 CAGR 15.1%",
+   "result": "整合"
+  }
+ ],
+ "consistency_comment": "整合（売上が市場並み以上に伸びている）",
+ "mtp": "数値目標を置いた中期経営計画は開示されておらず、「当面前期比平均20-30%台の利益成長フェーズを継続するイメージ」という定性的な方針（決算説明会資料 2026年5月 p.12）だけのため、前回の中期経営計画の達成状況は不明（brief に記載なし）",
+ "drivers": "ITコンサルティングの単一セグメントで、2026年3月期は受注高 18,135百万円（+27.3%）・受注残高 6,759百万円（+29.4%）と受注の拡大が売上を押し上げ、中途採用を年間120〜140名規模に広げる人員拡大がそれを支えている（有報 p.22・p.7–8）。直近3年に営業利益が売上ほど伸びていないのは、採用費が 440 から 848 に増えるなど採用加速に伴う販管費の増加と、2024年3月期の売上総利益率の低下（39.5%→37.2%、研修・待機時間の増加）による",
+ "handoff": {
+  "report_points": "2017-03〜2026-03 の売上 CAGR 15.1%・EPS CAGR 16.2% で高成長にあたり、減益は 2024-03 の EPS（特別利益の剥落による一時要因）だけで翌年に回復した。一方で直近3年は営業利益 CAGR 20.8% が売上 CAGR 24.9% を下回り、採用拡大の費用で利益率が下がっているため成長の質に問題があり、成長性は普通にとどまる",
+  "step3_hint": "会社計画は信頼できる（9年中 9年で達成率 90% 以上）ため予想EPS をそのまま使えるが、直近3年の平均は 104% で 100% 未満の年が 2（2024-03、2026-03）あり直近は未達気味のため、上振れを前提にしない。今期の第1四半期の営業利益の進捗 26.5% は前年同期の進捗 29.3% を下回っており、成長率は会社計画と実績の CAGR の低い方を標準に置くのが妥当",
+  "step2_checks": "売上債権の CAGR 23.2% は同期間の売上 CAGR 24.9% を下回っており売上の伸びに見合うが、キャッシュフロー分析では売上の伸びが営業CF で裏付けられているかを確かめる。収益性分析では採用費の増加で営業利益率が下がり続けていないかを、安全性分析では有利子負債ゼロ・現金及び預金 8,460百万円の状態が人員拡大の投資で崩れていないかを確かめる",
+  "triggers": "長期の営業利益 CAGR 15.3% と売上 CAGR 15.1% の差が 1pt 以内のため、直近3年の利益率の低下が続いて長期でも営業利益が売上を下回れば成長の質の問題が確定的になり、逆に直近3年で営業利益の伸びが売上以上に戻れば成長性は良好に上がりうる"
+ },
+ "changes": [
+  "なし（前回 2026-10-21 と同じく、手順1 高成長・手順3 信頼できる・成長の質 問題ありで成長性 普通。再分析は 2026-10-21 の財務時系列に節が追加されたため）"
+ ],
+ "gaps": [
+  "売上高が二次情報（集計サイト）の年: 2019-03、2020-03（CAGR の期間内だが初年・最終年ではないため判定への影響は小さい。2019・2020年3月期の有報で一次確認する）",
+  "中期経営計画の前回計画の達成状況が raw に無い（数値目標を置いた中計自体が開示されていない）",
+  "EPS の株式分割の調整: 出典の1株指標が 2018-03 までは分割前のため 2018-03 以前を 10 で割った（2025-10-01 の 1株→10株 の分割に合わせた補正）"
+ ],
+ "inputs": [
+  "companies/3798_uls-group/raw/filings/2026-10-11_2026-03_yuho.md",
+  "companies/3798_uls-group/raw/ir/2026-10-11_financials-historical.md",
+  "companies/3798_uls-group/raw/ir/2026-10-11_mid-term-plan.md",
+  "companies/3798_uls-group/raw/ir/2026-10-21_financials-historical.md"
+ ],
+ "seen": [
+  "companies/3798_uls-group/raw/filings/2026-10-11_2026-03_yuho.md",
+  "companies/3798_uls-group/raw/ir/2026-10-11_financials-historical.md",
+  "companies/3798_uls-group/raw/ir/2026-10-11_mid-term-plan.md",
+  "companies/3798_uls-group/raw/ir/2026-10-21_financials-historical.md"
+ ],
+ "input_digests": {
+  "self_pl": "8e93291704a66af6d95a3dfa400222c41d0a71e9",
+  "summary": "582e51ae7252a15bbb3d54e1bad3ff84735fb301",
+  "plan": "2c9cfbc7b2d147707b962b810b25addc288cb9cd",
+  "decline": "a02bc37ea986757cd82268338fd3dcb1710c04f5",
+  "ma": "ac26b436d2272e234ecbc9033ae69f1d637e31f8",
+  "self_return": "c5684a6598c725ef64a351a111eea838120dc3cf",
+  "segment": "b06193b26db999fef837e44971409775372452f2",
+  "risks": "5dddf0025403519f6851af9d6dc23b89398a0962",
+  "policy": "5b53a00b6a72f4552e7e1965f97c0171b7aaed1b",
+  "targets": "2d78358241c07d5c1144b6264eee3169ba347b44",
+  "mtp_result": "",
+  "yearly_series": "eb2adaf42effb5976773ee8ac770ecdc4b567e6d"
+ },
+ "three_c": {
+  "date": "2026-10-13",
+  "verdict": "判定保留",
+  "market_growth": "高"
+ },
+ "swot": {
+  "date": "2026-10-13",
+  "verdict": "条件付き"
+ },
+ "outlook": "market/report/2026-10-26_outlook.md",
+ "previous": {
+  "date": "2026-10-21",
+  "verdict": "普通"
+ },
+ "md": "companies/3798_uls-group/analysis/growth/2026-10-31_growth.md",
+ "downgraded": []
+}

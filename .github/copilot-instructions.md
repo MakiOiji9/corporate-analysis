@@ -27,12 +27,13 @@
 | `growth` | 成長性分析（STEP 2-2。売上・営業利益・EPS の CAGR、減収・減益の年の原因（一時/構造）、期初予想の達成率による計画の信頼性、成長の質（利益率・M&A・自社株買い）から 成長性 良好/普通/懸念（材料不足なら判定保留）。数値と判定は Python が出し、LLM は減収・減益の年の分類と背景だけを書く。`companies/{ticker}_{name}/analysis/growth/` に md と json。180日有効で期間内は再分析しない。材料が足りなければ collect-company-info を実行。STEP 1 は前提にせず、3C の市場の成長性・SWOT の弱み/脅威があれば整合性チェックと構造要因の照合に使う。地合いの outlook.md は参照するだけ） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
 | `cash-flow` | キャッシュフロー分析（STEP 2-4。営業CF の安定性・FCF の創出力・営業CF対純利益比率による利益の質・CF パターン・株主還元の持続性から キャッシュフロー 良好/普通/懸念（材料不足なら判定保留）。「一時要因」「成長投資期」は数値の代理指標で判定。数値と判定は Python が出し、LLM は背景だけを書く。`companies/{ticker}_{name}/analysis/cash-flow/` に md と json。180日有効で期間内は再分析しない。材料が足りなければ collect-company-info を実行。同業比較・STEP 1 は使わず、収益性・成長性・安全性分析の結果があれば整合性チェックに使う。地合いの outlook.md は参照するだけ） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
 | `safety` | 安全性分析（STEP 2-3。自己資本比率・D/E レシオ・流動比率を目安と同業平均で判定し、ネットキャッシュがプラスなら実質無借金、5年の推移で悪化傾向、有利子負債が増えた年の CF で借入の目的を見て 安全性 良好/普通/懸念（材料不足なら判定保留）。数値と判定は Python が出し、LLM は背景だけを書く。`companies/{ticker}_{name}/analysis/safety/` に md と json。180日有効で期間内は再分析しない。材料が足りなければ collect-company-info を実行。STEP 1・収益性は前提にせず、収益性の結果と地合いの outlook.md の金利の行は brief に引用するだけ） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
+| `valuation` | バリュエーション分析（STEP 3。PER・PBR・PEG・EV/EBITDA を過去5年レンジでの位置と同業中央値との差の共通ルールで 割安/妥当/割高/評価対象外 に判定し、点数の平均と STEP 2・SWOT による最終確認で STEP 3 割安/妥当/割高（材料不足なら判定保留）。数値と判定は Python が出し、LLM は背景と、PBR のバリュートラップのときの改善策の有無だけを書く。`companies/{ticker}_{name}/analysis/valuation/` に md と json。株価が動くため7日有効で、株価の基準日が7日より古ければ collect-company-info で株価を取り直す。成長性分析が未実施なら先に growth（成長性の結論では止めない）。地合いの outlook.md は参照するだけ） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
 
 ## ツールと初回セットアップ
 
 情報収集用の Python スクリプトは `tools/collect/`（地合い用は `tools/collect/market/`）、レポート作成用は `tools/report/` にある。使い方とセットアップは `tools/README.md` を参照。
 
-Copilot には書き込み hook が無いため、collect-market-info・market-report・five-forces・three-c・moat・swot・profitability・growth・cash-flow・safety の実行中は、ファイルを編集する前に `python -I tools/guard/write_guard.py --check <path>` を実行し、`BLOCKED` なら編集しない。
+Copilot には書き込み hook が無いため、collect-market-info・market-report・five-forces・three-c・moat・swot・profitability・growth・cash-flow・safety・valuation の実行中は、ファイルを編集する前に `python -I tools/guard/write_guard.py --check <path>` を実行し、`BLOCKED` なら編集しない。
 
 ## 言語ポリシー
 

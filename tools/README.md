@@ -172,6 +172,17 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 
 モジュール: `sf_paths.py`（結果の場所と鮮度）、`sf_inputs.py`（入力一覧。抽出は `ff_inputs.py` を再利用）、`sf_series.py`（自社・競合の貸借・CF の年次系列。表の読み取りは `pf_series.py` の Fields を使う。米国株の金額は raw の単位のまま）、`sf_metrics.py`（3指標、手順1〜4の判定、境界に近い比較、収集の要求）、`sf_brief.py`（材料）、`sf_doc.py`（骨組み・検証・結論）。テンプレートは `.ai/templates/safety/`。
 
+スキル `valuation`（`.ai/skills/valuation.md`、STEP 3 バリュエーション）からは `valuation.py` を呼び出す。出力は `companies/{ticker}_{name}/analysis/valuation/{分析日}_*`。数値と判定はすべてスクリプトが出し、LLM は数値の背景と、PBR のバリュートラップに当たるときの改善策の有無（あり / なし / 不明）だけを書く。株価が日々動くため結果は7日有効。
+
+| コマンド | 用途 | 主な出力 |
+|---|---|---|
+| `valuation.py list` | `companies/` の企業と、バリュエーション分析の状態（none / fresh / expired / triggered / draft）・結論・成長性の結論 | 1行の JSON |
+| `valuation.py check --company X` | 結果が有効か（7日以内で、使った節と数値が変わっていないか、新しい成長性分析が無いか）、成長性分析が有効か（必須の上流 → `next: growth`）、材料があるか（株価データ 1・2・4章・競合 6章、株価の基準日が7日以内、競合 12章「EV/EBITDA の材料」 → collect-peers-valuation）。`next` に次の作業 | 1行の JSON |
+| `valuation.py prepare --company X [--redo] [--skip-collect]` | 株価データ（株価・株式数・EPS・BPS・年次の PER・PBR の高値と安値・期末PER）、競合（6章の倍率、3章の売上高 CAGR、5章の ROE、11章の有利子負債と現金、12章の営業利益と減価償却費）、自社の年次（純利益・特別損益・自己資本は `pf_series`、営業利益・有利子負債・現金は `sf_series`、減価償却費は `cf_series`、分割調整した EPS は `gr_series`）と予想EPS（決算短信 → 株価データ 2章）から、PER・PBR・PEG・EV/EBITDA の各手順と共通ルール（過去レンジの位置 × 同業中央値との差）、STEP 3 の点数と最終確認、判定が変わる株価を入れた骨組み（FILL は背景だけ。当てはまらない欄は「該当なし」）と材料を作る。作成途中の md は残す | `{日付}_brief.md`・`{日付}_valuation.md` |
+| `valuation.py build --company X [--date …]` | md を検証（構造・FILL・必須欄・改善策の回答の形・禁止表現・書いた数値が brief と md の記入済みの部分にあるか・概数）し、改善策の回答を使って数値を raw から計算し直し、4指標と STEP 3（割安 / 妥当 / 割高 / 判定保留）と判定シートの行を書き込む | `{日付}_valuation.json` |
+
+モジュール: `va_paths.py`（結果の場所と鮮度）、`va_inputs.py`（入力一覧。抽出は `ff_inputs.py` を再利用）、`va_series.py`（株価データ・競合の倍率と EV の部品・自社の年次。年次は STEP 2 の series を再利用）、`va_rules.py`（全指標共通の判定ルール・組み合わせ・点数）、`va_metrics.py`（3-1〜3-4 の手順、STEP 3、判定が変わる株価、収集の要求、警告）、`va_brief.py`（材料）、`va_doc.py`（骨組み・検証・結論）。テンプレートは `.ai/templates/valuation/`。
+
 ### 書き込みガード（`tools/guard/write_guard.py`）
 
 `.claude/settings.json` の PreToolUse hook として、Write / Edit の前に毎回実行される（標準ライブラリだけで動く。PATH 上の `python` を使う）。
@@ -180,7 +191,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 - `market/**/raw/*.md` は FILL 欄が残っている間だけ Edit を許可。`companies/*/raw/` の過去日付のファイルは変更禁止
 - collect-market-info の実行中（`market/sessions/*/.running`）は、tasks.json の `allowed_files` 以外への書き込みをブロック
 - `market/report/` の facts.json・brief.md・HTML は手書き禁止。outlook.md は Edit のみ（新規作成・上書き不可）で、過去の週の完成済みのものは変更禁止
-- `companies/*/analysis/five-forces/`・`three-c/`・`moat/`・`swot/`・`profitability/`・`growth/`・`cash-flow/`・`safety/` の brief.md・json は手書き禁止。five-forces.md・three-c.md・moat.md・swot.md・profitability.md・growth.md・cash-flow.md・safety.md は Edit のみで、過去の日付の build 済み（json がある）ものは変更禁止
+- `companies/*/analysis/five-forces/`・`three-c/`・`moat/`・`swot/`・`profitability/`・`growth/`・`cash-flow/`・`safety/`・`valuation/` の brief.md・json は手書き禁止。five-forces.md・three-c.md・moat.md・swot.md・profitability.md・growth.md・cash-flow.md・safety.md・valuation.md は Edit のみで、過去の日付の build 済み（json がある）ものは変更禁止
 
 ## 例（3798 ULSグループ）
 

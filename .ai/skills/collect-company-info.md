@@ -225,7 +225,7 @@ Python: {.venv の python のパス}
 | 何も無い | collect-peers-valuation（範囲: 株価のみ） |
 | status.md の更新トリガーに達した業界・競合 | collect-market / collect-peers-valuation（範囲: 競合も） |
 | ユーザーが競合の見直しを依頼した（`項目=競合の再選定`）、または主力事業の判定が前回から変わった | collect-peers-valuation（範囲: 競合の再選定。competitors.md を全章書く） |
-| 分析スキル（five-forces・three-c・moat・swot・profitability・growth・cash-flow・safety）が `担当=`・`項目=` で不足を指定した | 指定された担当だけ（範囲: 指定された項目。雛形のその節を新しい日付の raw に書く） |
+| 分析スキル（five-forces・three-c・moat・swot・profitability・growth・cash-flow・safety・valuation）が `担当=`・`項目=` で不足を指定した | 指定された担当だけ（範囲: 指定された項目。雛形のその節を新しい日付の raw に書く。valuation の「株価のみ」は自社の valuation-data.md と競合 6章を同じ基準日で書く） |
 
    - raw は**新しい日付のファイル**として追加する（前回の raw は変更しない）。差分だけのファイルでよいが、冒頭に「前回ファイル: raw/.../YYYY-MM-DD_xxx.md からの差分」と書く。範囲外の章は見出しごと書かず、前回の値を再掲しない（保存ルールの「差分だけのファイル」）。担当へのプロンプトでも、これと違う書き方（範囲外の章に「変更なし」と書く、前回の表を再掲する）を指示しない
    - `status.md` の未取得項目は、今回の手段で取れるものを該当担当のプロンプトに含めて再挑戦させる

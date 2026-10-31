@@ -68,10 +68,14 @@ companies/{ticker}_{name}/
 │   │   ├── YYYY-MM-DD_brief.md          # 執筆の材料（スクリプトが生成）
 │   │   ├── YYYY-MM-DD_cash-flow.md      # 分析結果（営業CF・FCF・利益の質・CF パターン・株主還元とキャッシュフローの結論）。レポートはこれを参照する
 │   │   └── YYYY-MM-DD_cash-flow.json    # 同じ結果の機械可読版（スクリプトが生成）
-│   └── safety/                  # 安全性分析（safety。STEP 2-3。180日有効）
+│   ├── safety/                  # 安全性分析（safety。STEP 2-3。180日有効）
+│   │   ├── YYYY-MM-DD_brief.md          # 執筆の材料（スクリプトが生成）
+│   │   ├── YYYY-MM-DD_safety.md         # 分析結果（3指標の水準・推移・借入の目的と安全性の結論）。レポートはこれを参照する
+│   │   └── YYYY-MM-DD_safety.json       # 同じ結果の機械可読版（スクリプトが生成）
+│   └── valuation/               # バリュエーション分析（valuation。STEP 3。株価が動くため7日有効）
 │       ├── YYYY-MM-DD_brief.md          # 執筆の材料（スクリプトが生成）
-│       ├── YYYY-MM-DD_safety.md         # 分析結果（3指標の水準・推移・借入の目的と安全性の結論）。レポートはこれを参照する
-│       └── YYYY-MM-DD_safety.json       # 同じ結果の機械可読版（スクリプトが生成）
+│       ├── YYYY-MM-DD_valuation.md      # 分析結果（PER・PBR・PEG・EV/EBITDA と STEP 3 の結論）。判定シート・レポートはこれを参照する
+│       └── YYYY-MM-DD_valuation.json    # 同じ結果の機械可読版（スクリプトが生成）
 ├── sessions/
 │   └── YYYY-MM-DD_{topic}/      # 分析セッション（1回の分析につき1ディレクトリ）
 │       ├── {分析ファイル群}      # 各フェーズの分析結果（スキル定義に従う）

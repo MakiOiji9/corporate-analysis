@@ -141,7 +141,7 @@ def is_untouched(brief: Path, md: Path) -> bool:
     return bool(m) and m.group(1) == digest(md.read_text(encoding="utf-8"))
 
 
-UPSTREAM_SKILLS = {"three_c": "three-c", "five_forces": "five-forces", "moat": "moat"}
+UPSTREAM_SKILLS = {"three_c": "three-c", "five_forces": "five-forces", "moat": "moat", "growth": "growth"}
 
 
 def prepare_gate(next_step: str, has_raw: bool, skip_collect: bool) -> str | None:

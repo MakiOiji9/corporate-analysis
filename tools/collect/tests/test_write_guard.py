@@ -88,7 +88,8 @@ def test_report_outlook_edit_only_and_past_finished_weeks_immutable(tmp_path):
     assert decide("Edit", current, root, TODAY) is None  # this week's finished outlook can still be fixed
 
 
-@pytest.mark.parametrize("kind, script", [("five-forces", "five_forces.py"), ("three-c", "three_c.py")])
+@pytest.mark.parametrize("kind, script", [("five-forces", "five_forces.py"), ("three-c", "three_c.py"),
+                                          ("valuation", "valuation.py")])
 def test_analysis_files(tmp_path, kind, script):
     root = _repo(tmp_path)
     directory = root / "companies" / "7203_toyota" / "analysis" / kind

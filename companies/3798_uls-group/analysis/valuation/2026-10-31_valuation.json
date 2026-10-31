@@ -1,0 +1,357 @@
+{
+ "company": "3798_uls-group",
+ "name": "ULSグループ（3798）",
+ "date": "2026-10-31",
+ "valid_until": "2026-11-07",
+ "verdict": "妥当",
+ "verdict_reason": "4 指標の平均点 +0.75（+0.5 以上で割安、−0.5 以下で割高）で割安だが、STEP 2 でキャッシュフローが懸念のため妥当に引き上げる（手順3）",
+ "price": {
+  "value": 541.0,
+  "date": "2026-10-30",
+  "currency": "円"
+ },
+ "per": {
+  "rating": "割安",
+  "sentence": "予想PER 13.3倍: 過去レンジ 割安圏 × 同業比較 妥当圏 → 割安（予想PER で判定）",
+  "used": "予想PER",
+  "per_actual": 14.9448,
+  "per_forecast": 13.3087,
+  "discount": false,
+  "na": null,
+  "rule": {
+   "rating": "割安",
+   "basis": "過去レンジ 割安圏 × 同業比較 妥当圏 → 割安",
+   "single_axis": false,
+   "axis1": {
+    "zone": "割安",
+    "position": 17,
+    "low": 11.32,
+    "high": 32.6,
+    "basis": "現在 14.9倍、2022-03〜2026-03 の 5 期のレンジ 11.3〜32.6倍で位置 17%（割安圏）"
+   },
+   "axis2": {
+    "zone": "妥当",
+    "raw_zone": "妥当",
+    "median": 13.05,
+    "diff": 0.0198,
+    "count": 5,
+    "explained": false,
+    "basis": "同業 5 社の中央値 13.1倍に対して +2%（妥当圏）"
+   }
+  },
+  "eps": {
+   "year": "2026-03",
+   "eps": 36.2,
+   "eps_used": 36.2,
+   "adjusted": false,
+   "share": 0.0,
+   "gain": 0.0,
+   "loss": null
+  }
+ },
+ "pbr": {
+  "rating": "割安",
+  "sentence": "PBR 2.56倍: 手順2（適正PBR）で判定。適正PBR 3.49倍（予想ROE 19.3%（予想EPS ÷ BPS）× 平均PER 18.1倍（有報の期末PER 5 期の平均））に対して現在 2.56倍で -26%（割安）",
+  "pbr": 2.5634,
+  "before_trap": "割安",
+  "rule": {
+   "rating": "割安",
+   "basis": "過去レンジ 割安圏 × 同業比較 妥当圏 → 割安",
+   "single_axis": false,
+   "axis1": {
+    "zone": "割安",
+    "position": 24,
+    "low": 1.9,
+    "high": 4.64,
+    "basis": "現在 2.6倍、2022-03〜2026-03 の 5 期のレンジ 1.9〜4.6倍で位置 24%（割安圏）"
+   },
+   "axis2": {
+    "zone": "妥当",
+    "raw_zone": "割安",
+    "median": 3.86,
+    "diff": -0.3359,
+    "count": 5,
+    "explained": true,
+    "basis": "同業 5 社の中央値 3.9倍に対して -34%（割安圏）。ROEが同業の中央値より9.0pt 低く、低い倍率はその差で説明できるため妥当圏とする"
+   }
+  },
+  "fair": {
+   "fair": 3.4862,
+   "roe": 19.2608,
+   "roe_basis": "予想EPS ÷ BPS",
+   "average_per": 18.1,
+   "average_basis": "有報の期末PER 5 期の平均",
+   "diff": -0.2647,
+   "rating": "割安"
+  },
+  "trap": {
+   "applies": false,
+   "roe": 17.271642808452626,
+   "measures": null,
+   "raised": false
+  },
+  "measures": null
+ },
+ "peg": {
+  "rating": "妥当",
+  "sentence": "PEG（標準）1.08倍 = PER 13.3倍 ÷ 成長率 12.3%（妥当）。悲観ケース 2.17倍で2倍超（安全域なし）。成長率の候補が2つだけ（過去の EPS CAGR（成長性分析）・会社計画（予想EPS ÷ 実績EPS − 1））で、標準ケースはその最小",
+  "na": null,
+  "margin": false,
+  "candidates": [
+   {
+    "name": "過去の EPS CAGR（成長性分析）",
+    "value": 16.2
+   },
+   {
+    "name": "会社計画（予想EPS ÷ 実績EPS − 1）",
+    "value": 12.2928
+   }
+  ],
+  "cases": {
+   "standard": 12.2928,
+   "pessimistic": 6.1464,
+   "optimistic": 16.2
+  },
+  "peg": {
+   "standard": 1.0826,
+   "pessimistic": 2.1653,
+   "optimistic": 0.8215
+  }
+ },
+ "ev": {
+  "rating": "割安",
+  "sentence": "EV/EBITDA 6.9倍: 過去レンジ 割安圏 × 同業比較 妥当圏 → 割安（過去レンジは算出値）",
+  "value": 6.944,
+  "rule": {
+   "rating": "割安",
+   "basis": "過去レンジ 割安圏 × 同業比較 妥当圏 → 割安",
+   "single_axis": false,
+   "axis1": {
+    "zone": "割安",
+    "position": 20,
+    "low": 4.5381,
+    "high": 16.4556,
+    "basis": "現在 6.9倍、2022-03〜2026-03 の 5 期のレンジ 4.5〜16.5倍で位置 20%（割安圏）"
+   },
+   "axis2": {
+    "zone": "妥当",
+    "raw_zone": "妥当",
+    "median": 7.6146,
+    "diff": -0.0881,
+    "count": 5,
+    "explained": false,
+    "basis": "同業 5 社の中央値 7.6倍に対して -9%（妥当圏）"
+   }
+  },
+  "year": "2026-03",
+  "debt": 0.0,
+  "cash": 8460.0,
+  "operating_income": 3046.0,
+  "depreciation": 146.0,
+  "ebitda": 3192.0,
+  "ev": 22165.1336,
+  "net_cash": 8460.0,
+  "market_cap": 30625.1336,
+  "history": [
+   {
+    "year": "2022-03",
+    "high": 16.4556,
+    "low": 6.2602,
+    "basis": "PER × 純利益"
+   },
+   {
+    "year": "2023-03",
+    "high": 10.5046,
+    "low": 5.7176,
+    "basis": "PER × 純利益"
+   },
+   {
+    "year": "2024-03",
+    "high": 11.2455,
+    "low": 5.4144,
+    "basis": "PER × 純利益"
+   },
+   {
+    "year": "2025-03",
+    "high": 9.4407,
+    "low": 5.2173,
+    "basis": "PER × 純利益"
+   },
+   {
+    "year": "2026-03",
+    "high": 12.3362,
+    "low": 4.5381,
+    "basis": "PER × 純利益"
+   }
+  ],
+  "divergence": null
+ },
+ "step3": {
+  "ratings": {
+   "PER": "割安",
+   "PBR": "割安",
+   "PEG": "妥当",
+   "EV/EBITDA": "割安"
+  },
+  "scores": {
+   "PER": 1,
+   "PBR": 1,
+   "PEG": 0,
+   "EV/EBITDA": 1
+  },
+  "average": 0.75,
+  "raw_verdict": "割安",
+  "final_check": {
+   "concerns": [
+    "キャッシュフロー"
+   ],
+   "swot_no": false,
+   "not_done": [],
+   "raised": true,
+   "applies": true
+  }
+ },
+ "sheet": "PER 割安／PBR 割安／PEG 妥当（悲観ケース：2.17倍）／EV/EBITDA 割安／STEP 3 妥当（平均点：+0.75）",
+ "flip_prices": [
+  "PER: 過去レンジの割安圏（位置33%以下）になる株価 750円 以下、割高圏（67%以上）になる株価 1,035円 以上",
+  "PBR: 適正PBR 3.49倍 から割安（−20%）になる株価 589円 以下、割高（+20%）になる株価 883円 以上",
+  "PEG: 1倍になる株価 500円、2倍になる株価 999円"
+ ],
+ "borderline": [
+  "PEG: 標準ケース 1.08倍 が境界（1倍）に近い"
+ ],
+ "handoff": {
+  "report_points": "2026-10-30 終値 541円で、PER・PBR・EV/EBITDA の3指標は割安（実績PER 14.9倍は過去5期のレンジで位置 17%、PBR 2.56倍は適正PBR 3.49倍を26%下回る、EV/EBITDA 6.9倍は過去レンジで位置 20%）、PEG は標準ケース 1.08倍で妥当、平均点 +0.75 で割安となる。ただしキャッシュフロー分析が懸念のため、STEP 3 は手順3の最終確認で妥当に引き上げた。これは現時点の株価の位置づけで、将来の株価を示すものではない",
+  "final_checks": "PBR 2.56倍が予想ROE 19.3% に比べて低い点は、収益性分析が良好（ROE の源泉が本業由来）であることと照らすと割安の裏付けになる一方、キャッシュフロー分析の懸念（営業CF対純利益比率 0.77倍）で利益の質が割り引かれていないかを確かめる。PEG の標準ケースの成長率 12.3%（会社計画）は過去の EPS CAGR 16.2% より低く非現実的ではないが、成長性分析が直近は計画未達気味で第1四半期の営業利益の進捗 26.5% が前年同期の 29.3% を下回るとしている点と、SWOT の脅威 T2 の進み方を総合判断で確かめる",
+  "special_bg": "該当なし（EPS を調整していない）",
+  "measures": "該当なし（判定に影響しない）",
+  "divergence_bg": "該当なし（食い違いなし）",
+  "cheap_reason": "SWOT の最大の脅威（T2、影響度 大）として、生成AI・AIエンジニアにより開発工数が減り人数×単価で請求する収益モデルが崩れると会社自身が説明しており、収益モデルの持続性が倍率を抑える理由として説明できる。加えて STEP 2 ではキャッシュフローが懸念（営業CF対純利益比率 0.77倍、売上債権の増加率が売上高を上回る）、成長性は直近3年に営業利益が売上ほど伸びず普通で、利益の質と利益率の低下も安い評価の理由になりうる"
+ },
+ "changes": [
+  "初回の分析"
+ ],
+ "gaps": [
+  "自己株式を除く株式数が 2026-10-01 の簡易株式交換（自己株式を交付）の前の 56,608,380株のまま。交換後は最大で 63,885,000株になり、時価総額（30,624〜34,562百万円の範囲）と EV/EBITDA が上振れしうる（PER・PBR は株価 ÷ 1株指標なので影響しない）。次回の中間決算短信で期末の株式数を確認する",
+  "株価・競合の倍率は IRBANK（二次）。表示 PER と株価 ÷ EPS が一致しない会社がある（ノースサンド・ベイカレントなど）",
+  "同業の EV/EBITDA は減価償却費の範囲が会社ごとに違う（ベイカレントは使用権資産の償却を含む）",
+  "PEG の成長率の候補にアナリスト予想の EPS 成長率が無い（2つの候補の最小を標準ケースにした）",
+  "中期経営計画の資本政策・株主還元方針は raw に無い（会社は中期経営計画を策定・公表していない）"
+ ],
+ "peers": [
+  {
+   "name": "ノースサンド",
+   "per_actual": 48.09,
+   "per_forecast": 28.52,
+   "pbr": 10.11,
+   "ev_ebitda_calc": 31.7016,
+   "cagr": 80.5767,
+   "roe": 41.5
+  },
+  {
+   "name": "ライズ・コンサルティング・グループ",
+   "per_actual": 6.94,
+   "per_forecast": 13.05,
+   "pbr": 1.24,
+   "ev_ebitda_calc": 4.143,
+   "cagr": 20.9361,
+   "roe": 18.5
+  },
+  {
+   "name": "ベイカレント",
+   "per_actual": 45.93,
+   "per_forecast": 36.13,
+   "pbr": 16.99,
+   "ev_ebitda_calc": 31.8833,
+   "cagr": 24.9211,
+   "roe": 35.8
+  },
+  {
+   "name": "シグマクシスHD",
+   "per_actual": 12.65,
+   "per_forecast": 11.26,
+   "pbr": 3.86,
+   "ev_ebitda_calc": 7.6146,
+   "cagr": 11.1934,
+   "roe": 27.8
+  },
+  {
+   "name": "エル・ティー・エス",
+   "per_actual": 10.49,
+   "per_forecast": 6.95,
+   "pbr": 1.46,
+   "ev_ebitda_calc": 5.4071,
+   "cagr": 21.0672,
+   "roe": 15.3
+  }
+ ],
+ "inputs": [
+  "companies/3798_uls-group/raw/filings/2026-10-11_2026-03_yuho.md",
+  "companies/3798_uls-group/raw/ir/2026-10-11_valuation-data.md",
+  "companies/3798_uls-group/raw/ir/2026-10-31_valuation-data.md",
+  "companies/3798_uls-group/raw/market/2026-10-13_competitors.md",
+  "companies/3798_uls-group/raw/market/2026-10-21_competitors.md",
+  "companies/3798_uls-group/raw/market/2026-10-31_competitors.md"
+ ],
+ "seen": [
+  "companies/3798_uls-group/raw/filings/2026-10-11_2026-03_yuho.md",
+  "companies/3798_uls-group/raw/ir/2026-10-11_financials-historical.md",
+  "companies/3798_uls-group/raw/ir/2026-10-11_mid-term-plan.md",
+  "companies/3798_uls-group/raw/ir/2026-10-11_valuation-data.md",
+  "companies/3798_uls-group/raw/ir/2026-10-21_financials-historical.md",
+  "companies/3798_uls-group/raw/ir/2026-10-31_valuation-data.md",
+  "companies/3798_uls-group/raw/market/2026-10-13_competitors.md",
+  "companies/3798_uls-group/raw/market/2026-10-21_competitors.md",
+  "companies/3798_uls-group/raw/market/2026-10-31_competitors.md"
+ ],
+ "input_digests": {
+  "price": "0c93e60537fe55a64da9849ae0bf4401186602d6",
+  "per_share": "df1d17e9940dec56b074a12f880ab2f6fbe63034",
+  "current": "5a41c49f2dc2747791272c2034c4e1311f1a3563",
+  "history": "c4368eb98e5b0fc4220ad32efec8dedd53e02e98",
+  "analyst": "073de66b5a2474d55cdaf179efca5b81fd500ff0",
+  "peer_valuation": "70175793c6b3300653a55947d1c964052c4ab736",
+  "peer_cagr": "6a880dfda5a5e35413a31375c497734b58778f5b",
+  "peer_roe": "f391a7f4d5bbf8d3da72ad46b760a5e75ba46175",
+  "peer_dupont": "a1679708f1354eb37be3f754394c13c9767f401c",
+  "peer_safety": "7a20d264a25d3298d2f56c1f398f0283e8e1142d",
+  "peer_ebitda": "b78914bad1ae273f1c5f49ddb739bdf865a12d13",
+  "special": "d5003671419b2a383880adfd460e610a50a601cb",
+  "policy": "5b53a00b6a72f4552e7e1965f97c0171b7aaed1b",
+  "capital": "",
+  "numbers": "9376c87c6f9710b5888d8023cb22cf2faf7b81b1"
+ },
+ "growth": {
+  "date": "2026-10-31"
+ },
+ "upstream": {
+  "profitability": {
+   "date": "2026-10-13",
+   "verdict": "良好",
+   "reason": "手順1が良好、営業利益率が同業平均以上、ROE の源泉が本業由来"
+  },
+  "growth": {
+   "date": "2026-10-31",
+   "verdict": "普通",
+   "reason": "手順1は高成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））"
+  },
+  "safety": {
+   "date": "2026-10-21",
+   "verdict": "良好",
+   "reason": "3指標とも目安または同業平均をクリアし、悪化傾向なし"
+  },
+  "cash_flow": {
+   "date": "2026-10-21",
+   "verdict": "懸念",
+   "reason": "手順3（営業CF対純利益比率 0.77倍（5年平均。累計 0.82倍より低い方。1.0倍以上 良好 / 0.8倍以上 普通）。売上債権の増加率が売上高を上回る（売れていない在庫・回収できていない売上の可能性。要確認））が懸念"
+  },
+  "swot": {
+   "date": "2026-10-13",
+   "verdict": "条件付き",
+   "reason": "既存顧客との継続取引（リピート率 89%）は、顧客を失わなくても1案件あたりの工数が減れば準委任契約 13,793百万円の請求額が減るため、強みだけでは T2 を打ち消せず、強みも脅威の影響を受ける。一方で会社はAI駆動開発を自ら提供し、請負型フィックスプライスへの報酬体系の移行を想定しており（請負契約の収益 2,230百万円→2,806百万円）、既存顧客にAI駆動のサービスを提供し続けられれば継続取引を維持できる。今後3〜5年で準委任から請負・高付加価値サービスへの移行が進むかに懸かっている"
+  }
+ },
+ "outlook": "market/report/2026-10-26_outlook.md",
+ "previous": null,
+ "md": "companies/3798_uls-group/analysis/valuation/2026-10-31_valuation.md"
+}
