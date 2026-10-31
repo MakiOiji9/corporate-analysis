@@ -31,6 +31,14 @@
 
 | `valuation` | バリュエーション分析（STEP 3。PER・PBR・PEG・EV/EBITDA を過去5年レンジでの位置と同業中央値との差の共通ルールで 割安/妥当/割高/評価対象外 に判定し、点数の平均と STEP 2・SWOT による最終確認で STEP 3 割安/妥当/割高（材料不足なら判定保留）。数値と判定は Python が出し、LLM は背景と、PBR のバリュートラップのときの改善策の有無だけを書く。`companies/{ticker}_{name}/analysis/valuation/` に md と json。株価が動くため7日有効で、株価の基準日が7日より古ければ collect-company-info で株価を取り直す。成長性分析が未実施なら先に growth（成長性の結論では止めない）。収益性・安全性・キャッシュフロー・SWOT の結果は最終確認にだけ使う。地合いの outlook.md は参照するだけ） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
 
+## コマンド
+
+複数のスキルを束ねる手順の実体は `.ai/prompts/` にあり、`.claude/commands/` はそれを参照するエントリーポイントです（Copilot は `.github/prompts/`）。
+
+| コマンド | 用途 | 依頼に含める情報 |
+|---|---|---|
+| `/company-report` | 企業分析レポート（STEP 1〜3 の9つの分析 five-forces → three-c → moat → swot → profitability → growth → safety → cash-flow → valuation を依存の順に実行し、鮮度が新しい分析はスキップ。STEP 1・2 の総合判定（A/B/C）と判定マトリクスから短期（〜3ヶ月）・中期（6ヶ月〜1年）・長期（3年以上）の判定 投資検討/ウォッチ/見送り（材料不足なら判定保留）を根拠つきで出し、株価の過去レンジ（52週・3年・5年・10年。`tools/collect/stock_prices.py` が日々の株価を取得）と合わせて、初心者からプロまで読める単一 HTML を `companies/{ticker}_{name}/reports/{日付}_company-report.html` に出力。判定と HTML は Python（`tools/report/company_report.py`）が出し、LLM は分析スキルの実行とレポートの文章だけを書く。地合いの outlook.md が無い・古ければ market-report を先に実行） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
+
 ## ツールと初回セットアップ
 
 情報収集用の Python スクリプトは `tools/collect/`（地合い用は `tools/collect/market/`）、レポート作成用は `tools/report/` にある。使い方とセットアップは `tools/README.md` を参照。

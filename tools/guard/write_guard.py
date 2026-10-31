@@ -22,6 +22,9 @@ Rules (paths relative to the repository; writes outside it are not checked):
      prepare (five_forces.py / three_c.py / moat.py / swot.py / profitability.py / cash_flow.py / growth.py /
      safety.py / valuation.py) and only edited (not overwritten);
      once an earlier day's analysis is built (its json exists) it is immutable.
+  7. companies/*/reports/: {date}_company-report.html, .json, _facts.json and _brief.md are script-only.
+     {date}_company-report.md is created by company_report.py prepare and only edited (not overwritten);
+     once an earlier day's report is built (its json exists) it is immutable.
 """
 from __future__ import annotations
 
@@ -50,6 +53,7 @@ SCRIPT_ONLY = [
         r"^companies/[^/]+/analysis/(five-forces|three-c|moat|swot|profitability|cash-flow|growth|safety|valuation)/"
         r"[^/]+_(brief\.md|five-forces\.json|three-c\.json|moat\.json|swot\.json|profitability\.json|cash-flow\.json"
         r"|growth\.json|safety\.json|valuation\.json)$",
+        r"^companies/[^/]+/reports/[^/]+_company-report(\.html|\.json|_facts\.json|_brief\.md)$",
     )
 ]
 ANALYSIS_SCRIPT = {"five-forces": "five_forces.py", "three-c": "three_c.py", "moat": "moat.py", "swot": "swot.py",
@@ -62,6 +66,7 @@ ANALYSIS_MD = re.compile(
 MARKET_RAW = re.compile(r"^market/(policy/[^/]+|sessions/[^/]+)/raw/[^/]+\.md$")
 COMPANY_RAW = re.compile(r"^companies/[^/]+/raw/")
 REPORT_OUTLOOK = re.compile(r"^market/report/(\d{4}-\d{2}-\d{2})_outlook\.md$")
+COMPANY_REPORT_MD = re.compile(r"^companies/[^/]+/reports/(\d{4}-\d{2}-\d{2})_company-report\.md$")
 ABORT_HINT = "スキルを中断するには: python -I tools/collect/market/market_collect.py abort --session <session>"
 
 
@@ -115,6 +120,17 @@ def analysis_reason(tool: str, rel: str, target: Path, kind: str, date: str, tod
     return None
 
 
+def company_report_reason(tool: str, rel: str, target: Path, date: str, today: str) -> str | None:
+    if not target.exists():
+        return f"{rel} は company_report.py prepare が骨組みを作る。新しいファイルを作らない。"
+    if tool == "Write":
+        return f"{rel} は上書きしない。Edit で <!-- FILL:... --> の部分（build の指摘箇所）だけを直す。"
+    if date < today and target.with_name(f"{date}_company-report.json").exists():
+        return (f"{rel} は過去の日付の完成済みレポートなので変更禁止。新しく作るときは "
+                "company_report.py prepare を実行する（今日の日付で作られる）。")
+    return None
+
+
 def decide(tool: str, rel: str | None, root: Path, today: str) -> str | None:
     """Reason to block, or None to allow."""
     if tool not in WRITE_TOOLS or rel is None:
@@ -139,6 +155,11 @@ def decide(tool: str, rel: str | None, root: Path, today: str) -> str | None:
     analysis = ANALYSIS_MD.match(rel)
     if analysis and analysis.group("kind") == analysis.group(1):
         reason = analysis_reason(tool, rel, target, analysis.group(1), analysis.group(2), today)
+        if reason:
+            return reason
+    company_report = COMPANY_REPORT_MD.match(rel)
+    if company_report:
+        reason = company_report_reason(tool, rel, target, company_report.group(1), today)
         if reason:
             return reason
     if COMPANY_RAW.match(rel) and target.exists():

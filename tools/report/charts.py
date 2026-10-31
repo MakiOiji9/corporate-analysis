@@ -111,7 +111,7 @@ def line_chart(series: list[dict], title: str, decimals: int = 1, width: int = 7
         path = "M" + " L".join(f"{x(d):.1f},{y(v):.1f}" for d, v in pts)
         body.append(f'<path class="ln s{i}" d="{path}"/>')
         body += [f'<circle class="hit" cx="{x(d):.1f}" cy="{y(v):.1f}" r="5">'
-                 f'<title>{escape(s["label"])} {d}: {fmt(v, decimals)}</title></circle>' for d, v in pts]
+                 f'<title>{escape(s["label"])} {escape(d)}: {fmt(v, decimals)}</title></circle>' for d, v in pts]
         d_last, v_last = pts[-1]
         body.append(f'<circle class="dot s{i}" cx="{x(d_last):.1f}" cy="{y(v_last):.1f}" r="3.5"/>')
         labels.append((y(v_last), f'class="end s{i}">{fmt(v_last, decimals)}'))
@@ -140,7 +140,7 @@ def bar_chart(points: list, title: str, decimals: int = 0, width: int = 720, hei
         top_y, h = (y(v), zero - y(v)) if v >= 0 else (zero, y(v) - zero)
         cls = "bar pos" if v >= 0 else "bar neg"
         body.append(f'<rect class="{cls}" x="{cx - bar_w / 2:.1f}" y="{top_y:.1f}" width="{bar_w:.1f}" '
-                    f'height="{max(h, 0.5):.1f}" rx="1"><title>{d}: {fmt(v, decimals)}</title></rect>')
+                    f'height="{max(h, 0.5):.1f}" rx="1"><title>{escape(d)}: {fmt(v, decimals)}</title></rect>')
     return _frame(width, height, title, body)
 
 

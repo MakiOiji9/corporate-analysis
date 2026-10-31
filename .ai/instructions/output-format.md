@@ -81,9 +81,17 @@ companies/{ticker}_{name}/
 │       ├── {分析ファイル群}      # 各フェーズの分析結果（スキル定義に従う）
 │       └── judgment-sheet.md    # 判定シート（総合判断）
 └── reports/
-    └── YYYY-MM-DD_{type}.md     # 投資レポート
-                                 # type: initiation（新規）/ update（更新）/ exit（撤退）
+    ├── YYYY-MM-DD_{type}.md     # 投資レポート
+    │                            # type: initiation（新規）/ update（更新）/ exit（撤退）
+    ├── YYYY-MM-DD_company-report.html        # 企業分析レポート（company-report。STEP 1〜3 と短期・中期・長期の判定、株価の過去レンジ。単一 HTML、スクリプトが生成）
+    ├── YYYY-MM-DD_company-report.md          # レポートの文章（判定の表はスクリプト、FILL 欄は LLM）
+    ├── YYYY-MM-DD_company-report.json        # 3期間の判定・STEP 1〜3・株価レンジの要約（スクリプトが生成）
+    ├── YYYY-MM-DD_company-report_facts.json  # 判定と数値のすべて（スクリプトが生成）
+    └── YYYY-MM-DD_company-report_brief.md    # 執筆の材料（スクリプトが生成）
 ```
+
+- `data/prices.csv` は日々の株価（分割調整済み、最大10年。`tools/collect/stock_prices.py` が company-report の prepare で更新する）
+- 企業分析レポートの期間ごとの判定（短期〜3ヶ月・中期6ヶ月〜1年・長期3年以上）は総合判断の表記（`投資検討` / `ウォッチ` / `見送り`）を使い、材料不足で確定しないものは `判定保留（暫定: …）` と書く
 
 ### 地合い分析
 

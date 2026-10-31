@@ -29,11 +29,19 @@
 | `safety` | 安全性分析（STEP 2-3。自己資本比率・D/E レシオ・流動比率を目安と同業平均で判定し、ネットキャッシュがプラスなら実質無借金、5年の推移で悪化傾向、有利子負債が増えた年の CF で借入の目的を見て 安全性 良好/普通/懸念（材料不足なら判定保留）。数値と判定は Python が出し、LLM は背景だけを書く。`companies/{ticker}_{name}/analysis/safety/` に md と json。180日有効で期間内は再分析しない。材料が足りなければ collect-company-info を実行。STEP 1・収益性は前提にせず、収益性の結果と地合いの outlook.md の金利の行は brief に引用するだけ） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
 | `valuation` | バリュエーション分析（STEP 3。PER・PBR・PEG・EV/EBITDA を過去5年レンジでの位置と同業中央値との差の共通ルールで 割安/妥当/割高/評価対象外 に判定し、点数の平均と STEP 2・SWOT による最終確認で STEP 3 割安/妥当/割高（材料不足なら判定保留）。数値と判定は Python が出し、LLM は背景と、PBR のバリュートラップのときの改善策の有無だけを書く。`companies/{ticker}_{name}/analysis/valuation/` に md と json。株価が動くため7日有効で、株価の基準日が7日より古ければ collect-company-info で株価を取り直す。成長性分析が未実施なら先に growth（成長性の結論では止めない）。地合いの outlook.md は参照するだけ） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
 
+## コマンド（プロンプト）
+
+複数のスキルを束ねる手順の実体は `.ai/prompts/` にあり、`.github/prompts/`（Claude Code は `.claude/commands/`）はそれを参照するエントリーポイントです。
+
+| コマンド | 用途 | 依頼に含める情報 |
+|---|---|---|
+| `company-report` | 企業分析レポート（STEP 1〜3 の9つの分析を依存の順に実行し、鮮度が新しい分析はスキップ。STEP 1・2 の総合判定（A/B/C）と判定マトリクスから短期（〜3ヶ月）・中期（6ヶ月〜1年）・長期（3年以上）の判定 投資検討/ウォッチ/見送り（材料不足なら判定保留）を根拠つきで出し、株価の過去レンジ（52週・3年・5年・10年）と合わせて初心者からプロまで読める単一 HTML を `companies/{ticker}_{name}/reports/{日付}_company-report.html` に出力。判定と HTML は Python が出し、LLM は分析スキルの実行と文章だけを書く） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
+
 ## ツールと初回セットアップ
 
 情報収集用の Python スクリプトは `tools/collect/`（地合い用は `tools/collect/market/`）、レポート作成用は `tools/report/` にある。使い方とセットアップは `tools/README.md` を参照。
 
-Copilot には書き込み hook が無いため、collect-market-info・market-report・five-forces・three-c・moat・swot・profitability・growth・cash-flow・safety・valuation の実行中は、ファイルを編集する前に `python -I tools/guard/write_guard.py --check <path>` を実行し、`BLOCKED` なら編集しない。
+Copilot には書き込み hook が無いため、collect-market-info・market-report・five-forces・three-c・moat・swot・profitability・growth・cash-flow・safety・valuation・company-report の実行中は、ファイルを編集する前に `python -I tools/guard/write_guard.py --check <path>` を実行し、`BLOCKED` なら編集しない。
 
 ## 言語ポリシー
 
