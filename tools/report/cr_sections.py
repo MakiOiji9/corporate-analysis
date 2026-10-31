@@ -123,8 +123,10 @@ def three_c_block(detail: dict, analysis: dict) -> str:
     peers = list(((detail.get("kbf_table") or [{}])[0] or {}).get("peers", {}).keys())
     kbf_rows = [[esc(k["kbf"]), _mark(k["self"])] + [_mark(k["peers"].get(p)) for p in peers] + [esc(k.get("basis"))]
                 for k in detail.get("kbf_table") or []]
-    kbf_table = table(["KBF", "自社"] + [esc(p) for p in peers] + ["根拠"], kbf_rows,
-                      nowrap=frozenset(range(len(peers) + 2)))
+    letters = [f"競合{chr(ord('A') + i)}" for i in range(len(peers))]
+    legend = "、".join(f"{letter}: {esc(p)}" for letter, p in zip(letters, peers))
+    kbf_table = ((f'<p class="small muted">{legend}</p>' if legend else "")
+                 + table(["KBF", "自社"] + letters + ["根拠"], kbf_rows, nowrap=frozenset(range(len(peers) + 2))))
     conservative = "".join(f"<li>{esc(c)}</li>" for c in analysis.get("conservative") or [])
     conclusion = (f'<p><b>勝てる理由</b>: {badge(analysis.get("verdict"))} {esc(analysis.get("reason"))}</p>'
                   + (f'<ul class="plain small">{conservative}</ul>' if conservative else ""))

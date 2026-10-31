@@ -232,6 +232,16 @@ def test_html_shows_3c_swot_peers_dividends_and_tooltips(repo, capsys):
     assert '<svg' in html and not re.search(r"<svg[^>]*>[^<]*<span class=\"term\"", html)
 
 
+def test_kbf_table_uses_short_peer_headers_with_a_legend():
+    import cr_sections as CS
+    detail = {"kbf": ["実績"], "kbf_table": [{"kbf": "実績", "self": "？", "basis": "根拠",
+                                               "peers": {"ライズ・コンサルティング・グループ（9168）": "○", "ベイカレント（6532）": "？"}}]}
+    out = CS.three_c_block(detail, {"verdict": "あいまい", "reason": "理由"})
+    assert '<th class="nw">競合A</th>' in out and '<th class="nw">競合B</th>' in out
+    assert "競合A: ライズ・コンサルティング・グループ（9168）" in out
+    assert "<th class=\"nw\">ライズ" not in out  # long names stay out of the headers so the basis column keeps its width
+
+
 def test_annotate_wraps_first_term_per_section_only():
     import cr_sections as CS
     html = ('<section id="a"><p>ROE が高い。ROE は上昇。</p><svg><text>ROE</text></svg></section>'
@@ -266,6 +276,17 @@ def test_build_rejects_changed_verdicts_and_forbidden_words(repo, capsys):
     md.write_text(filled.replace("- 生成AI の影響を確かめる\n", ""), encoding="utf-8")
     issues = _run(repo, capsys, "build", "--company", "3798")["issues"]
     assert any("4.3" in i for i in issues)
+
+
+def test_build_warns_on_long_text_without_failing(repo, capsys):
+    company = _company(repo)
+    out = _prepare(repo, capsys)
+    md = company / "reports" / f"{TODAY}_company-report.md"
+    filled = _fill(md.read_text(encoding="utf-8"), out["horizons"])
+    md.write_text(filled.replace(FILLED["about"], FILLED["about"] * 20), encoding="utf-8")
+    built = _run(repo, capsys, "build", "--company", "3798")
+    assert built["ok"], built
+    assert any(w.startswith("2.") and "字" in w for w in built["warnings"])
 
 
 def test_one_cash_flow_concern_is_weighed_not_a_knockout(repo, capsys):

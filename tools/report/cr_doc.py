@@ -275,9 +275,9 @@ def validate(text: str, template: str, facts: dict) -> tuple[list[str], list[str
         if h["verdict"] not in parsed[key]:
             issues.append(f"{label}の説明に判定（{h['verdict']}）が無い（判定語から書き始める）")
         for side, rows in (("良い点", h.get("good") or []), ("悪い点", h.get("bad") or [])):
-            names = [short_label(r["label"]) for r in rows]
-            if names and not any(n in parsed[key] for n in names):
-                issues.append(f"{label}の説明に{side}（{'・'.join(names)} のどれか）が無い（根拠の数値と一緒に書く）")
+            factors = [short_label(r["label"]) for r in rows]
+            if factors and not any(n in parsed[key] for n in factors):
+                issues.append(f"{label}の説明に{side}（{'・'.join(factors)} のどれか）が無い（根拠の数値と一緒に書く）")
     issues += O._check_words(_body(text))
     warnings = [f"{names[k]} が {len(parsed[k])} 字（目安 {n} 字以内）" for k, n in LIMITS.items() if len(parsed[k]) > n]
     warnings += [f"3行まとめの{i}行目が {len(s)} 字（目安 {SUMMARY_LIMIT} 字以内）"
