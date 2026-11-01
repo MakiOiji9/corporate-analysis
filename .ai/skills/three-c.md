@@ -86,7 +86,7 @@ $PY -I tools/analysis/three_c.py prepare --company {company} [--redo] [--skip-co
 - 骨組みには、スクリプトが計算した **2.1 比較表**（対象企業と競合最大5社の売上高・営業利益率・シェア・売上高3年CAGR）、**3章の競合の凡例**（競合A〜E）、判定候補、前回の評価が記入済み
 - 作成途中の md（FILL が残っている）は上書きせず残す（`kept: true`）。続きから書く
 - 一字も書いていない骨組み（前回の prepare が書いたままの md）は、`--redo` なしで作り直す（`regenerated: true`）
-- 同じ日に build 済みの結果があると `--redo` は拒否される。その日の md を Edit で直して build し直す
+- 同じ日に build 済みの結果があるときの `--redo` は、その日の md・json・brief を `analysis/{種類}/_superseded/{日付}-{n}/` に退避してから作り直す（返り値の `superseded`。退避した結果は消さず、最新の結果としては読まれない）。小さな直しだけなら、その日の md を Edit で直して build し直してもよい
 - `candidates` はスクリプトの判定候補（成長性: 先頭の市場の CAGR、競合との比較: 営業利益率とシェアの順位）。`competitor_fixed: true` なら競合との比較は確定で変えられない
 
 ### 3. 執筆（LLM）

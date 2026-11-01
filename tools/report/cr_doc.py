@@ -130,7 +130,9 @@ def _horizon_lines(facts: dict, key: str, label: str) -> list[str]:
     lines += ["", "悪い点（点数を押し下げた要素）:"] + (_points(h["bad"]) or ["- なし"])
     s = h.get("sensitivity") or {}
     movers = [f"{m['label']}が{m['direction']} {m['verdict']}" for m in s.get("movers") or []]
-    distance = [f"投資検討まであと {s['to_up']:+.2f}" if s.get("to_up") is not None else "",
+    near = s.get("nearest")
+    distance = [f"最も近い境目: {near['text']}" if near else "",
+                f"投資検討まであと {s['to_up']:+.2f}" if s.get("to_up") is not None else "",
                 f"見送りまであと {s['to_down']:.2f}" if s.get("to_down") is not None else ""]
     lines += ["", "判定を動かす要因: " + ("、".join(d for d in distance if d) or "—")
               + ("。" + "、".join(movers) if movers else "。1段の変化で判定が変わる要素は無い"), ""]
@@ -155,28 +157,117 @@ def _prices(facts: dict) -> list[str]:
     return lines
 
 
-def break_candidates(facts: dict) -> list[str]:
-    """Numbers-backed conditions the writer can pick for 4.2 (the framework's examples, with today's values)."""
-    d = facts["analyses"]
+UP_WORD, DOWN_WORD, PRICE_WORD = "改善", "悪化", "株価"
+DIRECTION_MARKS = tuple(f"【{w}】" for w in (UP_WORD, DOWN_WORD))
+MOVERS_SHOWN = 3
+
+
+def peer_median(facts: dict, key: str) -> float | None:
+    return ((facts.get("peers") or {}).get("median") or {}).get(key)
+
+
+def with_median(avg: float, median: float | None, unit: str = "%") -> str:
+    """'同業平均 12.9%（中央値 10.1%）': the average beside the median (one outlier peer moves an average)."""
+    return f"同業平均 {avg}{unit}" + (f"（中央値 {median}{unit}）" if median is not None else "")
+
+
+def _improvements(facts: dict) -> list[str]:
+    """What would raise a horizon: the gap to the nearest better verdict and the single factors that would do it."""
     out = []
+    for key, label in HORIZONS:
+        h = facts["horizons"][key]
+        s = h.get("sensitivity") or {}
+        near = s.get("nearest")
+        if near and near["gap"] > 0:
+            out.append(f"{label}の点数が {near['gap']:+.2f} 上がれば{near['to']}（今 {score_text(h['score'])}）")
+        ups = [m for m in s.get("movers") or [] if m["direction"] == "1段良くなれば"][:MOVERS_SHOWN]
+        if ups:
+            out.append(f"{label}: " + "、".join(f"{m['label']}が1段良くなれば{m['verdict']}" for m in ups))
+    return out
+
+
+def break_candidates(facts: dict) -> list[dict]:
+    """Numbers-backed conditions the writer can pick for 4.2, each {direction: 改善 / 悪化 / 株価, text}: what
+    would lower today's verdicts (the framework's examples, with today's values), what would raise them, and the
+    prices at which the valuation verdicts change."""
+    d = facts["analyses"]
+    out: list[dict] = []
+
+    def add(direction: str, text: str) -> None:
+        out.append({"direction": direction, "text": text})
+
     margin = d["profitability"]["detail"].get("margin") or {}
+    median = peer_median(facts, "margin")
     if margin.get("self") is not None and margin.get("avg") is not None:
-        out.append(f"営業利益率が2期連続で同業平均を下回る（{margin.get('year')} は {margin['self']}%、"
-                   f"同業平均 {margin['avg']}%）")
+        add(DOWN_WORD, f"営業利益率が2期連続で同業平均を下回る（{margin.get('year')} は {margin['self']}%、"
+                       f"{with_median(margin['avg'], median)}）")
+        if median is not None and margin["self"] < median:
+            add(UP_WORD, f"営業利益率が同業の中央値を上回る（{margin.get('year')} は {margin['self']}%、中央値 {median}%）")
     roe = (d["profitability"]["detail"].get("roe_rows") or [])[-1:]
     if roe and roe[0].get("roe") is not None:
-        out.append(f"ROE が2期連続で8%を下回る（{roe[0]['year']} は {roe[0]['roe']}%）")
+        add(DOWN_WORD, f"ROE が2期連続で8%を下回る（{roe[0]['year']} は {roe[0]['roe']}%）")
     ratio = d["cash_flow"]["detail"].get("ratio")
     if ratio is not None:
-        out.append(f"営業CF対純利益比率（5年平均と累計の低い方）が0.8倍を下回ったまま（今は {ratio}倍。"
-                   "キャッシュフロー分析の判定に使った値）")
+        add(DOWN_WORD, f"営業CF対純利益比率（5年平均と累計の低い方）が0.8倍を下回ったまま（今は {ratio}倍。"
+                       "キャッシュフロー分析の判定に使った値）")
     g = d["growth"]["detail"]
     if g.get("plan_average") is not None:
-        out.append(f"会社計画の達成率が90%を下回る年が続く（過去の平均 {g['plan_average']:.0f}%、{g.get('plan') or '—'}）")
+        add(DOWN_WORD, f"会社計画の達成率が90%を下回る年が続く（過去の平均 {g['plan_average']:.0f}%、{g.get('plan') or '—'}）")
     threat = d["swot"]["detail"].get("top_threat") or {}
     if threat.get("fact"):
-        out.append(f"SWOT の最大の脅威（{threat.get('id')}: {threat['fact']}）が業績の数字に表れる")
-    return out + [f"株価が判定の変わる水準に動く（{p}）" for p in d["valuation"]["detail"].get("flip_prices") or []]
+        add(DOWN_WORD, f"SWOT の最大の脅威（{threat.get('id')}: {threat['fact']}）が業績の数字に表れる")
+    for text in _improvements(facts):
+        add(UP_WORD, text)
+    for p in d["valuation"]["detail"].get("flip_prices") or []:
+        add(PRICE_WORD, f"株価が判定の変わる水準に動く（{p}）")
+    return out
+
+
+def _fmt_pct(value: float | None, signed: bool = False) -> str:
+    return "—" if value is None else (f"{value:+.1f}%" if signed else f"{value:.1f}%")
+
+
+def _recent(facts: dict) -> list[str]:
+    """The newest facts on both sides (the price fall, this year's progress, the SWOT items that weigh most), so the
+    short and mid explanations do not tell only one side."""
+    lines = ["## 直近の材料（3.1 短期・3.2 中期の説明で触れる。良い材料と悪い材料の両方）", ""]
+    p = facts["prices"]
+    w52 = next((w for w in p.get("ranges") or [] if w["label"] == "52週"), None)
+    if w52:
+        lines.append(f"- 株価: 52週高値から {C.fmt(w52['from_high'], 1, True)}%（高値 {C.fmt(w52['high'], 0)}"
+                     f"（{w52['high_date']}）、現在 {C.fmt(p.get('current'), 0)}）。52週の値動きの幅の下から "
+                     f"{w52['position']:.0f}% の位置")
+    progress = facts["analyses"]["growth"]["detail"].get("progress") or {}
+    items = progress.get("items") or {}
+    if items:
+        parts = [f"{i.get('name') or k} 前年同期比 {_fmt_pct(i.get('yoy'), True)}、通期予想に対する進捗 "
+                 f"{_fmt_pct(i.get('progress'))}（前年同期 {_fmt_pct(i.get('prior_progress'))}）" for k, i in items.items()]
+        lines.append(f"- 今期の進捗（{progress.get('fy') or '—'} 第{progress.get('quarter') or '—'}四半期累計）: "
+                     + "、".join(parts))
+    sw = facts["analyses"]["swot"]["detail"]
+    quadrants = sw.get("quadrants") or {}
+    for key, name, impacts in (("S", "強み", ("大", "中")), ("O", "機会", ("大", "中")), ("W", "弱み", ("大",)),
+                               ("T", "脅威", ("大",))):
+        lines += [f"- {name} {i.get('id')}（影響度 {i.get('impact')}）: {i.get('fact')}"
+                  for i in quadrants.get(key) or [] if i.get("impact") in impacts]
+    if not quadrants:
+        for word, top in (("最大の強み", sw.get("top_strength")), ("最大の脅威", sw.get("top_threat"))):
+            if top and top.get("fact"):
+                lines.append(f"- {word} {top.get('id')}（影響度 {top.get('impact') or '—'}）: {top['fact']}")
+    if len(lines) == 2:
+        lines.append("- なし")
+    return lines + [""]
+
+
+def _conditions(facts: dict) -> list[str]:
+    found = break_candidates(facts)
+
+    def of(direction: str) -> list[str]:
+        return [f"- {c['text']}" for c in found if c["direction"] == direction] or ["- なし"]
+    return (["## 5. 判断が変わる条件の候補（4.2 の材料。各行の先頭に【改善】か【悪化】を付けて書く）", "",
+             "### 5.1 判定が上がる条件（【改善】）", ""] + of(UP_WORD)
+            + ["", "### 5.2 判定が下がる条件（【悪化】）", ""] + of(DOWN_WORD)
+            + ["", "### 5.3 株価の水準で判定が変わる条件（下がれば【改善】、上がれば【悪化】）", ""] + of(PRICE_WORD) + [""])
 
 
 def _premise(facts: dict) -> list[str]:
@@ -209,7 +300,7 @@ def render_brief(facts: dict, md_rel: str) -> str:
     lines = [f"# 企業分析レポートの材料 — {facts['name']}", "",
              f"作成日: {facts['date']}。書く先: {md_rel}（FILL の欄だけ）。判定と数値はこの brief のものを使い、変えない。", ""]
     lines += _premise(facts) + _analyses(facts) + [""] + _horizons(facts) + _prices(facts) + [""]
-    lines += ["## 5. 判断が崩れる条件の候補（4.2 の材料）", ""] + [f"- {c}" for c in break_candidates(facts)] + [""]
+    lines += _recent(facts) + _conditions(facts)
     lines += ["## 6. 材料不足（4.3 の材料）", ""]
     lines += [f"- {g['label']}: {g['gap']}" for g in facts["gaps"]] or ["- なし"]
     lines += ["", WRITING_RULES, "",
@@ -267,6 +358,10 @@ def validate(text: str, template: str, facts: dict) -> tuple[list[str], list[str
     for key in LIST_KEYS:
         if not LIST_RANGE[0] <= len(parsed[key]) <= LIST_RANGE[1]:
             issues.append(f"{names[key]} は箇条書きで{LIST_RANGE[0]}〜{LIST_RANGE[1]}行（今 {len(parsed[key])} 行）")
+    unmarked = [b for b in parsed["break"] if not b.strip().startswith(DIRECTION_MARKS)]
+    if unmarked:
+        issues.append(f"{names['break']} の各行は {'か'.join(DIRECTION_MARKS)} で始める（判定が上がる条件か下がる条件かを"
+                      f"示す。今: 「{unmarked[0][:20]}…」）")
     issues += [f"{names[key]} が空" for key in LIMITS if M.is_blank(parsed[key])]
     for key, label in HORIZONS:
         h = facts["horizons"][key]
@@ -282,4 +377,7 @@ def validate(text: str, template: str, facts: dict) -> tuple[list[str], list[str
     warnings = [f"{names[k]} が {len(parsed[k])} 字（目安 {n} 字以内）" for k, n in LIMITS.items() if len(parsed[k]) > n]
     warnings += [f"3行まとめの{i}行目が {len(s)} 字（目安 {SUMMARY_LIMIT} 字以内）"
                  for i, s in enumerate(parsed["summary"], 1) if len(s) > SUMMARY_LIMIT]
+    if (facts["prices"].get("source") == "prices" and not M.is_blank(parsed["short"])
+            and not any(w in parsed["short"] for w in ("52週", "高値から"))):
+        warnings.append(f"{names['short']} に52週高値からの下落・上昇（brief「直近の材料」）が無い")
     return issues, warnings

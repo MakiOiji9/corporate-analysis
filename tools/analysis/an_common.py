@@ -89,6 +89,25 @@ def dated_files(directory: Path, suffix: str) -> list[tuple[str, Path]]:
     return sorted(out)
 
 
+SUPERSEDED_DIR = "_superseded"
+
+
+def supersede_today(directory: Path, date: str) -> Path | None:
+    """Move the {date}_* files of a built analysis (or report) into {directory}/_superseded/{date}-{n}/ so a
+    same-day --redo starts from a fresh skeleton. dated_files only looks at the directory itself, so the moved
+    result is never read as the latest one. Returns the new folder, or None when nothing was there."""
+    files = sorted(p for p in directory.glob(f"{date}_*") if p.is_file()) if directory.exists() else []
+    if not files:
+        return None
+    n = 1
+    while (target := directory / SUPERSEDED_DIR / f"{date}-{n}").exists():
+        n += 1
+    target.mkdir(parents=True)
+    for p in files:
+        p.rename(target / p.name)
+    return target
+
+
 def is_draft(path: Path) -> bool:
     return bool(FILL.search(path.read_text(encoding="utf-8")))
 

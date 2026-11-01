@@ -181,9 +181,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     if state["result"] == "fresh" and not args.redo:
         return emit({"ok": False, "error": state["reason"] + "。作り直すのはユーザーが指示したときだけ（--redo）",
                      "latest": state["latest"]})
-    if args.redo and company.file(today, P.JSON_SUFFIX).exists():
-        return emit({"ok": False, "error": f"{today} の分析は build 済み。同じ日に作り直さず、"
-                     f"{company.rel(company.file(today, P.MD_SUFFIX))} を Edit で直して build し直す"})
+    redo_built = args.redo and company.file(today, P.JSON_SUFFIX).exists()  # moved aside once the gate passes
     found = I.gather_safety(company)
     cands = X.candidates(company, found)
     requests = X.collect_requests(company, found, cands)
@@ -201,6 +199,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     previous = P.latest_result(company, before=date)
     outlook = A.latest_outlook(root, today)
     warnings = X.warnings(cands)
+    superseded = A.supersede_today(company.file(today, P.JSON_SUFFIX).parent, today) if redo_built else None
     brief_path, md_path = company.file(date, P.BRIEF_SUFFIX), company.file(date, P.MD_SUFFIX)
     brief = B.render_brief(company, date, P.valid_until(date), found, cands, previous, _profitability(company),
                            outlook, warnings)
@@ -213,6 +212,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     md_text = md_path.read_text(encoding="utf-8")
     return emit({
         "ok": True, "company": company.dirname, "date": date, "brief": company.rel(brief_path),
+        "superseded": company.rel(superseded) if superseded else None,
         "md": company.rel(md_path), "kept": kept, "regenerated": untouched and not args.redo,
         "skipped_collect": requests if blocking == "collect" else [], "warnings": warnings,
         "fill": len(A.FILL.findall(md_text)), "fill_keys": FILL_KEY.findall(md_text),

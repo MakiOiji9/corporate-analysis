@@ -180,18 +180,38 @@ def horizon_score(horizon: str, factors: dict[str, dict], flags: list[str] | tup
         return {**base, "verdict": PENDING, "why": "判定に使える材料が無い"}
     plus = f"プラス: {'・'.join(r['label'] for r in good[:2])}" if good else "プラスの要素なし"
     minus = f"マイナス: {'・'.join(r['label'] for r in bad[:2])}" if bad else "マイナスの要素なし"
-    why = f"重み付けの点数 {score:+.2f}（+{UP} 以上 投資検討、{DOWN} 以下 見送り）。{plus}／{minus}"
+    near = nearest(score)
+    why = (f"重み付けの点数 {score:+.2f}（+{UP} 以上 投資検討、{DOWN} 以下 見送り。{near['text']}）。"
+           f"{plus}／{minus}")
     return {**base, "verdict": _verdict_for(score), "why": why}
+
+
+def nearest(score: float | None) -> dict | None:
+    """The boundary the score is closest to crossing: {to (the verdict on the other side), gap (score change
+    needed; + upward, − downward), text}. A 見送り or 投資検討 has one neighbour, a ウォッチ the nearer of two."""
+    if score is None:
+        return None
+    if score <= DOWN:
+        to, gap, rule = WATCH, DOWN - score, f"{DOWN:+.1f} を超えれば{WATCH}"  # must rise above DOWN
+    elif score >= UP:
+        to, gap, rule = WATCH, -(score - UP), f"{UP:+.1f} を下回れば{WATCH}"  # 投資検討 until it falls below UP
+    else:
+        up, down = UP - score, score - DOWN
+        to, gap, rule = ((CONSIDER, up, f"{UP:+.1f} 以上で{CONSIDER}") if up <= down
+                         else (PASS, -down, f"{DOWN:+.1f} 以下で{PASS}"))
+    gap = round(gap, 3) + 0.0  # + 0.0 turns −0.0 into 0.0
+    return {"to": to, "gap": gap, "text": f"{to}まであと {gap:+.2f}（{rule}）"}
 
 
 def sensitivity(horizon: str, factors: dict[str, dict], flags: list[str] | tuple = (),
                 step1_grade: str | None = None) -> dict:
     """Distance to the thresholds and the single factors whose one-step move would change the verdict."""
     current = horizon_score(horizon, factors, flags, step1_grade)
-    out: dict = {"to_up": None, "to_down": None, "movers": []}
+    out: dict = {"to_up": None, "to_down": None, "nearest": None, "movers": []}
     if current["score"] is None or current["knockout"]:
         return out
     score = current["score"]
+    out["nearest"] = nearest(score)
     out["to_up"] = round(UP - score, 3) if score < UP else None
     out["to_down"] = round(score - DOWN, 3) if score > DOWN else None
     for key, f in factors.items():

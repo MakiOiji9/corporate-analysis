@@ -23,6 +23,7 @@ PEER_COLUMNS = (("per_forecast", "PER（予想）", "倍"), ("pbr", "PBR", "倍"
 
 
 MATCH_PREFIX = 4  # 'シグマクシスHD' and 'シグマクシス・ホールディングス' are the same company
+MEDIAN_NAME, MEAN_NAME = "同業の中央値", "同業の平均"
 
 
 def _key(name: str | None) -> str:
@@ -84,6 +85,11 @@ def _median(values: list[float | None]) -> float | None:
     return round(statistics.median(known), 2) if known else None
 
 
+def _mean(values: list[float | None]) -> float | None:
+    known = [v for v in values if v is not None]
+    return round(statistics.mean(known), 2) if known else None
+
+
 def peer_table(analyses: dict[str, dict], name: str) -> dict:
     val = analyses["valuation"].get("detail") or {}
     prof = analyses["profitability"].get("detail") or {}
@@ -103,6 +109,8 @@ def peer_table(analyses: dict[str, dict], name: str) -> dict:
     own = {"name": name, "self": True, "per_forecast": val.get("per_forecast"), "pbr": val.get("pbr"),
            "ev_ebitda": val.get("ev_ebitda"), "cagr": own_cagr, "roe": own_roe,
            "margin": (prof.get("margin") or {}).get("self"), "equity_ratio": own_equity}
-    median = {"name": "同業の中央値", "self": False, **{k: _median([p[k] for p in peers]) for k, _, _ in PEER_COLUMNS}}
-    return {"rows": [own] + peers, "median": median if peers else None,
+    median = {"name": MEDIAN_NAME, "self": False, **{k: _median([p[k] for p in peers]) for k, _, _ in PEER_COLUMNS}}
+    # the plain average sits beside the median: one outlier peer (a much more profitable leader) moves the average
+    mean = {"name": MEAN_NAME, "self": False, **{k: _mean([p[k] for p in peers]) for k, _, _ in PEER_COLUMNS}}
+    return {"rows": [own] + peers, "median": median if peers else None, "mean": mean if peers else None,
             "columns": [list(c) for c in PEER_COLUMNS]}

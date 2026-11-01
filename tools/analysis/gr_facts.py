@@ -102,13 +102,117 @@ def _share(part: float | None, whole: float | None) -> float | None:
     return part / whole * 100
 
 
+FY_LABEL = re.compile(r"(\d{4})\s*年\s*(\d{1,2})\s*月期")
+QUARTER_LABEL = re.compile(r"第\s*(\d)\s*四半期|(中間期)")
+RAW_ITEMS = {"sales": re.compile(r"^(売上収益|売上高|営業収益)"), "operating_income": re.compile(r"^営業利益")}
+
+
+def _number(cell: str) -> float | None:
+    text = cell.replace(",", "").replace("△", "-").replace("▲", "-").replace("−", "-").strip()
+    try:
+        return float(text)
+    except ValueError:
+        return None
+
+
+def _fy(text: str) -> str | None:
+    m = FY_LABEL.search(text)
+    return f"{m.group(1)}-{int(m.group(2)):02d}" if m else None
+
+
+def _quarter(text: str) -> int | None:
+    m = QUARTER_LABEL.search(text)
+    if not m:
+        return None
+    return 2 if m.group(2) else int(m.group(1))
+
+
+def _raw_section(text: str, title: re.Pattern) -> str | None:
+    """The body of the first ## section whose heading matches title (up to the next ## heading)."""
+    parts = re.split(r"^(## .+)$", text, flags=re.M)
+    for heading, body in zip(parts[1::2], parts[2::2]):
+        if title.search(heading):
+            return body
+    return None
+
+
+def _raw_quarter(body: str) -> tuple[str, int, dict[str, tuple[float | None, float | None]]] | None:
+    """(fiscal year, quarter, item → (cumulative, same quarter a year before)) from the 直近四半期 chapter: a table
+    with the items as rows (当期の列 and a 前年同期 column), the fiscal year and quarter in the column header or the
+    lead-in line."""
+    for table in M.tables(body):
+        header = table[0]
+        prior_col = next((i for i, h in enumerate(header) if "前年同期" in h and "比" not in h), None)
+        cur_col = next((i for i, h in enumerate(header) if i and i != prior_col and _fy(h)), None)
+        if prior_col is None or cur_col is None:
+            continue
+        lead = body[:body.find("|")]
+        fy = _fy(header[cur_col]) or _fy(lead)
+        quarter = _quarter(header[cur_col]) or _quarter(lead)
+        if not fy or not quarter:
+            continue
+        values = {}
+        for row in table[1:]:
+            key = next((k for k, rx in RAW_ITEMS.items() if row and rx.match(row[0].strip())), None)
+            if key and key not in values and max(cur_col, prior_col) < len(row):
+                values[key] = (_number(row[cur_col]), _number(row[prior_col]))
+        if values:
+            return fy, quarter, values
+    return None
+
+
+def _raw_forecast(body: str, fy: str) -> dict[str, float | None]:
+    """The latest full-year forecast row of the fiscal year in the 会社計画 chapter (any 区分 but 実績)."""
+    out: dict[str, float | None] = {}
+    for table in M.tables(body):
+        header = table[0]
+        cols = {k: next((i for i, h in enumerate(header) if rx.match(h.strip())), None) for k, rx in RAW_ITEMS.items()}
+        if None in cols.values():
+            continue
+        for row in table[1:]:
+            if len(row) < 2 or _fy(row[0]) != fy or "実績" in row[1]:
+                continue
+            found = {k: _number(row[i]) if i < len(row) else None for k, i in cols.items()}
+            if any(v is not None for v in found.values()):
+                out = found  # rows run oldest to newest: the last one is the latest forecast
+    return out
+
+
+def progress_from_raw(company, series: dict) -> dict | None:
+    """current_progress without 短信 iXBRL: the newest 財務時系列 raw's「直近四半期」(cumulative and the same quarter
+    a year before) with the latest full-year forecast of that fiscal year from its「会社計画」chapter."""
+    for _, path in reversed(raw_files(company, "financials-historical")):
+        text = path.read_text(encoding="utf-8")
+        quarter_body = _raw_section(text, re.compile(r"直近四半期"))
+        found = _raw_quarter(quarter_body) if quarter_body else None
+        if not found:
+            continue
+        fy, quarter, values = found
+        if fy in series.get("sales", {}):
+            return None
+        plan_body = _raw_section(text, re.compile(r"会社計画"))
+        forecast = _raw_forecast(plan_body, fy) if plan_body else {}
+        prior_fy = f"{int(fy[:4]) - 1}{fy[4:]}"
+        items = {}
+        for key, name, _ in PROGRESS_ITEMS:
+            cum, prior = values.get(key, (None, None))
+            last = series.get(key, {}).get(prior_fy)
+            last = last.value if last else None
+            items[key] = {
+                "name": name, "cum": cum, "prior": prior, "forecast": forecast.get(key), "last_actual": last,
+                "yoy": _change(cum, prior), "forecast_growth": _change(forecast.get(key), last),
+                "progress": _share(cum, forecast.get(key)), "prior_progress": _share(prior, last)}
+        return {"fy": fy, "quarter": quarter, "filing_date": "", "source": f"raw（{path.name}）", "items": items}
+    return None
+
+
 def current_progress(company, series: dict) -> dict | None:
     """The newest cumulative quarter: per item the cumulative value, the same quarter a year before, the year-on-
     year change, the full-year forecast (latest, same filing), its change from last year's actual and the progress
-    rate now and a year before. None without quarterly 短信 data."""
+    rate now and a year before. Without quarterly 短信 data the 財務時系列 raw is read instead (progress_from_raw)."""
     path = company.path / "data" / "tdnet_facts.csv"
     if not path.exists():
-        return None
+        return progress_from_raw(company, series)
     docs: dict[str, list[dict]] = {}
     for row in read_csv_rows(path):
         docs.setdefault(row.get("doc_id", ""), []).append(row)
@@ -164,8 +268,9 @@ def progress_text(progress: dict | None) -> str:
         parts.append(f"{item['name']} {_m(item['cum'])}百万（前年同期比 {_pct(item['yoy'], True)}。通期予想 "
                      f"{_m(item['forecast'])}（前期比 {_pct(item['forecast_growth'], True)}）に対する進捗 "
                      f"{_pct(item['progress'])}、前年同期の進捗 {_pct(item['prior_progress'])}）")
-    return (f"{progress['fy']} 期の第{progress['quarter']}四半期累計（{progress['filing_date']} 公表の決算短信）: "
-            + "、".join(parts))
+    where = (f"{progress['source']} に転記した決算短信" if progress.get("source")
+             else f"{progress['filing_date']} 公表の決算短信")
+    return f"{progress['fy']} 期の第{progress['quarter']}四半期累計（{where}）: " + "、".join(parts)
 
 
 # ---------- SG&A ----------

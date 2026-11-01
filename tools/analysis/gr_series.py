@@ -204,7 +204,40 @@ def from_financials(company) -> list[tuple[str, str, Value]]:
         year = (row.get("period_end") or "")[:7]
         value = _float(row.get("value"))
         if field and year and value is not None:
-            out.append((field, year, Value(value, "data/financials.csv", True)))
+            out.append((field, year, Value(value, CSV_SOURCE, True)))
+    return out
+
+
+IFRS, JGAAP, USGAAP = "IFRS", "日本基準", "米国基準"
+CSV_SOURCE = "data/financials.csv"
+
+
+def basis_of(element: str) -> str | None:
+    """The accounting standard of an EDINET XBRL element: IFRS (jpigp_cor, *IFRS*), 米国基準 (*USGAAP*, the
+    US-GAAP summary of a Japanese filer), 日本基準 (jppfs_cor, the J-GAAP named jpcrp_cor summary) or None (US
+    filings and anything else)."""
+    if "IFRS" in element:
+        return IFRS
+    if "USGAAP" in element:
+        return USGAAP
+    if element.startswith(("jppfs_cor:", "jpcrp_cor:")):
+        return JGAAP
+    return None
+
+
+def bases(company) -> dict[str, dict[str, str]]:
+    """field → year → accounting standard of the data/financials.csv row the series reads for that year (the
+    first row per field and year, as merge keeps it)."""
+    out: dict[str, dict[str, str]] = {f: {} for f in FIELDS}
+    path = company.path / "data" / "financials.csv"
+    if not path.exists():
+        return out
+    for row in read_csv_rows(path):
+        field = CSV_ITEMS.get(row.get("item", "").removeprefix("summary."))
+        year = (row.get("period_end") or "")[:7]
+        basis = basis_of(row.get("element") or "")
+        if field and year and basis and _float(row.get("value")) is not None:
+            out[field].setdefault(year, basis)
     return out
 
 

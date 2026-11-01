@@ -293,6 +293,129 @@ def test_decline_years_and_recovery():
     assert X.decline_years(rows)[0]["recovery"] == "未回復"
 
 
+def test_a_later_decline_inside_the_recovery_window_leaves_the_year_unconfirmed():
+    rows = _rows([100, 95, 90, 91, 92, 93], [10, 11, 12, 13, 14, 15])  # 2021 down, 2022 down again, never back
+    declines = {d["year"]: d for d in X.decline_years(rows)}
+    assert declines["2021-03"]["recovery"] == X.LATER_DECLINE  # fell again before it could recover: not 未回復
+    assert declines["2022-03"]["recovery"] == "未回復"  # the later year itself is still judged on its own
+    rows = _rows([100, 90, 92, 93, 94], [10, 11, 12, 13, 14])
+    assert X.decline_years(rows)[0]["recovery"] == "未回復"  # no later decline: unchanged
+
+
+# ---------- this year's progress from the raw (no 短信 iXBRL) ----------
+
+RAW_PROGRESS = """# 財務データ時系列
+
+> 単位: 百万円。
+
+## 4. 会社計画（期初予想）と実績
+
+| 決算期 | 区分（公表日） | 売上収益 | 営業利益 | 税引前利益 | 親会社帰属当期利益 | 基本的EPS（円） | 出典（確度） |
+|---|---|---|---|---|---|---|---|
+| 2026年2月期 | 期初予想（2025-04-04） | 550,000 | 60,000 | 63,000 | 46,500 | 179.30 | 短信 |
+| 2026年2月期 | 実績 | 542,122 | 47,307 | 49,563 | 35,240 | 135.88 | 短信 |
+| 2027年2月期 | 期初予想（2026-04-10） | 580,000 | 60,000 | 65,000 | 47,000 | 181.21 | 短信 |
+| 2027年2月期 | 中間期短信の通期予想（2026-10-09、修正の有無: 有） | 600,000 | 57,500 | 65,500 | 47,500 | 183.11 | 短信 |
+| 2027年2月期 | 実績 | 未確定 | — | — | — | — | — |
+
+## 5. 直近四半期（render_tables.py quarterly 相当）
+2027年2月期 第2四半期（中間期）累計（2026-03-01〜2026-08-31、2026-10-09 公表）:
+| 項目（百万円） | 2027年2月期 中間期 | 前年同期（2026年2月期 中間期） | 前年同期比 |
+|---|---|---|---|
+| 売上収益 | 285,598 | 260,195 | ＋9.8% |
+| 営業利益 | 22,058 | 23,334 | △5.5% |
+"""
+
+
+def test_progress_falls_back_to_the_raw_quarter_and_latest_forecast(tmp_path):
+    company = _company(tmp_path, RAW_PROGRESS)
+    series = {"sales": {"2026-02": S.Value(542122, "x", True)}, "operating_income": {"2026-02": S.Value(47307, "x", True)}}
+    progress = F.current_progress(P.Company(tmp_path, company), series)
+    assert (progress["fy"], progress["quarter"]) == ("2027-02", 2) and progress["source"].startswith("raw")
+    sales, op = progress["items"]["sales"], progress["items"]["operating_income"]
+    assert (sales["cum"], sales["prior"], sales["forecast"]) == (285598, 260195, 600000)  # the latest forecast row
+    assert op["forecast"] == 57500 and op["yoy"] == pytest.approx((22058 / 23334 - 1) * 100)
+    assert sales["progress"] == pytest.approx(285598 / 600000 * 100)
+    assert sales["prior_progress"] == pytest.approx(260195 / 542122 * 100)
+    assert "raw" in F.progress_text(progress)
+    series["sales"]["2027-02"] = S.Value(600000, "x", True)  # the full year is in: nothing left to show
+    assert F.current_progress(P.Company(tmp_path, company), series) is None
+
+
+def test_same_day_redo_keeps_the_built_result_when_prepare_is_refused(repo, capsys):
+    fill(prepared(repo, capsys))
+    assert run(repo, "build", "--company", "7203", "--date", DAY, capsys=capsys)[0] == 0
+    raw = repo / "companies" / "7203_toyota" / "raw" / "ir" / f"{COLLECTED}_financials-historical.md"
+    raw.unlink()  # materials now missing: the gate refuses before anything is moved
+    code, out = run(repo, "prepare", "--company", "7203", "--date", DAY, "--redo", capsys=capsys)
+    assert code == 1 and not out["ok"]
+    directory = repo / "companies" / "7203_toyota" / "analysis" / "growth"
+    assert (directory / f"{DAY}_growth.json").exists() and not (directory / "_superseded").exists()
+
+
+# ---------- accounting basis (J-GAAP → IFRS) ----------
+
+def _with_basis(rows: list[dict], change_at: str) -> list[dict]:
+    for r in rows:
+        r["basis"] = {k: ("IFRS" if r["year"] >= change_at else "日本基準")
+                      for k in ("sales", "operating_income", "eps", "net_income")}
+    return rows
+
+
+def test_basis_of_element():
+    assert S.basis_of("jpigp_cor:OperatingProfitLossIFRS") == "IFRS"
+    assert S.basis_of("jpcrp_cor:RevenueIFRSSummaryOfBusinessResults") == "IFRS"
+    assert S.basis_of("jppfs_cor:OperatingIncome") == "日本基準"
+    assert S.basis_of("jpcrp_cor:NetSalesSummaryOfBusinessResults") == "日本基準"
+    assert S.basis_of("us-gaap:Revenues") is None and S.basis_of("") is None
+    assert S.basis_of("jpcrp_cor:RevenuesUSGAAPSummaryOfBusinessResults") == "米国基準"  # not 日本基準
+
+
+def test_a_fall_across_a_basis_change_does_not_leave_the_year_unconfirmed():
+    rows = _rows([100, 95, 90, 91, 92, 93], [10, 11, 12, 13, 14, 15])
+    _with_basis(rows, "2022-03")  # 2021 → 2022 crosses the standard change: not a later decline
+    declines = {d["year"]: d for d in X.decline_years(rows)}
+    assert declines["2021-03"]["recovery"] == "未回復" and "2022-03" not in declines
+
+
+def test_basis_is_attached_only_to_values_read_from_the_csv():
+    series = {f: {} for f in S.FIELDS}
+    series["sales"]["2026-03"] = S.Value(100, "data/tdnet_facts.csv（決算短信）", True)
+    series["operating_income"]["2026-03"] = S.Value(10, "data/financials.csv", True)
+    rows = X.yearly_rows(series, {}, {"sales": {"2026-03": "IFRS"}, "operating_income": {"2026-03": "IFRS"}})
+    assert rows[0]["basis"]["sales"] is None and rows[0]["basis"]["operating_income"] == "IFRS"
+
+
+def test_no_decline_across_a_basis_change():
+    rows = _with_basis(_rows([100, 98, 105, 110, 115, 120, 126], [10, 9, 11, 12, 13, 14, 15]), "2021-03")
+    assert "2021-03" not in {d["year"] for d in X.decline_years(rows)}  # 100 → 98 compares two standards
+    changes = X.basis_changes(rows)
+    assert [c["year"] for c in changes] == ["2021-03"] and changes[0]["before"] == "日本基準"
+
+
+def test_step1_starts_at_the_basis_change_when_enough_years_follow():
+    rows = _with_basis(_rows([80, 100, 98, 105, 110, 115, 120, 126], [8, 10, 9, 11, 12, 13, 14, 15]), "2022-03")
+    s1 = X.step1(rows)
+    assert s1["first"] == "2022-03" and s1["basis_cut"] == "2022-03" and s1["years"] == 6
+    short = _with_basis(_rows([80, 100, 98, 105, 110, 115, 120], [8, 10, 9, 11, 12, 13, 14]), "2023-03")
+    s1 = X.step1(short)  # only 4 IFRS years: the whole window stays, with a note
+    assert s1["first"] == "2020-03" and s1["basis_cut"] is None and s1["basis_note"]
+
+
+def test_bases_follow_the_csv_rows_read_into_the_series(tmp_path):
+    company = tmp_path / "companies" / "7203_toyota"
+    (company / "data").mkdir(parents=True)
+    (company / "data" / "financials.csv").write_text(
+        "doc_id,period_end,item,value,unit,element,context\n"
+        "A,2018-02-28,operating_income,54126,百万円,jppfs_cor:OperatingIncome,Prior1YearDuration\n"
+        "B,2019-02-28,operating_income,53098,百万円,jpigp_cor:OperatingProfitLossIFRS,Prior1YearDuration\n"
+        "B,2019-02-28,summary.net_sales,474638,百万円,jpcrp_cor:RevenueIFRSSummaryOfBusinessResults,Prior1YearDuration\n",
+        encoding="utf-8")
+    bases = S.bases(company_obj(tmp_path))
+    assert bases["operating_income"] == {"2018-02": "日本基準", "2019-02": "IFRS"}
+    assert bases["sales"] == {"2019-02": "IFRS"}
+
+
 # ---------- 手順3 / 4 ----------
 
 def _plan(rates: list[float]) -> list[dict]:

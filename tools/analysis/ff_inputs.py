@@ -136,11 +136,33 @@ def unavailable_items(company: Company) -> list[str]:
     return [r.get("項目", "") for r in M.table_dicts(found[1])] if found else []
 
 
+CHAPTER_NUMBER = re.compile(r"^(\d+(?:\.\d+)*\.)\s")
+LEVEL2 = re.compile(r"^(## .+)$", re.M)
+
+
+def _section_with_appendices(text: str, keyword: str) -> tuple[str, str] | None:
+    """(heading, body) of the first ## section whose heading contains keyword, joined with the later ## sections of
+    the same chapter number: a same-day update appends its chapter at the end of that day's file under the same
+    number (collect-company-info's rule), and the first heading alone would miss it."""
+    hit = M.section_by_title(text, keyword)
+    if not hit:
+        return None
+    heading, body = hit
+    number = CHAPTER_NUMBER.match(heading)
+    if not number:
+        return hit
+    parts = LEVEL2.split(text)
+    later = [(h[3:].strip(), b) for h, b in zip(parts[1::2], parts[2::2])]
+    first = next(i for i, (h, _) in enumerate(later) if h == heading)
+    extra = [f"**{h}**\n{b.strip()}" for h, b in later[first + 1:] if h.startswith(number.group(1) + " ")]
+    return heading, body.rstrip() + "".join(f"\n\n{e}" for e in extra) + ("\n" if extra else "")
+
+
 def find(company: Company, spec: Spec, unavailable: list[str]) -> Found:
     """Newest section with content wins; a thin one (thin_check specs) only when nothing better exists."""
     weak: Found | None = None  # the newest thin section, else the newest blank one
     for _, path in raw_files(company, spec.kind):
-        hit = M.section_by_title(path.read_text(encoding="utf-8"), spec.keyword)
+        hit = _section_with_appendices(path.read_text(encoding="utf-8"), spec.keyword)
         if not hit:
             continue
         heading, body = hit

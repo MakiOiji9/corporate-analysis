@@ -54,24 +54,58 @@ DECLINE_ITEM = I.SPEC["decline"].label
 
 # ---------- the yearly rows ----------
 
-def yearly_rows(series: S.Series, eps: dict[str, float]) -> list[dict]:
-    """The newest MAX_YEARS fiscal years with sales: sales, operating income, net income, adjusted EPS."""
+BASIS_KEYS = ("sales", "operating_income", "net_income", "eps")
+
+
+def yearly_rows(series: S.Series, eps: dict[str, float],
+                bases: dict[str, dict[str, str]] | None = None) -> list[dict]:
+    """The newest MAX_YEARS fiscal years with sales: sales, operating income, net income, adjusted EPS, and the
+    accounting standard each value was reported under (data/financials.csv; None when unknown)."""
     years = sorted(series["sales"])[-MAX_YEARS:]
+    bases = bases or {}
     rows = []
     for year in years:
         def value(field: str) -> float | None:
             v = series[field].get(year)
             return v.value if v else None
+
+        def basis(field: str) -> str | None:
+            # the standard is known only for a value merge took from data/financials.csv (a 短信 value has none)
+            v = series[field].get(year)
+            return bases.get(field, {}).get(year) if v and v.source == S.CSV_SOURCE else None
         rows.append({"year": year, "sales": value("sales"), "operating_income": value("operating_income"),
                      "net_income": value("net_income"), "eps": eps.get(year),
                      "eps_reported": value("eps"), "acquisition": value("acquisition"),
                      "buyback": value("buyback"), "source": series["sales"][year].source,
-                     "primary": series["sales"][year].primary})
+                     "primary": series["sales"][year].primary,
+                     "basis": {k: basis(k) for k in BASIS_KEYS}})
     return rows
 
 
 def _consecutive(rows: list[dict]) -> list[tuple[dict, dict]]:
     return [(p, c) for p, c in zip(rows, rows[1:]) if _months_apart(p["year"], c["year"]) == 12]
+
+
+def _bases(prev: dict, cur: dict, key: str) -> tuple[str | None, str | None]:
+    return (prev.get("basis") or {}).get(key), (cur.get("basis") or {}).get(key)
+
+
+def same_basis(prev: dict, cur: dict, key: str) -> bool:
+    """False only when both years' standards are known and differ (an unknown standard is not a change)."""
+    a, b = _bases(prev, cur, key)
+    return not (a and b and a != b)
+
+
+def basis_changes(rows: list[dict]) -> list[dict]:
+    """Consecutive years whose values were reported under different accounting standards (e.g. 日本基準 → IFRS):
+    {year (the first year on the new standard), before, after, keys}."""
+    out = []
+    for prev, cur in _consecutive(rows):
+        keys = [k for k in BASIS_KEYS if not same_basis(prev, cur, k)]
+        if keys:
+            before, after = _bases(prev, cur, keys[0])
+            out.append({"year": cur["year"], "before": before, "after": after, "keys": keys})
+    return out
 
 
 def yoy(rows: list[dict], key: str) -> dict[str, float | None]:
@@ -127,18 +161,39 @@ def _window(rows: list[dict], keys: tuple[str, ...]) -> list[dict]:
     return rows[full[0]:full[-1] + 1] if full else []
 
 
+def _filled(window: list[dict], keys: tuple[str, ...]) -> int:
+    return sum(all(r[k] is not None for k in keys) for r in window)
+
+
+def _basis_window(window: list[dict], keys: tuple[str, ...]) -> tuple[list[dict], str | None, str]:
+    """(window, the year it was cut at, note). When the accounting standard changes inside the window and at least
+    MIN_YEARS years follow on the new standard, the CAGRs start at the change (a CAGR across two standards mixes
+    two measures); with fewer years the whole window stays and the note says so."""
+    changes = [c for c in basis_changes(window) if c["year"] > window[0]["year"]] if window else []
+    if not changes:
+        return window, None, ""
+    change = changes[-1]
+    after = _window([r for r in window if r["year"] >= change["year"]], keys)
+    shift = f"{change['before']}→{change['after']}"
+    if _filled(after, keys) >= MIN_YEARS:
+        return after, change["year"], f"{change['year']} に会計基準が変わった（{shift}）ため、CAGR は {change['year']} 以降で計算"
+    return window, None, (f"{change['year']} に会計基準が変わった（{shift}）が、新しい基準の年が {MIN_YEARS} 年に満たないため"
+                          "、CAGR は基準をまたいで計算（参考）")
+
+
 def step1(rows: list[dict]) -> dict:
     with_eps = len(_window(rows, ("sales", "eps")))
     with_ni = len(_window(rows, ("sales", "net_income")))
     eps_key = "eps" if with_eps >= MIN_YEARS or with_eps >= with_ni else "net_income"
-    window = _window(rows, ("sales", eps_key))
+    window, basis_cut, basis_note = _basis_window(_window(rows, ("sales", eps_key)), ("sales", eps_key))
     sales, op, eps = cagr(window, "sales"), cagr(window, "operating_income"), cagr(window, eps_key)
     ni = cagr(window, "net_income")
-    years = sum(r["sales"] is not None and r[eps_key] is not None for r in window)
+    years = _filled(window, ("sales", eps_key))
     stand_in = "" if eps_key == "eps" else "（EPS が足りないため当期純利益で代用）"
     base = {"years": years, "sales": sales, "operating_income": op, "eps": eps, "net_income": ni,
             "eps_key": eps_key, "stand_in": stand_in, "window": [r["year"] for r in window],
-            "first": window[0]["year"] if window else None, "last": window[-1]["year"] if window else None}
+            "first": window[0]["year"] if window else None, "last": window[-1]["year"] if window else None,
+            "basis_cut": basis_cut, "basis_note": basis_note}
     cagrs = (f"売上 CAGR {fmt_cagr(sales)}、営業利益 CAGR {fmt_cagr(op)}、"
              f"{'EPS' if eps_key == 'eps' else '純利益'} CAGR {fmt_cagr(eps)}")
     if years < MIN_YEARS:
@@ -157,8 +212,27 @@ def step1(rows: list[dict]) -> dict:
 
 # ---------- 手順2 ----------
 
+LATER_DECLINE = "未確認（後の年も減少）"  # fell again within the recovery window: that later year is judged instead
+
+
+def _falls_again(rows: list[dict], index: int, key: str) -> bool:
+    """True when the metric fell again (from its own year before) within RECOVERY_YEARS after the decline year, on
+    the same accounting standard (a fall across a change is not a decline year, so nobody would carry it)."""
+    cur, prev = rows[index], rows[index]
+    for r in rows[index + 1:]:
+        if _months_apart(cur["year"], r["year"]) > RECOVERY_YEARS * 12:
+            break
+        if (r[key] is not None and prev[key] is not None and r[key] < prev[key]
+                and same_basis(prev, r, key)):
+            return True
+        prev = r if r[key] is not None else prev
+    return False
+
+
 def _recovery(rows: list[dict], index: int, key: str, base: float) -> tuple[str, str | None]:
-    """回復 / 遅れて回復 / 未回復 / 未確認, and the year the level came back."""
+    """回復 / 遅れて回復 / 未回復 / 未確認（後の年も減少）/ 未確認, and the year the level came back. A year that
+    never came back but fell again within the recovery window is not 未回復: the later decline year carries the
+    question (its own class decides the verdict)."""
     cur = rows[index]
     later = rows[index + 1:]
     for r in later:
@@ -168,21 +242,24 @@ def _recovery(rows: list[dict], index: int, key: str, base: float) -> tuple[str,
     observed = [r for r in later if r[key] is not None]
     if not observed or _months_apart(cur["year"], observed[-1]["year"]) < RECOVERY_YEARS * 12:
         return "未確認", None
+    if _falls_again(rows, index, key):
+        return LATER_DECLINE, None
     return "未回復", None
 
 
-RECOVERY_ORDER = ("未回復", "未確認", "遅れて回復", "回復")
+RECOVERY_ORDER = ("未回復", LATER_DECLINE, "未確認", "遅れて回復", "回復")
 
 
 def decline_years(rows: list[dict]) -> list[dict]:
-    """Years whose sales, operating income or EPS fell from the year before."""
+    """Years whose sales, operating income or EPS fell from the year before (a pair of years reported under
+    different accounting standards is not compared: basis_changes lists them)."""
     index = {r["year"]: i for i, r in enumerate(rows)}
     out = []
     for prev, cur in _consecutive(rows):
         metrics = []
         for key, name in DECLINE_METRICS:
             a, b = prev[key], cur[key]
-            if a is None or b is None or b >= a:
+            if a is None or b is None or b >= a or not same_basis(prev, cur, key):
                 continue
             status, year = _recovery(rows, index[cur["year"]], key, a)
             change = (b / a - 1) * 100 if a > 0 else None
@@ -495,7 +572,7 @@ def consistency(s1: dict, three_c: dict | None) -> list[dict]:
 def candidates(company, found: dict) -> dict:
     series = S.self_series(company)
     eps, splits, odd = S.adjusted_eps(series)
-    rows = yearly_rows(series, eps)
+    rows = yearly_rows(series, eps, S.bases(company))
     s1 = step1(rows)
     declines = decline_years(rows)
     plans, dropped = plan_rows(S.plan_records(company, found["plan"]), series, s1["last"])
@@ -505,6 +582,7 @@ def candidates(company, found: dict) -> dict:
     verdict, why, downgraded = decide(s1, declines, s4, None)
     records = F.split_records(company)
     return {"series": series, "rows": rows, "splits": splits, "odd_share_jumps": odd, "plan_dropped": dropped,
+            "basis_changes": basis_changes(rows),
             "split_notes": [split_note(s, F.match_split(s, records)) for s in splits],
             "step1": s1, "declines": declines, "step3": s3, "ma": ma, "step4": s4,
             "progress": F.current_progress(company, series), "receivables": receivables_text(series),
@@ -597,6 +675,11 @@ def warnings(cands: dict) -> list[str]:
             f"（{PLAN_SANE[0]:.0f}〜{PLAN_SANE[1]:.0f}% の範囲外）" for r in cands["plan_dropped"]]
     if cands["step1"]["stand_in"]:
         out.append("EPS の年数が足りず、手順1は当期純利益の CAGR で代用した")
+    for c in cands.get("basis_changes") or []:
+        out.append(f"会計基準: {c['year']} に {c['before']}→{c['after']} へ変わった。{c['year']} と前年の比較は"
+                   "手順2の減収・減益に数えない（基準が違う数字の比較のため）")
+    if cands["step1"].get("basis_note"):
+        out.append(f"手順1: {cands['step1']['basis_note']}")
     secondary = [r["year"] for r in cands["rows"] if not r["primary"]]
     if secondary:
         out.append(f"売上高が二次情報（集計サイト）の年: {'、'.join(secondary)}")

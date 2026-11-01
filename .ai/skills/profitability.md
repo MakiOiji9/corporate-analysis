@@ -90,7 +90,7 @@ $PY -I tools/analysis/profitability.py prepare --company {company} [--redo] [--s
 - `fill_keys` が書く欄の一覧（md を読み直して探さなくてよい）、`peer_summary` が 3.2 の自社と同業平均の3要素・ROE、`borderline` が境界に近い比較
 - 作成途中の md（FILL が残っている）は上書きせず残す（`kept: true`）。続きから書く
 - 一字も書いていない骨組み（前回の prepare が書いたままの md）は、`--redo` なしで作り直す（`regenerated: true`）
-- `--redo` は完成済みの結果（有効期間内）と書きかけの md を作り直すときだけ使う（ユーザーの指示があるときだけ）。同じ日に build 済みの結果があると `--redo` は拒否される。その日の md を Edit で直して build し直す
+- `--redo` は完成済みの結果（有効期間内）と書きかけの md を作り直すときだけ使う（ユーザーの指示があるときだけ）。同じ日に build 済みの結果があるときの `--redo` は、その日の md・json・brief を `analysis/{種類}/_superseded/{日付}-{n}/` に退避してから作り直す（返り値の `superseded`。退避した結果は消さず、最新の結果としては読まれない）。小さな直しだけなら、その日の md を Edit で直して build し直してもよい
 - `warnings`（brief の「警告」節にも出る）は、スクリプトが raw を読み違えた可能性（有報の ROE と計算値が1pt超ずれる、競合の行から3要素を計算できないなど）。空でなければ完了報告の「警告」行に書く
 
 ### 3. 執筆（LLM）

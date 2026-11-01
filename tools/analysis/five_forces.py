@@ -155,9 +155,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     if state["result"] == "fresh" and not args.redo:
         return emit({"ok": False, "error": state["reason"] + "。作り直すのはユーザーが指示したときだけ（--redo）",
                      "latest": state["latest"]})
-    if args.redo and company.file(today, P.JSON_SUFFIX).exists():
-        return emit({"ok": False, "error": f"{today} の分析は build 済み。同じ日に作り直さず、"
-                     f"{company.rel(company.file(today, P.MD_SUFFIX))} を Edit で直して build し直す"})
+    redo_built = args.redo and company.file(today, P.JSON_SUFFIX).exists()  # moved aside once the gate passes
     found = I.gather(company)
     requests = I.collect_requests(found)
     draft = P.latest_draft(company)
@@ -174,6 +172,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     candidates = X.candidates(company, found)
     previous = P.latest_result(company, before=date)
     outlook = P.latest_outlook(root, today)
+    superseded = A.supersede_today(company.file(today, P.JSON_SUFFIX).parent, today) if redo_built else None
     brief_path, md_path = company.file(date, P.BRIEF_SUFFIX), company.file(date, P.MD_SUFFIX)
     brief = B.render_brief(company, date, P.valid_until(date), found, candidates, previous, outlook)
     if not kept:
@@ -184,6 +183,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     atomic_write_text(brief_path, brief)
     return emit({
         "ok": True, "company": company.dirname, "date": date, "brief": company.rel(brief_path),
+        "superseded": company.rel(superseded) if superseded else None,
         "md": company.rel(md_path), "kept": kept, "regenerated": untouched and not args.redo,
         "skipped_collect": requests if blocking == "collect" else [],
         "fill": len(P.FILL.findall(md_path.read_text(encoding="utf-8"))),

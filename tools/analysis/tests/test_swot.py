@@ -436,7 +436,7 @@ def test_second_analysis_requires_change_reason(repo, capsys):
     assert code == 0 and out["previous"]["verdict"] == "条件付き" and out["verdict"] == "No"
 
 
-def test_prepare_keeps_draft_unless_redo_and_refuses_same_day_redo(repo, capsys):
+def test_prepare_keeps_draft_unless_redo_and_supersedes_on_same_day_redo(repo, capsys):
     md = prepared(repo, capsys)
     md.write_text(md.read_text(encoding="utf-8").replace("<!-- FILL:s-rows", S_ROW + "\n<!-- FILL:s-rows"),
                   encoding="utf-8")
@@ -445,10 +445,13 @@ def test_prepare_keeps_draft_unless_redo_and_refuses_same_day_redo(repo, capsys)
     md.write_text(md.read_text(encoding="utf-8").replace(S_ROW + "\n", ""), encoding="utf-8")
     fill(md)
     build(repo, capsys)
-    code, out = run(repo, "prepare", "--company", "7203", "--date", DAY, "--redo", capsys=capsys)
-    assert code == 1 and "build 済み" in out["error"]
     code, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
     assert code == 1 and "有効" in out["error"]
+    code, out = run(repo, "prepare", "--company", "7203", "--date", DAY, "--redo", capsys=capsys)
+    assert code == 0 and out["superseded"].endswith(f"_superseded/{DAY}-1")
+    assert (repo / out["superseded"] / f"{DAY}_swot.json").exists()
+    code, out = run(repo, "prepare", "--company", "7203", "--date", DAY, "--redo", capsys=capsys)
+    assert code == 0 and out.get("superseded") is None  # nothing built today any more: a plain redo of the draft
 
 
 # ---------- write guard ----------

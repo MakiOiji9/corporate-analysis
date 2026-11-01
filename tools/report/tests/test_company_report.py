@@ -134,7 +134,7 @@ FILLED = {
     "summary": "- 大企業向けの IT コンサルで、売上高は 16,600百万円\n- ROE 18.8% で財務も良好、株価は割安\n"
                "- 短期・中期・長期とも投資検討",
     "about": "大企業に IT コンサルティングを提供し、売上高は 16,600百万円。",
-    "break": "- 営業利益率が2期連続で同業平均を下回る\n- ROE が2期連続で8%を下回る",
+    "break": "- 【悪化】営業利益率が2期連続で同業平均を下回る\n- 【悪化】ROE が2期連続で8%を下回る",
     "watch": "- 次の決算で進捗率を確かめる\n- 生成AI の影響を確かめる",
 }
 
@@ -215,6 +215,63 @@ def test_prepare_fill_build_flow(repo, capsys):
     assert _run(repo, capsys, "check", "--company", "3798", "--date", TODAY)["next"] == "report_existing"
     again = _prepare(repo, capsys)
     assert not again["ok"] and "--redo" in again["error"]
+    redone = _run(repo, capsys, "prepare", "--company", "3798", "--date", TODAY, "--skip-prices", "--redo")
+    assert redone["ok"] and redone["superseded"].endswith(f"reports/_superseded/{TODAY}-1")
+    moved = repo / redone["superseded"]
+    assert (moved / f"{TODAY}_company-report.html").exists() and (moved / f"{TODAY}_company-report.json").exists()
+    assert "FILL:" in md.read_text(encoding="utf-8")  # a fresh skeleton, the built report kept in _superseded
+    assert _run(repo, capsys, "check", "--company", "3798", "--date", TODAY)["next"] == "write"
+
+
+PEER_MARGINS = {"profitability": {"step2": {"year": "2026-03", "self": 18.3, "avg": 16.3, "diff": 2.0,
+                                            "rows": [{"peers": [{"name": "アルファ社", "margin": 14.0}]}]}}}
+
+
+def test_brief_shows_nearest_boundary_recent_material_median_and_directions(repo, capsys):
+    company = _company(repo, PEER_MARGINS)
+    out = _prepare(repo, capsys)
+    brief = (company / "reports" / f"{TODAY}_company-report_brief.md").read_text(encoding="utf-8")
+    assert "まであと" in brief.split("## 3.")[1].split("## 4.")[0]  # every horizon names its nearest boundary
+    assert "## 直近の材料" in brief and "52週高値から" in brief and "S1" in brief  # SWOT strengths and the drop
+    assert "同業平均 16.3%（中央値 14.0%）" in brief
+    assert "### 5.1 判定が上がる条件" in brief and "### 5.2 判定が下がる条件" in brief
+    assert "（材料不足のため保守的に判定）（材料不足のため保守的に判定）" not in brief
+    assert out["ok"]
+
+
+def test_build_requires_the_direction_word_on_each_break_line(repo, capsys):
+    company = _company(repo)
+    out = _prepare(repo, capsys)
+    md = company / "reports" / f"{TODAY}_company-report.md"
+    filled = _fill(md.read_text(encoding="utf-8"), out["horizons"])
+    md.write_text(filled.replace("【悪化】営業利益率", "営業利益率"), encoding="utf-8")
+    issues = _run(repo, capsys, "build", "--company", "3798")["issues"]
+    assert any("4.2" in i and "【改善】" in i for i in issues)
+
+
+def test_conservative_note_is_not_doubled():
+    import cr_factors as CF
+    a = {"verdict": "懸念", "reason": "不明の年を構造とみなした（材料不足のため保守的に判定）", "conservative": ["x"],
+         "step": "2-2", "label": "成長性"}
+    assert CF.analysis_factor(a)["reason"].count("保守的に判定") == 1
+    assert "保守的" in CF.analysis_factor({**a, "reason": "理由"})["reason"]
+
+
+def test_conservative_note_does_not_claim_the_verdict_came_from_missing_material():
+    import cr_factors as CF
+    a = {"verdict": "懸念", "reason": "手順1が停滞・縮小", "conservative": ["M&A が分からない"],
+         "step": "2-2", "label": "成長性"}
+    reason = CF.analysis_factor(a)["reason"]
+    assert "材料不足のため保守的に判定" not in reason
+    assert "一部の項目は材料不足のため保守的に扱った" in reason
+
+
+def test_valuation_factor_counts_only_the_scored_indicators():
+    import cr_factors as CF
+    v = {"verdict": "妥当", "date": "2026-11-01", "detail": {"average": 0.0, "scored": 3, "sheet": "s"}}
+    assert CF.valuation_factor(v)["value"] == "妥当（3指標の平均点 +0.00）"
+    old = {**v, "detail": {"average": 0.0, "sheet": "s"}}
+    assert CF.valuation_factor(old)["value"] == "妥当（指標の平均点 +0.00）"
 
 
 def test_html_shows_3c_swot_peers_dividends_and_tooltips(repo, capsys):
@@ -227,6 +284,7 @@ def test_html_shows_3c_swot_peers_dividends_and_tooltips(repo, capsys):
     assert "期間ごとの良い点・悪い点" in html and 'class="gauge"' in html
     assert 'class="swot"' in html and "SWOT分析" in html
     assert "同業比較" in html and "株主還元" in html and "成長の見通し" in html
+    assert "同業の平均" in html and "同業の中央値" in html and "最も近い境目" in html
     assert 'class="term"' in html
     assert not re.search(r'data-tip="[^"]*<span', html)  # a tooltip never lands inside an attribute
     assert '<svg' in html and not re.search(r"<svg[^>]*>[^<]*<span class=\"term\"", html)

@@ -200,6 +200,17 @@ def test_paren_negative_and_labels():
     assert PS.field_of("連結範囲の変更を伴わない子会社株式の取得による支出", S.CF_FIELDS) is None
 
 
+def test_ifrs_cf_labels():
+    """IFRS statements say 営業債権 / 法人所得税 where J-GAAP says 売上債権 / 法人税等."""
+    assert PS.field_of("営業債権の増減額（△は増加）", S.CF_FIELDS) == "receivables_change"
+    assert PS.field_of("営業債権及び契約資産の増減額", S.CF_FIELDS) == "receivables_change"
+    assert PS.field_of("法人所得税の支払額又は還付額（△は支払）", S.CF_FIELDS) == "taxes_paid"
+    assert PS.field_of("法人所得税の支払額", S.CF_FIELDS) == "taxes_paid"
+    assert PS.field_of("営業債権（売上債権、貸倒引当金控除後）", S.CF_FIELDS) == "receivables"
+    assert PS.field_of("棚卸資産の増減額（△は増加）", S.CF_FIELDS) == "inventories_change"
+    assert PS.field_of("法人所得税費用", S.CF_FIELDS) is None  # the expense is not the payment
+
+
 def test_series_units_primary_and_positive_outflows(repo):
     series = S.self_series(company_obj(repo))
     assert series["cfo"]["2020-03"].value == pytest.approx(1000) and series["cfo"]["2020-03"].primary  # 千円, not IRBANK

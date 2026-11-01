@@ -313,6 +313,19 @@ def test_a_carried_over_peer_selection_keeps_the_earlier_sections(repo):
     assert I.find(company, I.SPEC["peers"], []).path.name == "2026-10-01_competitors.md"
 
 
+def test_a_same_day_appended_chapter_is_read_with_the_first_one(repo):
+    """A same-day update appends its chapter at the end under the same number: both bodies are read."""
+    company = company_obj(repo)
+    path = next((company.path / "raw" / "market").glob("*_industry-overview.md"))
+    path.write_text("# 業界\n\n## 2. 上位企業とシェア分布\n\n- A社 30%\n\n## 6. 原材料・部品の調達構造\n\n- 磁石は中国に集中\n\n"
+                    "## 7. 業界全体の利益率\n\n- 10%\n\n## 6. 原材料・部品の調達構造（追記: 自社の対応）\n\n- 会社は長期確保と説明\n\n"
+                    "## 4. 市場シェア（参考）\n\n- B社 20%\n", encoding="utf-8")
+    supply = I.find(company, I.SPEC["supply"], [])
+    assert "磁石は中国に集中" in supply.body and "会社は長期確保と説明" in supply.body and "10%" not in supply.body
+    share = I.find(company, I.SPEC["share"], [])
+    assert "A社 30%" in share.body and "B社 20%" not in share.body  # another chapter number is not joined
+
+
 def test_us_annual_disclosures_count_as_yuho(repo):
     company = company_obj(repo)
     filings = company.path / "raw" / "filings"
@@ -533,12 +546,17 @@ def test_stale_draft_behind_built_result_is_abandoned(repo, capsys):
     assert out["date"] == "2027-11-01" and not out["kept"] and out["previous"] == DAY
 
 
-def test_same_day_redo_after_build_is_refused(repo, capsys):
+def test_same_day_redo_after_build_supersedes_the_built_result(repo, capsys):
     _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
     fill(repo / out["md"], ALL_MID)
     run(repo, "build", "--company", "7203", capsys=capsys)
     code, out = run(repo, "prepare", "--company", "7203", "--date", DAY, "--redo", capsys=capsys)
-    assert code == 1 and "Edit" in out["error"]
+    assert code == 0 and out["date"] == DAY and not out["kept"]
+    moved = repo / out["superseded"]
+    assert moved.parent.name == "_superseded" and moved.name == f"{DAY}-1"
+    assert sorted(p.name for p in moved.iterdir()) == sorted(
+        [f"{DAY}_brief.md", f"{DAY}_five-forces.md", f"{DAY}_five-forces.json"])
+    assert "FILL:" in (repo / out["md"]).read_text(encoding="utf-8")  # a fresh skeleton replaces the built md
 
 
 def test_replace_section_without_trailing_newline():

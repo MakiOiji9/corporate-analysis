@@ -41,6 +41,14 @@
 | Read ツールで PDF が読めない（poppler 無し） | `pdf_text.py` でテキスト化し、`find_pages.py` で必要ページだけ読む |
 | curl が SSL 検証エラー（Windows） | `fetch.py`（certifi を使用）を使う |
 | Bash ツールで `$変数` が展開されない | シェル変数を使わず、スクリプトに引数で渡す |
+| 短信 iXBRL（`-ixbrl.htm`）が JPX 配信で404、IRBANK にも .htm のリンクが無い（2026-11-01 6506 安川電機） | `tdnet_facts.csv` は作れない。短信 PDF（`www2.jpx.co.jp/disc/{code}0/{開示番号}.pdf`）から raw に転記する |
+
+## IFRS 任意適用会社（2026-11-01 6506 安川電機での実行時）
+
+- `xbrl_financials.py` は IFRS の連結科目に対応済み（要約は `*IFRSSummaryOfBusinessResults`、財務諸表は `jpigp_cor:*IFRS`）。IFRS の会社の日本基準名の要約要素は個別（`_NonConsolidatedMember`）の値だけなので、`summary.dps`・`summary.payout_ratio` は単体の値になる（連結の配当性向は短信から raw に書く）
+- タクソノミの `EquityToAssetRatioIFRSSummaryOfBusinessResults` は名前に反して BPS（1株当たり親会社所有者帰属持分、円）、自己資本比率は `RatioOfOwnersEquityToGrossAssetsIFRSSummaryOfBusinessResults`
+- 営業利益の要約要素は会社の拡張（例 `jpcrp030000-asr_E01741-000:OperatingProfitLossIFRSSummaryOfBusinessResults`）のことがある。`xbrl_financials.py` は要素名の末尾で照合するので拾える
+- IFRS の会社は経常利益・特別損益の区分が無い（`—`）
 
 ## 米国株（2026-10-14 CBRS Cerebras での実行時）
 

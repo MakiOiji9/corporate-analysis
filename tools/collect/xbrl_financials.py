@@ -12,6 +12,7 @@ Process filings oldest -> newest: a later filing overwrites the same (period_end
 from __future__ import annotations
 
 import argparse
+import calendar
 import csv
 import io
 import re
@@ -25,27 +26,40 @@ from common import company_dir, file_lock, read_csv_rows, utf8_stdout, write_csv
 
 FIELDS = ["doc_id", "period_end", "item", "value", "unit", "element", "context"]
 JPY_PER_MILLION = 1_000_000
+# 'pure' values that are a multiple or a count, not a ratio to show in %
+PURE_NOT_PERCENT = {"summary.per": "倍", "summary.employees": "人"}
 RELATIVE_YEARS = {"CurrentYear": 0, "Prior1Year": 1, "Prior2Year": 2, "Prior3Year": 3, "Prior4Year": 4}
 
 # item -> candidate element local names (first found wins). Summary items come from
 # 主要な経営指標等の推移 (5 years); statement items from the consolidated statements (2 years).
+# IFRS filers (jpigp_cor statements, *IFRSSummaryOfBusinessResults) are listed first: their J-GAAP named
+# summary elements carry only the 個別 values (_NonConsolidatedMember), so the orders never compete.
 SUMMARY_ITEMS = {
-    "net_sales": ["NetSalesSummaryOfBusinessResults", "RevenueSummaryOfBusinessResults",
-                  "OperatingRevenue1SummaryOfBusinessResults"],
+    "net_sales": ["RevenueIFRSSummaryOfBusinessResults", "NetSalesSummaryOfBusinessResults",
+                  "RevenueSummaryOfBusinessResults", "OperatingRevenue1SummaryOfBusinessResults"],
+    "operating_income": ["OperatingProfitLossIFRSSummaryOfBusinessResults"],  # IFRS only (often a company extension)
     "ordinary_income": ["OrdinaryIncomeLossSummaryOfBusinessResults"],
-    "net_income": ["ProfitLossAttributableToOwnersOfParentSummaryOfBusinessResults"],
+    "net_income": ["ProfitLossAttributableToOwnersOfParentIFRSSummaryOfBusinessResults",
+                   "ProfitLossAttributableToOwnersOfParentSummaryOfBusinessResults"],
     "net_assets": ["NetAssetsSummaryOfBusinessResults"],
-    "total_assets": ["TotalAssetsSummaryOfBusinessResults"],
-    "bps": ["NetAssetsPerShareSummaryOfBusinessResults"],
-    "eps": ["BasicEarningsLossPerShareSummaryOfBusinessResults"],
-    "diluted_eps": ["DilutedEarningsPerShareSummaryOfBusinessResults"],
-    "equity_ratio": ["EquityToAssetRatioSummaryOfBusinessResults"],
-    "roe": ["RateOfReturnOnEquitySummaryOfBusinessResults"],
-    "per": ["PriceEarningsRatioSummaryOfBusinessResults"],
-    "cfo": ["NetCashProvidedByUsedInOperatingActivitiesSummaryOfBusinessResults"],
-    "cfi": ["NetCashProvidedByUsedInInvestingActivitiesSummaryOfBusinessResults"],
-    "cff": ["NetCashProvidedByUsedInFinancingActivitiesSummaryOfBusinessResults"],
-    "cash_equivalents": ["CashAndCashEquivalentsSummaryOfBusinessResults"],
+    "total_assets": ["TotalAssetsIFRSSummaryOfBusinessResults", "TotalAssetsSummaryOfBusinessResults"],
+    # the taxonomy names the IFRS BPS (1株当たり親会社所有者帰属持分, JPYPerShares) EquityToAssetRatioIFRS...
+    "bps": ["EquityToAssetRatioIFRSSummaryOfBusinessResults", "NetAssetsPerShareSummaryOfBusinessResults"],
+    "eps": ["BasicEarningsLossPerShareIFRSSummaryOfBusinessResults", "BasicEarningsLossPerShareSummaryOfBusinessResults"],
+    "diluted_eps": ["DilutedEarningsLossPerShareIFRSSummaryOfBusinessResults",
+                    "DilutedEarningsPerShareSummaryOfBusinessResults"],
+    "equity_ratio": ["RatioOfOwnersEquityToGrossAssetsIFRSSummaryOfBusinessResults",
+                     "EquityToAssetRatioSummaryOfBusinessResults"],
+    "roe": ["RateOfReturnOnEquityIFRSSummaryOfBusinessResults", "RateOfReturnOnEquitySummaryOfBusinessResults"],
+    "per": ["PriceEarningsRatioIFRSSummaryOfBusinessResults", "PriceEarningsRatioSummaryOfBusinessResults"],
+    "cfo": ["CashFlowsFromUsedInOperatingActivitiesIFRSSummaryOfBusinessResults",
+            "NetCashProvidedByUsedInOperatingActivitiesSummaryOfBusinessResults"],
+    "cfi": ["CashFlowsFromUsedInInvestingActivitiesIFRSSummaryOfBusinessResults",
+            "NetCashProvidedByUsedInInvestingActivitiesSummaryOfBusinessResults"],
+    "cff": ["CashFlowsFromUsedInFinancingActivitiesIFRSSummaryOfBusinessResults",
+            "NetCashProvidedByUsedInFinancingActivitiesSummaryOfBusinessResults"],
+    "cash_equivalents": ["CashAndCashEquivalentsIFRSSummaryOfBusinessResults",
+                         "CashAndCashEquivalentsSummaryOfBusinessResults"],
     "employees": ["NumberOfEmployees"],
 }
 NONCONSOLIDATED_SUMMARY_ITEMS = {  # reported only for the parent company
@@ -54,41 +68,46 @@ NONCONSOLIDATED_SUMMARY_ITEMS = {  # reported only for the parent company
     "issued_shares": ["TotalNumberOfIssuedSharesSummaryOfBusinessResults"],
 }
 STATEMENT_ITEMS = {
-    "net_sales": ["NetSales", "Revenue", "OperatingRevenue1"],
-    "cost_of_sales": ["CostOfSales"],
-    "sga": ["SellingGeneralAndAdministrativeExpenses"],
-    "operating_income": ["OperatingIncome"],
+    "net_sales": ["RevenueIFRS", "NetSales", "Revenue", "OperatingRevenue1"],
+    "cost_of_sales": ["CostOfSalesIFRS", "CostOfSales"],
+    "sga": ["SellingGeneralAndAdministrativeExpensesIFRS", "SellingGeneralAndAdministrativeExpenses"],
+    "operating_income": ["OperatingProfitLossIFRS", "OperatingIncome"],
     "ordinary_income": ["OrdinaryIncome"],
     "extraordinary_income": ["ExtraordinaryIncome"],
     "extraordinary_loss": ["ExtraordinaryLoss"],
-    "net_income": ["ProfitLossAttributableToOwnersOfParent"],
+    "net_income": ["ProfitLossAttributableToOwnersOfParentIFRS", "ProfitLossAttributableToOwnersOfParent"],
     "cash_and_deposits": ["CashAndDeposits"],
-    "receivables": ["NotesAndAccountsReceivableTradeAndContractAssets",
+    "receivables": ["TradeAndOtherReceivablesCAIFRS", "TradeReceivablesCAIFRS",
+                    "NotesAndAccountsReceivableTradeAndContractAssets",
                     "AccountsReceivableTradeAndContractAssets",
                     "NotesAndAccountsReceivableTrade", "AccountsReceivableTrade"],
-    "inventories": ["Inventories"],
+    "inventories": ["InventoriesCAIFRS", "Inventories"],
     "work_in_process": ["WorkInProcess"],
-    "current_assets": ["CurrentAssets"],
-    "total_assets": ["Assets"],
-    "current_liabilities": ["CurrentLiabilities"],
-    "liabilities": ["Liabilities"],
-    "net_assets": ["NetAssets"],
-    "short_term_loans": ["ShortTermLoansPayable", "ShortTermBorrowings"],
+    "current_assets": ["CurrentAssetsIFRS", "CurrentAssets"],
+    "total_assets": ["AssetsIFRS", "Assets"],
+    "current_liabilities": ["TotalCurrentLiabilitiesIFRS", "CurrentLiabilities"],
+    "liabilities": ["LiabilitiesIFRS", "Liabilities"],
+    "net_assets": ["EquityIFRS", "NetAssets"],  # IFRS 資本 includes the minority interest like 純資産
+    # IFRS reports 社債及び借入金 (bonds included) per current / non-current; the sum is the same debt
+    "short_term_loans": ["BondsAndBorrowingsCLIFRS", "BorrowingsCLIFRS", "ShortTermLoansPayable", "ShortTermBorrowings"],
     "current_portion_long_term_loans": ["CurrentPortionOfLongTermLoansPayable"],
-    "long_term_loans": ["LongTermLoansPayable", "LongTermBorrowings"],
+    "long_term_loans": ["BondsAndBorrowingsNCLIFRS", "BorrowingsNCLIFRS", "LongTermLoansPayable", "LongTermBorrowings"],
     "bonds": ["BondsPayable"],
-    "cfo": ["NetCashProvidedByUsedInOperatingActivities"],
-    "cfi": ["NetCashProvidedByUsedInInvestmentActivities"],
-    "cff": ["NetCashProvidedByUsedInFinancingActivities"],
-    "depreciation": ["DepreciationAndAmortizationOpeCF"],
-    "capex_tangible": ["PurchaseOfPropertyPlantAndEquipmentInvCF"],
-    "capex_intangible": ["PurchaseOfIntangibleAssetsInvCF"],
+    "cfo": ["NetCashProvidedByUsedInOperatingActivitiesIFRS", "NetCashProvidedByUsedInOperatingActivities"],
+    "cfi": ["NetCashProvidedByUsedInInvestingActivitiesIFRS", "NetCashProvidedByUsedInInvestmentActivities"],
+    "cff": ["NetCashProvidedByUsedInFinancingActivitiesIFRS", "NetCashProvidedByUsedInFinancingActivities"],
+    "depreciation": ["DepreciationAndAmortizationOpeCFIFRS", "DepreciationAndAmortizationOpeCF"],
+    "capex_tangible": ["PurchaseOfPropertyPlantAndEquipmentInvCFIFRS",
+                       "PurchaseOfPropertyPlantAndEquipmentAndIntangibleAssetsInvCFIFRS",
+                       "PurchaseOfPropertyPlantAndEquipmentInvCF"],
+    "capex_intangible": ["PurchaseOfIntangibleAssetsInvCFIFRS", "PurchaseOfIntangibleAssetsInvCF"],
     "acquisition_of_subsidiaries": [
+        "PurchaseOfSharesOfSubsidiariesResultingInChangeInScopeOfConsolidationInvCFIFRS",
         "PurchaseOfSharesOfSubsidiariesResultingInChangeInScopeOfConsolidationInvCF",
         "PurchaseOfInvestmentsInSubsidiariesResultingInChangeInScopeOfConsolidationInvCF"],
-    "dividends_paid": ["CashDividendsPaidFinCF"],
-    "treasury_stock_purchase": ["PurchaseOfTreasuryStockFinCF"],
-    "cash_equivalents": ["CashAndCashEquivalents"],
+    "dividends_paid": ["DividendsPaidFinCFIFRS", "CashDividendsPaidFinCF"],
+    "treasury_stock_purchase": ["PaymentsForPurchaseOfTreasurySharesFinCFIFRS", "PurchaseOfTreasuryStockFinCF"],
+    "cash_equivalents": ["CashAndCashEquivalentsIFRS", "CashAndCashEquivalents"],
 }
 
 
@@ -134,8 +153,12 @@ def fiscal_year_end(rows: list[Row]) -> str:
 
 
 def _shift_year(date_iso: str, back: int) -> str:
-    year, rest = date_iso[:4], date_iso[4:]
-    return f"{int(year) - back}{rest}"
+    """The same date `back` years earlier; a month-end (e.g. a 2月期's 02-28 / 02-29) stays a month-end."""
+    year, month, day = int(date_iso[:4]), int(date_iso[5:7]), int(date_iso[8:10])
+    target = year - back
+    if day == calendar.monthrange(year, month)[1]:
+        day = calendar.monthrange(target, month)[1]
+    return f"{target:04d}-{month:02d}-{day:02d}"
 
 
 def _normalise(value: str, unit: str) -> tuple[str, str]:
@@ -167,7 +190,10 @@ def extract(rows: list[Row], doc_id: str) -> list[dict]:
     def add(item: str, row: Row | None, back: int) -> None:
         if row is None or row.value in ("", "－", "-"):
             return
-        value, unit = _normalise(row.value, row.unit)
+        if row.unit.lower() == "pure" and item in PURE_NOT_PERCENT:
+            value, unit = row.value, PURE_NOT_PERCENT[item]
+        else:
+            value, unit = _normalise(row.value, row.unit)
         out.append({"doc_id": doc_id, "period_end": _shift_year(fy_end, back), "item": item,
                     "value": value, "unit": unit, "element": row.element, "context": row.context})
 

@@ -29,7 +29,8 @@ LABELS = {
     "cff": ("財務活動によるキャッシュ・フロー", "財務活動によるキャッシュフロー", "財務キャッシュ・フロー", "財務CF"),
     "sales": S.LABELS["sales"],
     "net_income": S.LABELS["net_income"],
-    "receivables": ("売上債権", "受取手形、売掛金及び契約資産", "受取手形及び売掛金", "売掛金及び契約資産", "売掛金"),
+    "receivables": ("売上債権", "受取手形、売掛金及び契約資産", "受取手形及び売掛金", "売掛金及び契約資産", "売掛金",
+                    "営業債権及びその他の債権", "営業債権"),  # IFRS
     "inventories": ("棚卸資産", "たな卸資産"),
     "dividends": ("配当金の支払額", "配当金支払額", "配当金の支払"),
     "dividends_declared": ("配当総額", "配当金の総額", "配当金総額"),
@@ -40,9 +41,11 @@ LABELS = {
     "pretax": ("税金等調整前当期純利益", "税引前当期純利益", "税引前利益"),
     "depreciation": ("減価償却費", "減価償却費及び償却費"),
     # only the signed CF-statement lines (増加額 / 還付額 alone could be written with either sign)
-    "receivables_change": ("売上債権の増減額", "売上債権及び契約資産の増減額"),
+    "receivables_change": ("売上債権の増減額", "売上債権及び契約資産の増減額",
+                           "営業債権の増減額", "営業債権及び契約資産の増減額", "営業債権及びその他の債権の増減額"),  # IFRS
     "inventories_change": ("棚卸資産の増減額", "たな卸資産の増減額"),
-    "taxes_paid": ("法人税等の支払額", "法人税等の支払額又は還付額"),
+    "taxes_paid": ("法人税等の支払額", "法人税等の支払額又は還付額",
+                   "法人所得税の支払額", "法人所得税の支払額又は還付額", "法人所得税等の支払額"),  # IFRS
 }
 # unlike the profitability reader, the キャッシュ・フロー / 株主還元 / 配当 sections are read
 SKIP_SECTION = re.compile(r"予想|計画|四半期|中間|CAGR|提出会社|単体|個別|子会社|セグメント")

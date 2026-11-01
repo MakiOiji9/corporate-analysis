@@ -38,6 +38,69 @@ def test_extract_summary_and_statements(tmp_path):
     assert got[("2025-03-31", "cost_of_sales")] == ("7885", "百万円")
 
 
+IFRS_LINES = [
+    "jpdei_cor:CurrentFiscalYearEndDateDEI\t期末日\tFilingDateInstant\t提出日時点\tその他\t時点\t\t\t2026-02-28",
+    "jpcrp_cor:RevenueIFRSSummaryOfBusinessResults\t売上収益\tCurrentYearDuration\t当期\t連結\t期間\tJPY\t円\t542122000000",
+    "jpcrp030000-asr_E01741-000:OperatingProfitLossIFRSSummaryOfBusinessResults\t営業利益\tPrior1YearDuration\t前期\t連結\t期間\tJPY\t円\t50160000000",
+    "jpcrp_cor:EquityToAssetRatioIFRSSummaryOfBusinessResults\t1株当たり親会社所有者帰属持分\tCurrentYearInstant\t当期末\t連結\t時点\tJPYPerShares\t円\t1864.31",
+    "jpcrp_cor:RatioOfOwnersEquityToGrossAssetsIFRSSummaryOfBusinessResults\t親会社所有者帰属持分比率\tCurrentYearInstant\t当期末\t連結\t時点\tpure\t\t0.595",
+    "jpcrp_cor:NetSalesSummaryOfBusinessResults\t売上高\tCurrentYearDuration_NonConsolidatedMember\t当期\t個別\t期間\tJPY\t円\t181072000000",
+    "jpigp_cor:RevenueIFRS\t売上収益\tCurrentYearDuration\t当期\t連結\t期間\tJPY\t円\t542122000000",
+    "jpigp_cor:OperatingProfitLossIFRS\t営業利益\tCurrentYearDuration\t当期\t連結\t期間\tJPY\t円\t47307000000",
+    "jpigp_cor:TradeReceivablesCAIFRS\t営業債権\tCurrentYearInstant\t当期末\t連結\t時点\tJPY\t円\t163942000000",
+    "jpigp_cor:EquityIFRS\t資本\tCurrentYearInstant\t当期末\t連結\t時点\tJPY\t円\t493615000000",
+    "jpigp_cor:BondsAndBorrowingsNCLIFRS\t社債及び借入金\tCurrentYearInstant\t当期末\t連結\t時点\tJPY\t円\t64457000000",
+    "jpigp_cor:NetCashProvidedByUsedInOperatingActivitiesIFRS\t営業CF\tCurrentYearDuration\t当期\t連結\t期間\tJPY\t円\t52170000000",
+    "jpigp_cor:DividendsPaidFinCFIFRS\t配当金の支払額\tCurrentYearDuration\t当期\t連結\t期間\tJPY\t円\t-17670000000",
+]
+
+
+def test_extract_ifrs_summary_and_statements(tmp_path):
+    target = tmp_path / "XBRL_TO_CSV" / "jpcrp030000-asr-001_E01741-000_2026-02-28_01_2026-05-25.csv"
+    target.parent.mkdir(parents=True)
+    target.write_text("\n".join([HEADER, *IFRS_LINES]) + "\n", encoding="utf-16")
+    rows = extract(load_rows(tmp_path), "S100IFRS")
+    got = {(r["period_end"], r["item"]): (r["value"], r["unit"]) for r in rows}
+    assert got[("2026-02-28", "summary.net_sales")] == ("542122", "百万円")  # consolidated IFRS, not 個別
+    assert got[("2025-02-28", "summary.operating_income")] == ("50160", "百万円")  # company extension element
+    assert got[("2026-02-28", "summary.bps")] == ("1864.31", "円")  # the taxonomy's misnamed BPS element
+    assert got[("2026-02-28", "summary.equity_ratio")] == ("59.5", "%")
+    assert got[("2026-02-28", "net_sales")] == ("542122", "百万円")
+    assert got[("2026-02-28", "operating_income")] == ("47307", "百万円")
+    assert got[("2026-02-28", "receivables")] == ("163942", "百万円")
+    assert got[("2026-02-28", "net_assets")] == ("493615", "百万円")
+    assert got[("2026-02-28", "long_term_loans")] == ("64457", "百万円")
+    assert got[("2026-02-28", "cfo")] == ("52170", "百万円")
+    assert got[("2026-02-28", "dividends_paid")] == ("-17670", "百万円")
+
+
+def test_february_year_ends_keep_the_last_day_of_february(tmp_path):
+    lines = [
+        "jpdei_cor:CurrentFiscalYearEndDateDEI\t期末日\tFilingDateInstant\t提出日時点\tその他\t時点\t\t\t2024-02-29",
+        "jpcrp_cor:RevenueIFRSSummaryOfBusinessResults\t売上収益\tPrior1YearDuration\t前期\t連結\t期間\tJPY\t円\t1000000",
+        "jpcrp_cor:RevenueIFRSSummaryOfBusinessResults\t売上収益\tPrior4YearDuration\t4期前\t連結\t期間\tJPY\t円\t1000000",
+    ]
+    target = tmp_path / "XBRL_TO_CSV" / "jpcrp030000-asr-001_E01741-000_2024-02-29_01_2024-05-27.csv"
+    target.parent.mkdir(parents=True)
+    target.write_text("\n".join([HEADER, *lines]) + "\n", encoding="utf-16")
+    ends = {r["period_end"] for r in extract(load_rows(tmp_path), "S100FEB")}
+    assert ends == {"2023-02-28", "2020-02-29"}
+
+
+def test_per_and_employees_are_not_percentages(tmp_path):
+    lines = [
+        "jpdei_cor:CurrentFiscalYearEndDateDEI\t期末日\tFilingDateInstant\t提出日時点\tその他\t時点\t\t\t2026-02-28",
+        "jpcrp_cor:PriceEarningsRatioIFRSSummaryOfBusinessResults\tPER\tCurrentYearDuration\t当期\t連結\t期間\tpure\t\t40.59",
+        "jpcrp_cor:NumberOfEmployees\t従業員数\tCurrentYearInstant\t当期末\t連結\t時点\tpure\t\t12483",
+    ]
+    target = tmp_path / "XBRL_TO_CSV" / "jpcrp030000-asr-001_E01741-000_2026-02-28_01_2026-05-25.csv"
+    target.parent.mkdir(parents=True)
+    target.write_text("\n".join([HEADER, *lines]) + "\n", encoding="utf-16")
+    got = {r["item"]: (r["value"], r["unit"]) for r in extract(load_rows(tmp_path), "S100PURE")}
+    assert got["summary.per"] == ("40.59", "倍")
+    assert got["summary.employees"] == ("12483", "人")
+
+
 def test_upsert_is_idempotent_and_renders(tmp_path):
     rows = extract(load_rows(_write_csv(tmp_path)), "S100TEST")
     out = tmp_path / "financials.csv"

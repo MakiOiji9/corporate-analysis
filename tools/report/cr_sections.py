@@ -56,7 +56,7 @@ def _point(row: dict) -> str:
 
 def _movers(h: dict) -> str:
     s = h.get("sensitivity") or {}
-    parts = []
+    parts = [f"最も近い境目: {s['nearest']['text']} 点"] if s.get("nearest") else []
     if s.get("to_up") is not None:
         parts.append(f"投資検討まであと {s['to_up']:+.2f} 点")
     if s.get("to_down") is not None:
@@ -182,9 +182,10 @@ def peers_block(facts: dict) -> str:
         return ""
     cols = peers.get("columns") or []
     body = []
-    for r in rows + ([peers["median"]] if peers.get("median") else []):
+    summary = [peers[k] for k in ("mean", "median") if peers.get(k)]  # the average beside the median
+    for r in rows + summary:
         name = esc(r["name"]) + (" <b>（対象）</b>" if r.get("self") else "")
-        cls = "self-row" if r.get("self") else ("median-row" if r["name"] == "同業の中央値" else "")
+        cls = "self-row" if r.get("self") else ("median-row" if r in summary else "")
         body.append([f'<span class="{cls}">{name}</span>'] + [esc(num(r.get(k), u, 1)) for k, _, u in cols])
     return ('<h3>同業比較</h3>' + table(["会社"] + [label for _, label, _ in cols], body,
                                        right=frozenset(range(1, len(cols) + 1)))

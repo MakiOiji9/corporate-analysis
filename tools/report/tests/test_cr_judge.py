@@ -131,10 +131,36 @@ def test_uls_like_case_is_watch_on_every_horizon():
     assert J.horizon_score("long", {**factors, "market": _f(1.0)})["verdict"] == "ウォッチ"
 
 
+@pytest.mark.parametrize("score, to, gap", [
+    (-0.23, "ウォッチ", 0.03),   # 見送り: the next verdict up is ウォッチ, just above −0.2
+    (-0.5, "ウォッチ", 0.3),
+    (0.25, "投資検討", 0.05),    # ウォッチ: the nearer of the two boundaries
+    (-0.15, "見送り", -0.05),
+    (0.4, "ウォッチ", -0.1),     # 投資検討: how far it can fall before it becomes ウォッチ
+])
+def test_nearest_boundary(score, to, gap):
+    near = J.nearest(score)
+    assert near["to"] == to and near["gap"] == pytest.approx(gap)
+    assert J.nearest(None) is None
+
+
+def test_nearest_at_the_exact_thresholds_says_which_way():
+    down = J.nearest(J.DOWN)  # exactly −0.2 is still 見送り: it has to rise above it
+    assert down["to"] == "ウォッチ" and "+0.00" in down["text"] and "超えれば" in down["text"]
+    up = J.nearest(J.UP)  # exactly +0.3 is 投資検討 until it falls below it
+    assert up["to"] == "ウォッチ" and "-0.00" not in up["text"] and "下回れば" in up["text"]
+
+
+def test_why_names_the_nearest_boundary():
+    factors = {**_all(0.0), "market": _f(-1.0)}  # short: −0.25
+    why = J.horizon_score("short", factors)["why"]
+    assert "ウォッチまであと +0.05" in why
+
+
 def test_sensitivity_lists_single_movers():
     factors = {**_all(0.0), "valuation": _f(1.0)}   # mid: +0.2
     result = J.sensitivity("mid", factors)
-    assert result["to_up"] == pytest.approx(0.1)
+    assert result["to_up"] == pytest.approx(0.1) and result["nearest"]["to"] == "投資検討"
     ups = [m for m in result["movers"] if m["direction"] == "1段良くなれば"]
     assert "growth" in {m["key"] for m in ups} and all(m["verdict"] == "投資検討" for m in ups)
     assert J.sensitivity("mid", factors, ["赤信号"])["movers"] == []

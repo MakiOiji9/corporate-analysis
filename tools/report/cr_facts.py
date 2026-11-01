@@ -112,7 +112,8 @@ def _valuation(r: dict) -> dict:
             "per_actual": _get(r, "per", "per_actual"), "per_forecast": _get(r, "per", "per_forecast"),
             "pbr": _get(r, "pbr", "pbr"), "per_range": {k: axis.get(k) for k in ("low", "high", "position")},
             "cheap_reason": _get(r, "handoff", "cheap_reason"), "final_check": _get(r, "step3", "final_check"),
-            "average": _get(r, "step3", "average"), "raw_verdict": _get(r, "step3", "raw_verdict"),
+            "average": _get(r, "step3", "average"), "scored": len(_get(r, "step3", "scores") or {}) or None,
+            "raw_verdict": _get(r, "step3", "raw_verdict"),
             "ev_ebitda": _get(r, "ev", "value"), "eps_used": _get(r, "per", "eps", "eps_used"),
             "peers": [{k: p.get(k) for k in ("name", "per_actual", "per_forecast", "pbr", "ev_ebitda_calc", "cagr", "roe")}
                       for p in r.get("peers") or []]}

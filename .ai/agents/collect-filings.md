@@ -33,7 +33,7 @@ ticker, name, url, market, mode, 企業ディレクトリ, 収集日, 取得経�
    - PDF 経路: 過去の有報 PDF を `fetch.py --text` → `find_pages.py fin`（各有報に2期分）
    - どちらでも取れない年度だけ IRBANK・株探で補い、確度「二次」と明記
 2. **会社計画と実績**: 各期の本決算短信の「次期予想」が期初予想。iXBRL（.htm）を `fetch.py` → `tdnet_summary.py --company {dir}`。期中修正は「業績予想の修正」開示から。古い年度は短信 PDF・株探記事で補い確度を明記
-3. **直近四半期**: 最新の四半期（中間）短信も `tdnet_summary.py` で取り込む
+3. **直近四半期**: 最新の四半期（中間）短信も `tdnet_summary.py` で取り込む。iXBRL が取れず短信 PDF から転記するときは、雛形の5章の表（項目を行に、当期の四半期累計と前年同期を列に）で書き、期中の業績予想の修正は4章に1行ずつ書く（成長性分析が今期の進捗をここから読む）
 4. `render_tables.py financials / forecasts / quarterly` の出力を raw に貼る
 
 | 区分 | 項目 |

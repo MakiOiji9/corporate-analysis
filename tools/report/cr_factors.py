@@ -28,8 +28,11 @@ def _factor(score: float | None, value: str, reason: str, source: str, pending: 
 
 def analysis_factor(a: dict) -> dict:
     verdict = a.get("verdict")
-    note = "（材料不足のため保守的に判定）" if a.get("conservative") else ""
-    return _factor(J.score_of(verdict), verdict or "未実施", (a.get("reason") or "") + note,
+    reason = a.get("reason") or ""
+    # most analyses already end their verdict_reason with this note: add it only when it is missing
+    # the conservative list names assumed items, not necessarily the ones that decided the verdict
+    note = "（一部の項目は材料不足のため保守的に扱った）" if a.get("conservative") and "保守的" not in reason else ""
+    return _factor(J.score_of(verdict), verdict or "未実施", reason + note,
                    f"{a['step']} {a['label']}分析（{a.get('date') or '未実施'}）", verdict == J.PENDING)
 
 
@@ -46,7 +49,8 @@ def valuation_factor(valuation: dict) -> dict:
     verdict = step3_verdict(valuation)
     average = detail.get("average")
     score = max(-1.0, min(1.0, float(average))) if average is not None else J.score_of(verdict)
-    value = f"{verdict or '未実施'}（4指標の平均点 {average:+.2f}）" if average is not None else (verdict or "未実施")
+    count = f"{detail['scored']}" if detail.get("scored") else ""
+    value = f"{verdict or '未実施'}（{count}指標の平均点 {average:+.2f}）" if average is not None else (verdict or "未実施")
     return _factor(score, value, detail.get("sheet") or valuation.get("reason") or "",
                    f"3 バリュエーション分析（{valuation.get('date') or '未実施'}）", verdict == J.PENDING)
 

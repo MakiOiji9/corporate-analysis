@@ -228,9 +228,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     if state["result"] == "fresh" and not args.redo:
         return emit({"ok": False, "error": state["reason"] + "。作り直すのはユーザーが指示したときだけ（--redo）",
                      "latest": state["latest"]})
-    if args.redo and company.file(today, P.JSON_SUFFIX).exists():
-        return emit({"ok": False, "error": f"{today} の分析は build 済み。同じ日に作り直さず、"
-                     f"{company.rel(company.file(today, P.MD_SUFFIX))} を Edit で直して build し直す"})
+    redo_built = args.redo and company.file(today, P.JSON_SUFFIX).exists()  # moved aside once the gate passes
     found = I.gather_swot(company)
     requests = I.collect_requests(found)
     outlook = A.latest_outlook(root, today)
@@ -249,6 +247,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     previous = P.latest_result(company, before=date)
     ups = upstream(company)
     items = D.required_items(ups["five_forces"], ups["moat"])
+    superseded = A.supersede_today(company.file(today, P.JSON_SUFFIX).parent, today) if redo_built else None
     brief_path, md_path = company.file(date, P.BRIEF_SUFFIX), company.file(date, P.MD_SUFFIX)
     scale = X.scale(company)
     brief = B.render_brief(company, date, P.valid_until(date), found, ups, previous, outlook, scale)
@@ -260,6 +259,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     atomic_write_text(brief_path, brief)
     return emit({
         "ok": True, "company": company.dirname, "date": date, "brief": company.rel(brief_path),
+        "superseded": company.rel(superseded) if superseded else None,
         "md": company.rel(md_path), "kept": kept, "regenerated": untouched and not args.redo,
         "skipped_collect": requests if blocking == "collect" else [],
         "skipped_market_report": bool(outlook["stale"] and args.skip_market_report),

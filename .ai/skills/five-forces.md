@@ -81,7 +81,7 @@ $PY -I tools/analysis/five_forces.py prepare --company {company} [--redo] [--ski
 - `{日付}_brief.md`（材料）と `{日付}_five-forces.md`（FILL つきの骨組み）を作る。返り値の `brief`・`md` がそのパス
 - 作成途中の md（FILL が残っている）は上書きせず残す（`kept: true`）。続きから書く
 - 一字も書いていない骨組み（前回の prepare が書いたままの md）は、`--redo` なしで作り直す（`regenerated: true`）
-- 同じ日に build 済みの結果があると `--redo` は拒否される。その日の md を Edit で直して build し直す
+- 同じ日に build 済みの結果があるときの `--redo` は、その日の md・json・brief を `analysis/{種類}/_superseded/{日付}-{n}/` に退避してから作り直す（返り値の `superseded`。退避した結果は消さず、最新の結果としては読まれない）。小さな直しだけなら、その日の md を Edit で直して build し直してもよい
 - `candidates` はスクリプトの判定候補（数値で決まる基準: ③ 買い手の最大顧客比率と前期からの変化、④ 売り手の粗利率の最大低下幅）
 - brief には、スクリプトが計算した数値も入る: ④ に自社の粗利率・営業利益率の時系列、⑤ に競合と自社の営業利益率の推移（最新実績の前年差・会社予想）。比率・差分が欲しいときはここから転記し、自分で計算しない
 

@@ -135,6 +135,9 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     gate = _prepare_gate(status, args)
     if gate:
         return emit({"ok": False, "error": gate, "next": status["next"], "steps": _compact(status["steps"])})
+    superseded = None
+    if args.redo and company.file(today, S.JSON_SUFFIX).exists():  # today's built report moves aside
+        superseded = A.supersede_today(company.reports_dir, today)
     prices = ({"ok": False, "skipped": True} if args.skip_prices
               else SP.run(root, company.dirname, SP.DEFAULT_YEARS, today))
     facts = F.build(root, company, today, status)
@@ -149,6 +152,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     md_text = md_path.read_text(encoding="utf-8")
     return emit({
         "ok": True, "company": company.dirname, "date": today, "brief": company.rel(brief_path),
+        "superseded": company.rel(superseded) if superseded else None,
         "md": company.rel(md_path), "kept": kept, "fill_keys": FILL_KEY.findall(md_text),
         "prices": {k: prices[k] for k in ("ok", "skipped", "rows", "first", "last", "error") if k in prices},
         "price_source": facts["prices"]["source"], "step1": _grade(facts["step1"]), "step2": _grade(facts["step2"]),
