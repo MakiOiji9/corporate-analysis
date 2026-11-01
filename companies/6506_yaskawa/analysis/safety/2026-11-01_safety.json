@@ -1,0 +1,401 @@
+{
+ "company": "6506_yaskawa",
+ "name": "安川電機（6506）",
+ "date": "2026-11-01",
+ "valid_until": "2027-03-01",
+ "verdict": "良好",
+ "verdict_reason": "3指標とも目安または同業平均をクリアし、悪化傾向なし",
+ "conservative": [],
+ "step1": {
+  "year": "2026-02",
+  "sentence": "2026-02: 自己資本比率 59.5% クリア、D/E レシオ 0.23倍 クリア、流動比率 246.7% クリア（クリア 3・未達 0・不明 0）。ネットキャッシュ -48,806 百万円",
+  "counts": {
+   "クリア": 3,
+   "未達": 0,
+   "不明": 0
+  },
+  "excluded": false,
+  "net_cash": -48806.0,
+  "debt_free": false,
+  "items": [
+   {
+    "key": "equity_ratio",
+    "name": "自己資本比率",
+    "value": 59.5228,
+    "peer_avg": 75.6669,
+    "target": "40%以上",
+    "by_target": true,
+    "by_peer": false,
+    "rating": "クリア",
+    "basis": "59.5%（40%以上、同業平均 75.7%）で目安をクリア"
+   },
+   {
+    "key": "de",
+    "name": "D/E レシオ",
+    "value": 0.2275,
+    "peer_avg": 0.0372,
+    "target": "1倍以下",
+    "by_target": true,
+    "by_peer": false,
+    "rating": "クリア",
+    "basis": "0.23倍（1倍以下、同業平均 0.04倍）で目安をクリア"
+   },
+   {
+    "key": "current_ratio",
+    "name": "流動比率",
+    "value": 246.6622,
+    "peer_avg": 417.0553,
+    "target": "120%以上",
+    "by_target": true,
+    "by_peer": false,
+    "rating": "クリア",
+    "basis": "246.7%（120%以上、同業平均 417.1%）で目安をクリア。150%以上で余裕あり"
+   }
+  ],
+  "peers": [
+   {
+    "name": "ファナック",
+    "year": "2026-03",
+    "primary": false,
+    "equity_ratio": 89.1984,
+    "de": 0.0,
+    "current_ratio": 689.3161,
+    "net_cash": 615075.0,
+    "insolvent": false
+   },
+   {
+    "name": "三菱電機",
+    "year": "2026-03",
+    "primary": false,
+    "equity_ratio": 60.9481,
+    "de": 0.081,
+    "current_ratio": 176.5134,
+    "net_cash": 368331.0,
+    "insolvent": false
+   },
+   {
+    "name": "山洋電気",
+    "year": "2026-03",
+    "primary": false,
+    "equity_ratio": 76.8542,
+    "de": 0.0306,
+    "current_ratio": 385.3363,
+    "net_cash": 24807.0,
+    "insolvent": false
+   }
+  ],
+  "peer_avg": {
+   "equity_ratio": 75.6669,
+   "de": 0.0372,
+   "current_ratio": 417.0553
+  }
+ },
+ "step2": {
+  "rating": "悪化傾向なし",
+  "basis": "自己資本比率の低下 10pt 未満、D/E の継続的な上昇なし",
+  "sentence": "2022-02〜2026-02（5年）: 自己資本比率 52.1%→59.5%（+7.4pt）、D/E 0.20→0.23倍。悪化傾向なし",
+  "years": [
+   "2022-02",
+   "2023-02",
+   "2024-02",
+   "2025-02",
+   "2026-02"
+  ],
+  "drop": -7.4,
+  "de_rising": false
+ },
+ "step3": {
+  "rating": "懸念",
+  "basis": "2023-02 赤字補填・運転資金不足、2025-02 成長投資（売上高・営業利益の伸びが見えない）、2026-02 成長投資（成果は未確認: 後の年の数値がまだ無い）",
+  "sentence": "借入の目的: 2023-02 赤字補填・運転資金不足、2025-02 成長投資（売上高・営業利益の伸びが見えない）、2026-02 成長投資（成果は未確認: 後の年の数値がまだ無い）で懸念",
+  "years": [
+   {
+    "year": "2023-02",
+    "from": 56873.0,
+    "to": 85476.0,
+    "increase": 28603.0,
+    "cfo": -2209.0,
+    "cfi": -19694.0,
+    "cff": 7197.0,
+    "net_income": 51783.0,
+    "after": "売上高 555,955→537,682、営業利益 68,301→50,156（2025-02）",
+    "kind": "赤字補填・運転資金不足",
+    "rating": "懸念",
+    "background": "不明（brief に記載なし）。当期純利益 51,783百万円の黒字の年に営業CF が -2,209百万円となっており、営業CF がマイナスになった理由（運転資金の増加など）は brief に無い。同じ年に配当 16,734百万円を支払っている"
+   },
+   {
+    "year": "2025-02",
+    "from": 80335.0,
+    "to": 95694.0,
+    "increase": 15359.0,
+    "cfo": 56505.0,
+    "cfi": -21287.0,
+    "cff": -15673.0,
+    "net_income": 56987.0,
+    "after": "売上高 537,682→542,122、営業利益 50,156→47,307（2026-02）",
+    "kind": "成長投資（売上高・営業利益の伸びが見えない）",
+    "rating": "要確認",
+    "background": "不明（brief に記載なし）。営業CF 56,505百万円の黒字の年で、同じ年に配当 17,707百万円と自社株買い 9,401百万円を実施しているが、借入との対応は brief に無い"
+   },
+   {
+    "year": "2026-02",
+    "from": 95694.0,
+    "to": 110029.0,
+    "increase": 14335.0,
+    "cfo": 52170.0,
+    "cfi": -44216.0,
+    "cff": -8626.0,
+    "net_income": 35240.0,
+    "after": "",
+    "kind": "成長投資（成果は未確認: 後の年の数値がまだ無い）",
+    "rating": "要確認",
+    "background": "不明（brief に記載なし）。投資CF が -44,216百万円に膨らんだ年で、営業CF 52,170百万円と配当 17,637百万円の後に投資を賄う形だが、投資の中身（設備・M&A）は brief に無い"
+   }
+  ]
+ },
+ "rows": [
+  {
+   "year": "2015-02",
+   "total_assets": 388205.0,
+   "equity": 171198.405,
+   "equity_ratio": 44.1,
+   "debt": null,
+   "de": null,
+   "current_ratio": null,
+   "cash": 24347.0,
+   "net_cash": null,
+   "cfo": 29023.0,
+   "cfi": -27874.0,
+   "cff": -1471.0,
+   "primary": true,
+   "debt_source": "—"
+  },
+  {
+   "year": "2016-02",
+   "total_assets": 373533.0,
+   "equity": 181163.505,
+   "equity_ratio": 48.5,
+   "debt": null,
+   "de": null,
+   "current_ratio": null,
+   "cash": 31656.0,
+   "net_cash": null,
+   "cfo": 31954.0,
+   "cfi": -22421.0,
+   "cff": -2601.0,
+   "primary": true,
+   "debt_source": "—"
+  },
+  {
+   "year": "2017-02",
+   "total_assets": 387512.0,
+   "equity": 198406.144,
+   "equity_ratio": 51.2,
+   "debt": null,
+   "de": null,
+   "current_ratio": null,
+   "cash": 29735.0,
+   "net_cash": null,
+   "cfo": 33752.0,
+   "cfi": -18936.0,
+   "cff": -16453.0,
+   "primary": true,
+   "debt_source": "—"
+  },
+  {
+   "year": "2018-02",
+   "total_assets": 449292.0,
+   "equity": 232283.964,
+   "equity_ratio": 51.7,
+   "debt": 31475.0,
+   "de": 0.1355,
+   "current_ratio": 188.6493,
+   "cash": 42213.0,
+   "net_cash": 10738.0,
+   "cfo": 46054.0,
+   "cfi": -18852.0,
+   "cff": -14820.0,
+   "primary": true,
+   "debt_source": "借入金・社債の内訳の合計"
+  },
+  {
+   "year": "2019-02",
+   "total_assets": 463965.0,
+   "equity": 244045.59,
+   "equity_ratio": 52.6,
+   "debt": 45849.0,
+   "de": 0.1879,
+   "current_ratio": 186.2378,
+   "cash": 39289.0,
+   "net_cash": -6560.0,
+   "cfo": 34347.0,
+   "cfi": -27111.0,
+   "cff": -10268.0,
+   "primary": true,
+   "debt_source": "借入金・社債の内訳の合計"
+  },
+  {
+   "year": "2020-02",
+   "total_assets": 450127.0,
+   "equity": 228362.0,
+   "equity_ratio": 50.7328,
+   "debt": 71454.0,
+   "de": 0.3129,
+   "current_ratio": 202.9723,
+   "cash": 40307.0,
+   "net_cash": -31147.0,
+   "cfo": 21480.0,
+   "cfi": -20645.0,
+   "cff": 491.0,
+   "primary": true,
+   "debt_source": "2026-11-01_financials-historical.md「8. 貸借・CF の主要項目（安全性）」"
+  },
+  {
+   "year": "2021-02",
+   "total_assets": 487428.0,
+   "equity": 246266.0,
+   "equity_ratio": 50.5236,
+   "debt": 64997.0,
+   "de": 0.2639,
+   "current_ratio": 196.3293,
+   "cash": 50953.0,
+   "net_cash": -14044.0,
+   "cfo": 39602.0,
+   "cfi": -9601.0,
+   "cff": -20284.0,
+   "primary": true,
+   "debt_source": "2026-11-01_financials-historical.md「8. 貸借・CF の主要項目（安全性）」"
+  },
+  {
+   "year": "2022-02",
+   "total_assets": 559038.0,
+   "equity": 291234.0,
+   "equity_ratio": 52.0956,
+   "debt": 56873.0,
+   "de": 0.1953,
+   "current_ratio": 206.7356,
+   "cash": 55151.0,
+   "net_cash": -1722.0,
+   "cfo": 49233.0,
+   "cfi": -24165.0,
+   "cff": -22475.0,
+   "primary": true,
+   "debt_source": "2026-11-01_financials-historical.md「8. 貸借・CF の主要項目（安全性）」"
+  },
+  {
+   "year": "2023-02",
+   "total_assets": 653132.0,
+   "equity": 347499.0,
+   "equity_ratio": 53.205,
+   "debt": 85476.0,
+   "de": 0.246,
+   "current_ratio": 200.5949,
+   "cash": 42274.0,
+   "net_cash": -43202.0,
+   "cfo": -2209.0,
+   "cfi": -19694.0,
+   "cff": 7197.0,
+   "primary": true,
+   "debt_source": "2026-11-01_financials-historical.md「8. 貸借・CF の主要項目（安全性）」"
+  },
+  {
+   "year": "2024-02",
+   "total_assets": 702335.0,
+   "equity": 399338.0,
+   "equity_ratio": 56.8586,
+   "debt": 80335.0,
+   "de": 0.2012,
+   "current_ratio": 241.1354,
+   "cash": 40279.0,
+   "net_cash": -40056.0,
+   "cfo": 54619.0,
+   "cfi": -29346.0,
+   "cff": -29416.0,
+   "primary": true,
+   "debt_source": "2026-11-01_financials-historical.md「8. 貸借・CF の主要項目（安全性）」"
+  },
+  {
+   "year": "2025-02",
+   "total_assets": 743774.0,
+   "equity": 431188.0,
+   "equity_ratio": 57.973,
+   "debt": 95694.0,
+   "de": 0.2219,
+   "current_ratio": 257.8407,
+   "cash": 59028.0,
+   "net_cash": -36666.0,
+   "cfo": 56505.0,
+   "cfi": -21287.0,
+   "cff": -15673.0,
+   "primary": true,
+   "debt_source": "2026-11-01_financials-historical.md「8. 貸借・CF の主要項目（安全性）」"
+  },
+  {
+   "year": "2026-02",
+   "total_assets": 812365.0,
+   "equity": 483542.0,
+   "equity_ratio": 59.5228,
+   "debt": 110029.0,
+   "de": 0.2275,
+   "current_ratio": 246.6622,
+   "cash": 61223.0,
+   "net_cash": -48806.0,
+   "cfo": 52170.0,
+   "cfi": -44216.0,
+   "cff": -8626.0,
+   "primary": true,
+   "debt_source": "2026-11-01_financials-historical.md「8. 貸借・CF の主要項目（安全性）」"
+  }
+ ],
+ "borderline": [],
+ "level_background": "会社は親会社所有者帰属持分比率 50%以上を安定水準とし、一定のネット D/E レシオを目安に効率性を重視、手元現預金は月商1ヵ月程度にとどめる方針（有報 p.40）。このため自己資本比率 59.5% は目安を大きく上回る一方、手元資金を厚く持たず借入を使うので、ネットキャッシュは -48,806百万円で、ネットキャッシュがプラスの競合3社より財務の余裕は小さい",
+ "handoff": {
+  "report_points": "自己資本比率 59.5%・D/E 0.23倍・流動比率 246.7% と3指標とも目安をクリアし、5年で自己資本比率は 52.1% から 59.5% に上がった。一方、有利子負債は 2022-02 の 56,873百万円から 2026-02 の 110,029百万円に増え、ネットキャッシュは -48,806百万円。2023-02 の借入は営業CF がマイナスの年に重なる",
+  "policy": "会社は自己資本比率 50%以上を安定水準とし、手元現預金を月商1ヵ月程度に抑えて借入も使う方針で、実績（自己資本比率 59.5%、ネットキャッシュはマイナス）はこの方針に沿っている。中計は 2026〜2029年度の累計投資 2,500億円と配当性向 40.0%以上を掲げており、投資と還元を営業CF でどこまで賄えるかが今後の借入の水準を決める",
+  "step2_checks": "キャッシュフロー: 2023-02 に営業CF がマイナス（-2,209百万円）になった理由と、投資CF -44,216百万円（2026-02）を営業CF で賄えているか。成長性: 2025-02・2026-02 の借入で賄った投資が売上高・営業利益の伸びにつながるか（2026-02 時点では伸びが見えない）。収益性: レバレッジ 1.70倍の上昇が有利子負債の増加によるか",
+  "triggers": "自己資本比率が5年で10pt以上下がるか D/E が3期連続で上がり（2024-02 0.20倍 → 2025-02 0.22倍 → 2026-02 0.23倍 と2期続けて上昇中）、借入の目的が懸念のままなら懸念に下がる。日銀は 09-18 に政策金利を1.25%程度へ引き上げており、有利子負債 110,029百万円の金利負担の増加にも注意"
+ },
+ "changes": [
+  "初回の分析"
+ ],
+ "gaps": [
+  "借入が増えた3年（2023-02・2025-02・2026-02）の借入の目的と、2023-02 の営業CF がマイナスになった理由が brief に無い。有報の借入金の注記・経営成績の分析（collect-filings）",
+  "財務時系列のキャッシュ・フローの節が brief に載らなかった（raw の見出しの違い）。営業CF の内訳（営業債権・棚卸資産の増減）は financials-historical.md「1.」にある",
+  "有利子負債はリース負債を含まない（2026-02 のリース負債は別掲）。社債と借入金の内訳、金利条件は未取得（collect-filings）",
+  "競合の自己資本比率・ROE の一部は二次情報を含む。三菱電機の有利子負債はリース負債を含み、自社と定義が違う"
+ ],
+ "inputs": [
+  "companies/6506_yaskawa/raw/filings/2026-11-01_2026-02_yuho.md",
+  "companies/6506_yaskawa/raw/ir/2026-11-01_financials-historical.md",
+  "companies/6506_yaskawa/raw/ir/2026-11-01_mid-term-plan.md",
+  "companies/6506_yaskawa/raw/market/2026-11-01_competitors.md"
+ ],
+ "seen": [
+  "companies/6506_yaskawa/raw/filings/2026-11-01_2026-02_yuho.md",
+  "companies/6506_yaskawa/raw/ir/2026-11-01_financials-historical.md",
+  "companies/6506_yaskawa/raw/ir/2026-11-01_mid-term-plan.md",
+  "companies/6506_yaskawa/raw/market/2026-11-01_competitors.md"
+ ],
+ "input_digests": {
+  "self_bscf": "84417acc0bf2e542f405246a24ecab9d9dbca063",
+  "self_bs": "84417acc0bf2e542f405246a24ecab9d9dbca063",
+  "self_cf": "",
+  "self_return": "83099178a3e8fe4fb63f5162b740a935c2d066ec",
+  "summary": "41bed366ef72c1a53a5acdfd149538819f08c598",
+  "statements": "28235acbdeade7bb99e9123581cfce441196f1dd",
+  "risks": "e33781dc89d6b537346dd2716a8c6eac278e1512",
+  "policy": "9d2f422862d4794c3ef60676d5a9b1c9e93a5311",
+  "capital": "803353416bbd6597f47fc13ae38e0209ec649c5c",
+  "peer_safety": "36d896c29750969ebe4d3f19a57c68002e4dce86",
+  "peer_roe": "01f259970ae44a8e1ddee4c78fe5b2666ae37f04",
+  "peer_dupont": "3452689170b736e48a277368bc8a5b1f575b36eb",
+  "yearly_series": "90a3846034a356b4eae96da7797aa3c5cbda8bf0"
+ },
+ "profitability": {
+  "date": "2026-11-01",
+  "verdict": "普通"
+ },
+ "outlook": "market/report/2026-10-26_outlook.md",
+ "previous": null,
+ "md": "companies/6506_yaskawa/analysis/safety/2026-11-01_safety.md"
+}

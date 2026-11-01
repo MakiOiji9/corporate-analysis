@@ -1,0 +1,343 @@
+{
+ "company": "6506_yaskawa",
+ "name": "安川電機（6506）",
+ "date": "2026-11-01",
+ "valid_until": "2026-11-08",
+ "verdict": "妥当",
+ "verdict_reason": "4 指標の平均点 -0.25（+0.5 以上で割安、−0.5 以下で割高）",
+ "conservative": [],
+ "price": {
+  "value": 3992.0,
+  "date": "2026-10-30",
+  "currency": "円"
+ },
+ "per": {
+  "rating": "割高",
+  "sentence": "実績PER 29.4倍: 過去レンジ 妥当圏 × 同業比較 割高圏 → 割高（成長性分析で会社計画を「割り引いて扱う」ため実績PER も判定し、割高寄りの実績PERを採る（予想 妥当 / 実績 割高））",
+  "used": "実績PER",
+  "per_actual": 29.3789,
+  "per_forecast": 21.8011,
+  "discount": true,
+  "na": null,
+  "rule": {
+   "rating": "割高",
+   "basis": "過去レンジ 妥当圏 × 同業比較 割高圏 → 割高",
+   "single_axis": false,
+   "axis1": {
+    "zone": "妥当",
+    "position": 49,
+    "low": 17.63,
+    "high": 41.85,
+    "basis": "現在 29.4倍、2022-02〜2026-02 の 5 期のレンジ 17.6〜41.9倍で位置 49%（妥当圏）"
+   },
+   "axis2": {
+    "zone": "割高",
+    "raw_zone": "割高",
+    "median": 23.3977,
+    "diff": 0.2556,
+    "count": 3,
+    "explained": false,
+    "basis": "同業 3 社の中央値 23.4倍に対して +26%（割高圏）"
+   }
+  },
+  "eps": {
+   "year": "2026-02",
+   "eps": 135.88,
+   "eps_used": 135.88,
+   "adjusted": false,
+   "share": 0.0,
+   "gain": null,
+   "loss": null
+  }
+ },
+ "pbr": {
+  "rating": "割安",
+  "sentence": "PBR 2.14倍: 手順2（適正PBR）で判定。適正PBR 2.92倍（予想ROE 9.8%（予想EPS ÷ BPS）× 平均PER 29.8倍（有報の期末PER 5 期の平均））に対して現在 2.14倍で -27%（割安）",
+  "pbr": 2.1413,
+  "before_trap": "割安",
+  "rule": {
+   "rating": "割安",
+   "basis": "過去レンジ 割安圏 × 同業比較 妥当圏 → 割安",
+   "single_axis": false,
+   "axis1": {
+    "zone": "割安",
+    "position": 18,
+    "low": 1.38,
+    "high": 5.51,
+    "basis": "現在 2.1倍、2022-02〜2026-02 の 5 期のレンジ 1.4〜5.5倍で位置 18%（割安圏）"
+   },
+   "axis2": {
+    "zone": "妥当",
+    "raw_zone": "妥当",
+    "median": 2.0225,
+    "diff": 0.0587,
+    "count": 3,
+    "explained": false,
+    "basis": "同業 3 社の中央値 2.0倍に対して +6%（妥当圏）"
+   }
+  },
+  "fair": {
+   "fair": 2.9232,
+   "roe": 9.8219,
+   "roe_basis": "予想EPS ÷ BPS",
+   "average_per": 29.762,
+   "average_basis": "有報の期末PER 5 期の平均",
+   "diff": -0.2675,
+   "rating": "割安"
+  },
+  "trap": {
+   "applies": false,
+   "roe": 7.2878881255402845,
+   "measures": null,
+   "raised": false
+  },
+  "measures": null
+ },
+ "peg": {
+  "rating": "割高",
+  "sentence": "PEG（標準）4.45倍 = PER 29.4倍 ÷ 成長率 6.6%（割高）。悲観ケース 8.90倍で2倍超（安全域なし）。成長率の候補が2つだけ（過去の EPS CAGR（成長性分析）・会社計画（予想EPS ÷ 実績EPS − 1））で、標準ケースはその最小",
+  "na": null,
+  "margin": false,
+  "candidates": [
+   {
+    "name": "過去の EPS CAGR（成長性分析）",
+    "value": 6.6
+   },
+   {
+    "name": "会社計画（予想EPS ÷ 実績EPS − 1）",
+    "value": 34.7586
+   }
+  ],
+  "cases": {
+   "standard": 6.6,
+   "pessimistic": 3.3,
+   "optimistic": 34.7586
+  },
+  "peg": {
+   "standard": 4.4513,
+   "pessimistic": 8.9027,
+   "optimistic": 0.8452
+  }
+ },
+ "ev": {
+  "rating": "妥当",
+  "sentence": "EV/EBITDA 15.9倍: 過去レンジ 妥当圏 × 同業比較 妥当圏 → 妥当（過去レンジは算出値）。株式数が未確定のため上限（266,690,497株）でも計算: 16.3倍で妥当（判定は同じ）",
+  "value": 15.8572,
+  "rule": {
+   "rating": "妥当",
+   "basis": "過去レンジ 妥当圏 × 同業比較 妥当圏 → 妥当",
+   "single_axis": false,
+   "axis1": {
+    "zone": "妥当",
+    "position": 35,
+    "low": 10.5038,
+    "high": 25.7836,
+    "basis": "現在 15.9倍、2022-02〜2026-02 の 5 期のレンジ 10.5〜25.8倍で位置 35%（妥当圏）"
+   },
+   "axis2": {
+    "zone": "妥当",
+    "raw_zone": "妥当",
+    "median": 13.6894,
+    "diff": 0.1584,
+    "count": 3,
+    "explained": false,
+    "basis": "同業 3 社の中央値 13.7倍に対して +16%（妥当圏）"
+   }
+  },
+  "year": "2026-02",
+  "debt": 110029.0,
+  "cash": 61223.0,
+  "operating_income": 47307.0,
+  "depreciation": 21084.0,
+  "ebitda": 68391.0,
+  "ev": 1084487.8852,
+  "net_cash": -48806.0,
+  "market_cap": 1035681.8852,
+  "history": [
+   {
+    "year": "2022-02",
+    "high": 22.8455,
+    "low": 16.3618,
+    "basis": "PER × 純利益"
+   },
+   {
+    "year": "2023-02",
+    "high": 16.4787,
+    "low": 12.3346,
+    "basis": "PER × 純利益"
+   },
+   {
+    "year": "2024-02",
+    "high": 21.0666,
+    "low": 14.9977,
+    "basis": "PER × 純利益"
+   },
+   {
+    "year": "2025-02",
+    "high": 25.7836,
+    "low": 14.6762,
+    "basis": "PER × 純利益"
+   },
+   {
+    "year": "2026-02",
+    "high": 21.948,
+    "low": 10.5038,
+    "basis": "PER × 純利益"
+   }
+  ],
+  "divergence": null,
+  "sensitivity": {
+   "shares": 266690497.0,
+   "market_cap": 1064628.464,
+   "value": 16.2804,
+   "rating": "妥当",
+   "changes": false
+  }
+ },
+ "step3": {
+  "ratings": {
+   "PER": "割高",
+   "PBR": "割安",
+   "PEG": "割高",
+   "EV/EBITDA": "妥当"
+  },
+  "scores": {
+   "PER": -1,
+   "PBR": 1,
+   "PEG": -1,
+   "EV/EBITDA": 0
+  },
+  "average": -0.25,
+  "raw_verdict": "妥当",
+  "final_check": {
+   "concerns": [
+    "成長性"
+   ],
+   "swot_no": true,
+   "not_done": [],
+   "raised": false,
+   "noted": false,
+   "applies": false
+  }
+ },
+ "sheet": "PER 割高／PBR 割安／PEG 割高（悲観ケース：8.90倍）／EV/EBITDA 妥当／STEP 3 妥当（平均点：-0.25）",
+ "flip_prices": [
+  "PER: 過去レンジの割安圏（位置33%以下）になる株価 3,498円 以下、割高圏（67%以上）になる株価 4,584円 以上",
+  "PBR: 適正PBR 2.92倍 から割安（−20%）になる株価 4,360円 以下、割高（+20%）になる株価 6,540円 以上",
+  "PEG: 1倍になる株価 897円、2倍になる株価 1,794円"
+ ],
+ "borderline": [
+  "EV/EBITDA: 過去レンジでの位置 35% が境界（33% / 67%）に近い",
+  "EV/EBITDA: 同業の中央値との差 +16% が境界（±20%）に近い"
+ ],
+ "handoff": {
+  "report_points": "株価 3,992円（2026-10-30）時点で STEP 3 は妥当（4指標の平均点 -0.25）。実績PER 29.4倍は過去5期のレンジで位置 49% だが同業の中央値 23.4倍を +26% 上回り割高、PEG は過去の EPS CAGR 6.6% を使うと 4.45倍で割高。一方 PBR 2.14倍は過去レンジの位置 18% で、適正PBR 2.92倍を -27% 下回り割安、EV/EBITDA 15.9倍は妥当。いずれも現時点の株価の位置づけで、株価の予測ではない",
+  "final_checks": "PEG の楽観ケース（会社計画の成長率 34.8%、PEG 0.85倍）は、成長性分析が会社計画を「割り引いて扱う」と判定しており（成長性 懸念）、前期の一時益の反動を含むため標準に使えない。PBR が割安に見えるのは適正PBR に予想ROE 9.8% を使っているためで、収益性 普通・直近の ROE 7.7% と SWOT No から、予想ROE が下振れすれば割安の根拠が弱まる",
+  "special_bg": "該当なし（EPS を調整していない）",
+  "measures": "該当なし（判定に影響しない）",
+  "divergence_bg": "該当なし（食い違いなし）",
+  "cheap_reason": "該当なし（STEP 3 が割安でない）"
+ },
+ "changes": [
+  "初回の分析"
+ ],
+ "gaps": [
+  "PER・PBR の年次の高値・安値は IRBANK（二次）で、算出方法が未確認。2018-02 以前は日本基準、2021-02 以降は IFRS の EPS が混ざる可能性がある（判定に使う直近5期は 2022-02 以降で IFRS）",
+  "アナリスト予想の EPS 成長率が無く、PEG の成長率の候補が2つだけ（過去の EPS CAGR 6.6%・会社計画 34.8%）",
+  "EV/EBITDA の境界: 過去レンジでの位置 35% と同業の中央値との差 +16% がともに境界に近く、株価の小さな動きで判定が動きうる",
+  "競合の PER（実績）は2026年3月期の通期 EPS で、中間期の EPS が大きく伸びているため高めに出る（同業の中央値 23.4倍が上振れしている可能性）",
+  "減価償却費は CF 計算書の値で減損損失を含む"
+ ],
+ "peers": [
+  {
+   "name": "ファナック",
+   "per_actual": 31.9606,
+   "per_forecast": 23.186,
+   "pbr": 2.7864,
+   "ev_ebitda_calc": 20.1284,
+   "cagr": 0.2293,
+   "roe": 8.93
+  },
+  {
+   "name": "三菱電機",
+   "per_actual": 23.3977,
+   "per_forecast": 20.4225,
+   "pbr": 2.0225,
+   "ev_ebitda_calc": 13.6894,
+   "cagr": 5.6148,
+   "roe": 9.09
+  },
+  {
+   "name": "山洋電気",
+   "per_actual": 19.681,
+   "per_forecast": 12.0455,
+   "pbr": 1.2616,
+   "ev_ebitda_calc": 8.9624,
+   "cagr": -3.8603,
+   "roe": 6.77
+  }
+ ],
+ "inputs": [
+  "companies/6506_yaskawa/raw/filings/2026-11-01_2026-02_yuho.md",
+  "companies/6506_yaskawa/raw/ir/2026-11-01_mid-term-plan.md",
+  "companies/6506_yaskawa/raw/ir/2026-11-01_valuation-data.md",
+  "companies/6506_yaskawa/raw/market/2026-11-01_competitors.md"
+ ],
+ "seen": [
+  "companies/6506_yaskawa/raw/filings/2026-11-01_2026-02_yuho.md",
+  "companies/6506_yaskawa/raw/ir/2026-11-01_financials-historical.md",
+  "companies/6506_yaskawa/raw/ir/2026-11-01_mid-term-plan.md",
+  "companies/6506_yaskawa/raw/ir/2026-11-01_valuation-data.md",
+  "companies/6506_yaskawa/raw/market/2026-11-01_competitors.md"
+ ],
+ "input_digests": {
+  "price": "42c906c2c26234eaf4da2fb975693104facf1344",
+  "per_share": "9039b0b901e2f8b7490fc694c1a21d39e2e5078e",
+  "current": "0c2199d40b54e5ce1f6c3d02a74a99122d6db449",
+  "history": "526957a7bdf46ed5168758920994b5c981e89a1b",
+  "analyst": "d3c944efd4a02607b1c8b04f0b81285aa8d77652",
+  "peer_valuation": "1e61a67067b06ba789b7b95ea7ab4ce10bbe0404",
+  "peer_cagr": "655aba99a06d0b9e3cfdd6a26c40428e511aa1b6",
+  "peer_roe": "01f259970ae44a8e1ddee4c78fe5b2666ae37f04",
+  "peer_dupont": "3452689170b736e48a277368bc8a5b1f575b36eb",
+  "peer_safety": "36d896c29750969ebe4d3f19a57c68002e4dce86",
+  "peer_ebitda": "ac79ec37c63d248052d68f088898ad96430cd790",
+  "special": "cdb2192d14cc7b41c4b1f26b9f37653b82113a0b",
+  "policy": "9d2f422862d4794c3ef60676d5a9b1c9e93a5311",
+  "capital": "803353416bbd6597f47fc13ae38e0209ec649c5c",
+  "numbers": "b0b42d97192deb7d29e015f695b2c8117ad9e5f6"
+ },
+ "growth": {
+  "date": "2026-11-01"
+ },
+ "upstream": {
+  "profitability": {
+   "date": "2026-11-01",
+   "verdict": "普通",
+   "reason": "手順1は良好だが、営業利益率が同業平均を下回る"
+  },
+  "growth": {
+   "date": "2026-11-01",
+   "verdict": "懸念",
+   "reason": "減収・減益の原因が不明の年（2019-02、2024-02）を構造的な要因とみなした（材料不足のため保守的に判定）"
+  },
+  "safety": {
+   "date": "2026-11-01",
+   "verdict": "良好",
+   "reason": "3指標とも目安または同業平均をクリアし、悪化傾向なし"
+  },
+  "cash_flow": {
+   "date": "2026-11-01",
+   "verdict": "普通",
+   "reason": "手順1が普通、手順3が普通"
+  },
+  "swot": {
+   "date": "2026-11-01",
+   "verdict": "No",
+   "reason": "最大の強み S1（ACサーボ +76% などの受注拡大）は、サーボを作って出荷して初めて売上になり、その主要材料のネオジム磁石が T1 の供給制約そのものを受ける。強みが脅威の影響を受ける形で、打ち消す関係にない。有報の事業等のリスクには調達先の分散・在庫水準の確保・設計変更という対応の記述があるが、磁石の在庫量や代替設計の進み具合を示す数値は brief に無い。迷った: 会社の対応策の記述があるため条件付きとも読めるが、実行の兆しを示す数値が無いため No を採った"
+  }
+ },
+ "outlook": "market/report/2026-10-26_outlook.md",
+ "previous": null,
+ "md": "companies/6506_yaskawa/analysis/valuation/2026-11-01_valuation.md"
+}

@@ -1,0 +1,447 @@
+{
+ "company": "6506_yaskawa",
+ "name": "安川電機（6506）",
+ "date": "2026-11-01",
+ "valid_until": "2027-03-01",
+ "verdict": "懸念",
+ "verdict_reason": "手順1が停滞・縮小（売上または EPS の CAGR がマイナス）",
+ "step1": {
+  "rating": "停滞・縮小",
+  "basis": "売上または EPS の CAGR がマイナス",
+  "sentence": "売上 CAGR 1.9%、営業利益 CAGR -1.6%、EPS CAGR -2.4%（2019-02〜2026-02）で停滞・縮小",
+  "years": 8,
+  "first": "2019-02",
+  "last": "2026-02",
+  "eps_basis": "eps",
+  "sales_cagr": 1.9,
+  "eps_cagr": -2.4,
+  "cagr": {
+   "sales": {
+    "value": 1.9,
+    "first": "2019-02",
+    "last": "2026-02",
+    "reason": ""
+   },
+   "operating_income": {
+    "value": -1.6,
+    "first": "2019-02",
+    "last": "2026-02",
+    "reason": ""
+   },
+   "eps": {
+    "value": -2.4,
+    "first": "2019-02",
+    "last": "2026-02",
+    "reason": ""
+   },
+   "net_income": {
+    "value": -2.6,
+    "first": "2019-02",
+    "last": "2026-02",
+    "reason": ""
+   }
+  }
+ },
+ "step3": {
+  "rating": "割り引いて扱う",
+  "basis": "5年中 3年で達成率 90% 以上、直近2年が続けて未達。直近3年の平均 82%、100% 未満の年 3（2024-02、2025-02、2026-02）",
+  "sentence": "計画達成率は平均93%（5年中 3年で達成率 90% 以上、直近2年が続けて未達。直近3年の平均 82%、100% 未満の年 3（2024-02、2025-02、2026-02））で、計画は割り引いて扱う。直近は未達気味（予想を上振れの前提にしない）",
+  "average": 93.2,
+  "rows": [
+   {
+    "year": "2022-02",
+    "metric": "営業利益",
+    "forecast": 42000.0,
+    "actual": 52860.0,
+    "rate": 125.9,
+    "sales_rate": 111.4,
+    "source": "2026-11-01_financials-historical.md「4. 会社計画（期初予想）と実績（ren」",
+    "primary": true
+   },
+   {
+    "year": "2023-02",
+    "metric": "営業利益",
+    "forecast": 72000.0,
+    "actual": 68301.0,
+    "rate": 94.9,
+    "sales_rate": 105.9,
+    "source": "2026-11-01_financials-historical.md「4. 会社計画（期初予想）と実績（ren」",
+    "primary": true
+   },
+   {
+    "year": "2024-02",
+    "metric": "営業利益",
+    "forecast": 70000.0,
+    "actual": 66225.0,
+    "rate": 94.6,
+    "sales_rate": 99.3,
+    "source": "2026-11-01_financials-historical.md「4. 会社計画（期初予想）と実績（ren」",
+    "primary": true
+   },
+   {
+    "year": "2025-02",
+    "metric": "営業利益",
+    "forecast": 70000.0,
+    "actual": 50156.0,
+    "rate": 71.7,
+    "sales_rate": 92.7,
+    "source": "2026-11-01_financials-historical.md「4. 会社計画（期初予想）と実績（ren」",
+    "primary": true
+   },
+   {
+    "year": "2026-02",
+    "metric": "営業利益",
+    "forecast": 60000.0,
+    "actual": 47307.0,
+    "rate": 78.8,
+    "sales_rate": 98.6,
+    "source": "2026-11-01_financials-historical.md「4. 会社計画（期初予想）と実績（ren」",
+    "primary": true
+   }
+  ]
+ },
+ "step4": {
+  "quality": "問題あり",
+  "sentence": "成長の質に問題あり: 営業利益が売上ほど伸びていない（長期で利益率が下がっている）。直近3年は営業利益が売上ほど伸びていない（利益率が下がっている）",
+  "problems": [
+   "営業利益が売上ほど伸びていない（長期で利益率が下がっている）。直近3年は営業利益が売上ほど伸びていない（利益率が下がっている）"
+  ],
+  "unknown": [
+   "売上増が M&A 頼みでない"
+  ],
+  "adjusted": null,
+  "checks": [
+   {
+    "name": "営業利益の伸び ≥ 売上の伸び（長期・直近3年）",
+    "status": "問題あり",
+    "detail": "長期（2019-02〜2026-02）: 営業利益 CAGR -1.6% / 売上 CAGR 1.9%、直近3年（2023-02〜2026-02）: 営業利益 CAGR -11.5% / 売上 CAGR -0.8%"
+   },
+   {
+    "name": "売上増が M&A 頼みでない",
+    "status": "不明",
+    "detail": "M&A あり（2020-02、2026-02）。買収先の売上が分からない（該当なし（有報「企業結合等関係」: 2022年2月期は「該当事項はありません」、2025年2月期・2026年2月期は「記載すべき重要な事項はありません」。CF 計算書に子会社株式の取得による支出の行なし）、東京ロボティクス株式会社（株式の100%を取得、ヒューマノイド向けアクチュエータの開発に着手））"
+   },
+   {
+    "name": "EPS の伸びが自社株買い頼みでない",
+    "status": "問題なし",
+    "detail": "EPS CAGR -2.4% / 純利益 CAGR -2.6%（差 +0.3pt）"
+   }
+  ]
+ },
+ "step2": {
+  "sentence": "減収・減益の年 5 年（一時 2020-02、2021-02、2024-02、2025-02、2026-02）で構造要因なし",
+  "structural": "構造的な減収・減益の要因は見当たらない。一時要因の 2020-02・2021-02 は売上が 2022-02 に、営業利益・EPS が 2023-02 に戻った。2024-02 は前年の一時的な収益の剥落と説明され、その後の 2025-02・2026-02 も減益が続き回復をまだ確かめられない。ただし SWOT の W1（営業利益率の3期連続低下）・W4（会社がシェアを落としていると認める）は構造要因の候補として残る"
+ },
+ "rows": [
+  {
+   "year": "2017-02",
+   "sales": 394883.0,
+   "operating_income": null,
+   "net_income": 20397.0,
+   "eps": 76.6,
+   "source": "data/financials.csv",
+   "primary": true
+  },
+  {
+   "year": "2018-02",
+   "sales": 448523.0,
+   "operating_income": 54126.0,
+   "net_income": 39749.0,
+   "eps": 149.35,
+   "source": "data/financials.csv",
+   "primary": true
+  },
+  {
+   "year": "2019-02",
+   "sales": 474638.0,
+   "operating_income": 53098.0,
+   "net_income": 42524.0,
+   "eps": 161.0,
+   "source": "data/financials.csv",
+   "primary": true
+  },
+  {
+   "year": "2020-02",
+   "sales": 410957.0,
+   "operating_income": 24198.0,
+   "net_income": 15572.0,
+   "eps": 59.42,
+   "source": "data/financials.csv",
+   "primary": true
+  },
+  {
+   "year": "2021-02",
+   "sales": 389712.0,
+   "operating_income": 27180.0,
+   "net_income": 18927.0,
+   "eps": 72.41,
+   "source": "data/financials.csv",
+   "primary": true
+  },
+  {
+   "year": "2022-02",
+   "sales": 479082.0,
+   "operating_income": 52860.0,
+   "net_income": 38354.0,
+   "eps": 146.72,
+   "source": "data/financials.csv",
+   "primary": true
+  },
+  {
+   "year": "2023-02",
+   "sales": 555955.0,
+   "operating_income": 68301.0,
+   "net_income": 51783.0,
+   "eps": 198.07,
+   "source": "data/financials.csv",
+   "primary": true
+  },
+  {
+   "year": "2024-02",
+   "sales": 575658.0,
+   "operating_income": 66225.0,
+   "net_income": 50687.0,
+   "eps": 193.87,
+   "source": "data/financials.csv",
+   "primary": true
+  },
+  {
+   "year": "2025-02",
+   "sales": 537682.0,
+   "operating_income": 50156.0,
+   "net_income": 56987.0,
+   "eps": 218.62,
+   "source": "data/financials.csv",
+   "primary": true
+  },
+  {
+   "year": "2026-02",
+   "sales": 542122.0,
+   "operating_income": 47307.0,
+   "net_income": 35240.0,
+   "eps": 135.88,
+   "source": "data/financials.csv",
+   "primary": true
+  }
+ ],
+ "splits": [],
+ "progress": {
+  "fy": "2027-02",
+  "quarter": 2,
+  "filing_date": "",
+  "source": "raw（2026-11-01_financials-historical.md）",
+  "items": {
+   "sales": {
+    "name": "売上高",
+    "cum": 285598.0,
+    "prior": 260195.0,
+    "forecast": 600000.0,
+    "last_actual": 542122.0,
+    "yoy": 9.763062318645632,
+    "forecast_growth": 10.676194657291171,
+    "progress": 47.59966666666667,
+    "prior_progress": 47.99565411475646
+   },
+   "operating_income": {
+    "name": "営業利益",
+    "cum": 22058.0,
+    "prior": 23334.0,
+    "forecast": 57500.0,
+    "last_actual": 47307.0,
+    "yoy": -5.4684151881374765,
+    "forecast_growth": 21.54649417633754,
+    "progress": 38.36173913043478,
+    "prior_progress": 49.32462426279409
+   }
+  }
+ },
+ "receivables": "売上債権（百万）: 2023-02 171,219、2024-02 167,903、2025-02 153,740、2026-02 163,942。2023-02〜2026-02 の CAGR -1.4%（同期間の売上 CAGR -0.8%）",
+ "declines": [
+  {
+   "year": "2020-02",
+   "recovery": "遅れて回復",
+   "metrics": [
+    {
+     "name": "売上高",
+     "change": -13.4,
+     "recovery": "回復",
+     "recovered": "2022-02"
+    },
+    {
+     "name": "営業利益",
+     "change": -54.4,
+     "recovery": "遅れて回復",
+     "recovered": "2023-02"
+    },
+    {
+     "name": "EPS",
+     "change": -63.1,
+     "recovery": "遅れて回復",
+     "recovered": "2023-02"
+    }
+   ],
+   "reason": "米中貿易摩擦の長期化で設備投資に慎重な姿勢が強まり、モーションコントロールとロボットの売上が減り、売上減少と在庫調整による操業度の悪化で減益になったと会社は説明（期末に新型コロナの影響も発生）",
+   "class": "一時",
+   "swot": "—（構造要因ではない）"
+  },
+  {
+   "year": "2021-02",
+   "recovery": "回復",
+   "metrics": [
+    {
+     "name": "売上高",
+     "change": -5.2,
+     "recovery": "回復",
+     "recovered": "2022-02"
+    }
+   ],
+   "reason": "新型コロナの感染拡大で製造業全般の設備投資が抑制され、ロボットの顧客の投資抑制とインバータのオイル・ガス関連需要の低迷で減収になったと会社は説明（営業利益は経費削減で増加）",
+   "class": "一時",
+   "swot": "—（構造要因ではない）"
+  },
+  {
+   "year": "2024-02",
+   "recovery": "未確認（後の年も減少）",
+   "metrics": [
+    {
+     "name": "営業利益",
+     "change": -3.0,
+     "recovery": "未確認（後の年も減少）",
+     "recovered": null
+    },
+    {
+     "name": "EPS",
+     "change": -2.1,
+     "recovery": "回復",
+     "recovered": "2025-02"
+    }
+   ],
+   "reason": "前年度に一時的に発生した退職年金制度の変更や遊休不動産の売却に伴うその他の収益がなくなった影響などで減益になったと会社は説明（半導体・電子部品向け需要も軟調）",
+   "class": "一時",
+   "swot": "—（構造要因ではない）"
+  },
+  {
+   "year": "2025-02",
+   "recovery": "未確認",
+   "metrics": [
+    {
+     "name": "売上高",
+     "change": -6.6,
+     "recovery": "未確認",
+     "recovered": null
+    },
+    {
+     "name": "営業利益",
+     "change": -24.3,
+     "recovery": "未確認",
+     "recovered": null
+    }
+   ],
+   "reason": "注力市場の半導体・自動車の回復に力強さを欠き、高水準な受注残に支えられた前期に比べモーションコントロールを中心に減収、売上減少に伴う利益減で減益になったと会社は説明",
+   "class": "一時",
+   "swot": "—（構造要因ではない）"
+  },
+  {
+   "year": "2026-02",
+   "recovery": "未確認",
+   "metrics": [
+    {
+     "name": "営業利益",
+     "change": -5.7,
+     "recovery": "未確認",
+     "recovered": null
+    },
+    {
+     "name": "EPS",
+     "change": -37.8,
+     "recovery": "未確認",
+     "recovered": null
+    }
+   ],
+   "reason": "売上増による付加価値の増加を為替影響と間接費の増加がカバーできず営業利益は減益、EPS は前期に煙台東星磁性材料株式の譲渡益・再評価益を計上した反動で減ったと会社は説明",
+   "class": "一時",
+   "swot": "—（構造要因ではない）"
+  }
+ ],
+ "ma": [
+  {
+   "year": "2020-02",
+   "target": "該当なし（有報「企業結合等関係」: 2022年2月期は「該当事項はありません」、2025年2月期・2026年2月期は「記載すべき重要な事項はありません」。CF 計算書に子会社株式の取得による支出の行なし）",
+   "sales": null
+  },
+  {
+   "year": "2026-02",
+   "target": "東京ロボティクス株式会社（株式の100%を取得、ヒューマノイド向けアクチュエータの開発に着手）",
+   "sales": null
+  }
+ ],
+ "borderline": [],
+ "consistency": [
+  {
+   "check": "市場成長性が高い ⇔ 売上成長",
+   "step1": "市場の成長性 中",
+   "step2": "売上 CAGR 1.9%",
+   "result": "対象外（市場の成長性 中）"
+  }
+ ],
+ "consistency_comment": "該当する STEP 1 の結論なし（3C の市場の成長性 中で対象外）。参考に、IFRS の年の売上 CAGR 1.9% は 3C が見たサーボの市場成長率 5.82% もインバータの 2.8% も下回る",
+ "mtp": "前中計「Realize 25」（2023〜2025年度）は全社業績・財務目標が未達と会社が明記している。2025年度の実績は営業利益 473億円・営業利益率 8.7%で、目標の抽出値（営業利益 1,000億円・営業利益率 15.4%、要確認）に届かず、新中計「Dash 35」は同じ営業利益 1,000億円を 2029年度に掲げ直している",
+ "drivers": "売上はモーションコントロールとロボットの二本柱（2026年2月期の外部売上 236,053・247,012百万円）が半導体・自動車などの設備投資の波に合わせて増減し、2022-02〜2023-02 の増収はコロナ後の回復、2024-02 は受注残の消化による。IFRS の年（2019-02 以降）で比べると営業利益の CAGR は -1.6% で売上 1.9% を下回り、会社は 2026年2月期の減益を為替影響と間接費の増加で説明している。M&A は東京ロボティクスの100%取得があるが買収先の売上は開示なし",
+ "handoff": {
+  "report_points": "会計基準をそろえた IFRS の8年（2019-02〜2026-02）で見ると、売上 CAGR 1.9%・EPS CAGR -2.4% で、利益は 2019-02 の水準を下回っており停滞・縮小に当たる。営業利益の CAGR も -1.6% で売上を下回る。減収・減益の年はすべて会社が一時要因で説明しているが、2024-02 以降は減益が続き回復はまだ確かめられない",
+  "step3_hint": "会社計画は割り引いて扱う（直近3年の平均達成率 82%、2025-02・2026-02 は続けて未達）。今期も営業利益の進捗は 38.4% で前年同期の 49.3% を下回り、売上の進捗 47.6% は前年同期 48.0% と同程度。STEP 3 では会社予想をそのまま使わず、実績の CAGR や保守的な値を基準にする",
+  "step2_checks": "売上債権の CAGR -1.4% は同期間の売上 CAGR -0.8% を下回っており、売上債権の膨らみは見られない。キャッシュフロー: 営業利益の減少が営業CFにも表れているか。安全性: 2026年度〜2029年度の投資計画 2,500億円の資金を借入で賄うか",
+  "triggers": "2027年2月期の EPS が IFRS の起点（2019-02 の 161.00円）を上回り EPS の CAGR がプラスに戻れば手順1が安定成長になり、普通の検討に上がる。今期の営業利益の進捗が前年同期を下回ったまま通期予想を下方修正すれば、懸念の理由が強まる"
+ },
+ "changes": [
+  "初回の分析（同日の初版は analysis/growth/_superseded/2026-11-01-1/ に退避）",
+  "初版からの変更: 会計基準の境目（2019-02 に日本基準→IFRS）をまたぐ比較をやめ、CAGR の期間を 2017-02〜2026-02 から 2019-02〜2026-02 に変えた（売上 CAGR 1.9%、EPS CAGR -2.4%）。2019-02 は減益の年から外れた。2024-02 は「未確認（後の年も減少）」になり、会社の説明どおり一時に分類した。懸念の理由は「不明の年を構造とみなした」から「IFRS の年で EPS の CAGR がマイナス（停滞・縮小）」に変わった",
+  "今期の進捗を raw（財務時系列の5章・4章）から読むようにした"
+ ],
+ "gaps": [
+  "CAGR の起点の 2019-02 は IFRS 組替の値で、EPS が高い年（161.00円）に当たるため、起点の取り方で CAGR が大きく動く（日本基準をまたぐ 2017-02 起点なら EPS 6.6%）。同じ IFRS の年でも起点の年を変えた感応度は計算していない",
+  "2024-02 以降の減益が続く理由（一時か構造か）は、2027年2月期の通期実績で確かめる（次の本決算）",
+  "東京ロボティクスの取得額・売上が開示なしで、M&A を除いた CAGR を確かめられない（手順4の M&A は不明）",
+  "警告: 2021-02 の期初予想は通期予想が無く第1四半期累計の値が拾われたため、達成率 680% として手順3から除かれた（通期予想の初公表は 2020-10-09）"
+ ],
+ "inputs": [
+  "companies/6506_yaskawa/raw/filings/2026-11-01_2026-02_yuho.md",
+  "companies/6506_yaskawa/raw/ir/2026-11-01_financials-historical.md",
+  "companies/6506_yaskawa/raw/ir/2026-11-01_mid-term-plan.md"
+ ],
+ "seen": [
+  "companies/6506_yaskawa/raw/filings/2026-11-01_2026-02_yuho.md",
+  "companies/6506_yaskawa/raw/ir/2026-11-01_financials-historical.md",
+  "companies/6506_yaskawa/raw/ir/2026-11-01_mid-term-plan.md"
+ ],
+ "input_digests": {
+  "self_pl": "84417acc0bf2e542f405246a24ecab9d9dbca063",
+  "summary": "41bed366ef72c1a53a5acdfd149538819f08c598",
+  "plan": "5d67af4294d9202616061430edf8fddea29d1d86",
+  "decline": "2809a593436cb3af37d5a06f99495776e67669ed",
+  "ma": "eb8b5dbf3cfefa007a0f9ca89bc9b7308e9cdd1a",
+  "self_return": "83099178a3e8fe4fb63f5162b740a935c2d066ec",
+  "segment": "62337187229129fff73c35025d03931a637f1c0f",
+  "risks": "e33781dc89d6b537346dd2716a8c6eac278e1512",
+  "policy": "9d2f422862d4794c3ef60676d5a9b1c9e93a5311",
+  "targets": "93d51a007d9a7c934779ee5901b4e32a291b0a5a",
+  "mtp_result": "8ab1f9e4314954cedbd9e47d296b3611d2638b08",
+  "yearly_series": "e55c81ef214fe73e449960263e2582908697b8a6"
+ },
+ "three_c": {
+  "date": "2026-11-01",
+  "verdict": "あいまい",
+  "market_growth": "中"
+ },
+ "swot": {
+  "date": "2026-11-01",
+  "verdict": "No"
+ },
+ "outlook": "market/report/2026-10-26_outlook.md",
+ "previous": null,
+ "md": "companies/6506_yaskawa/analysis/growth/2026-11-01_growth.md",
+ "downgraded": [],
+ "conservative": [
+  "成長の質の「売上増が M&A 頼みでない」を確かめられない → 問題ありとみなした"
+ ]
+}
