@@ -663,3 +663,69 @@ def test_unfilled_skeleton_does_not_validate(repo, capsys):
     text = prepared(repo, capsys).read_text(encoding="utf-8")
     template = (repo / ".ai" / "templates" / "valuation" / "valuation.md").read_text(encoding="utf-8")
     assert any("FILL" in i for i in D.validate(text, template, cands_of(repo)))
+
+
+# ---------- refresh_valuation.py (株価だけの取り直し) ----------
+
+def _chart(prices: dict[str, float]) -> dict:
+    days = sorted(prices)
+    stamps = [int(dt.datetime.fromisoformat(d).replace(tzinfo=dt.timezone.utc).timestamp()) for d in days]
+    closes = [prices[d] for d in days]
+    return {"chart": {"result": [{"meta": {"gmtoffset": 32400, "currency": "JPY"}, "timestamp": stamps,
+                                  "indicators": {"quote": [{"close": closes, "open": closes, "high": closes,
+                                                            "low": closes, "volume": [1] * len(days)}],
+                                                 "adjclose": [{"adjclose": closes}]}}]}}
+
+
+def _fake_get(table: dict[str, dict[str, float]]):
+    class Resp:
+        def __init__(self, payload):
+            self.payload = payload
+
+        def json(self):
+            return self.payload
+
+    def get(url, params=None, referer=None):
+        symbol = url.rstrip("/").split("/")[-1].split("?")[0]
+        return Resp(_chart(table[symbol]))
+    return get
+
+
+PRICES = {"7203.T": {"2026-10-16": 1050.0, "2026-10-19": 1100.0}, "1111.T": {"2026-10-16": 540.0, "2026-10-19": 550.0},
+          "2222.T": {"2026-10-16": 860.0, "2026-10-19": 880.0}}
+
+
+def test_refresh_valuation_takes_new_closes_without_an_agent(repo, capsys):
+    import refresh_valuation as RV
+    _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-20", capsys=capsys)
+    assert out["missing_inputs"] == [{"agent": "collect-peers-valuation", "items": [X.PRICE_ITEM]}]
+    assert out["price_refresh"] == "tools/collect/refresh_valuation.py --company 7203_toyota"
+    result = RV.run(repo, "7203", "2026-10-20", get=_fake_get(PRICES))
+    assert result["ok"], result
+    assert result["base_date"] == "2026-10-19" and [p["name"] for p in result["peers"]] == ["アルファ社（1111）", "ベータ社（2222）"]
+    company = repo / "companies" / "7203_toyota"
+    val = (company / "raw" / "ir" / "2026-10-20_valuation-data.md").read_text(encoding="utf-8")
+    assert "| 株価 | 1,100円 | 基準日 2026-10-19 の確定終値" in val and "（= 1,100円 × 10,000,000株）" in val
+    comp = (company / "raw" / "market" / "2026-10-20_competitors.md").read_text(encoding="utf-8")
+    assert "## 6. PER・PBR・EV/EBITDA（基準日 2026-10-19）" in comp
+    assert "| アルファ社（1111） | 550円 | 11,000百万円 | 13.20倍 | 12.10倍 | 1.98倍 |" in comp  # EPS = 500 ÷ 12.0 (old PER)
+    _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-20", capsys=capsys)
+    assert out["price_age"] == 1 and out["missing_inputs"] == [] and out["price_refresh"] is None
+    peers = cands_of_date(repo, "2026-10-20")["base"]["peers"]
+    assert peers["date"] == "2026-10-19" and [round(p["per_actual"], 1) for p in peers["peers"]] == [13.2, 14.3]
+    again = RV.run(repo, "7203", "2026-10-20", get=_fake_get(PRICES))
+    assert not again["ok"] and again["fallback"] is None
+
+
+def test_refresh_valuation_writes_nothing_when_a_peer_has_no_code(repo):
+    import refresh_valuation as RV
+    path = repo / "companies" / "7203_toyota" / "raw" / "market" / f"{COLLECTED}_competitors.md"
+    path.write_text(path.read_text(encoding="utf-8").replace("ベータ社（2222）", "ベータ社"), encoding="utf-8")
+    result = RV.run(repo, "7203", "2026-10-20", get=_fake_get(PRICES))
+    assert not result["ok"] and result["peers_missing"] == ["ベータ社"] and "collect-peers-valuation" in result["fallback"]
+    assert not (repo / "companies" / "7203_toyota" / "raw" / "ir" / "2026-10-20_valuation-data.md").exists()
+
+
+def cands_of_date(root: Path, today: str) -> dict:
+    company = company_obj(root)
+    return X.candidates(company, I.gather_valuation(company), today)

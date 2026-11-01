@@ -70,11 +70,13 @@ $PY -I tools/analysis/valuation.py check --company {company}
 | `report_existing`（`result: fresh`） | 有効期間内。`latest`（md・結論・有効期限）を完了報告の形式で伝えて**終わる**（執筆しない）。`redo` の指示があるときだけ手順 2 へ |
 | `collect` で `needs_full_collect: true` | raw が無い。collect-company-info を `mode=full` で実行し、check をやり直す |
 | `growth` | 成長性分析が無い・期限切れ・作成途中・材料が変わった（`growth.reason`）。growth スキルを最後まで実行してから check をやり直す（growth が収集も行う。成長性の結論では止めない） |
+| `collect` で `price_refresh` あり | 足りないのは株価だけ（基準日が7日超前）。エージェントを使わず `$PY -I {price_refresh}` を実行する（自社と競合の確定終値を同じ基準日で取り、新しい日付の valuation-data.md 1・3章と competitors.md 6章を書き、status.md の株価の行と overview.md の履歴を更新する）。`ok: true` なら check をやり直す。`ok: false` で `fallback` があれば（競合の銘柄コードが無い・株価を取れないなど）、下の行のとおり collect-company-info で取り直す。`fallback: null` なら（今日の raw がある・新しい終値がまだ無い）収集せず check をやり直す |
 | `collect` | 材料が足りない、または株価が古い（`price_age` が7日超）。collect-company-info を `mode=update` で実行し、`missing_inputs` の担当（`agent`）と項目（`items`）を範囲として伝える。終わったら check をやり直す。主な項目: 株価の基準日が古い（collect-peers-valuation「株価のみ」: 自社の株価データと競合 6章を同じ基準日で取り直す）、競合 12章「EV/EBITDA の材料」が無い（collect-peers-valuation）、株価データの 1・2・4章や競合 6章が無い（collect-peers-valuation） |
 | `prepare`（`none` / `expired` / `triggered` / `draft`） | 手順 2 へ |
 
 - 収集（collect-company-info）は**1回の実行につき1回まで**。やり直した check でまだ `collect` が出ても、もう一度は収集せず手順 2 に `--skip-collect` を付けて進む（株価が古いままなら brief と prepare の `warnings` に出る。判定できない指標は 判定保留 になることがある。9章に書く）
 - growth の実行は収集の回数に数えない（growth の中で収集した場合も、このスキルの収集の1回は残る）
+- `refresh_valuation.py` の実行も収集の回数に数えない（失敗して collect-company-info に切り替えた場合も、その1回は残る）。完了報告の「材料」行に「株価のみスクリプトで更新（基準日 {base_date}）」と書く
 - check と prepare を1つのコマンドにつなげない（check の `next` を見てから次へ進む）。prepare も `next` を確かめ、`collect`・`growth` のままなら `ok: false` で拒否する
 - `unavailable` は「収集を試みたが取れなかった」材料（status.md の未取得項目）。再収集しない
 - 収集スキル・growth が止まった（ユーザーへの確認待ち・エラー）ときは、このスキルも止めて状況を報告する

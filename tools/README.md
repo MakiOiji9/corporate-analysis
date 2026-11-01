@@ -98,6 +98,8 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 
 株価の取得は `tools/collect/stock_prices.py --company X [--years 10]`（Yahoo Finance のチャート API。非公式・キー不要。日本株は `{コード}.T`）。分割調整済みの日足を `companies/{ticker}_{name}/data/prices.csv`（`date,open,high,low,close,adj_close,volume,retrieved`）に保存する。
 
+バリュエーション分析の株価だけの取り直しは `tools/collect/refresh_valuation.py --company X`（エージェントなし）。raw の株式数・EPS・BPS（株価データ 1・2章、競合 6章）と競合の銘柄コード（競合 1.2 の採用の行、無ければ社名の括弧内）を使い、自社と競合の確定終値を同じ基準日で取って、新しい日付の `raw/ir/{日付}_valuation-data.md`（1・3章）と `raw/market/{日付}_competitors.md`（6章）を書き、status.md の株価の行と overview.md の履歴を更新する。競合のコードや株価が欠けると何も書かず `fallback`（collect-peers-valuation「株価のみ」）を返す。`valuation.py check` は、足りないのが株価だけのとき `price_refresh` にこのコマンドを返す。
+
 ### 企業分析用（`tools/analysis/`）
 
 9つの分析スクリプト（five_forces.py・three_c.py・moat.py・swot.py・profitability.py・growth.py・safety.py・cash_flow.py・valuation.py）に共通:

@@ -222,7 +222,7 @@ Python: {.venv の python のパス}
 |---|---|
 | 決算短信・有報・業績予想の修正 | collect-filings（＋ collect-ir の IR資料一覧） |
 | プレスリリース・説明会資料 | collect-ir |
-| 何も無い | collect-peers-valuation（範囲: 株価のみ） |
+| 何も無い | まず `tools/collect/refresh_valuation.py --company {ticker}`（エージェントなしで自社と競合の確定終値を取り、valuation-data.md 1・3章と competitors.md 6章を書く）。`ok: false` で `fallback` があるときだけ collect-peers-valuation（範囲: 株価のみ） |
 | status.md の更新トリガーに達した業界・競合 | collect-market / collect-peers-valuation（範囲: 競合も） |
 | ユーザーが競合の見直しを依頼した（`項目=競合の再選定`）、または主力事業の判定が前回から変わった | collect-peers-valuation（範囲: 競合の再選定。competitors.md を全章書く） |
 | 分析スキル（five-forces・three-c・moat・swot・profitability・growth・cash-flow・safety・valuation）が `担当=`・`項目=` で不足を指定した | 指定された担当だけ（範囲: 指定された項目。雛形のその節を新しい日付の raw に書く。valuation の「株価のみ」は自社の valuation-data.md と競合 6章を同じ基準日で書く） |

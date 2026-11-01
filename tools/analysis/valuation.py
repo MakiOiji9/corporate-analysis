@@ -171,7 +171,17 @@ def cmd_check(args: argparse.Namespace, root: Path) -> int:
                  "price_date": cands["base"]["price"]["date"], "price_age": cands["price_age"],
                  "needs_full_collect": not _has_raw(company), "missing_inputs": requests,
                  "unavailable": _unavailable(found), "outlook": outlook,
+                 "price_refresh": _price_refresh(company, requests),
                  "next": _next_step(company, state["result"], growth["result"], requests)})
+
+
+REFRESH = "tools/collect/refresh_valuation.py"
+
+
+def _price_refresh(company: P.Company, requests: list[dict]) -> str | None:
+    """The script that takes new closing prices without an agent, when the price is the only thing to collect."""
+    items = [i for r in requests for i in r["items"]]
+    return f"{REFRESH} --company {company.dirname}" if items == [X.PRICE_ITEM] else None
 
 
 def _growth_header(company: P.Company) -> str:
