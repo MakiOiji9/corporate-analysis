@@ -30,6 +30,7 @@ TOOLS = HERE.parent
 sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "market"), str(TOOLS / "collect")]
 
 import an_common as A  # noqa: E402
+import an_fill as F  # noqa: E402
 import ff_brief as B  # noqa: E402
 import ff_doc as D  # noqa: E402
 import ff_inputs as I  # noqa: E402
@@ -186,7 +187,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
         "superseded": company.rel(superseded) if superseded else None,
         "md": company.rel(md_path), "kept": kept, "regenerated": untouched and not args.redo,
         "skipped_collect": requests if blocking == "collect" else [],
-        "fill": len(P.FILL.findall(md_path.read_text(encoding="utf-8"))),
+        **F.prepare_fields(company, md_path),
         "candidates": {key: candidates[key]["rating"] for key, _, _ in D.FACTORS},
         "previous": previous[0] if previous else None, "missing_inputs": I.collect_requests(found),
         "unavailable": [f.spec.label for f in found.values() if f.status == "unavailable"],
@@ -268,12 +269,17 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     })
 
 
-def main(argv: list[str] | None = None, root: Path = P.REPO_ROOT) -> int:
+def cmd_fill(args: argparse.Namespace, root: Path) -> int:
+    return F.cmd_fill(args, root, resolve=_resolve, target=_target, build=cmd_build, name="five-forces.md",
+                      emit=emit, write=atomic_write_text)
+
+
+def main(argv: list[str] | None = None, root: Path = A.REPO_ROOT) -> int:
     utf8_stdout()
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="cmd", required=True)
     sub.add_parser("list")
-    for name in ("check", "prepare", "build"):
+    for name in ("check", "prepare", "fill", "build"):
         p = sub.add_parser(name)
         p.add_argument("--company", help="銘柄コード・企業ディレクトリ名・社名の一部")
         p.add_argument("--date", help="YYYY-MM-DD（check/prepare: 今日の代わり、build: 対象の分析日。省略時は今日／最新）")
@@ -281,13 +287,16 @@ def main(argv: list[str] | None = None, root: Path = P.REPO_ROOT) -> int:
             p.add_argument("--redo", action="store_true", help="有効な結果・作成途中の結果があっても作り直す")
             p.add_argument("--skip-collect", action="store_true",
                            help="収集を1回試しても材料が足りないまま進む（欠損は brief の「取れていない材料」に出る）")
+        if name == "fill":
+            F.add_fill_args(p)
     args = parser.parse_args(argv)
     if getattr(args, "date", None):
         try:
             dt.date.fromisoformat(args.date)
         except ValueError:
             return emit({"ok": False, "error": f"--date は YYYY-MM-DD で指定する: {args.date}"})
-    handler = {"list": cmd_list, "check": cmd_check, "prepare": cmd_prepare, "build": cmd_build}[args.cmd]
+    handler = {"list": cmd_list, "check": cmd_check, "prepare": cmd_prepare, "fill": cmd_fill,
+               "build": cmd_build}[args.cmd]
     return handler(args, root)
 
 

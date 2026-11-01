@@ -311,6 +311,48 @@ def render_brief(facts: dict, md_rel: str) -> str:
     return "\n".join(lines) + "\n"
 
 
+# ---------------------------------------------------------------- fields the script writes (an_fill.prefill)
+
+BREAK_PER_SIDE = 2
+
+
+def _with_check(text: str) -> str:
+    where = "株価で確認" if text.startswith("株価") else "次の決算短信で確認"
+    return f"{text}。{where}"
+
+
+def _break_lines(facts: dict) -> list[str]:
+    """4.2: up to two candidates per side, the side that matters first (改善 unless the long verdict is 投資検討)."""
+    found = break_candidates(facts)
+    order = (DOWN_WORD, UP_WORD) if facts["horizons"]["long"]["verdict"] == "投資検討" else (UP_WORD, DOWN_WORD)
+    lines = []
+    for direction in order:
+        lines += [f"【{direction}】{_with_check(c['text'])}" for c in found
+                  if c["direction"] == direction][:BREAK_PER_SIDE]
+    return lines
+
+
+def _watch_lines(facts: dict) -> list[str]:
+    """4.3: the next results and the first gap of each analysis (one line per analysis, at most the range)."""
+    lines = [f"次の決算（{facts['review']}）の決算短信で、決算の進捗と 4.2 の条件を確かめる"]
+    lines += [f"{s['label']}（{s['date']}）は分析後に材料が変わった（{s['reason']}）。作り直して結論が変わるかを確かめる"
+              for s in facts.get("stale") or []]
+    seen = set()
+    for g in facts["gaps"]:
+        if g["label"] not in seen:
+            seen.add(g["label"])
+            lines.append(f"{g['label']}: {g['gap']}")
+    return lines[:LIST_RANGE[1]]
+
+
+def auto_fills(facts: dict) -> dict[str, str | None]:
+    """break and watch from the brief's candidates and gaps; None when there is too little to fill the range."""
+    out = {}
+    for key, lines in (("break", _break_lines(facts)), ("watch", _watch_lines(facts))):
+        out[key] = "\n".join(f"- {line}" for line in lines) if len(lines) >= LIST_RANGE[0] else None
+    return out
+
+
 # ---------------------------------------------------------------- skeleton / parse / validate
 
 def render_skeleton(template: str, facts: dict, brief_rel: str) -> str:

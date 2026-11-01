@@ -31,6 +31,7 @@ TOOLS = HERE.parent
 sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "market"), str(TOOLS / "collect")]
 
 import an_common as A  # noqa: E402
+import an_fill as F  # noqa: E402
 import mdparse as M  # noqa: E402
 import pf_paths as PP  # noqa: E402
 import sf_brief as B  # noqa: E402
@@ -44,7 +45,6 @@ from common import atomic_write_text, utf8_stdout  # noqa: E402
 TEMPLATE = A.REPO_ROOT / ".ai" / "templates" / "safety" / "safety.md"
 OUTLOOK_HEADER = re.compile(r"^\*\*地合い\*\*:\s*(.+)$", re.M)
 SERIES_KEY = "yearly_series"  # input_digests entry for every number (read beyond the SPECS sections)
-FILL_KEY = re.compile(r"<!--\s*FILL:([\w-]+)")
 
 
 def emit(payload: dict) -> int:
@@ -203,19 +203,21 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     brief_path, md_path = company.file(date, P.BRIEF_SUFFIX), company.file(date, P.MD_SUFFIX)
     brief = B.render_brief(company, date, P.valid_until(date), found, cands, previous, _profitability(company),
                            outlook, warnings)
-    if not kept:
-        skeleton = D.render_skeleton(_template(root), _values(company, date, found, outlook), cands)
+    auto = D.auto_fills(cands, previous, found, warnings)
+    if kept:
+        atomic_write_text(md_path, F.prefill(md_path.read_text(encoding="utf-8"), auto))
+    else:
+        skeleton = F.prefill(D.render_skeleton(_template(root), _values(company, date, found, outlook), cands), auto)
         atomic_write_text(md_path, skeleton)
         brief = A.mark_skeleton(brief, skeleton)
     atomic_write_text(brief_path, brief)
     s1 = cands["step1"]
-    md_text = md_path.read_text(encoding="utf-8")
     return emit({
         "ok": True, "company": company.dirname, "date": date, "brief": company.rel(brief_path),
         "superseded": company.rel(superseded) if superseded else None,
         "md": company.rel(md_path), "kept": kept, "regenerated": untouched and not args.redo,
         "skipped_collect": requests if blocking == "collect" else [], "warnings": warnings,
-        "fill": len(A.FILL.findall(md_text)), "fill_keys": FILL_KEY.findall(md_text),
+        **F.prepare_fields(company, md_path),
         "candidate": {"verdict": cands["verdict"], "why": cands["why"],
                       "step1": {i["name"]: i["rating"] for i in s1["items"]},
                       "step2": cands["step2"]["rating"], "step3": cands["step3"]["rating"]},
@@ -297,9 +299,11 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     date, md_path = target
     text = md_path.read_text(encoding="utf-8")
     # the numbers are recomputed so edited cells in the md can't change the conclusion
-    cands = X.candidates(company, I.gather_safety(company))
+    found = I.gather_safety(company)
+    cands = X.candidates(company, found)
     brief = company.file(date, P.BRIEF_SUFFIX)
-    reference = brief.read_text(encoding="utf-8") if brief.exists() else ""
+    auto = D.auto_fills(cands, P.latest_result(company, before=date), found, X.warnings(cands))
+    reference = "\n".join([brief.read_text(encoding="utf-8") if brief.exists() else "", F.auto_reference(auto)])
     issues = D.validate(text, _template(root), cands["step3"]["years"], reference)
     if issues:
         return emit({"ok": False, "md": company.rel(md_path), "issues": issues})
@@ -318,12 +322,17 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     })
 
 
+def cmd_fill(args: argparse.Namespace, root: Path) -> int:
+    return F.cmd_fill(args, root, resolve=_resolve, target=_target, build=cmd_build, name="safety.md",
+                      emit=emit, write=atomic_write_text)
+
+
 def main(argv: list[str] | None = None, root: Path = A.REPO_ROOT) -> int:
     utf8_stdout()
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="cmd", required=True)
     sub.add_parser("list")
-    for name in ("check", "prepare", "build"):
+    for name in ("check", "prepare", "fill", "build"):
         p = sub.add_parser(name)
         p.add_argument("--company", help="銘柄コード・企業ディレクトリ名・社名の一部")
         p.add_argument("--date", help="YYYY-MM-DD（check/prepare: 今日の代わり、build: 対象の分析日。省略時は今日／最新）")
@@ -331,13 +340,16 @@ def main(argv: list[str] | None = None, root: Path = A.REPO_ROOT) -> int:
             p.add_argument("--redo", action="store_true", help="有効な結果・作成途中の結果があっても作り直す")
             p.add_argument("--skip-collect", action="store_true",
                            help="収集を1回試しても材料が足りないまま進む（欠損は brief の「取れていない材料」に出る）")
+        if name == "fill":
+            F.add_fill_args(p)
     args = parser.parse_args(argv)
     if getattr(args, "date", None):
         try:
             dt.date.fromisoformat(args.date)
         except ValueError:
             return emit({"ok": False, "error": f"--date は YYYY-MM-DD で指定する: {args.date}"})
-    handler = {"list": cmd_list, "check": cmd_check, "prepare": cmd_prepare, "build": cmd_build}[args.cmd]
+    handler = {"list": cmd_list, "check": cmd_check, "prepare": cmd_prepare, "fill": cmd_fill,
+               "build": cmd_build}[args.cmd]
     return handler(args, root)
 
 

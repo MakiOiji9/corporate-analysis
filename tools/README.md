@@ -91,6 +91,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 | `company_report.py list` | `companies/` の企業と、鮮度が新しくない分析（`not_fresh`）・最新のレポートの日付と状態 | 1行の JSON |
 | `company_report.py check --company X [--redo] [--use-existing]`（`--use-existing` は triggered の分析を作り直さず既存の結果を使う。prepare も同じ） | 9つの分析（five-forces → three-c → moat → swot → profitability → growth → safety → cash-flow → valuation。鮮度は各スクリプトの `evaluate()`）、地合い判断の古さ（35日）、今日のレポートの状態から `next`（最初の新しくない分析のスキル名 / market-report / prepare / write / build / report_existing） | 1行の JSON |
 | `company_report.py prepare --company X [--redo] [--skip-prices] [--skip-market-report]` | 株価を取得し（`tools/collect/stock_prices.py`）、STEP 1・2 の総合判定（A/B/C）、判定マトリクス、短期・中期・長期の判定と条件表、株価のレンジ・移動平均を計算して facts.json に保存し、執筆の材料と md の骨組み（1章の判定の表はスクリプト、文章は FILL）を作る。作成途中の md は文章を残して判定の表だけを更新する | `{日付}_company-report_facts.json`・`_brief.md`・`.md` |
+| `company_report.py fill --company X [--from JSON] [--build]` | 書き手の JSON（`{"FILL のキー": "本文"}`。省略時は `{日付}_fills.json`）を md の FILL に流し込み、`--build` なら FILL が残っていなければ続けて build する。prepare は 4.2・4.3 を brief の候補と材料不足から記入済みにする（2行以上作れるとき） | md・（`--build` なら）HTML・json |
 | `company_report.py build --company X [--date …]` | md を検証（構造・FILL・判定の表が facts.json と同じか・3行まとめと箇条書きの数・各期間の説明が判定語を含むか・禁止表現）し、単一 HTML（判定カード・根拠の表・STEP 1〜3・財務と株価のチャート・用語集）と要約の json を出力 | `{日付}_company-report.html`・`.json` |
 
 モジュール: `cr_status.py`（9つの分析の鮮度と次の作業。各分析スクリプトの `evaluate()` を再利用）、`cr_judge.py`（STEP 1・2 の総合判定・判定マトリクス・3期間の判定。純関数）、`cr_prices.py`（株価のレンジ・移動平均・月次の系列・年ごとの高値と安値。prices.csv が無ければ raw の年次表）、`cr_facts.py`（分析結果・地合い・次回の見直し日の集約）、`cr_doc.py`（材料・骨組み・検証）、`cr_render.py`（HTML。`charts.py`・`slides.esc/table` を再利用）、`cr_glossary.py`（企業分析の用語集と判定語の説明）。テンプレートは `.ai/templates/company-report/`。
@@ -98,6 +99,11 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 株価の取得は `tools/collect/stock_prices.py --company X [--years 10]`（Yahoo Finance のチャート API。非公式・キー不要。日本株は `{コード}.T`）。分割調整済みの日足を `companies/{ticker}_{name}/data/prices.csv`（`date,open,high,low,close,adj_close,volume,retrieved`）に保存する。
 
 ### 企業分析用（`tools/analysis/`）
+
+9つの分析スクリプト（five_forces.py・three_c.py・moat.py・swot.py・profitability.py・growth.py・safety.py・cash_flow.py・valuation.py）に共通:
+
+- prepare は、数値から決まる FILL 欄（前回からの変更点・判定に効く欠損・引き継ぎの定型文・不整合が無いときのコメントなど）をスクリプトで記入済みにし、書き手に残る欄だけを `fill_keys`・`fill_spec`（キー・指示・表のセルか）で返す。moat・swot の SWOT の候補・結論の文・要約・変更点・欠損は、書き手のほかの欄が埋まると build が記入する（`filled_at_build`）。共通の部品は `an_fill.py`
+- `fill --company X [--from JSON] [--build]`: 書き手の JSON（`{"FILL のキー": "本文"}`。省略時は md と同じ場所の `{日付}_fills.json`。git 管理外）を md の FILL に流し込む。表のセルの本文は1行にまとめ、`|` は `｜` にする。`--build` なら書き手の欄が残っていなければ続けて build する
 
 スキル `five-forces`（`.ai/skills/five-forces.md`）から呼び出す。入口は `five_forces.py` だけ。出力はすべて `companies/{ticker}_{name}/analysis/five-forces/{分析日}_*`。`--company` は銘柄コード・ディレクトリ名・社名の一部のどれでもよい。
 

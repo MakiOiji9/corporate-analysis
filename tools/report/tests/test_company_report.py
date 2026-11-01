@@ -199,8 +199,10 @@ def test_prepare_fill_build_flow(repo, capsys):
     assert out["ok"], out
     assert (out["step1"], out["step2"], out["step3"]) == ("A", "A", "割安")
     assert out["horizons"] == {"short": "投資検討", "mid": "投資検討", "long": "投資検討"}
-    assert set(out["fill_keys"]) == {"summary", "about", "short", "mid", "long", "thesis", "break", "watch"}
+    # 4.2 comes from the brief's candidates; 4.3 stays with the writer when there are too few gaps for 2 lines
+    assert set(out["fill_keys"]) == {"summary", "about", "short", "mid", "long", "thesis", "watch"}
     md = company / "reports" / f"{TODAY}_company-report.md"
+    assert "### 4.2 判断が崩れる条件\n\n- 【悪化】" in md.read_text(encoding="utf-8")  # 投資検討: 悪化 first
     assert _run(repo, capsys, "check", "--company", "3798", "--date", TODAY)["next"] == "write"
     blocked = _run(repo, capsys, "build", "--company", "3798")
     assert not blocked["ok"] and any("FILL" in i for i in blocked["issues"])

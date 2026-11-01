@@ -12,10 +12,11 @@ from string import Template
 import re
 import unicodedata
 
+import an_fill as AF
 import gr_facts as F
 import mdparse as M
 from ff_doc import FIXED_MARK, _check_words, replace_section
-from gr_metrics import CLASSES, PLAN_HIT, RECOVERY_YEARS, decide, fmt_cagr, yoy
+from gr_metrics import CLASSES, HIGH_EPS, HIGH_SALES, PLAN_HIT, RECOVERY_YEARS, decide, fmt_cagr, yoy
 from validate import check_fill, check_structure, check_tables
 
 UNKNOWN = "不明"
@@ -147,6 +148,80 @@ def render_skeleton(template: str, values: dict, cands: dict, consistency: list[
                   quality_rows=quality_table_rows(s4), adjusted_step1=adjusted_cell(s4, s1),
                   consistency_rows=consistency_table_rows(consistency))
     return Template(template).safe_substitute(filled)
+
+
+# ---------- fields the script writes (an_fill.prefill) ----------
+
+def _consistency_comment(consistency: list[dict]) -> str | None:
+    results = [r["result"] for r in consistency]
+    if any(r.startswith(("不整合", "判断できない")) for r in results):
+        return None  # whether the company is losing share is the writer's
+    if results and all(r.startswith(("未実施", "対象外")) for r in results):
+        return "該当する STEP 1 の結論なし"
+    return "整合（売上が市場並み以上に伸びている）"
+
+
+def _report_points(cands: dict) -> str | None:
+    if cands["declines"]:
+        return None  # the verdict waits for the writer's classification of the decline years
+    verdict, why, _ = final(cands, {})
+    s1, s3, s4 = cands["step1"], cands["step3"], cands["step4"]
+    return AF.joined([f"成長性は{verdict}（{why}）", s1["sentence"], "減収・減益の年なし", s4["sentence"],
+                      f"会社計画は{s3['rating']}" if s3["rating"] else ""])
+
+
+def _step3_hint(cands: dict) -> str:
+    s3 = cands["step3"]
+    if s3["rating"] is None:
+        return "会社計画が無いため実績の CAGR を基準にする"
+    if s3["rating"] == "信頼できる":
+        return f"会社計画は信頼できる（{s3['basis']}）。STEP 3 では会社計画の成長率をそのまま使える"
+    return f"会社計画は割り引いて扱う（{s3['basis']}）。STEP 3 では実績の CAGR か保守的な成長率を使う"
+
+
+def _step2_checks(cands: dict) -> str:
+    s4 = cands["step4"]
+    checks = ["成長に伴う運転資本・設備投資が営業CF・FCF を圧迫していないか（キャッシュフロー）",
+              "成長投資の資金を借入に頼っていないか（安全性）"]
+    if s4["problems"] or s4["unknown"]:
+        checks.insert(0, "利益の伸びが売上の伸びに見合い、利益率が保たれているか（収益性）")
+    return "、".join(checks)
+
+
+def _triggers(cands: dict) -> str:
+    rating = cands["step1"]["rating"]
+    parts = {"高成長": [f"売上 CAGR が{HIGH_SALES:.0f}%を下回るか EPS CAGR が{HIGH_EPS:.0f}%を下回れば安定成長"],
+             "安定成長": [f"売上 CAGR が{HIGH_SALES:.0f}%以上かつ EPS CAGR が{HIGH_EPS:.0f}%以上になれば高成長、"
+                       "売上か EPS の CAGR がマイナスになれば停滞・縮小"],
+             "停滞・縮小": ["売上・EPS とも CAGR がプラスになれば安定成長"]}.get(rating, [])
+    parts.append("減収・減益の年に構造要因が見つかれば懸念")
+    border = ["境界に近い比較: " + "、".join(cands["borderline"])] if cands["borderline"] else []
+    return AF.joined(["、".join(parts)] + border)
+
+
+def _changes(cands: dict, previous: tuple[str, dict] | None) -> str:
+    old = previous[1] if previous else {}
+    o1, o3, o4 = old.get("step1") or {}, old.get("step3") or {}, old.get("step4") or {}
+    s1 = cands["step1"]
+    pairs = [("成長性", old.get("verdict"), final(cands, {})[0])] if not cands["declines"] else []
+    pairs += [("手順1", o1.get("rating"), s1["rating"]),
+              ("売上 CAGR（%）", o1.get("sales_cagr"), s1["sales"]["value"]),
+              ("EPS CAGR（%）", o1.get("eps_cagr"), s1["eps"]["value"]),
+              ("減収・減益の年", "、".join(d["year"] for d in old.get("declines") or []) or "なし",
+               "、".join(d["year"] for d in cands["declines"]) or "なし"),
+              ("手順3", o3.get("rating"), cands["step3"]["rating"]),
+              ("成長の質", o4.get("quality"), cands["step4"]["quality"])]
+    return AF.changes_bullets(previous, pairs)
+
+
+def auto_fills(cands: dict, consistency: list[dict], previous: tuple[str, dict] | None, found: dict,
+               warnings: list[str]) -> dict[str, str | None]:
+    """The FILL fields that follow from the numbers. The decline years' classification, the drivers and the
+    mid-term plan are the writer's; so is the report text while the verdict waits for that classification."""
+    return {"structural": None if cands["declines"] else "減収・減益の年なし",
+            "consistency": _consistency_comment(consistency), "report-points": _report_points(cands),
+            "step3-hint": _step3_hint(cands), "step2-checks": _step2_checks(cands), "triggers": _triggers(cands),
+            "changes": _changes(cands, previous), "gaps": AF.gaps_bullets(found, warnings)}
 
 
 # ---------- parse ----------

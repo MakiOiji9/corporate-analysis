@@ -9,9 +9,11 @@ from __future__ import annotations
 import re
 from string import Template
 
+import an_fill as F
 import mdparse as M
 from ff_doc import FIXED_MARK, _check_words, replace_section
-from sf_metrics import CLEAR, DEBT_MATERIAL, MATCH_MONTHS, NAMES, UNKNOWN, fmt, money
+from sf_metrics import (CLEAR, DEBT_MATERIAL, EQUITY_DROP_PT, MATCH_MONTHS, MISS, NAMES, TREND_YEARS, UNKNOWN, fmt,
+                        money)
 from validate import check_fill, check_structure, check_tables
 
 UNKNOWN_BACKGROUND = "不明"
@@ -128,6 +130,62 @@ def parse(text: str) -> dict:
         "step2_checks": handoff.get("STEP 2 の他の分析で確かめること", ""), "triggers": handoff.get("評価が変わる条件", ""),
         "changes": M.bullets(M.section(text, "6.")), "gaps": M.bullets(M.section(text, "7.")),
     }
+
+
+# ---------- fields the script writes (an_fill.prefill) ----------
+
+def _report_points(cands: dict) -> str:
+    s1, s2, s3 = cands["step1"], cands["step2"], cands["step3"]
+    return F.joined([f"安全性は{cands['verdict']}（{cands['why']}）", s1["sentence"], s2["sentence"], s3["sentence"]])
+
+
+def _step2_checks(cands: dict) -> str:
+    s1, s3 = cands["step1"], cands["step3"]
+    if s1.get("debt_free"):
+        checks = ["厚い手元資金が営業CF で積み上がったものか（キャッシュフロー）",
+                  "低い財務レバレッジが ROE を押し下げていないか（収益性）"]
+    else:
+        checks = ["有利子負債を営業CF で返せているか（キャッシュフロー）"]
+    if s3["years"]:
+        checks.append("借入で賄った投資が売上・営業利益の成長につながったか（成長性）")
+    return "、".join(checks)
+
+
+def _item_trigger(item: dict) -> str | None:
+    if item["rating"] == CLEAR:
+        if item["key"] == "de" and "実質無借金" in item.get("basis", ""):
+            return "有利子負債が現金及び現金同等物を上回れば実質無借金でなくなる"
+        return f"{item['name']}が{item['target']}を満たさず同業平均も下回れば未達"
+    if item["rating"] == MISS:
+        return f"{item['name']}が{item['target']}を満たすか同業平均に並べばクリア"
+    return None
+
+
+def _triggers(cands: dict) -> str:
+    parts = [t for t in (_item_trigger(i) for i in cands["step1"]["items"]) if t]
+    parts.append(f"未達が2指標以上になれば懸念、自己資本比率が直近{TREND_YEARS}年で{EQUITY_DROP_PT:.0f}pt以上下がれば悪化傾向")
+    border = ["境界に近い比較: " + "、".join(cands["borderline"])] if cands["borderline"] else []
+    return F.joined(["、".join(parts)] + border)
+
+
+def _changes(cands: dict, previous: tuple[str, dict] | None) -> str:
+    old = previous[1] if previous else {}
+    o1, o2, o3 = old.get("step1") or {}, old.get("step2") or {}, old.get("step3") or {}
+    old_items = {i.get("key"): i for i in o1.get("items") or []}
+    pairs = [("安全性", old.get("verdict"), cands["verdict"])]
+    for i in cands["step1"]["items"]:
+        prev = old_items.get(i["key"])
+        pairs.append((f"{i['name']}の判定", (prev or {}).get("rating"), i["rating"]))
+        pairs.append((i["name"], fmt(i["key"], prev.get("value")) if prev else None, fmt(i["key"], i["value"])))
+    pairs += [("推移", o2.get("rating"), cands["step2"]["rating"]),
+              ("借入の目的", o3.get("rating"), cands["step3"]["rating"])]
+    return F.changes_bullets(previous, pairs)
+
+
+def auto_fills(cands: dict, previous: tuple[str, dict] | None, found: dict, warnings: list[str]) -> dict[str, str]:
+    """The FILL fields that follow from the numbers (the backgrounds and the policy are the writer's)."""
+    return {"report-points": _report_points(cands), "step2-checks": _step2_checks(cands),
+            "triggers": _triggers(cands), "changes": _changes(cands, previous), "gaps": F.gaps_bullets(found, warnings)}
 
 
 # ---------- checks ----------

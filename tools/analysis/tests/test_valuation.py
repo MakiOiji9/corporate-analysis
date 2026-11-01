@@ -537,7 +537,7 @@ def test_prepare_fill_build(repo, capsys):
 def test_build_rejects_new_numbers_and_approximations(repo, capsys):
     md = prepared(repo, capsys)
     fill(md)
-    text = md.read_text(encoding="utf-8").replace("背景 report-points（brief による）", "PER は約 9.87倍 まで下がりうる")
+    text = md.read_text(encoding="utf-8").replace("背景 cheap-reason（brief による）", "PER は約 9.87倍 まで下がりうる")
     md.write_text(text, encoding="utf-8")
     code, out = run(repo, "build", "--company", "7203", capsys=capsys)
     assert code == 1

@@ -24,6 +24,10 @@ market/**/sources/**
 !market/**/sources/
 !market/**/sources/manifest.csv
 
+# The writer's JSON poured into an analysis / report md by the `fill` subcommand (the md keeps the text)
+companies/*/analysis/*/*_fills.json
+companies/*/reports/*_fills.json
+
 # Run state of collect-market-info (running marker for the write guard, git baseline)
 market/sessions/*/.running
 market/sessions/*/.baseline.json

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from string import Template
 
+import an_fill as F
 import mdparse as M
 import mt_metrics as MT
 from ff_doc import FIXED_MARK, _check_words, replace_section
@@ -146,6 +147,78 @@ def render_skeleton(template: str, values: dict, cands: dict, consistency: list[
                   one_off_step1=one_off_step1_cell(cands["one_off_step1"], s1),
                   consistency_rows=consistency_table_rows(consistency))
     return Template(template).safe_substitute(filled)
+
+
+# ---------- fields the script writes (an_fill.prefill) ----------
+
+def _consistency_comment(consistency: list[dict]) -> str | None:
+    results = [r["result"] for r in consistency]
+    if any(r.startswith("不整合") for r in results):
+        return None  # which STEP 1 judgement to revisit is the writer's
+    if results and all(r.startswith(("未実施", "対象外")) for r in results):
+        return "該当する STEP 1 の結論なし"
+    return "不整合なし"
+
+
+def _one_off(cands: dict) -> str | None:
+    if any(r["check"] for r in cands["one_off"]):
+        return None
+    return f"特別損益は各年とも当期純利益の{ONE_OFF_SHARE:.0f}%未満で、ROE の水準を左右していない"
+
+
+def _report_points(cands: dict) -> str:
+    s1, s2, s3 = cands["step1"], cands["step2"], cands["step3"]
+    source = f"ROE の源泉は{s3['source']}（{s3['basis']}）" if s3["source"] != "不明" else s3["sentence"]
+    return F.joined([f"収益性は{cands['verdict']}（{cands['why']}）", s1["sentence"], s2["sentence"], source])
+
+
+def _step2_checks(cands: dict) -> str:
+    s2, s3 = cands["step2"], cands["step3"]
+    checks = ["利益率の水準が売上の成長を伴っているか（成長性）", "純利益が営業CF で裏付けられているか（キャッシュフロー）"]
+    if s3["source"] == "借入依存" or (s3.get("latest_leverage") or 0) > 2.0:
+        checks.insert(0, "財務レバレッジの高さが有利子負債の増加によるものか（安全性）")
+    else:
+        checks.insert(0, "財務レバレッジの低さが手元資金・自己資本の厚さによるものか（安全性）")
+    if s2["rating"] == "下回る":
+        checks.append("同業より低い営業利益率が成長投資の費用によるものか（成長性・キャッシュフロー）")
+    return "、".join(checks)
+
+
+def _triggers(cands: dict) -> str:
+    s1, s2 = cands["step1"], cands["step2"]
+    parts = []
+    if s1["rating"] == "良好":
+        parts.append("平均 ROE が 10% を下回るか最低 ROE が 5% を下回れば手順1は普通、平均が 8% を下回るか赤字の年が出れば懸念")
+    elif s1["rating"] == "普通":
+        parts.append("平均 ROE が 10% 以上かつ最低 5% 以上になれば手順1は良好、平均が 8% を下回るか赤字の年が出れば懸念")
+    elif s1["rating"] == "懸念":
+        parts.append("平均 ROE が 8% 以上で赤字の年が無くなれば手順1は普通")
+    if s2["rating"] in ("上回る", "同等"):
+        parts.append(f"営業利益率が同業平均を {SAME_PT:.0f}pt 超下回れば手順2は下回る（収益性は普通以下）")
+    elif s2["rating"] == "下回る":
+        parts.append(f"営業利益率と同業平均との差が −{SAME_PT:.0f}pt 以内に縮まれば手順2は同等")
+    if cands["borderline"]:
+        parts.append("境界に近い比較: " + "、".join(cands["borderline"]))
+    return F.joined(parts) or "—（判定できる手順が無い）"
+
+
+def _changes(cands: dict, previous: tuple[str, dict] | None) -> str:
+    old = previous[1] if previous else {}
+    o1, o2, o3 = old.get("step1") or {}, old.get("step2") or {}, old.get("step3") or {}
+    s1, s2, s3 = cands["step1"], cands["step2"], cands["step3"]
+    return F.changes_bullets(previous, [
+        ("収益性", old.get("verdict"), cands["verdict"]), ("手順1", o1.get("rating"), s1["rating"]),
+        ("平均 ROE（%）", o1.get("average"), s1.get("average")), ("手順2", o2.get("rating"), s2["rating"]),
+        ("営業利益率の同業との差（pt）", o2.get("diff"), s2.get("diff")), ("手順3", o3.get("source"), s3["source"])])
+
+
+def auto_fills(cands: dict, consistency: list[dict], previous: tuple[str, dict] | None, found: dict,
+               warnings: list[str]) -> dict[str, str | None]:
+    """The FILL fields that follow from the numbers; None leaves the field for the writer."""
+    return {"consistency": _consistency_comment(consistency), "one-off": _one_off(cands),
+            "report-points": _report_points(cands), "step2-checks": _step2_checks(cands),
+            "triggers": _triggers(cands), "changes": _changes(cands, previous),
+            "gaps": F.gaps_bullets(found, warnings)}
 
 
 # ---------- parse ----------

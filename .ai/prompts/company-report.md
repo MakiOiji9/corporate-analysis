@@ -93,10 +93,13 @@ $PY -I tools/report/company_report.py prepare --company {company} [--redo] [--us
 
 ### 3. 執筆（LLM）
 
-brief.md を読み、company-report.md の `<!-- FILL:... -->` を Edit で置き換える。
+brief.md を読み、prepare の返り値 `fill_spec`（書く欄のキーと指示）に従って本文を書く。
 
-- 読むのは brief.md と company-report.md だけ。raw・分析の md・CSV を個別に開かない（必要なことは brief.md に集約済み）
-- 書く順番と Edit の単位（各1回）: `summary` → `about` → `short` → `mid` → `long` → `thesis` → `break` → `watch`
+- 書いた本文は `{"FILL のキー": "本文"}` の JSON 1つにまとめて、返り値の `fills_json`（`reports/{日付}_fills.json`）に Write し、`$PY -I tools/report/company_report.py fill --company {company} --build` で流し込んで build する（FILL が残っていれば build せず `remaining` を返す）。md の FILL を Edit で置き換えてもよい
+- `break`（4.2）と `watch`（4.3）は、brief「5.1〜5.3」の候補と「6. 材料不足」から2行以上作れるときは prepare がスクリプトで記入済みで、`fill_keys` に出ない（書き直さない）
+
+- 読むのは brief.md だけ（md は build の指摘を直すときだけ開く）。raw・分析の md・CSV を個別に開かない（必要なことは brief.md に集約済み）
+- 書く順番（`fill_keys` にあるものだけ）: `summary` → `about` → `short` → `mid` → `long` → `thesis` → `break` → `watch`
 - 書き方の規則は md 冒頭の `>` 行と各 FILL の指示に従う。要点:
   - **読み手は初心者からプロまで**。専門用語は使ってよいが、初めて出るところで「（＝…）」と言い換える。1文を短く、結論を先に書く
   - 各期間の説明は**判定語から書き始め**（build が確かめる）、brief「3. 期間ごとの判定」の**良い点・悪い点から寄与の大きいものを1つ以上ずつ**、要素名と値を添えて説明する（build が要素名の有無を確かめる）。点数表に無い理由を足さない

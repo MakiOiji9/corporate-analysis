@@ -635,3 +635,16 @@ def test_large_or_medium_impact_needs_a_figure(repo, capsys):
     fill(prepared(repo, capsys), w=W_ROW.replace("売上の12%", "売上の一部"))
     code, out = build(repo, capsys)
     assert code == 1 and any("W1: 影響度「中」の理由に" in issue for issue in out["issues"]), out
+
+
+def test_build_writes_sentence_summary_changes_and_gaps_from_the_picks(repo, capsys):
+    md = prepared(repo, capsys)
+    values = dict(ANSWERS, **{"s-rows": S_ROW, "w-rows": W_ROW, "o-rows": O_ROW, "t-rows": T_ROW})
+    md.write_text(FILL_ANY.sub(lambda m: m.group(0) if m.group(1) in D.BUILD_KEYS else values[m.group(1)],
+                               md.read_text(encoding="utf-8")), encoding="utf-8")
+    code, out = build(repo, capsys)
+    assert code == 0, out
+    text = md.read_text(encoding="utf-8")
+    assert "S1（継続率が高い）により、T1（参入が続く）に対して条件付きで耐えられる。理由：採用が進めば耐えられる" in text
+    assert "最大の強みはS1（継続率が高い）、最大の脅威はT1（参入が続く）。SWOT の結論は条件付き" in text
+    assert "## 8. 前回からの変更点\n\n- 初回の分析" in text

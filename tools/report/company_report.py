@@ -32,6 +32,7 @@ TOOLS = HERE.parent
 sys.path[:0] = [str(HERE), str(TOOLS / "analysis"), str(TOOLS / "collect" / "market"), str(TOOLS / "collect")]
 
 import an_common as A  # noqa: E402
+import an_fill as AF  # noqa: E402
 import cr_doc as D  # noqa: E402
 import cr_facts as F  # noqa: E402
 import cr_render as R  # noqa: E402
@@ -40,7 +41,6 @@ import stock_prices as SP  # noqa: E402
 from common import atomic_write_text, utf8_stdout  # noqa: E402
 
 TEMPLATE_DIR = A.REPO_ROOT / ".ai" / "templates" / "company-report"
-FILL_KEY = re.compile(r"<!--\s*FILL:([\w-]+)")
 HORIZON_ROW = re.compile(r"^\| (短期|中期|長期)（.*$", re.M)
 
 
@@ -145,15 +145,16 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     kept = md_path.exists() and A.is_draft(md_path) and not args.redo
     atomic_write_text(company.file(today, S.FACTS_SUFFIX), json.dumps(facts, ensure_ascii=False, indent=1) + "\n")
     atomic_write_text(brief_path, D.render_brief(facts, company.rel(md_path)))
+    auto = D.auto_fills(facts)
     if kept:
-        atomic_write_text(md_path, _refresh_table(md_path.read_text(encoding="utf-8"), facts))
+        atomic_write_text(md_path, AF.prefill(_refresh_table(md_path.read_text(encoding="utf-8"), facts), auto))
     else:
-        atomic_write_text(md_path, D.render_skeleton(_template(root, "report.md"), facts, company.rel(brief_path)))
-    md_text = md_path.read_text(encoding="utf-8")
+        atomic_write_text(md_path, AF.prefill(D.render_skeleton(_template(root, "report.md"), facts,
+                                                                company.rel(brief_path)), auto))
     return emit({
         "ok": True, "company": company.dirname, "date": today, "brief": company.rel(brief_path),
         "superseded": company.rel(superseded) if superseded else None,
-        "md": company.rel(md_path), "kept": kept, "fill_keys": FILL_KEY.findall(md_text),
+        "md": company.rel(md_path), "kept": kept, **AF.prepare_fields(company, md_path),
         "prices": {k: prices[k] for k in ("ok", "skipped", "rows", "first", "last", "error") if k in prices},
         "price_source": facts["prices"]["source"], "step1": _grade(facts["step1"]), "step2": _grade(facts["step2"]),
         "step3": facts["step3"]["verdict"],
@@ -215,13 +216,18 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
                  "warnings": warnings})
 
 
+def cmd_fill(args: argparse.Namespace, root: Path) -> int:
+    return AF.cmd_fill(args, root, resolve=_resolve, target=_target, build=cmd_build, name="company-report.md",
+                       emit=emit, write=atomic_write_text)
+
+
 def main(argv: list[str] | None = None, root: Path = A.REPO_ROOT) -> int:
     utf8_stdout()
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="cmd", required=True)
     lister = sub.add_parser("list")
     lister.add_argument("--date", help="YYYY-MM-DD（今日の代わり）")
-    for name in ("check", "prepare", "build"):
+    for name in ("check", "prepare", "fill", "build"):
         p = sub.add_parser(name)
         p.add_argument("--company", help="銘柄コード・企業ディレクトリ名・社名の一部")
         p.add_argument("--date", help="YYYY-MM-DD（check/prepare: 今日の代わり、build: 対象のレポートの日付）")
@@ -234,13 +240,16 @@ def main(argv: list[str] | None = None, root: Path = A.REPO_ROOT) -> int:
             p.add_argument("--skip-prices", action="store_true", help="株価を取りに行かない（data/prices.csv をそのまま使う）")
             p.add_argument("--skip-market-report", action="store_true",
                            help="地合い判断が古いまま進む（market-report を実行しても作れなかったときだけ）")
+        if name == "fill":
+            AF.add_fill_args(p)
     args = parser.parse_args(argv)
     if getattr(args, "date", None):
         try:
             dt.date.fromisoformat(args.date)
         except ValueError:
             return emit({"ok": False, "error": f"--date は YYYY-MM-DD で指定する: {args.date}"})
-    handler = {"list": cmd_list, "check": cmd_check, "prepare": cmd_prepare, "build": cmd_build}[args.cmd]
+    handler = {"list": cmd_list, "check": cmd_check, "prepare": cmd_prepare, "fill": cmd_fill,
+               "build": cmd_build}[args.cmd]
     return handler(args, root)
 
 

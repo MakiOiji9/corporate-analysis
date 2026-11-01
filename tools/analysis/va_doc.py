@@ -11,6 +11,7 @@ from __future__ import annotations
 import re
 from string import Template
 
+import an_fill as F
 import mdparse as M
 import va_metrics as X
 import va_rules as R
@@ -243,6 +244,37 @@ def render_skeleton(template: str, values: dict, cands: dict, alt: dict | None =
                   **score_cells(cands, alt), sheet=sheet_cell(cands),
                   flip_prices=_cell("。".join(cands["flip_prices"]) or "—（計算できる指標なし）"))
     return Template(template).safe_substitute(filled)
+
+
+# ---------- fields the script writes (an_fill.prefill) ----------
+
+def _report_points(cands: dict) -> str | None:
+    if pbr_pending(cands):
+        return None  # the verdict waits for the writer's answer on the PBR improvement measures
+    ratings = "・".join(f"{name} {cands[key]['rating']}" for key, name in X.INDICATORS)
+    return F.joined([f"STEP 3 は{cands['verdict']}（{cands['why']}）", f"指標ごとの判定は {ratings}（根拠は1〜5章）"])
+
+
+def _final_checks(cands: dict) -> str:
+    checks = ["PBR の水準が ROE（収益性分析）と見合っているか", "PEG に使った成長率が成長性分析の会社計画の信頼性と合っているか"]
+    if cands["step3"]["raw_verdict"] == R.LOW:
+        checks.append("割安の理由が STEP 2 の懸念・SWOT の脅威で説明できるか")
+    return "、".join(checks)
+
+
+def _changes(cands: dict, previous: tuple[str, dict] | None) -> str:
+    old = previous[1] if previous else {}
+    pairs = [] if pbr_pending(cands) else [("STEP 3", old.get("verdict"), cands["verdict"])]
+    pairs.append(("株価", (old.get("price") or {}).get("value"), cands["base"]["price"].get("price")))
+    pairs += [(name, (old.get(key) or {}).get("rating"), cands[key]["rating"]) for key, name in X.INDICATORS]
+    return F.changes_bullets(previous, pairs)
+
+
+def auto_fills(cands: dict, previous: tuple[str, dict] | None, found: dict, warnings: list[str]) -> dict[str, str | None]:
+    """The FILL fields that follow from the numbers (special-bg, measures, divergence-bg and cheap-reason, when
+    they apply, are the writer's)."""
+    return {"report-points": _report_points(cands), "final-checks": _final_checks(cands),
+            "changes": _changes(cands, previous), "gaps": F.gaps_bullets(found, warnings)}
 
 
 # ---------- parse ----------

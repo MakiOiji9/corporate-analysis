@@ -653,3 +653,19 @@ def test_brief_is_lighter_and_warns(tmp_path, capsys):
     assert any("販管費率" in w for w in out["warnings"])
     assert any("2026-03" in w and "10.0%" in w and "10.5%" in w for w in out["warnings"])
     assert "## 警告" in brief
+
+
+def test_build_fills_swot_candidates_changes_and_gaps_from_the_rows(repo, capsys):
+    md = prepared(repo, capsys)
+    code, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["filled_at_build"] == ["strengths", "threats", "changes", "gaps"]
+    assert not set(out["fill_keys"]) & set(D.BUILD_KEYS)
+    values = dict(ANSWERS, **{"moat-rows": moat_rows(switching="該当", license="該当"),
+                              "risk-rows": RISK.format(timing="5〜10年")})
+    md.write_text(FILL_ANY.sub(lambda m: m.group(0) if m.group(1) in D.BUILD_KEYS else values[m.group(1)],
+                               md.read_text(encoding="utf-8")), encoding="utf-8")
+    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 0, out
+    text = md.read_text(encoding="utf-8")
+    assert "| SWOT の強み（S）候補 | スイッチングコスト（" in text and "／規制・特許・許認可（" in text
+    assert "（5〜10年。影響するモート:" in text and "## 7. 前回からの変更点\n\n- 初回の分析" in text

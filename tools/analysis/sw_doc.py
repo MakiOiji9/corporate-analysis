@@ -19,6 +19,7 @@ from __future__ import annotations
 import re
 from string import Template
 
+import an_fill as F
 import mdparse as M
 from ff_doc import CHANGED_FROM_PREVIOUS, CONFIDENCE, LOW_CONFIDENCE, TIE_BREAK, _check_words, replace_section
 from sw_metrics import scale_note, scale_rows
@@ -232,6 +233,55 @@ def forced_answer(parsed: dict) -> tuple[str | None, str]:
     if parsed["top_threat"] == NONE:
         return "Yes", "影響度が中以上の脅威が無い"
     return None, ""
+
+
+# ---------- fields build derives from the writer's picks (an_fill.fill_at_build) ----------
+
+BUILD_KEYS = ("sentence", "summary", "changes", "gaps")
+FACT_LIMIT = 60  # characters of a picked item's fact quoted in the sentence and the summary
+
+
+def _first_sentence(text: str) -> str:
+    return text.strip().split("。", 1)[0].strip()
+
+
+def _changes(p: dict, previous: tuple[str, dict] | None) -> str:
+    if not previous:
+        return "- 初回の分析"
+    old = previous[1]
+    old_ids = {q: [r.get("id") for r in (old.get("quadrants") or {}).get(q) or []] for q, _, _ in QUADRANTS}
+    pairs = [(f"{QUADRANT_NAME[q]}の項目", "、".join(old_ids[q]) or NONE,
+              "、".join(r["id"] for r in items_of(p, q)) or NONE) for q, _, _ in QUADRANTS]
+    pairs += [("最大の強み", (old.get("top_strength") or {}).get("id"), p["top_strength"]),
+              ("最大の脅威", (old.get("top_threat") or {}).get("id"), p["top_threat"]),
+              ("判定", old.get("answer"), p["answer"])]
+    return F.changes_bullets(previous, pairs)
+
+
+def _gaps(p: dict, found: dict, warnings: list[str]) -> str:
+    rows = [r for q, _, _ in QUADRANTS for r in items_of(p, q)]
+    extra = [f"{r['id']}: 影響度が不明" for r in rows if r["impact"] == UNKNOWN]
+    extra += [f"{r['id']}: 根拠が参考情報だけ" for r in rows if r["confidence"] == LOW_CONFIDENCE]
+    return F.gaps_bullets(found, warnings, extra)
+
+
+def build_fills(text: str, found: dict | None = None, previous: tuple[str, dict] | None = None,
+                warnings: list[str] = ()) -> dict[str, str]:
+    """5章 結論の文, 7章 要約, 8章 and 9章, from the rows, the picks, the answer and its reason (the answer the
+    rules force wins)."""
+    p = parse(text)
+    strength, threat = _pick(p, "S", "top_strength"), _pick(p, "T", "top_threat")
+    forced, forced_why = forced_answer(p)
+    answer = forced or (p["answer"] if p["answer"] in ANSWERS else None)
+    reason = _first_sentence(forced_why or p["answer_reason"]) or "—"
+    s_text = NONE if strength["id"] == NONE else f"{strength['id']}（{cell(_first_sentence(strength['fact']), FACT_LIMIT)}）"
+    t_text = NONE if threat["id"] == NONE else f"{threat['id']}（{cell(_first_sentence(threat['fact']), FACT_LIMIT)}）"
+    out = {"summary": f"最大の強みは{s_text}、最大の脅威は{t_text}。"
+                      f"SWOT の結論は{answer or PENDING}（{reason}）。",
+           "changes": _changes(p, previous), "gaps": _gaps(p, found or {}, list(warnings))}
+    if answer:
+        out["sentence"] = f"{s_text}により、{t_text}に対して{PHRASE[answer]}。理由：{reason}"
+    return out
 
 
 def _check_answer(parsed: dict) -> list[str]:

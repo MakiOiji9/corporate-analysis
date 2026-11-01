@@ -19,6 +19,7 @@ from __future__ import annotations
 
 from string import Template
 
+import an_fill as F
 import mdparse as M
 from ff_doc import (CHANGED_FROM_PREVIOUS, CONFIDENCE, LOW_CONFIDENCE, TIE_BREAK, _check_words, candidate_cell,
                     replace_section)
@@ -96,6 +97,40 @@ def parse(text: str) -> dict:
         "step2_checks": handoff.get("STEP 2 で確かめること", ""), "triggers": handoff.get("評価が変わる条件", ""),
         "changes": M.bullets(M.section(text, "7.")), "gaps": M.bullets(M.section(text, "8.")),
     }
+
+
+# ---------- fields build derives from the writer's rows (an_fill.fill_at_build) ----------
+
+BUILD_KEYS = ("strengths", "threats", "changes", "gaps")
+
+
+def _changes(p: dict, previous: tuple[str, dict] | None) -> str:
+    if not previous:
+        return "- 初回の分析"
+    old = previous[1]
+    old_moats = {m.get("type"): m.get("rating") for m in old.get("moats") or []}
+    pairs = [(f"{m['type']}", old_moats.get(m["type"]), m["rating"]) for m in p["moats"]]
+    pairs.append(("シェアの推移", (old.get("share") or {}).get("trend"), p["share"]["trend"]))
+    return F.changes_bullets(previous, pairs)
+
+
+def _gaps(p: dict, found: dict, warnings: list[str]) -> str:
+    extra = [f"{m['type']}: 不明（根拠が brief に無い）" for m in p["moats"] if m["rating"] == "不明"]
+    extra += [f"{m['type']}: 根拠が参考情報だけ" for m in p["moats"] if m["confidence"] == LOW_CONFIDENCE]
+    if p["share"]["trend"] == "不明":
+        extra.append("シェアの推移: 不明（業界のシェアの時系列が無い）")
+    return F.gaps_bullets(found, warnings, extra)
+
+
+def build_fills(text: str, found: dict, previous: tuple[str, dict] | None, warnings: list[str]) -> dict[str, str]:
+    """6章 SWOT の強み・脅威の候補 (the 該当 moats of 2章, the 5年以内・5〜10年 factors of 4章), 7章 and 8章."""
+    p = parse(text)
+    hits = [f"{m['type']}（{m['basis'].strip()}）" for m in p["moats"] if m["rating"] == HIT]
+    risks = [] if p["risks"] and p["risks"][0]["factor"].strip().startswith(NO_RISK) else p["risks"]
+    soon = [f"{r['factor'].strip()}（{r['timing']}。影響するモート: {r['moat'].strip() or '—'}）"
+            for r in risks if r["timing"] in TIMINGS[:2]]
+    return {"strengths": "／".join(hits) or NO_RISK, "threats": "／".join(soon) or NO_RISK,
+            "changes": _changes(p, previous), "gaps": _gaps(p, found, warnings)}
 
 
 # ---------- checks ----------

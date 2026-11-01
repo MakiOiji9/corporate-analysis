@@ -92,11 +92,13 @@ $PY -I tools/analysis/moat.py prepare --company {company} [--redo] [--skip-colle
 
 ### 3. 執筆（LLM）
 
-brief.md を読み、moat.md の `<!-- FILL:... -->` を Edit で置き換える。
+brief.md を読み、prepare の返り値 `fill_spec`（書く欄のキー・指示・表のセルかどうか）に従って本文を書く。moat.md を開いて FILL を探さなくてよい。
 
-- 読むのは brief.md と moat.md だけ。raw・PDF・CSV・summaries を個別に開かない（必要な節は brief.md に集約済み）
+- 書いた本文は `{"FILL のキー": "本文"}` の JSON 1つにまとめて、返り値の `fills_json`（md と同じ場所の `{日付}_fills.json`）に Write し、`$PY -I tools/analysis/moat.py fill --company {company} --build` で流し込んで build する（表のセルの本文は1行にまとめられ、`|` は `｜` に置き換わる。FILL が残っていれば build せず `remaining` を返すので、その欄を書いて JSON を作り直す）。md の FILL を Edit で置き換えてもよい
+- `strengths`・`threats`・`changes`・`gaps`（返り値の `filled_at_build`）は、ほかの欄を書き終えると build が書き手の行から記入する。書かない
+- 読むのは brief.md だけ（moat.md は build の指摘を直すときだけ開く）。raw・PDF・CSV・summaries を個別に開かない（必要な節は brief.md に集約済み）
 - brief.md が Read の上限を超えるときは、offset/limit で分けて最後（取れていない材料）まで読む
-- 書く順番と Edit の単位（各1回）: 1章の「確かめる強み」 → 2章の表 → 3.3 の表 → 4章の要因の表 → 4章の持続の見込み → 6章の表 → 7章 → 8章
+- 書く順番（`fill_keys` にあるものだけ）: 1章の「確かめる強み」 → 2章の表 → 3.3 の表 → 4章の要因の表 → 4章の持続の見込み → 6章の表 → 7章 → 8章
 - 書き方の規則は moat.md 冒頭の `>` 行に従う。要点:
   - 1章の「確かめる強み」は、3C の勝てる理由・強み候補から持続性を確かめる強みを1〜2文。3C が「なし」「判定保留」でも止めず、その旨と代わりに確かめる自社の事実（brief 0章の SWOT の強み候補・モート分析で確かめること）を書く
   - 2章は5行（ブランド / スイッチングコスト / ネットワーク効果 / コスト優位 / 規制・特許・許認可 の順・この名前）。判定は `該当` / `該当なし` / `不明` の1語。下の判断基準に当てた**事実と数値**を根拠に書く。会社の主張（IR 資料の自己評価）だけで「該当」にしない。材料が無ければ「不明」（良い方に解釈しない）

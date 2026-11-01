@@ -31,6 +31,7 @@ TOOLS = HERE.parent
 sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "market"), str(TOOLS / "collect")]
 
 import an_common as A  # noqa: E402
+import an_fill as F  # noqa: E402
 import cf_brief as B  # noqa: E402
 import cf_doc as D  # noqa: E402
 import cf_inputs as I  # noqa: E402
@@ -46,7 +47,6 @@ from common import atomic_write_text, utf8_stdout  # noqa: E402
 TEMPLATE = A.REPO_ROOT / ".ai" / "templates" / "cash-flow" / "cash-flow.md"
 OUTLOOK_HEADER = re.compile(r"^\*\*地合い\*\*:\s*(.+)$", re.M)
 SERIES_KEY = "yearly_series"  # input_digests entry for every number (read beyond the SPECS sections)
-FILL_KEY = re.compile(r"<!--\s*FILL:([\w-]+)")
 
 
 def emit(payload: dict) -> int:
@@ -251,19 +251,22 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     brief_path, md_path = company.file(date, P.BRIEF_SUFFIX), company.file(date, P.MD_SUFFIX)
     brief = B.render_brief(company, date, P.valid_until(date), found, cands, previous, _profitability(company),
                            outlook, warnings, {name: _other(company, name) for name in OTHERS})
-    if not kept:
-        skeleton = D.render_skeleton(_template(root), _values(company, date, found, outlook), cands,
-                                     _relation(company, cands))
+    relation = _relation(company, cands)
+    auto = D.auto_fills(cands, relation, previous, found, warnings)
+    if kept:
+        atomic_write_text(md_path, F.prefill(md_path.read_text(encoding="utf-8"), auto))
+    else:
+        skeleton = F.prefill(D.render_skeleton(_template(root), _values(company, date, found, outlook), cands,
+                                               relation), auto)
         atomic_write_text(md_path, skeleton)
         brief = A.mark_skeleton(brief, skeleton)
     atomic_write_text(brief_path, brief)
-    text = md_path.read_text(encoding="utf-8")
     return emit({
         "ok": True, "company": company.dirname, "date": date, "brief": company.rel(brief_path),
         "superseded": company.rel(superseded) if superseded else None,
         "md": company.rel(md_path), "kept": kept, "regenerated": untouched and not args.redo,
         "skipped_collect": requests if blocking == "collect" else [], "warnings": warnings,
-        "fill": len(A.FILL.findall(text)), "fill_keys": FILL_KEY.findall(text),
+        **F.prepare_fields(company, md_path),
         "candidate": {"verdict": cands["verdict"], "why": cands["why"],
                       **{f"step{i}": cands[f"step{i}"]["rating"] for i in range(1, 6)}},
         "negative_years": cands["step1"]["negative_years"], "borderline": cands["borderline"],
@@ -347,14 +350,16 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     date, md_path = target
     text = md_path.read_text(encoding="utf-8")
     brief_path = company.file(date, P.BRIEF_SUFFIX)
-    brief = brief_path.read_text(encoding="utf-8") if brief_path.exists() else ""
+    # the numbers are recomputed so edited cells in the md can't change the conclusion
+    cands = X.candidates(company)
+    relation = _relation(company, cands)
+    auto = D.auto_fills(cands, relation, P.latest_result(company, before=date), I.gather_cash_flow(company),
+                        X.warnings(cands))
+    brief = "\n".join([brief_path.read_text(encoding="utf-8") if brief_path.exists() else "", F.auto_reference(auto)])
     issues = D.validate(text, _template(root), brief)
     if issues:
         return emit({"ok": False, "md": company.rel(md_path), "issues": issues})
-    # the numbers are recomputed so edited cells in the md can't change the conclusion
-    cands = X.candidates(company)
     parsed = D.parse(text)
-    relation = _relation(company, cands)
     atomic_write_text(md_path, D.apply_conclusion(text, cands))
     result = result_json(company, date, text, parsed, cands, relation)
     json_path = company.file(date, P.JSON_SUFFIX)
@@ -370,12 +375,17 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     })
 
 
+def cmd_fill(args: argparse.Namespace, root: Path) -> int:
+    return F.cmd_fill(args, root, resolve=_resolve, target=_target, build=cmd_build, name="cash-flow.md",
+                      emit=emit, write=atomic_write_text)
+
+
 def main(argv: list[str] | None = None, root: Path = A.REPO_ROOT) -> int:
     utf8_stdout()
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="cmd", required=True)
     sub.add_parser("list")
-    for name in ("check", "prepare", "build"):
+    for name in ("check", "prepare", "fill", "build"):
         p = sub.add_parser(name)
         p.add_argument("--company", help="銘柄コード・企業ディレクトリ名・社名の一部")
         p.add_argument("--date", help="YYYY-MM-DD（check/prepare: 今日の代わり、build: 対象の分析日。省略時は今日／最新）")
@@ -383,13 +393,16 @@ def main(argv: list[str] | None = None, root: Path = A.REPO_ROOT) -> int:
             p.add_argument("--redo", action="store_true", help="有効な結果・作成途中の結果があっても作り直す")
             p.add_argument("--skip-collect", action="store_true",
                            help="収集を1回試しても材料が足りないまま進む（欠損は brief の「取れていない材料」に出る）")
+        if name == "fill":
+            F.add_fill_args(p)
     args = parser.parse_args(argv)
     if getattr(args, "date", None):
         try:
             dt.date.fromisoformat(args.date)
         except ValueError:
             return emit({"ok": False, "error": f"--date は YYYY-MM-DD で指定する: {args.date}"})
-    handler = {"list": cmd_list, "check": cmd_check, "prepare": cmd_prepare, "build": cmd_build}[args.cmd]
+    handler = {"list": cmd_list, "check": cmd_check, "prepare": cmd_prepare, "fill": cmd_fill,
+               "build": cmd_build}[args.cmd]
     return handler(args, root)
 
 

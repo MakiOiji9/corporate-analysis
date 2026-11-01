@@ -31,6 +31,7 @@ TOOLS = HERE.parent
 sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "market"), str(TOOLS / "collect")]
 
 import an_common as A  # noqa: E402
+import an_fill as AF  # noqa: E402
 import gr_brief as B  # noqa: E402
 import gr_doc as D  # noqa: E402
 import gr_facts as F  # noqa: E402
@@ -46,7 +47,6 @@ from common import atomic_write_text, utf8_stdout  # noqa: E402
 TEMPLATE = A.REPO_ROOT / ".ai" / "templates" / "growth" / "growth.md"
 OUTLOOK_HEADER = re.compile(r"^\*\*地合い\*\*:\s*(.+)$", re.M)
 SERIES_KEY = "yearly_series"  # input_digests entry for every number (read beyond the SPECS sections)
-FILL_KEY = re.compile(r"<!--\s*FILL:([\w-]+)")
 
 
 def emit(payload: dict) -> int:
@@ -235,20 +235,23 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     brief_path, md_path = company.file(date, P.BRIEF_SUFFIX), company.file(date, P.MD_SUFFIX)
     brief = B.render_brief(company, date, P.valid_until(date), found, cands, previous, _three_c(company),
                            _swot(company), outlook, warnings)
-    if not kept:
-        skeleton = D.render_skeleton(_template(root), _values(company, date, found, outlook), cands,
-                                     _consistency(company, cands))
+    consistency = _consistency(company, cands)
+    auto = D.auto_fills(cands, consistency, previous, found, warnings)
+    if kept:
+        atomic_write_text(md_path, AF.prefill(md_path.read_text(encoding="utf-8"), auto))
+    else:
+        skeleton = AF.prefill(D.render_skeleton(_template(root), _values(company, date, found, outlook), cands,
+                                                consistency), auto)
         atomic_write_text(md_path, skeleton)
         brief = A.mark_skeleton(brief, skeleton)
     atomic_write_text(brief_path, brief)
-    text = md_path.read_text(encoding="utf-8")
     s1 = cands["step1"]
     return emit({
         "ok": True, "company": company.dirname, "date": date, "brief": company.rel(brief_path),
         "superseded": company.rel(superseded) if superseded else None,
         "md": company.rel(md_path), "kept": kept, "regenerated": untouched and not args.redo,
         "skipped_collect": requests if blocking == "collect" else [], "warnings": warnings,
-        "fill": len(A.FILL.findall(text)), "fill_keys": FILL_KEY.findall(text),
+        **AF.prepare_fields(company, md_path),
         "candidate": {"verdict": cands["verdict"], "why": cands["why"], "step1": s1["rating"],
                       "step3": cands["step3"]["rating"], "quality": cands["step4"]["quality"],
                       "downgraded": cands["downgraded"]},
@@ -341,9 +344,10 @@ def _allowed_text(root: Path, company: P.Company, date: str, found: dict, cands:
     """The numbers the writer may quote: the brief and the skeleton as prepare would write it now."""
     brief = company.file(date, P.BRIEF_SUFFIX)
     outlook = A.latest_outlook(root, date)
-    skeleton = D.render_skeleton(_template(root), _values(company, date, found, outlook), cands,
-                                 _consistency(company, cands))
-    return (brief.read_text(encoding="utf-8") if brief.exists() else "") + "\n" + skeleton
+    consistency = _consistency(company, cands)
+    skeleton = D.render_skeleton(_template(root), _values(company, date, found, outlook), cands, consistency)
+    auto = D.auto_fills(cands, consistency, P.latest_result(company, before=date), found, X.warnings(cands))
+    return "\n".join([brief.read_text(encoding="utf-8") if brief.exists() else "", skeleton, AF.auto_reference(auto)])
 
 
 def cmd_build(args: argparse.Namespace, root: Path) -> int:
@@ -384,12 +388,17 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     })
 
 
+def cmd_fill(args: argparse.Namespace, root: Path) -> int:
+    return AF.cmd_fill(args, root, resolve=_resolve, target=_target, build=cmd_build, name="growth.md",
+                      emit=emit, write=atomic_write_text)
+
+
 def main(argv: list[str] | None = None, root: Path = A.REPO_ROOT) -> int:
     utf8_stdout()
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="cmd", required=True)
     sub.add_parser("list")
-    for name in ("check", "prepare", "build"):
+    for name in ("check", "prepare", "fill", "build"):
         p = sub.add_parser(name)
         p.add_argument("--company", help="銘柄コード・企業ディレクトリ名・社名の一部")
         p.add_argument("--date", help="YYYY-MM-DD（check/prepare: 今日の代わり、build: 対象の分析日。省略時は今日／最新）")
@@ -397,13 +406,16 @@ def main(argv: list[str] | None = None, root: Path = A.REPO_ROOT) -> int:
             p.add_argument("--redo", action="store_true", help="有効な結果・作成途中の結果があっても作り直す")
             p.add_argument("--skip-collect", action="store_true",
                            help="収集を1回試しても材料が足りないまま進む（欠損は brief の「取れていない材料」に出る）")
+        if name == "fill":
+            AF.add_fill_args(p)
     args = parser.parse_args(argv)
     if getattr(args, "date", None):
         try:
             dt.date.fromisoformat(args.date)
         except ValueError:
             return emit({"ok": False, "error": f"--date は YYYY-MM-DD で指定する: {args.date}"})
-    handler = {"list": cmd_list, "check": cmd_check, "prepare": cmd_prepare, "build": cmd_build}[args.cmd]
+    handler = {"list": cmd_list, "check": cmd_check, "prepare": cmd_prepare, "fill": cmd_fill,
+               "build": cmd_build}[args.cmd]
     return handler(args, root)
 
 

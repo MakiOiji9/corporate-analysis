@@ -87,12 +87,13 @@ $PY -I tools/analysis/five_forces.py prepare --company {company} [--redo] [--ski
 
 ### 3. 執筆（LLM）
 
-brief.md を読み、five-forces.md の `<!-- FILL:... -->` を Edit で置き換える。
+brief.md を読み、prepare の返り値 `fill_spec`（書く欄のキー・指示・表のセルかどうか）に従って本文を書く。five-forces.md を開いて FILL を探さなくてよい。
 
-- 読むのは brief.md と five-forces.md だけ。raw・PDF・CSV・summaries を個別に開かない（必要な節は brief.md に集約済み）
+- 書いた本文は `{"FILL のキー": "本文"}` の JSON 1つにまとめて、返り値の `fills_json`（md と同じ場所の `{日付}_fills.json`）に Write し、`$PY -I tools/analysis/five_forces.py fill --company {company} --build` で流し込んで build する（表のセルの本文は1行にまとめられ、`|` は `｜` に置き換わる。FILL が残っていれば build せず `remaining` を返すので、その欄を書いて JSON を作り直す）。md の FILL を Edit で置き換えてもよい
+- 読むのは brief.md だけ（five-forces.md は build の指摘を直すときだけ開く）。raw・PDF・CSV・summaries を個別に開かない（必要な節は brief.md に集約済み）
 - brief.md が Read の上限を超えるときは、offset/limit で分けて最後（8. 取れていない材料）まで読む
 - 書く順番: 1章（業界の定義）→ 2.1〜2.5（各要因。見たもの → 情報源 → 根拠の確度 → 評価 → 理由 → 評価が変わる条件）→ 5章 → 6章
-- Edit は**要因ごとに1回**（その要因の表の FILL 行をまとめて old_string にして置き換える）。1章・5章・6章もそれぞれ1回
+- JSON のキーは md の FILL のキーそのまま（要因の表の各行も1キー）
 - 書き方の規則は five-forces.md 冒頭の `>` 行に従う。要点:
   - 評価は `強` / `中` / `弱` / `不明` の1語。下の「判断基準」と「文章で決める要因の判定条件」で決める。2段階で迷ったら**強い方**（業界の魅力にとって不利な方）を採り（policy.md 行動指針6）、理由に「迷った:」で始まる文を入れる（build が数え、完了報告に出す）
   - 理由に書く事実は brief.md の記述と同じ強さで書く。brief で「未確認」「要旨」とある事柄を確認済みの事実として書かない（例: 減益の理由が未確認の会社を「人件費増で減益」とまとめない）

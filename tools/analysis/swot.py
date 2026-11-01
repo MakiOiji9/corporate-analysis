@@ -29,6 +29,7 @@ TOOLS = HERE.parent
 sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "market"), str(TOOLS / "collect")]
 
 import an_common as A  # noqa: E402
+import an_fill as F  # noqa: E402
 import ff_paths as FP  # noqa: E402
 import mdparse as M  # noqa: E402
 import moat as MT  # noqa: E402
@@ -263,7 +264,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
         "md": company.rel(md_path), "kept": kept, "regenerated": untouched and not args.redo,
         "skipped_collect": requests if blocking == "collect" else [],
         "skipped_market_report": bool(outlook["stale"] and args.skip_market_report),
-        "fill": len(A.FILL.findall(md_path.read_text(encoding="utf-8"))),
+        **F.prepare_fields(company, md_path, D.BUILD_KEYS),
         "required": [f"{i['quadrant']}: {i['tag']} {i['name']}" for i in items],
         "previous": previous[0] if previous else None, "upstream": _upstream_summary(ups),
         "missing_inputs": requests, "unavailable": _unavailable(found), "outlook": outlook["path"],
@@ -317,7 +318,9 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     if not target:
         return emit({"ok": False, "error": "swot.md が無い（先に prepare）"})
     date, md_path = target
-    text = md_path.read_text(encoding="utf-8")
+    found, previous = I.gather_swot(company), P.latest_result(company, before=date)
+    text = F.fill_at_build(md_path.read_text(encoding="utf-8"), D.BUILD_KEYS,
+                           lambda t: D.build_fills(t, found, previous))
     ups = upstream(company)
     # the required items are recomputed so a row deleted from 1.1 can't bypass the rule
     items = D.required_items(ups["five_forces"], ups["moat"])
@@ -343,12 +346,17 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     })
 
 
+def cmd_fill(args: argparse.Namespace, root: Path) -> int:
+    return F.cmd_fill(args, root, resolve=_resolve, target=_target, build=cmd_build, name="swot.md",
+                      emit=emit, write=atomic_write_text, build_keys=D.BUILD_KEYS)
+
+
 def main(argv: list[str] | None = None, root: Path = A.REPO_ROOT) -> int:
     utf8_stdout()
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="cmd", required=True)
     sub.add_parser("list")
-    for name in ("check", "prepare", "build"):
+    for name in ("check", "prepare", "fill", "build"):
         p = sub.add_parser(name)
         p.add_argument("--company", help="銘柄コード・企業ディレクトリ名・社名の一部")
         p.add_argument("--date", help="YYYY-MM-DD（check/prepare: 今日の代わり、build: 対象の分析日。省略時は今日／最新）")
@@ -358,13 +366,16 @@ def main(argv: list[str] | None = None, root: Path = A.REPO_ROOT) -> int:
                            help="収集を1回試しても材料が足りないまま進む（欠損は brief の「取れていない材料」に出る）")
             p.add_argument("--skip-market-report", action="store_true",
                            help="market-report を1回実行しても地合いが古いまま進む（brief で「古い」と示す）")
+        if name == "fill":
+            F.add_fill_args(p)
     args = parser.parse_args(argv)
     if getattr(args, "date", None):
         try:
             dt.date.fromisoformat(args.date)
         except ValueError:
             return emit({"ok": False, "error": f"--date は YYYY-MM-DD で指定する: {args.date}"})
-    handler = {"list": cmd_list, "check": cmd_check, "prepare": cmd_prepare, "build": cmd_build}[args.cmd]
+    handler = {"list": cmd_list, "check": cmd_check, "prepare": cmd_prepare, "fill": cmd_fill,
+               "build": cmd_build}[args.cmd]
     return handler(args, root)
 
 

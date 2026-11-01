@@ -457,10 +457,10 @@ def test_untouched_draft_is_regenerated(repo, capsys):
 def test_validate_requires_the_handoff(repo, capsys):
     md = prepared(repo, capsys)
     fill(md)
-    text = md.read_text(encoding="utf-8").replace("背景 report-points（brief による）", "—")
+    text = md.read_text(encoding="utf-8").replace("背景 policy（brief による）", "—")
     issues = D.validate(text, (repo / ".ai" / "templates" / "safety" / "safety.md").read_text(encoding="utf-8"),
                         cands_of(repo)["step3"]["years"])
-    assert "5. レポートで使う要点が空" in issues
+    assert "5. 財務方針・資本政策との関係が空" in issues
 
 
 NEW_BSCF = """# 財務データ時系列（差分） — テスト
@@ -510,11 +510,11 @@ def test_build_rejects_numbers_not_in_the_brief(repo, capsys):
     md = prepared(repo, capsys)
     fill(md)
     text = md.read_text(encoding="utf-8")
-    md.write_text(text.replace("背景 report-points（brief による）", "自己資本比率 61.3% に低下する（p.24）"),
+    md.write_text(text.replace("背景 policy（brief による）", "自己資本比率 61.3% に低下する（p.24）"),
                   encoding="utf-8")
     code, out = run(repo, "build", "--company", "7203", capsys=capsys)
     assert code == 1 and any("61.3" in i and "brief・md に無い" in i for i in out["issues"])
-    md.write_text(text.replace("背景 report-points（brief による）", "自己資本比率 60.0%、2026年3月期（p.24）"),
+    md.write_text(text.replace("背景 policy（brief による）", "自己資本比率 60.0%、2026年3月期（p.24）"),
                   encoding="utf-8")
     code, out = run(repo, "build", "--company", "7203", capsys=capsys)
     assert code == 0, out

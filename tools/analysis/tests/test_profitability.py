@@ -12,6 +12,7 @@ REPO = ANALYSIS.parents[1]
 sys.path[:0] = [str(ANALYSIS), str(REPO / "tools" / "report"), str(REPO / "tools" / "collect" / "market"),
                 str(REPO / "tools" / "collect"), str(REPO / "tools" / "guard")]
 
+import pf_doc as D  # noqa: E402
 import pf_inputs as I  # noqa: E402
 import pf_metrics as X  # noqa: E402
 import pf_paths as P  # noqa: E402
@@ -446,11 +447,41 @@ def test_list_shows_state_and_upstream(repo, capsys):
 def test_skeleton_has_numbers_and_fill_only_for_background(repo, capsys):
     text = prepared(repo, capsys).read_text(encoding="utf-8")
     assert "| 手順1の判定 | 良好（確定）" in text and "| 手順3の判定 | 本業由来（確定）" in text
-    assert sorted(set(FILL_ANY.findall(text))) == sorted(
-        ["peer-gap", "bg-2024-03", "bg-2025-03", "one-off", "consistency", "report-points", "targets",
-         "step2-checks", "triggers", "changes", "gaps"])
+    # the fields that follow from the numbers are written by the script; the writer gets the background only
+    assert sorted(set(FILL_ANY.findall(text))) == sorted(["peer-gap", "bg-2024-03", "bg-2025-03", "one-off", "targets"])
     assert "16.7%（要確認） | 10.0% |" in text
     assert "手順1の判定は変わらない" in text
+    assert "| コメント | 該当する STEP 1 の結論なし |" in text and "## 7. 前回からの変更点\n\n- 初回の分析" in text
+    assert "| レポートで使う要点 | 収益性は良好（" in text and "| 評価が変わる条件 | 平均 ROE が 10% を下回るか" in text
+
+
+def test_auto_fills_leave_inconsistency_and_one_off_to_the_writer():
+    cands = {"verdict": "普通", "why": "w", "borderline": [], "one_off": [{"check": True}],
+             "step1": {"rating": "普通", "sentence": "s1", "average": 9.0},
+             "step2": {"rating": "下回る", "sentence": "s2", "diff": -2.0},
+             "step3": {"source": "本業由来", "basis": "b", "sentence": "s3", "latest_leverage": 1.5}}
+    auto = D.auto_fills(cands, [{"result": "不整合（STEP 1 見直し候補）"}], ("2026-01-01", {"verdict": "良好"}), {}, [])
+    assert auto["consistency"] is None and auto["one-off"] is None
+    assert auto["changes"].splitlines()[0] == "- 収益性: 良好 → 普通（前回 2026-01-01）"
+    assert "- 平均 ROE（%）: — → 9.0（前回 2026-01-01）" in auto["changes"]
+    assert auto["gaps"] == "- なし" and "差が −1pt 以内に縮まれば" in auto["triggers"]
+
+
+def test_fill_command_pours_json_and_builds(repo, capsys):
+    md = prepared(repo, capsys)
+    fills = md.with_name(f"{DAY}_fills.json")
+    fills.write_text(json.dumps({"peer-gap": "x", "unknown": "x"}, ensure_ascii=False), encoding="utf-8")
+    code, out = run(repo, "fill", "--company", "7203", capsys=capsys)
+    assert code == 1 and out["issues"] == ["unknown: md に無い FILL のキー（prepare の fill_keys を使う）"]
+    answers = {k: f"背景 {k}（brief による）" for k in FILL_ANY.findall(md.read_text(encoding="utf-8")) if k != "targets"}
+    fills.write_text(json.dumps(answers | {"peer-gap": "背景 a | b\n続き"}, ensure_ascii=False), encoding="utf-8")
+    code, out = run(repo, "fill", "--company", "7203", "--build", capsys=capsys)
+    assert code == 0 and out["remaining"] == ["targets"] and "verdict" not in out  # not built while FILL remains
+    assert "| 同業との差の背景 | 背景 a ｜ b 続き |" in md.read_text(encoding="utf-8")
+    other = repo / "fills2.json"
+    other.write_text(json.dumps({"targets": "ROE の目標は開示なし"}, ensure_ascii=False), encoding="utf-8")
+    code, out = run(repo, "fill", "--company", "7203", "--from", str(other), "--build", capsys=capsys)
+    assert code == 0 and out["verdict"] == "良好", out
 
 
 def test_prepare_returns_fill_keys_and_brief_has_no_peer_table(repo, capsys):
@@ -507,7 +538,7 @@ def test_build_rejects_removed_change_row_and_forbidden_words(repo, capsys):
                   encoding="utf-8")
     code, out = run(repo, "build", "--company", "7203", capsys=capsys)
     assert code == 1 and any("3.3 の年度" in i for i in out["issues"])
-    md.write_text(text.replace("背景 report-points（brief による）", "おそらく高い"), encoding="utf-8")
+    md.write_text(text.replace("背景 targets（brief による）", "おそらく高い"), encoding="utf-8")
     code, out = run(repo, "build", "--company", "7203", capsys=capsys)
     assert code == 1 and any("おそらく" in i for i in out["issues"])
 

@@ -9,6 +9,7 @@ from __future__ import annotations
 import re
 from string import Template
 
+import an_fill as F
 import mdparse as M
 from cf_metrics import FAIR_RATIO, GAP_ITEMS, GOOD_RATIO, WINDOW, fmt_amount
 from ff_doc import FIXED_MARK, _check_words, replace_section
@@ -180,6 +181,67 @@ def render_skeleton(template: str, values: dict, cands: dict, relation: list[dic
                   step5_rating=f"{s5['rating']}{FIXED_MARK}: {s5['basis']}",
                   relation_rows=relation_table_rows(relation))
     return Template(template).safe_substitute(filled)
+
+
+# ---------- fields the script writes (an_fill.prefill) ----------
+
+def _relation_comment(relation: list[dict]) -> str | None:
+    results = [r["result"] for r in relation]
+    if any(r.startswith(("不整合", "要確認")) for r in results):
+        return None  # which other analysis to discount is the writer's
+    if results and all(r.startswith(("未実施", "対象外")) for r in results):
+        return "該当する他の分析の結論なし"
+    return "不整合なし"
+
+
+def _report_points(cands: dict) -> str:
+    return F.joined([f"キャッシュフローは{cands['verdict']}（{cands['why']}）"]
+                    + [cands[f"step{i}"]["sentence"] for i in (1, 2, 3)])
+
+
+def _step2_checks(cands: dict) -> str:
+    s2, s3, s5 = cands["step2"], cands["step3"], cands["step5"]
+    checks = ["投資CF の支出が売上・利益の成長に表れているか（成長性）"]
+    if s2["rating"] in ("普通", "懸念"):
+        checks.append("FCF の不足を借入で補っていないか（安全性）")
+    if s3["rating"] in ("普通", "懸念"):
+        checks.append("営業CF を下回る純利益の水準を額面どおりに受け取れるか（収益性）")
+    if s5["rating"] in ("普通", "懸念"):
+        checks.append("FCF を超える株主還元が手元資金・借入のどちらで賄われているか（安全性）")
+    return "、".join(checks)
+
+
+def _triggers(cands: dict) -> str:
+    s1, s2, s3 = cands["step1"], cands["step2"], cands["step3"]
+    parts = []
+    if s1["rating"] != "懸念":
+        parts.append("営業CF のマイナスが続けば手順1は懸念")
+    if s2["rating"] == "良好":
+        parts.append(f"直近{WINDOW}年の FCF の累計がマイナスになれば手順2は懸念")
+    elif s2["rating"] in ("普通", "懸念"):
+        parts.append(f"直近{WINDOW}年の FCF の累計がプラスで安定すれば手順2は一段上がる")
+    if s3.get("ratio") is not None:
+        parts.append(f"営業CF対純利益比率が{GOOD_RATIO:.1f}倍以上なら良好、{FAIR_RATIO:.1f}倍未満なら懸念（手順3）")
+    border = ["境界に近い比較: " + "、".join(cands["borderline"])] if cands["borderline"] else []
+    return F.joined(["、".join(parts)] + border) if parts or border else "—（判定できる手順が無い）"
+
+
+def _changes(cands: dict, previous: tuple[str, dict] | None) -> str:
+    old = previous[1] if previous else {}
+    pairs = [("キャッシュフロー", old.get("verdict"), cands["verdict"])]
+    pairs += [(f"手順{i}", (old.get(f"step{i}") or {}).get("rating"), cands[f"step{i}"]["rating"]) for i in range(1, 6)]
+    pairs += [("FCF の累計", (old.get("step2") or {}).get("total"), cands["step2"].get("total")),
+              ("営業CF対純利益比率", (old.get("step3") or {}).get("ratio"), cands["step3"].get("ratio"))]
+    return F.changes_bullets(previous, pairs)
+
+
+def auto_fills(cands: dict, relation: list[dict], previous: tuple[str, dict] | None, found: dict,
+               warnings: list[str]) -> dict[str, str | None]:
+    """The FILL fields that follow from the numbers (the backgrounds and the capital policy are the writer's)."""
+    return {"relation": _relation_comment(relation), "report-points": _report_points(cands),
+            "step2-checks": _step2_checks(cands), "triggers": _triggers(cands),
+            "changes": _changes(cands, previous), "gaps": F.gaps_bullets(found, warnings)}
+
 
 
 # ---------- parse ----------

@@ -426,13 +426,13 @@ def test_build_rejects_new_numbers_and_approximations(repo, capsys):
     md = prepared(repo, capsys)
     fill(md)
     text = md.read_text(encoding="utf-8")
-    md.write_text(text.replace("背景 relation（brief による）", "純利益の約2割が現金を伴わない"), encoding="utf-8")
+    md.write_text(text.replace("背景 capital-policy（brief による）", "純利益の約2割が現金を伴わない"), encoding="utf-8")
     code, out = run(repo, "build", "--company", "7203", capsys=capsys)
     assert code == 1 and any("概数" in i for i in out["issues"])
-    md.write_text(text.replace("背景 relation（brief による）", "比率は 0.91倍"), encoding="utf-8")
+    md.write_text(text.replace("背景 capital-policy（brief による）", "比率は 0.91倍"), encoding="utf-8")
     code, out = run(repo, "build", "--company", "7203", capsys=capsys)
     assert code == 1 and any("0.91" in i for i in out["issues"])
-    md.write_text(text.replace("背景 relation（brief による）", "比率は 1.20倍で FCF 累計 4,500"), encoding="utf-8")
+    md.write_text(text.replace("背景 capital-policy（brief による）", "比率は 1.20倍で FCF 累計 4,500"), encoding="utf-8")
     code, out = run(repo, "build", "--company", "7203", capsys=capsys)
     assert code == 0, out  # numbers quoted from the md tables pass
 
@@ -469,7 +469,7 @@ def test_number_check_handles_bullets_dates_and_short_values(repo, capsys):
     code, out = run(repo, "build", "--company", "7203", capsys=capsys)
     assert code == 1 and any("0.95" in i for i in out["issues"])
     # dates, periods and 契約 are not numbers to check; a short written value does not cut the tables
-    md.write_text(text.replace("背景 relation（brief による）", "2026年3月31日の第15期、契約十分、FY24。1,200")
+    md.write_text(text.replace("背景 capital-policy（brief による）", "2026年3月31日の第15期、契約十分、FY24。1,200")
                   .replace("背景 investment（brief による）", "1"), encoding="utf-8")
     code, out = run(repo, "build", "--company", "7203", capsys=capsys)
     assert code == 0, out
@@ -569,9 +569,9 @@ def test_skeleton_has_numbers_and_fill_only_for_background(repo, capsys):
     text = prepared(repo, capsys).read_text(encoding="utf-8")
     assert "| 手順1の判定 | 良好（確定）" in text and "| 手順4の判定 | 良好（確定）" in text
     assert "| 営業CF がマイナスの年の背景 | 該当なし" in text
-    assert sorted(set(FILL_ANY.findall(text))) == sorted(
-        ["investment", "quality-gap", "relation", "report-points", "capital-policy", "step2-checks", "triggers",
-         "changes", "gaps"])
+    # the fields that follow from the numbers are written by the script; the writer gets the background only
+    assert sorted(set(FILL_ANY.findall(text))) == ["capital-policy", "investment", "quality-gap"]
+    assert "| コメント | 該当する他の分析の結論なし |" in text and "| レポートで使う要点 | キャッシュフローは良好（" in text
     assert "| 2026-03 | + | − | − | 本業で稼ぎ" in text
 
 
@@ -601,7 +601,7 @@ def test_full_cycle_then_fresh_and_triggered(repo, capsys):
     assert out["verdict"] == "良好" and out["relation"][0] == "収益性が良好 ⇔ 利益の質: 整合"
     assert "| キャッシュフロー | **良好**:" in md.read_text(encoding="utf-8")
     result = json.loads((repo / out["json"]).read_text(encoding="utf-8"))
-    assert result["step3"]["ratio"] == 1.2 and result["handoff"]["triggers"].startswith("背景")
+    assert result["step3"]["ratio"] == 1.2 and result["handoff"]["triggers"].startswith("営業CF のマイナスが続けば")
     _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
     assert out["next"] == "report_existing"
     # a corrected operating CF inside the same period waits; a new full-year result re-opens the result
@@ -636,7 +636,7 @@ def test_build_rejects_forbidden_words_and_blank_cells(repo, capsys):
     md = prepared(repo, capsys)
     fill(md)
     text = md.read_text(encoding="utf-8")
-    md.write_text(text.replace("背景 report-points（brief による）", "おそらく強い"), encoding="utf-8")
+    md.write_text(text.replace("背景 capital-policy（brief による）", "おそらく強い"), encoding="utf-8")
     code, out = run(repo, "build", "--company", "7203", capsys=capsys)
     assert code == 1 and any("おそらく" in i for i in out["issues"])
     md.write_text(text.replace("背景 investment（brief による）", "—"), encoding="utf-8")
@@ -664,7 +664,7 @@ def test_untouched_skeleton_is_regenerated_and_draft_is_kept(repo, capsys):
     code, out = run(repo, "prepare", "--company", "7203", "--date", "2026-10-13", capsys=capsys)
     assert code == 0 and out["regenerated"] and out["date"] == "2026-10-13"
     md = repo / out["md"]
-    md.write_text(md.read_text(encoding="utf-8").replace("<!-- FILL:triggers", "書きかけ <!-- FILL:triggers"),
+    md.write_text(md.read_text(encoding="utf-8").replace("<!-- FILL:capital-policy", "書きかけ <!-- FILL:capital-policy"),
                   encoding="utf-8")
     code, out = run(repo, "prepare", "--company", "7203", "--date", "2026-10-14", capsys=capsys)
     assert code == 0 and out["kept"] and out["date"] == "2026-10-13"

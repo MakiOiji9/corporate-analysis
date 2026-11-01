@@ -100,10 +100,12 @@ $PY -I tools/analysis/valuation.py prepare --company {company} [--redo] [--skip-
 
 ### 3. 執筆（LLM）
 
-brief.md を読み、valuation.md の `<!-- FILL:... -->` を Edit で置き換える。
+brief.md を読み、prepare の返り値 `fill_spec`（書く欄のキー・指示・表のセルかどうか）に従って本文を書く。valuation.md を開いて FILL を探さなくてよい。
 
-- 読むのは brief.md と valuation.md だけ。raw・PDF・CSV・summaries・他の分析の md を個別に開かない（必要な節は brief.md に集約済み）
-- 書く順番と Edit の単位（各1回。`fill_keys` にあるものだけ）: 1章 特別損益の中身（`special-bg`） → 2章 改善策の有無（`measures`） → 4章 食い違いの背景（`divergence-bg`） → 5章 割安の理由（`cheap-reason`） → 7章 → 8章 → 9章
+- 書いた本文は `{"FILL のキー": "本文"}` の JSON 1つにまとめて、返り値の `fills_json`（md と同じ場所の `{日付}_fills.json`）に Write し、`$PY -I tools/analysis/valuation.py fill --company {company} --build` で流し込んで build する（表のセルの本文は1行にまとめられ、`|` は `｜` に置き換わる。FILL が残っていれば build せず `remaining` を返すので、その欄を書いて JSON を作り直す）。md の FILL を Edit で置き換えてもよい
+- 数値から決まる欄（7章のレポートで使う要点（改善策の回答で判定が変わらないとき）・総合判断で確かめること・8章・9章）は prepare がスクリプトで記入済みで、`fill_keys` に出ない。書き直さない（build の指摘があったときだけ Edit で直す）
+- 読むのは brief.md だけ（valuation.md は build の指摘を直すときだけ開く）。raw・PDF・CSV・summaries・他の分析の md を個別に開かない（必要な節は brief.md に集約済み）
+- 書く順番（`fill_keys` にあるものだけ）: 1章 特別損益の中身（`special-bg`） → 2章 改善策の有無（`measures`） → 4章 食い違いの背景（`divergence-bg`） → 5章 割安の理由（`cheap-reason`） → 7章 → 8章 → 9章
 - 書き方の規則は valuation.md 冒頭の `>` 行に従う。要点:
   - 書くのは**数値の背景と解釈だけ**。表の数値・判定・年度の行を変えない。数値を新しく計算しない
   - **改善策の有無**は「あり: 」「なし: 」「不明: 」のどれかで始め、根拠（brief の中期経営計画・有報の資本政策の記述と出典）を続ける。ROE 目標・資本コストを意識した経営・自社株買いや増配など株主還元の強化が示されていれば「あり」、記載が無ければ「なし」、材料が無ければ「不明」（不明は「なし」と同じ扱いで割安とみなさない）。良い方に解釈しない
