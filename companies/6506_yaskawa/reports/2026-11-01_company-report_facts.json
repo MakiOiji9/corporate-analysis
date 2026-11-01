@@ -258,7 +258,7 @@
       "name": "ファナック（3月期、日本基準）",
       "self": false,
       "year": "2026-03",
-      "sales": 857831.0,
+      "sales": 857831000000.0,
       "margin": 21.4,
       "share": null,
       "cagr": 0.2
@@ -267,7 +267,7 @@
       "name": "三菱電機（3月期。2022年3月期以降は IFRS を EDINET で確認。それ以前は IRBANK 表示のまま）",
       "self": false,
       "year": "2026-03",
-      "sales": 5894747.0,
+      "sales": 5894747000000.0,
       "margin": 7.3,
       "share": null,
       "cagr": 5.6
@@ -276,7 +276,7 @@
       "name": "山洋電気（3月期。2022年3月期以降は IFRS を EDINET で確認）",
       "self": false,
       "year": "2026-03",
-      "sales": 107346.0,
+      "sales": 107346000000.0,
       "margin": 10.1,
       "share": null,
       "cagr": -3.9
