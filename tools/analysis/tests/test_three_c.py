@@ -581,6 +581,20 @@ def test_peer_amounts_with_a_trailing_note_are_read(tmp_path):
     assert [(s["year"], s["margin"]) for s in series] == [("2025-03", 21.4), ("2026-03", 25.4)]
 
 
+def test_peer_amounts_without_a_unit_take_the_stated_unit():
+    table = "| 年度 | 売上高 | 営業利益 | 営業利益率 | 確度 |\n|---|---|---|---|---|\n| 2026年3月期（2026-03） | 857,831 | 183,500 | — | 一次 |\n"
+    body = "<!-- 金額は百万円 -->\n### アルファ社（1111）\n" + table + "\n### ベータ社（2222）\n単位: 億円\n" + table
+    alpha, beta = FM.peer_margins(_found("peers", body))
+    assert alpha["series"][0]["sales"] == 857831e6 and alpha["series"][0]["margin"] == 21.4
+    assert beta["series"][0]["sales"] == 857831e8  # a company's own note wins over the chapter's
+    header = "### アルファ社\n" + table.replace("| 売上高 | 営業利益 |", "| 売上高（百万円） | 営業利益（百万円） |")
+    assert FM.peer_margins(_found("peers", header))[0]["series"][0]["sales"] == 857831e6
+    stated = "<!-- 金額は百万円 -->\n### アルファ社\n" + table.replace("857,831", "857,831百万円")
+    assert FM.peer_margins(_found("peers", stated))[0]["series"][0]["sales"] == 857831e6  # not scaled twice
+    plain = "### アルファ社\n" + table
+    assert FM.peer_margins(_found("peers", plain))[0]["series"][0]["sales"] == 857831  # no unit stated: as it is
+
+
 def test_competitor_basis_shows_peer_average():
     rows = [{"name": "自社", "self": True, "margin": 18.3, "share": None, "year": "2026-03"},
             {"name": "A", "self": False, "margin": 25.4, "share": None, "year": "2026-03"},

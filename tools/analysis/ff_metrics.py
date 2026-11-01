@@ -34,6 +34,9 @@ AMOUNT_CELL = re.compile(r"-?(?:[\d,]+(?:\.\d+)?(?:兆|億|百万|千|万)?)+")
 TRAILING_NOTE = re.compile(r"[（(].*$")
 PEER_YEAR = re.compile(r"(\d{4})\s*[/年]\s*(\d{1,2})")
 UNIT_YEN = {"兆": 1e12, "億": 1e8, "百万": 1e6, "万": 1e4, "千": 1e3, None: 1.0}
+# the unit of cells written without one:「<!-- 金額は百万円 -->」「単位: 億円」or a header such as「売上高（百万円）」
+UNIT_NOTE = re.compile(r"(?:単位|金額)\s*(?:は|[:：]|[（(])?\s*(兆|億|百万|千|万)円")
+HEADER_UNIT = re.compile(r"[（(]\s*(兆|億|百万|千|万)円\s*[)）]")
 
 
 def _rate(value: float, limits: tuple[float, float]) -> str:
@@ -216,8 +219,8 @@ def market_growth(found: Found) -> list[str]:
     return out
 
 
-def _yen(cell: str) -> float | None:
-    """'140億2,433万円' / '7.93億円' / '7,367百万円' / '500' -> yen (unitless numbers as they are).
+def _yen(cell: str, unit: float = 1.0) -> float | None:
+    """'140億2,433万円' / '7.93億円' / '7,367百万円' / '500' -> yen (unitless numbers times unit, 1 = as they are).
     A note after the amount is dropped: '23,831百万円（前期比 -9.4%）' -> 23,831百万円."""
     text = re.sub(r"[\s円]", "", cell.replace("△", "-").replace("▲", "-"))
     note = TRAILING_NOTE.search(text)
@@ -225,22 +228,28 @@ def _yen(cell: str) -> float | None:
         text = text[:note.start()]
     if not AMOUNT_CELL.fullmatch(text):
         return None
-    total = sum(float(n.replace(",", "")) * UNIT_YEN[u or None] for n, u in AMOUNT.findall(text.lstrip("-")))
+    total = sum(float(n.replace(",", "")) * (UNIT_YEN[u] if u else unit) for n, u in AMOUNT.findall(text.lstrip("-")))
     return -total if text.startswith("-") else total
 
 
-def _peer_rows(table: list[list[str]]) -> list[dict]:
+def _stated_unit(text: str) -> float | None:
+    m = UNIT_NOTE.search(text)
+    return UNIT_YEN[m.group(1)] if m else None
+
+
+def _peer_rows(table: list[list[str]], unit: float = 1.0) -> list[dict]:
     header = table[0]
     cols = [next((i for i, h in enumerate(header) if h.startswith(name) and "率" not in h), None)
             for name in PEER_COLUMNS]
     if None in cols:
         return []
+    units = [UNIT_YEN[m.group(1)] if (m := HEADER_UNIT.search(header[c])) else unit for c in cols]
     out = []
     for row in table[1:]:
         m = PEER_YEAR.search(row[0]) if row else None
         if not m or max(cols) >= len(row):
             continue
-        sales, profit = _yen(row[cols[0]]), _yen(row[cols[1]])
+        sales, profit = _yen(row[cols[0]], units[0]), _yen(row[cols[1]], units[1])
         if sales and profit is not None:
             out.append({"year": f"{m.group(1)}-{int(m.group(2)):02d}", "margin": round(profit / sales * 100, 1),
                         "sales": sales, "profit": profit, "forecast": bool(FORECAST.search(row[0]))})
@@ -248,13 +257,18 @@ def _peer_rows(table: list[list[str]]) -> list[dict]:
 
 
 def peer_margins(found: Found) -> list[dict]:
-    """Operating margin by year per company in competitors.md「売上高・営業利益」, labelled by ### heading."""
+    """Operating margin by year per company in competitors.md「売上高・営業利益」, labelled by ### heading. Cells without
+    a unit take the one stated before the company's first table, else the chapter's (before the first ###)."""
     if found.status != "ok":
         return []
     out = []
-    for chunk in re.split(r"^###\s+", found.body, flags=re.M):
+    chunks = re.split(r"^###\s+", found.body, flags=re.M)
+    chapter_unit = _stated_unit(chunks[0]) or 1.0
+    for chunk in chunks:
         name = chunk.splitlines()[0].strip() if chunk.strip() and not chunk.lstrip().startswith("|") else ""
-        series = [r for table in M.tables(chunk) for r in _peer_rows(table)]
+        lead = chunk.split("\n|", 1)[0]
+        unit = _stated_unit(lead) or chapter_unit
+        series = [r for table in M.tables(chunk) for r in _peer_rows(table, unit)]
         if series:
             out.append({"name": name, "series": series})
     return out
