@@ -30,6 +30,7 @@ HERE = Path(__file__).resolve().parent
 TOOLS = HERE.parent
 sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "market"), str(TOOLS / "collect")]
 
+import an_brief as AB  # noqa: E402
 import an_common as A  # noqa: E402
 import an_fill as F  # noqa: E402
 import cf_brief as B  # noqa: E402
@@ -260,7 +261,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
                                                relation), auto)
         atomic_write_text(md_path, skeleton)
         brief = A.mark_skeleton(brief, skeleton)
-    atomic_write_text(brief_path, brief)
+    atomic_write_text(brief_path, AB.dedupe(brief, company, brief_path.parent, date))
     return emit({
         "ok": True, "company": company.dirname, "date": date, "brief": company.rel(brief_path),
         "superseded": company.rel(superseded) if superseded else None,
@@ -355,7 +356,7 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     relation = _relation(company, cands)
     auto = D.auto_fills(cands, relation, P.latest_result(company, before=date), I.gather_cash_flow(company),
                         X.warnings(cands))
-    brief = "\n".join([brief_path.read_text(encoding="utf-8") if brief_path.exists() else "", F.auto_reference(auto)])
+    brief = "\n".join([AB.read_brief(brief_path, company.root), F.auto_reference(auto)])
     issues = D.validate(text, _template(root), brief)
     if issues:
         return emit({"ok": False, "md": company.rel(md_path), "issues": issues})

@@ -99,7 +99,7 @@ brief.md を読み、prepare の返り値 `fill_spec`（書く欄のキー・指
 
 - 書いた本文は `{"FILL のキー": "本文"}` の JSON 1つにまとめて、返り値の `fills_json`（md と同じ場所の `{日付}_fills.json`）に Write し、`$PY -I tools/analysis/profitability.py fill --company {company} --build` で流し込んで build する（表のセルの本文は1行にまとめられ、`|` は `｜` に置き換わる。FILL が残っていれば build せず `remaining` を返すので、その欄を書いて JSON を作り直す）。md の FILL を Edit で置き換えてもよい
 - 数値から決まる欄（5章 コメント（不整合が無いとき）・3.4（要確認の年が無いとき）・6章のレポートで使う要点・STEP 2 で確かめること・評価が変わる条件・7章・8章）は prepare がスクリプトで記入済みで、`fill_keys` に出ない。書き直さない（build の指摘があったときだけ Edit で直す）
-- 読むのは brief.md だけ（profitability.md は build の指摘を直すときだけ開く）。raw・PDF・CSV・summaries を個別に開かない（必要な節は brief.md に集約済み）
+- 読むのは brief.md だけ（profitability.md は build の指摘を直すときだけ開く）。brief の「〜と同じ内容のため省略」は同じ日のほかの分析の brief の節で、読んでいなければその節だけを読む。raw・PDF・CSV・summaries を個別に開かない（必要な節は brief.md に集約済み）
 - 書く順番（`fill_keys` にあるものだけ）: 3.2 同業との差の背景 → 3.3 の背景（年ごと） → 3.4 一過性要因の評価 → 5章 コメント → 6章 → 7章 → 8章
 - 書き方の規則は profitability.md 冒頭の `>` 行に従う。要点:
   - 書くのは**数値の背景と解釈だけ**。表の数値・判定・年度の行を変えない。数値を新しく計算しない

@@ -30,6 +30,7 @@ HERE = Path(__file__).resolve().parent
 TOOLS = HERE.parent
 sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "market"), str(TOOLS / "collect")]
 
+import an_brief as AB  # noqa: E402
 import an_common as A  # noqa: E402
 import an_fill as AF  # noqa: E402
 import gr_brief as B  # noqa: E402
@@ -244,7 +245,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
                                                 consistency), auto)
         atomic_write_text(md_path, skeleton)
         brief = A.mark_skeleton(brief, skeleton)
-    atomic_write_text(brief_path, brief)
+    atomic_write_text(brief_path, AB.dedupe(brief, company, brief_path.parent, date))
     s1 = cands["step1"]
     return emit({
         "ok": True, "company": company.dirname, "date": date, "brief": company.rel(brief_path),
@@ -347,7 +348,7 @@ def _allowed_text(root: Path, company: P.Company, date: str, found: dict, cands:
     consistency = _consistency(company, cands)
     skeleton = D.render_skeleton(_template(root), _values(company, date, found, outlook), cands, consistency)
     auto = D.auto_fills(cands, consistency, P.latest_result(company, before=date), found, X.warnings(cands))
-    return "\n".join([brief.read_text(encoding="utf-8") if brief.exists() else "", skeleton, AF.auto_reference(auto)])
+    return "\n".join([AB.read_brief(brief, company.root), skeleton, AF.auto_reference(auto)])
 
 
 def cmd_build(args: argparse.Namespace, root: Path) -> int:

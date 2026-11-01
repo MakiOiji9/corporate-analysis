@@ -29,6 +29,7 @@ HERE = Path(__file__).resolve().parent
 TOOLS = HERE.parent
 sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "market"), str(TOOLS / "collect")]
 
+import an_brief as AB  # noqa: E402
 import an_common as A  # noqa: E402
 import an_fill as F  # noqa: E402
 import freshness as T  # noqa: E402
@@ -259,7 +260,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
         skeleton = F.prefill(_skeleton(root, company, date, found, outlook, cands, today), auto)
         atomic_write_text(md_path, skeleton)
         brief = A.mark_skeleton(brief, skeleton)
-    atomic_write_text(brief_path, brief)
+    atomic_write_text(brief_path, AB.dedupe(brief, company, brief_path.parent, date))
     return emit({
         "ok": True, "company": company.dirname, "date": date, "brief": company.rel(brief_path),
         "superseded": company.rel(superseded) if superseded else None,
@@ -380,7 +381,7 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     brief = company.file(date, P.BRIEF_SUFFIX)
     base = X.candidates(company, found, date)  # what prepare saw (no measures answer yet)
     auto = D.auto_fills(base, P.latest_result(company, before=date), found, X.warnings(base))
-    reference = "\n".join([brief.read_text(encoding="utf-8") if brief.exists() else "", F.auto_reference(auto)])
+    reference = "\n".join([AB.read_brief(brief, company.root), F.auto_reference(auto)])
     issues = D.validate(text, _template(root), cands, reference)
     if issues:
         return emit({"ok": False, "md": company.rel(md_path), "issues": issues})

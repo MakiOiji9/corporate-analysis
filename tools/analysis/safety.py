@@ -30,6 +30,7 @@ HERE = Path(__file__).resolve().parent
 TOOLS = HERE.parent
 sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "market"), str(TOOLS / "collect")]
 
+import an_brief as AB  # noqa: E402
 import an_common as A  # noqa: E402
 import an_fill as F  # noqa: E402
 import mdparse as M  # noqa: E402
@@ -210,7 +211,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
         skeleton = F.prefill(D.render_skeleton(_template(root), _values(company, date, found, outlook), cands), auto)
         atomic_write_text(md_path, skeleton)
         brief = A.mark_skeleton(brief, skeleton)
-    atomic_write_text(brief_path, brief)
+    atomic_write_text(brief_path, AB.dedupe(brief, company, brief_path.parent, date))
     s1 = cands["step1"]
     return emit({
         "ok": True, "company": company.dirname, "date": date, "brief": company.rel(brief_path),
@@ -303,7 +304,7 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     cands = X.candidates(company, found)
     brief = company.file(date, P.BRIEF_SUFFIX)
     auto = D.auto_fills(cands, P.latest_result(company, before=date), found, X.warnings(cands))
-    reference = "\n".join([brief.read_text(encoding="utf-8") if brief.exists() else "", F.auto_reference(auto)])
+    reference = "\n".join([AB.read_brief(brief, company.root), F.auto_reference(auto)])
     issues = D.validate(text, _template(root), cands["step3"]["years"], reference)
     if issues:
         return emit({"ok": False, "md": company.rel(md_path), "issues": issues})

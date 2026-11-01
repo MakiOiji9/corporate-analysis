@@ -100,7 +100,7 @@ brief.md を読み、prepare の返り値 `fill_spec`（書く欄のキー・指
 
 - 書いた本文は `{"FILL のキー": "本文"}` の JSON 1つにまとめて、返り値の `fills_json`（md と同じ場所の `{日付}_fills.json`）に Write し、`$PY -I tools/analysis/swot.py fill --company {company} --build` で流し込んで build する（表のセルの本文は1行にまとめられ、`|` は `｜` に置き換わる。FILL が残っていれば build せず `remaining` を返すので、その欄を書いて JSON を作り直す）。md の FILL を Edit で置き換えてもよい
 - `sentence`・`summary`・`changes`・`gaps`（返り値の `filled_at_build`）は、ほかの欄を書き終えると build が書き手の行から記入する。書かない
-- 読むのは brief.md だけ（swot.md は build の指摘を直すときだけ開く）。raw・PDF・CSV・summaries・上流の分析 md・outlook.md を個別に開かない（必要な部分は brief.md に集約済み）
+- 読むのは brief.md だけ（swot.md は build の指摘を直すときだけ開く）。brief の「〜と同じ内容のため省略」は同じ日のほかの分析の brief の節で、読んでいなければその節だけを読む。raw・PDF・CSV・summaries・上流の分析 md・outlook.md を個別に開かない（必要な部分は brief.md に集約済み）
 - brief.md が Read の上限を超えるときは、offset/limit で分けて最後（取れていない材料）まで読む
 - 書く順番（`fill_keys` にあるものだけ）: 2.1 強み → 2.2 弱み → 2.3 機会 → 2.4 脅威 → 4章 → 5章 → 7章 → 8章 → 9章
 - 書き方の規則は swot.md 冒頭の `>` 行に従う。要点:

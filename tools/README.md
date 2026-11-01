@@ -106,6 +106,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 9つの分析スクリプト（five_forces.py・three_c.py・moat.py・swot.py・profitability.py・growth.py・safety.py・cash_flow.py・valuation.py）に共通:
 
 - prepare は、数値から決まる FILL 欄（前回からの変更点・判定に効く欠損・引き継ぎの定型文・不整合が無いときのコメントなど）をスクリプトで記入済みにし、書き手に残る欄だけを `fill_keys`・`fill_spec`（キー・指示・表のセルか）で返す。moat・swot の SWOT の候補・結論の文・要約・変更点・欠損は、書き手のほかの欄が埋まると build が記入する（`filled_at_build`）。共通の部品は `an_fill.py`
+- prepare は、同じ日のほかの分析の brief と同じ長い節（300字以上）を「（… と同じ内容のため省略。…）」の参照に置き換える（`an_brief.py`）。数値を brief と照合する build は参照を元の本文に戻して読む
 - `fill --company X [--from JSON] [--build]`: 書き手の JSON（`{"FILL のキー": "本文"}`。省略時は md と同じ場所の `{日付}_fills.json`。git 管理外）を md の FILL に流し込む。表のセルの本文は1行にまとめ、`|` は `｜` にする。`--build` なら書き手の欄が残っていなければ続けて build する
 
 スキル `five-forces`（`.ai/skills/five-forces.md`）から呼び出す。入口は `five_forces.py` だけ。出力はすべて `companies/{ticker}_{name}/analysis/five-forces/{分析日}_*`。`--company` は銘柄コード・ディレクトリ名・社名の一部のどれでもよい。
