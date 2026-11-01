@@ -103,8 +103,24 @@ def supersede_today(directory: Path, date: str) -> Path | None:
     while (target := directory / SUPERSEDED_DIR / f"{date}-{n}").exists():
         n += 1
     target.mkdir(parents=True)
-    for p in files:
-        p.rename(target / p.name)
+    moved: list[Path] = []
+    try:
+        for p in files:
+            p.rename(target / p.name)
+            moved.append(p)
+    except OSError as error:
+        # put back what was moved so the built result is never left split between the two folders
+        stranded = []
+        for p in reversed(moved):
+            try:
+                (target / p.name).rename(p)
+            except OSError:
+                stranded.append(str(target / p.name))
+        if stranded:
+            error.add_note("元に戻せなかったファイル（手で戻す）: " + ", ".join(stranded))
+        else:
+            target.rmdir()
+        raise
     return target
 
 

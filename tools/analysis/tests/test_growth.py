@@ -342,6 +342,25 @@ def test_progress_falls_back_to_the_raw_quarter_and_latest_forecast(tmp_path):
     assert F.current_progress(P.Company(tmp_path, company), series) is None
 
 
+def test_raw_forecast_picks_the_newest_announcement_not_the_last_row():
+    body = """| 決算期 | 区分（公表日） | 売上収益 | 営業利益 |
+|---|---|---|---|
+| 2027年2月期 | 修正（2026-10-09） | 600,000 | 57,500 |
+| 2027年2月期 | 期初予想（2026-04-10） | 580,000 | 60,000 |
+| 2027年2月期 | 実績 | 未確定 | — |
+"""
+    assert F._raw_forecast(body, "2027-02") == {"sales": 600000, "operating_income": 57500}
+    japanese_dates = body.replace("2026-10-09", "2026年10月9日").replace("2026-04-10", "2026年4月10日")
+    assert F._raw_forecast(japanese_dates, "2027-02")["sales"] == 600000
+    undated = body.replace("（2026-10-09）", "").replace("（2026-04-10）", "")
+    assert F._raw_forecast(undated, "2027-02")["sales"] == 580000  # no dates: the last row is the newest
+    two_tables = undated.replace("| 2027年2月期 | 実績 | 未確定 | — |\n", "") + "\n" + undated.split("| 2027年2月期 | 修正")[0] \
+        + "| 2027年2月期 | 修正 | 610,000 | 58,000 |\n"
+    assert F._raw_forecast(two_tables, "2027-02")["sales"] == 610000  # the position runs across the tables
+    fiscal_text = body.replace("修正（2026-10-09）", "修正（2027年2月期 第2四半期決算時）")
+    assert F._raw_forecast(fiscal_text, "2027-02")["sales"] == 580000  # a 決算期 is not an announcement date
+
+
 def test_same_day_redo_keeps_the_built_result_when_prepare_is_refused(repo, capsys):
     fill(prepared(repo, capsys))
     assert run(repo, "build", "--company", "7203", "--date", DAY, capsys=capsys)[0] == 0

@@ -161,20 +161,34 @@ def _raw_quarter(body: str) -> tuple[str, int, dict[str, tuple[float | None, flo
     return None
 
 
+ANNOUNCED = re.compile(r"(\d{4})\s*[-年/]\s*(\d{1,2})\s*[-月/]\s*(\d{1,2})")  # a full date, never a 決算期
+
+
+def _announced(cell: str) -> tuple[int, int, int]:
+    """The announcement date in a 区分 cell such as「修正（2026-10-09）」, or (0, 0, 0) when it has none."""
+    m = ANNOUNCED.search(cell)
+    return (int(m.group(1)), int(m.group(2)), int(m.group(3))) if m else (0, 0, 0)
+
+
 def _raw_forecast(body: str, fy: str) -> dict[str, float | None]:
-    """The latest full-year forecast row of the fiscal year in the 会社計画 chapter (any 区分 but 実績)."""
+    """The latest full-year forecast row of the fiscal year in the 会社計画 chapter (any 区分 but 実績): the newest
+    announcement date in the 区分 cell, and among rows without one the lowest in the table."""
+    best: tuple[tuple[int, int, int], int] | None = None
     out: dict[str, float | None] = {}
+    position = 0  # runs across the tables so a lower table still counts as later
     for table in M.tables(body):
         header = table[0]
         cols = {k: next((i for i, h in enumerate(header) if rx.match(h.strip())), None) for k, rx in RAW_ITEMS.items()}
         if None in cols.values():
             continue
         for row in table[1:]:
+            position += 1
             if len(row) < 2 or _fy(row[0]) != fy or "実績" in row[1]:
                 continue
             found = {k: _number(row[i]) if i < len(row) else None for k, i in cols.items()}
-            if any(v is not None for v in found.values()):
-                out = found  # rows run oldest to newest: the last one is the latest forecast
+            rank = (_announced(row[1]), position)
+            if any(v is not None for v in found.values()) and (best is None or rank > best):
+                best, out = rank, found
     return out
 
 
