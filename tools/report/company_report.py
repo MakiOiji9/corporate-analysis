@@ -33,6 +33,7 @@ sys.path[:0] = [str(HERE), str(TOOLS / "analysis"), str(TOOLS / "collect" / "mar
 
 import an_common as A  # noqa: E402
 import an_fill as AF  # noqa: E402
+import cr_batch as B  # noqa: E402
 import cr_doc as D  # noqa: E402
 import cr_facts as F  # noqa: E402
 import cr_render as R  # noqa: E402
@@ -216,6 +217,13 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
                  "warnings": warnings})
 
 
+def cmd_run(args: argparse.Namespace, root: Path) -> int:
+    company, error = _resolve(root, args.company)
+    if error:
+        return emit(error)
+    return emit({"company": company.dirname, **B.run(root, company, _today(args), args.use_existing)})
+
+
 def cmd_fill(args: argparse.Namespace, root: Path) -> int:
     return AF.cmd_fill(args, root, resolve=_resolve, target=_target, build=cmd_build, name="company-report.md",
                        emit=emit, write=atomic_write_text)
@@ -227,11 +235,11 @@ def main(argv: list[str] | None = None, root: Path = A.REPO_ROOT) -> int:
     sub = parser.add_subparsers(dest="cmd", required=True)
     lister = sub.add_parser("list")
     lister.add_argument("--date", help="YYYY-MM-DD（今日の代わり）")
-    for name in ("check", "prepare", "fill", "build"):
+    for name in ("check", "prepare", "run", "fill", "build"):
         p = sub.add_parser(name)
         p.add_argument("--company", help="銘柄コード・企業ディレクトリ名・社名の一部")
         p.add_argument("--date", help="YYYY-MM-DD（check/prepare: 今日の代わり、build: 対象のレポートの日付）")
-        if name in ("check", "prepare"):
+        if name in ("check", "prepare", "run"):
             p.add_argument("--redo", action="store_true", help="今日の build 済み・作成途中のレポートがあっても作り直す")
             p.add_argument("--use-existing", action="store_true",
                            help="分析後に材料が変わった（triggered）分析を作り直さず既存の結果で進む（レポートに明記）。"
@@ -248,7 +256,7 @@ def main(argv: list[str] | None = None, root: Path = A.REPO_ROOT) -> int:
             dt.date.fromisoformat(args.date)
         except ValueError:
             return emit({"ok": False, "error": f"--date は YYYY-MM-DD で指定する: {args.date}"})
-    handler = {"list": cmd_list, "check": cmd_check, "prepare": cmd_prepare, "fill": cmd_fill,
+    handler = {"list": cmd_list, "check": cmd_check, "prepare": cmd_prepare, "run": cmd_run, "fill": cmd_fill,
                "build": cmd_build}[args.cmd]
     return handler(args, root)
 
