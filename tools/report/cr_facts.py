@@ -1,5 +1,5 @@
 """facts.json of the company report: the nine analyses' conclusions, STEP 1・2・3, the three horizons, the price
-history, the market outlook and the next review date. Every number and judgement of the report comes from here;
+history, the market outlook, the next review date and the legendary investors' views (cr_legends.py). Every number and judgement of the report comes from here;
 the writer only adds words (cr_doc.py), and the HTML (cr_render.py) is drawn from this and the filled md.
 """
 from __future__ import annotations
@@ -9,6 +9,7 @@ from pathlib import Path
 import cr_extras as X
 import cr_factors as F
 import cr_judge as J
+import cr_legends as L
 import cr_prices as CP
 import cr_status as S
 import mdparse as M
@@ -203,7 +204,7 @@ def build(root: Path, company: S.Company, today: str, status: dict) -> dict:
     per_forecast = _get(found["valuation"], "detail", "per_forecast")
     extras = {"dividends": X.dividends(company.path, price.get("value"), per_forecast),
               "peers": X.peer_table(found, company.display_name())}
-    return {**extras,
+    facts = {**extras,
         "company": company.dirname, "ticker": company.ticker, "name": company.display_name(), "market": market,
         "date": today, "unit": unit_label(company), "price": _get(found["valuation"], "detail", "price") or {},
         "analyses": found, "prices": prices, "outlook": outlook, "review": next_review(company),
@@ -211,3 +212,4 @@ def build(root: Path, company: S.Company, today: str, status: dict) -> dict:
         "stale": [{k: s[k] for k in ("skill", "label", "step", "date", "result", "reason")}
                   for s in status["steps"] if s["result"] != "fresh"],
     }
+    return {**facts, "legends": L.evaluate(facts)}

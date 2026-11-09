@@ -37,7 +37,7 @@
 
 | コマンド | 用途 | 依頼に含める情報 |
 |---|---|---|
-| `/company-report` | 企業分析レポート（STEP 1〜3 の9つの分析 five-forces → three-c → moat → swot → profitability → growth → safety → cash-flow → valuation を依存の順に実行し、鮮度が新しい分析はスキップ。STEP 1・2 の総合判定（A/B/C）と判定マトリクスから短期（〜3ヶ月）・中期（6ヶ月〜1年）・長期（3年以上）の判定 投資検討/ウォッチ/見送り（材料不足なら判定保留）を根拠つきで出し、株価の過去レンジ（52週・3年・5年・10年。`tools/collect/stock_prices.py` が日々の株価を取得）と合わせて、初心者からプロまで読める単一 HTML を `companies/{ticker}_{name}/reports/{日付}_company-report.html` に出力。判定と HTML は Python（`tools/report/company_report.py`）が出し、LLM は分析スキルの実行とレポートの文章だけを書く。地合いの outlook.md が無い・古ければ market-report を先に実行） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
+| `/company-report` | 企業分析レポート（STEP 1〜3 の9つの分析 five-forces → three-c → moat → swot → profitability → growth → safety → cash-flow → valuation を依存の順に実行し、鮮度が新しい分析はスキップ。STEP 1・2 の総合判定（A/B/C）と判定マトリクスから短期（〜3ヶ月）・中期（6ヶ月〜1年）・長期（3年以上）の判定 投資検討/ウォッチ/見送り（材料不足なら判定保留）を根拠つきで出し、株価の過去レンジ（52週・3年・5年・10年。`tools/collect/stock_prices.py` が日々の株価を取得）と合わせ、投資の神（バフェット・ソロス・ロジャーズ）の考え方に当てはめた参考の視点 好む/保留/避ける（`.ai/knowledge/legendary-investors/` の条件で `tools/report/cr_legends.py` が判定。点数には入らない）も添えて、初心者からプロまで読める単一 HTML を `companies/{ticker}_{name}/reports/{日付}_company-report.html` に出力。判定と HTML は Python（`tools/report/company_report.py`）が出し、LLM は分析スキルの実行とレポートの文章だけを書く。地合いの outlook.md が無い・古ければ market-report を先に実行） | 銘柄コード・企業ディレクトリ名・社名の一部。省略時は一覧から選択 |
 
 ## ツールと初回セットアップ
 

@@ -14,7 +14,9 @@ sys.path[:0] = [str(REPORT), str(REPO / "tools" / "analysis"), str(REPO / "tools
 
 import company_report as CR  # noqa: E402
 import cr_doc as D  # noqa: E402
+import cr_legends as L  # noqa: E402
 import cr_status as S  # noqa: E402
+import mdparse as M  # noqa: E402
 import write_guard as WG  # noqa: E402
 
 TODAY = "2026-10-31"
@@ -143,11 +145,21 @@ FACTOR_WORDS = "地合い・株価の位置・直近の決算の進捗・株価�
                "勝てる理由・強みの持続性・強みで脅威に対抗できるか"
 
 
+def _legend_verdicts(text: str) -> dict:
+    """{key: 評価} from the md's 5章 table (the script's rows)."""
+    keys = {name: key for key, name in L.NAMES.items()}
+    return {keys[m.group(1)]: M.split_row(m.group(0))[1] for m in L.ROW.finditer(text)}
+
+
 def _fill(text: str, horizons: dict) -> str:
+    legends = _legend_verdicts(text)
+
     def repl(m: re.Match) -> str:
         key = m.group(1)
         if key in horizons:
             return f"{horizons[key]}。{FACTOR_WORDS}を確かめた。"
+        if key in legends:
+            return f"{L.SHORT[key]}{L.PHRASE}: {legends[key]}。項目の値で決めた。"
         return FILLED.get(key, "投資の理由は実績で選ばれること。")
     return FILL_ANY.sub(repl, text)
 
@@ -200,7 +212,10 @@ def test_prepare_fill_build_flow(repo, capsys):
     assert (out["step1"], out["step2"], out["step3"]) == ("A", "A", "割安")
     assert out["horizons"] == {"short": "投資検討", "mid": "投資検討", "long": "投資検討"}
     # 4.2 comes from the brief's candidates; 4.3 stays with the writer when there are too few gaps for 2 lines
-    assert set(out["fill_keys"]) == {"summary", "about", "short", "mid", "long", "thesis", "watch"}
+    assert set(out["fill_keys"]) == {"summary", "about", "short", "mid", "long", "thesis", "watch",
+                                     "buffett", "soros", "rogers"}
+    assert set(out["legends"]) == set(L.KEYS)
+    assert all(v in (L.PREFER, L.HOLD, L.AVOID) for v in out["legends"].values())
     md = company / "reports" / f"{TODAY}_company-report.md"
     assert "### 4.2 判断が崩れる条件\n\n- 【悪化】" in md.read_text(encoding="utf-8")  # 投資検討: 悪化 first
     assert _run(repo, capsys, "check", "--company", "3798", "--date", TODAY)["next"] == "write"
@@ -211,7 +226,9 @@ def test_prepare_fill_build_flow(repo, capsys):
     assert built["ok"], built
     html = (company / "reports" / f"{TODAY}_company-report.html").read_text(encoding="utf-8")
     assert "<svg" in html and "投資検討" in html and "52週" in html and "用語集" in html and "ROE" in html
-    assert "<dt>FCF</dt>" not in html  # the brief's writing rules do not put terms into the glossary
+    assert "<dt>FCF</dt>" in html  # FCF is in the report now (the investors' view, B6), so it is in the glossary
+    assert 'id="legends"' in html and "ウォーレン・バフェット" in html
+    assert "## 投資の神の視点" in (company / "reports" / f"{TODAY}_company-report_brief.md").read_text(encoding="utf-8")
     result = json.loads((company / "reports" / f"{TODAY}_company-report.json").read_text(encoding="utf-8"))
     assert result["horizons"]["long"]["verdict"] == "投資検討" and result["price_range"]["source"] == "prices"
     assert _run(repo, capsys, "check", "--company", "3798", "--date", TODAY)["next"] == "report_existing"
@@ -391,6 +408,32 @@ def test_kept_draft_follows_new_verdicts(repo, capsys):
     facts = json.loads((company / "reports" / f"{TODAY}_company-report_facts.json").read_text(encoding="utf-8"))
     assert out["kept"] and "書いた。" in text
     assert D.horizon_rows(facts) in text and facts["step3"]["verdict"] == "割高"
+
+
+def test_build_checks_the_legend_section(repo, capsys):
+    company = _company(repo)
+    out = _prepare(repo, capsys)
+    md = company / "reports" / f"{TODAY}_company-report.md"
+    filled = _fill(md.read_text(encoding="utf-8"), out["horizons"])
+    verdict = out["legends"]["buffett"]
+    other = next(v for v in (L.PREFER, L.HOLD, L.AVOID) if v != verdict)
+    # the writer may not change the script's table, drop the phrase, or claim the investor would trade
+    broken = filled.replace(f"| ウォーレン・バフェット（長期） | {verdict} |", f"| ウォーレン・バフェット（長期） | {other} |")
+    broken = broken.replace(f"バフェット{L.PHRASE}: {verdict}。", "バフェットなら買う。")
+    md.write_text(broken, encoding="utf-8")
+    issues = _run(repo, capsys, "build", "--company", "3798")["issues"]
+    assert any("投資の神の表" in i for i in issues)
+    assert any("で書き始める" in i for i in issues) and any("売買" in i for i in issues)
+
+
+def test_kept_draft_refreshes_the_legend_rows(repo, capsys):
+    company = _company(repo)
+    _prepare(repo, capsys)
+    md = company / "reports" / f"{TODAY}_company-report.md"
+    text = md.read_text(encoding="utf-8")
+    md.write_text(L.ROW.sub("| ウォーレン・バフェット（長期） | 古い評価 | 古い理由 |", text, count=1), encoding="utf-8")
+    again = _prepare(repo, capsys)
+    assert again["kept"] and "古い評価" not in md.read_text(encoding="utf-8")
 
 
 def test_write_guard_report_files(repo):

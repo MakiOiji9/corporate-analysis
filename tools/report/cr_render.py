@@ -12,6 +12,7 @@ import charts as C
 import cr_doc as D
 import cr_glossary as G
 import cr_judge as J
+import cr_legends as L
 import cr_sections as X
 from slides import esc, table
 
@@ -22,7 +23,9 @@ OK_HTML = {True: '<span class="ok-yes">○ 満たす</span>', False: '<span clas
            None: '<span class="ok-unk">不明</span>'}
 TOC = (("conclusion", "結論"), ("reasons", "期間ごとの良い点・悪い点"), ("step1", "STEP 1 事業"),
        ("step2", "STEP 2 財務"), ("step3", "STEP 3 株価"), ("price", "株価のレンジ"), ("thesis", "投資の理由"),
-       ("gaps", "材料不足"), ("glossary", "用語集"))
+       ("legends", "投資の神の視点"), ("gaps", "材料不足"), ("glossary", "用語集"))
+LEGEND_LEAD = ("3人の投資哲学をこの会社の分析結果に当てはめた参考の視点。評価はスクリプトが資料の条件で決め、"
+               "結論の判定の点数には入らない。本人が実際にこの会社をこう評価したという意味ではない。")
 PLAIN_HORIZONS = (("短期", "〜3ヶ月", "地合い・株価の位置と勢い・直近の決算の進み具合・割安さを重く見る。値動きの影響が大きく、根拠は弱い。"),
                   ("中期", "6ヶ月〜1年", "割安さと業績の勢い（成長性・決算の進捗）を重く見て、財務と地合いも加える。"),
                   ("長期", "3年以上", "事業の強さ（勝てる理由・モート・業界）を重く見て、財務と割安さを加える。"
@@ -287,6 +290,25 @@ def thesis(facts: dict, parsed: dict) -> str:
     return _section("thesis", "07", "投資の理由と判断が崩れる条件", "", body)
 
 
+def _legend_card(v: dict, prose: str) -> str:
+    checks = table(["項目", "値", "結果", "情報源"],
+                   [[esc(f"{c['id']} {c['item']}"), esc(c["value"]), OK_HTML[c["ok"]], esc(c["source"])]
+                    for c in v["checks"]], nowrap=frozenset({2}))
+    notes = "".join(f'<p class="small muted">{esc(n)}</p>' for n in v["notes"])
+    return (f'<div class="stepcard"><div class="label">{esc(v["name"])}（{esc(v["horizon"])}の見方）</div>'
+            f'<div class="res"><span class="badge {L.VERDICT_CLASS.get(v["verdict"], "")}">{esc(v["verdict"])}</span></div>'
+            f'<p class="small muted">{esc(v["philosophy"])}</p><p>{esc(v["why"])}</p>{prose}{notes}'
+            f'{_details("確かめた項目", checks)}</div>')
+
+
+def legends(facts: dict, parsed: dict) -> str:
+    found = facts.get("legends") or {}
+    if not found:
+        return ""
+    cards = "".join(_legend_card(v, _paragraphs(parsed.get(k) or "")) for k, v in found.items())
+    return _section("legends", "08", "投資の神の視点（参考）", LEGEND_LEAD, f'<div class="steps">{cards}</div>')
+
+
 def _link(facts: dict, md: str | None) -> str:
     if not md:
         return "—"
@@ -304,19 +326,19 @@ def gaps(facts: dict) -> str:
     body = (_list([f"{g['label']}: {g['gap']}" for g in facts["gaps"]]) + stale_html
             + "<h3>このレポートが使った分析</h3>"
             + table(["STEP", "分析", "分析日", "結論", "ファイル"], rows, nowrap=frozenset({2})))
-    return _section("gaps", "08", "材料不足と使った分析", "判定に影響しうる、まだ確かめられていない点。", body)
+    return _section("gaps", "09", "材料不足と使った分析", "判定に影響しうる、まだ確かめられていない点。", body)
 
 
 def glossary(text: str) -> str:
     terms = G.terms_in(text)
     body = (f'<dl class="gloss">{"".join(f"<dt>{esc(t)}</dt><dd>{esc(d)}</dd>" for t, d in terms)}</dl>' if terms
             else '<p class="muted">なし</p>')
-    return _section("glossary", "09", "用語集", "このレポートに出てくる言葉の意味。", body)
+    return _section("glossary", "10", "用語集", "このレポートに出てくる言葉の意味。", body)
 
 
 def render(template: str, facts: dict, parsed: dict, md_text: str) -> str:
     main = X.annotate(conclusion(facts, parsed) + reasons(facts, parsed) + step1(facts) + step2(facts) + step3(facts)
-                      + price_section(facts) + thesis(facts, parsed) + gaps(facts))
+                      + price_section(facts) + thesis(facts, parsed) + legends(facts, parsed) + gaps(facts))
     body = (masthead(facts) + "<main>" + main
             + glossary(md_text + D.render_brief(facts, "").split(D.WRITING_RULES)[0])
             + f'</main><footer><div class="wrap"><p>{esc(DISCLAIMER)}</p>'
