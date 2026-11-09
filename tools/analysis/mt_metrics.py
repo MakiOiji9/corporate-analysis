@@ -1,20 +1,21 @@
-"""Numbers behind the moat criteria (企業分析フレームワーク.md 1-3 手順2) and the candidate they imply.
+"""Numbers behind the moat criteria (企業分析フレームワーク.md 1-3) and the candidates they imply.
 
-  強い裏付け: operating margin above the peer average for the last 10 years (at least 7)
-  弱い裏付け: above the peer average for about the last 5 years
-  裏付けなし: at or below the peer average
-Here only the margin side is decided: the number of consecutive fiscal years, counted back from the newest
-year that can be compared, in which the target's operating margin is above the simple average of the peers
-(7+ 強い / 1-6 弱い / 0 なし). The share trend is the writer's rating and build combines the two.
-The comparison table (3.1) and the cost-structure table (3.2) are computed here so the writer never calculates.
+The gate (超過収益: ROIC against the cost of capital) and the pricing power are computed in mt_returns.
+Here the supporting operating-margin comparison (2.2): the number of consecutive fiscal years, counted back from
+the newest year that can be compared, in which the target's operating margin is above the median of the peers
+(7+ 強い / 1-6 弱い / 0 なし; the median, so that one outlier peer does not decide it). It is shown to the writer
+and recorded, but the verdict rests on the ROIC gate.
+The comparison table (2.2) and the cost-structure table (3.2) are computed here so the writer never calculates.
 """
 from __future__ import annotations
 
 import json
 import re
+import statistics
 
 import an_common as A
 import mdparse as M
+import mt_returns as R
 from ff_inputs import Found, raw_files
 from ff_metrics import FORECAST, PERCENT, _margins_from_table, _months_apart, _peer_rows, _year, peer_margins
 from tc_metrics import MAX_PEERS, _is_self, _series_from_data
@@ -91,7 +92,8 @@ def _nearest(series: list[dict], year: str) -> dict | None:
 
 
 def comparison_rows(margins: dict[str, float], peer_list: list[dict]) -> list[dict]:
-    """One row per target fiscal year: the target's margin, each matched peer and their simple average."""
+    """One row per target fiscal year: the target's margin, each matched peer, their median (avg: the value the
+    comparison uses) and their simple mean (shown for reference)."""
     rows = []
     for year, value in margins.items():
         matched = []
@@ -99,8 +101,10 @@ def comparison_rows(margins: dict[str, float], peer_list: list[dict]) -> list[di
             s = _nearest(p["series"], year)
             if s:
                 matched.append({"name": p["name"], "year": s["year"], "margin": s["margin"]})
-        avg = round(sum(m["margin"] for m in matched) / len(matched), 1) if matched else None
-        rows.append({"year": year, "self": round(value, 1), "avg": avg,
+        values = [m["margin"] for m in matched]
+        avg = round(statistics.median(values), 1) if values else None
+        mean = round(sum(values) / len(values), 1) if values else None
+        rows.append({"year": year, "self": round(value, 1), "avg": avg, "mean": mean,
                      "diff": round(value - avg, 1) if avg is not None else None, "peers": matched})
     return rows
 
@@ -129,13 +133,13 @@ def margin_candidate(rows: list[dict]) -> dict:
         return {"rating": None, "fixed": False, "years_above": 0, "compared_years": 0,
                 "basis": "自社と競合の営業利益率を同じ年度で比べられない（自社または競合の推移が raw に無い）"}
     rating = "強い" if count >= STRONG_YEARS else "弱い" if count >= 1 else "なし"
-    parts = [f"{newest} から遡って {count} 年連続で同業平均を上回る（比較できた年 {compared}）"]
+    parts = [f"{newest} から遡って {count} 年連続で同業中央値を上回る（比較できた年 {compared}）"]
     if 1 <= count < STRONG_YEARS and compared < STRONG_YEARS:
         parts.append(f"比較できる年が {STRONG_YEARS} 年に満たないため「強い」にはならない")
     newer = [r["year"] for r in rows if r["year"] > newest]
     if newer:
         parts.append(f"競合の数値が無い新しい年度（比較から除外）: {', '.join(newer)}")
-    basis = "。".join(parts) + f"。目安: {STRONG_YEARS}年以上 強い / 1〜{STRONG_YEARS - 1}年 弱い / 直近が平均以下 なし"
+    basis = "。".join(parts) + f"。目安: {STRONG_YEARS}年以上 強い / 1〜{STRONG_YEARS - 1}年 弱い / 直近が中央値以下 なし"
     return {"rating": rating, "fixed": True, "years_above": count, "compared_years": compared, "basis": basis}
 
 
@@ -144,33 +148,29 @@ def candidates(company, found: dict[str, Found]) -> dict:
     margins, sources = self_series(company, listed)
     rows = comparison_rows(margins, peers(company, found["peers"]))
     costs = cost_rows(company, found["peer_cost"])
-    return {"margin": margin_candidate(rows), "rows": rows, "sources": sources, "costs": costs}
+    return {"margin": margin_candidate(rows), "rows": rows, "sources": sources, "costs": costs,
+            "returns": R.returns(company, found), "pricing": R.pricing(company, costs)}
 
 
 # ---------- 収集の要求 ----------
 
-HISTORY_AGENT = "collect-peers-valuation"
-HISTORY_ITEM = f"競合: 営業利益率の推移（{STRONG_YEARS}年以上）"
-HISTORY_UNAVAILABLE = "営業利益率の長期推移"  # collect-peers-valuation reports a short history under this name
+ROIC_AGENT = "collect-filings"
+ROIC_ITEM = f"財務時系列: 営業利益・自己資本・有利子負債（{R.MIN_YEARS}年以上。ROIC の計算）"
+ROIC_UNAVAILABLE = "ROIC の財務時系列"  # collect-filings reports a short own history under this name
 
 
-def needs_longer_history(margin: dict, unavailable: list[str]) -> bool:
-    """Older peer margins could still lift the candidate to 強い: the target is above the peer average in every
-    year that could be compared, but fewer than STRONG_YEARS years could be. Not asked again once status.md
-    lists the short history as unobtainable. A run already broken inside the compared years cannot reach 強い."""
-    if any(HISTORY_UNAVAILABLE in item for item in unavailable):
-        return False
-    return (margin["rating"] == "弱い" and margin["years_above"] == margin["compared_years"]
-            and margin["compared_years"] < STRONG_YEARS)
+def needs_roic_history(returns: dict, unavailable: list[str]) -> bool:
+    """The gate cannot be decided (超過収益 不明) and status.md does not yet say the history is unobtainable."""
+    return returns["rating"] is None and not any(ROIC_UNAVAILABLE in item for item in unavailable)
 
 
-def with_history_request(requests: list[dict], margin: dict, unavailable: list[str]) -> list[dict]:
-    """collect_requests plus the longer peer history when it could change the candidate (a new list)."""
-    if not needs_longer_history(margin, unavailable):
+def with_roic_request(requests: list[dict], returns: dict, unavailable: list[str]) -> list[dict]:
+    """collect_requests plus the target's balance history when the ROIC gate lacks years (a new list)."""
+    if not needs_roic_history(returns, unavailable):
         return requests
-    if any(r["agent"] == HISTORY_AGENT for r in requests):
-        return [dict(r, items=r["items"] + [HISTORY_ITEM]) if r["agent"] == HISTORY_AGENT else r for r in requests]
-    return requests + [{"agent": HISTORY_AGENT, "items": [HISTORY_ITEM]}]
+    if any(r["agent"] == ROIC_AGENT for r in requests):
+        return [dict(r, items=r["items"] + [ROIC_ITEM]) if r["agent"] == ROIC_AGENT else r for r in requests]
+    return requests + [{"agent": ROIC_AGENT, "items": [ROIC_ITEM]}]
 
 
 # ---------- 材料の警告 ----------
@@ -182,6 +182,7 @@ def margin_digest(cands: dict) -> str:
     """The yearly comparison (3.1) behind the margin candidate. Recorded at build: the series is read from every
     P/L table and data/*.csv, not only from the sections in SPECS, so a new fiscal year re-opens the result."""
     rows = [[r["year"], r["self"], [[m["name"], m["year"], m["margin"]] for m in r["peers"]]] for r in cands["rows"]]
+    rows += [[r["year"], r["roic"]] for r in cands["returns"]["rows"]]
     return A.digest(json.dumps(rows, ensure_ascii=False))
 
 
@@ -197,8 +198,8 @@ def warnings(cands: dict) -> list[str]:
         year = _year(r["year"])
         if (r["self"] and r["margin"] is not None and year in series
                 and round(abs(series[year] - r["margin"]), 1) >= MISMATCH_PT):
-            out.append(f"自社の営業利益率 {year} が 3.1（{series[year]:.1f}%）と 3.2（{r['margin']:.1f}%）で違う"
-                       f"（出典が違う。判定は 3.1 の値で行われる）")
+            out.append(f"自社の営業利益率 {year} が 2.2（{series[year]:.1f}%）と 3.2（{r['margin']:.1f}%）で違う"
+                       f"（出典が違う。比較は 2.2 の値で行われる）")
     return out
 
 

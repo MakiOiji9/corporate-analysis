@@ -12,7 +12,8 @@ check:   is the latest moat result still valid (180 days, no newer yuho / financ
          business-overview / industry / competitors raw, no newer 3C result)? Is the 3C result usable (STEP 1-2
          comes first; its verdict does not stop the analysis)? Which required inputs are missing? -> "next".
 prepare: analysis/moat/{date}_brief.md (what the writer reads) and the {date}_moat.md skeleton
-         (FILL markers, the computed margin comparison, the cost table and the script candidate).
+         (FILL markers, the ROIC gate against the cost of capital, the margin comparison, the gross margin and the
+         cost table, all computed by mt_returns / mt_metrics).
 build:   check the filled md, write the conclusion (モート 広い/狭い/なし/判定保留) and {date}_moat.json.
 stdout is one JSON line so the calling agent spends few tokens. Exit 1 when not ok.
 """
@@ -139,8 +140,8 @@ def cmd_list(args: argparse.Namespace, root: Path) -> int:
 
 
 def _requests(company: P.Company, found: dict, cands: dict) -> list[dict]:
-    """Missing required sections, plus older peer margins when they could still lift the candidate to 強い."""
-    return X.with_history_request(I.collect_requests(found), cands["margin"], I.unavailable_items(company))
+    """Missing required sections, plus the target's balance history when the ROIC gate lacks years."""
+    return X.with_roic_request(I.collect_requests(found), cands["returns"], I.unavailable_items(company))
 
 
 def _next_step(company: P.Company, result: str, tc_result: str, requests: list[dict]) -> str:
@@ -254,7 +255,10 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
         "md": company.rel(md_path), "kept": kept, "regenerated": untouched and not args.redo,
         "skipped_collect": requests if blocking == "collect" else [], "warnings": warnings,
         **F.prepare_fields(company, md_path, D.BUILD_KEYS),
-        "candidates": {"margin": cands["margin"]["rating"], "years_above": cands["margin"]["years_above"],
+        "candidates": {"returns": cands["returns"]["rating"], "roic_years": cands["returns"]["years"],
+                       "width": cands["returns"]["width"], "spread_trend": cands["returns"]["trend"],
+                       "pricing": cands["pricing"]["rating"], "margin": cands["margin"]["rating"],
+                       "years_above": cands["margin"]["years_above"],
                        "compared_years": cands["margin"]["compared_years"]},
         "previous": previous[0] if previous else None, "three_c": _three_c_summary(company, three_c),
         "missing_inputs": I.collect_requests(found), "unavailable": _unavailable(found), "outlook": outlook["path"],
@@ -282,13 +286,20 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: d
     three_c = TP.latest_result(_tc_company(company))
     effective = set(judged["effective"])
     moats = [dict(m, effective=m["type"] in effective) for m in parsed["moats"]]
+    ret, pr = cands["returns"], cands["pricing"]
     return {
-        "company": company.dirname, "name": company.display_name(), "date": date,
+        "version": D.VERSION, "company": company.dirname, "name": company.display_name(), "date": date,
         "valid_until": P.valid_until(date), "strength": parsed["strength"], "moats": moats,
+        "returns": {k: ret[k] for k in ("rating", "basis", "years", "above", "hurdle", "tax", "median_spread",
+                                        "recent_spread", "border_years", "width", "trend", "rows", "peers",
+                                        "economic_profit", "unit")},
+        "pricing_power": {k: pr[k] for k in ("rating", "basis", "years", "range", "inflation_change", "peer_gross",
+                                             "latest", "rows", "sources")},
         "margin": {"candidate": cands["margin"]["rating"], "years_above": cands["margin"]["years_above"],
                    "compared_years": cands["margin"]["compared_years"], "basis": cands["margin"]["basis"],
                    "rows": cands["rows"], "sources": cands["sources"]},
         "costs": cands["costs"], "share": parsed["share"], "risks": parsed["risks"],
+        "axes": parsed["axes"], "trend": judged["trend"],
         "durability": parsed["durability"], "backing": judged["backing"], "backing_reason": judged["backing_why"],
         "effective_moats": judged["effective"], "corrected": judged["corrected"], "near_risks": judged["near_risks"],
         "verdict": judged["verdict"], "verdict_reason": judged["why"], "conservative": judged["conservative"],
@@ -326,10 +337,10 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     issues = D.check_reference(parsed, P.latest_result(company, before=date))
     if issues:
         return emit({"ok": False, "md": company.rel(md_path), "issues": issues})
-    # the margin candidate is recomputed so edited cells in the md can't bypass the rules
+    # the ROIC gate is recomputed so edited cells in the md can't bypass the rules
     cands = X.candidates(company, I.gather_moat(company))
-    judged = D.judge(parsed, cands["margin"])
-    atomic_write_text(md_path, D.apply_conclusion(text, judged, cands["margin"], parsed["share"]["trend"]))
+    judged = D.judge(parsed, cands["returns"])
+    atomic_write_text(md_path, D.apply_conclusion(text, judged, cands["returns"], parsed["share"]["trend"]))
     result = result_json(company, date, text, parsed, cands, judged)
     json_path = company.file(date, P.JSON_SUFFIX)
     atomic_write_text(json_path, json.dumps(result, ensure_ascii=False, indent=1) + "\n")
@@ -337,7 +348,9 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
         "ok": True, "md": company.rel(md_path), "json": company.rel(json_path), "date": date,
         "verdict": judged["verdict"], "verdict_reason": judged["why"], "effective_moats": judged["effective"],
         "claimed_moats": judged["claimed"], "corrected": judged["corrected"], "backing": judged["backing"],
-        "backing_reason": judged["backing_why"], "share": parsed["share"]["trend"],
+        "backing_reason": judged["backing_why"], "share": parsed["share"]["trend"], "trend": judged["trend"],
+        "width": cands["returns"]["width"], "depth": judged["depth"], "pricing": cands["pricing"]["rating"],
+        "unknown_sources": judged["unknown_sources"],
         "near_risks": judged["near_risks"], "durability": parsed["durability"],
         "valid_until": result["valid_until"], "previous": result["previous"], "three_c": result["three_c"],
         **D.flags(parsed), "gaps": [g for g in parsed["gaps"] if not M.is_blank(g) and g != "なし"],

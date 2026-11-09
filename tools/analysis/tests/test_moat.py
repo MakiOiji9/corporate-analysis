@@ -17,6 +17,8 @@ import mt_doc as D  # noqa: E402
 import mt_inputs as I  # noqa: E402
 import mt_metrics as X  # noqa: E402
 import mt_paths as P  # noqa: E402
+import mt_returns as R  # noqa: E402
+import sf_series as SS  # noqa: E402
 import write_guard as G  # noqa: E402
 
 DAY = "2026-10-12"
@@ -39,9 +41,7 @@ FINANCIALS = """# 財務時系列 — テスト
 
 ## 1. 損益・貸借・CF（10年サマリー）
 
-| 年度 | 売上高 | 営業利益 |
-|---|---|---|
-{rows}
+{table}
 
 ## 4. 会社計画（期初予想）と実績
 
@@ -88,6 +88,10 @@ INDUSTRY = """# 業界概要（自動車） — テスト
 | 会社 | 2021 | 2026 |
 |---|---|---|
 | トヨタ | 30% | 32% |
+
+## 3. 参入に必要な条件・過去10年の新規参入と撤退
+
+- 新規参入 0社、撤退 2社
 
 ## 7. 業界全体の利益率の推移
 
@@ -146,6 +150,7 @@ COST = """## 9. 売上原価率・販管費率（コスト構造の比較）
 
 OUTLOOK = "# 地合い判断\n\n## 1. 総合判断\n\n- 中立\n"
 SELF_MARGIN = 10  # 億円 of 100
+EQUITY, DEBT = 40, 10  # invested capital 50: ROIC = 10 × (1 − 30.6%) ÷ 50 = 13.9%, 6.9pt above the 7% cost of capital
 YEARS = range(2017, 2027)
 
 
@@ -153,13 +158,20 @@ def _rows(years, month: int, profit: float, unit: str = "") -> str:
     return "\n".join(f"| {y}/{month:02d} | 100{unit} | {profit}{unit} |" for y in years)
 
 
+def _financials(profit: float, balance: bool = True, years=YEARS) -> str:
+    if not balance:
+        return FINANCIALS.format(table="| 年度 | 売上高 | 営業利益 |\n|---|---|---|\n" + _rows(years, 3, profit))
+    rows = "\n".join(f"| {y}/03 | 100 | {profit} | {EQUITY} | {DEBT} |" for y in years)
+    return FINANCIALS.format(table="| 年度 | 売上高 | 営業利益 | 自己資本 | 有利子負債 |\n|---|---|---|---|---|\n" + rows)
+
+
 def _company(root: Path, self_profit: float = SELF_MARGIN, alpha_years=YEARS, beta_years=YEARS,
              retention: str = RETENTION, pricing: str = PRICING, cost: str = COST,
-             collected: str = COLLECTED) -> Path:
+             collected: str = COLLECTED, balance: bool = True) -> Path:
     company = root / "companies" / "7203_toyota"
     for sub, name, text in (
             ("filings", f"{collected}_2026-03_yuho.md", YUHO),
-            ("ir", f"{collected}_financials-historical.md", FINANCIALS.format(rows=_rows(YEARS, 3, self_profit))),
+            ("ir", f"{collected}_financials-historical.md", _financials(self_profit, balance)),
             ("ir", f"{collected}_business-overview.md", BUSINESS.format(retention=retention, pricing=pricing)),
             ("market", f"{collected}_industry-overview.md", INDUSTRY),
             ("market", f"{collected}_competitors.md",
@@ -200,30 +212,44 @@ def run(root: Path, *argv: str, capsys) -> tuple[int, dict]:
     return code, json.loads(capsys.readouterr().out.strip().splitlines()[-1])
 
 
+MOAT_KEYS = ("brand", "license", "switching", "network", "cost", "scale")
+
+
 def moat_rows(**ratings: str) -> str:
-    """ブランド..規制 rows; keyword args brand / switching / network / cost / license override 該当なし."""
-    keys = ("brand", "switching", "network", "cost", "license")
+    """The six source rows in MOAT_TYPES order; keyword args (MOAT_KEYS) override 該当なし."""
     lines = []
-    for key, name in zip(keys, D.MOAT_TYPES):
+    for key, name in zip(MOAT_KEYS, D.MOAT_TYPES):
         rating = ratings.get(key, "該当なし")
-        source, conf = ("brief.md 2.", "一次") if rating == "該当" else ("—", "—")
-        lines.append(f"| {name} | {rating} | 事実 {name} | {source} | {conf} |")
+        if rating in D.HITS:
+            cells = (f"仕組み {name}", f"数値 {name}", "brief.md 2.", "一次")
+        elif rating == "弱":
+            cells = (f"仕組み {name}", "—", "brief.md 2.", "—")
+        else:
+            cells = (f"確認した資料 {name}", "—", "—", "—")
+        lines.append(f"| {name} | {rating} | " + " | ".join(cells) + " |")
     return "\n".join(lines)
 
 
 ANSWERS = {
-    "strength": "品質", "share-seen": "30%→32%", "share-source": "brief.md 4.", "share-confidence": "一次",
+    "strength": "品質", "share-seen": "30%→32%", "share-source": "brief.md 6.", "share-confidence": "一次",
     "share-trend": "安定", "share-reason": "シェアは5年で微増", "durability": "モートは10年程度持続する見込み。リスク要因は EV 化",
-    "strengths": "スイッチングコスト", "threats": "EV 化", "step2-checks": "営業利益率が同業上位か",
-    "triggers": "営業利益率が同業平均を下回れば なし", "changes": "- 初回の分析", "gaps": "- なし",
+    "depth-rating": "深い", "depth-reason": "設置台数 10万台の置き換えに10年かかる", "reach-rating": "限定的",
+    "reach-reason": "新領域で同じ仕組みが効くかは未確認",
+    "strengths": "スイッチングコスト", "threats": "EV 化", "step2-checks": "ROIC が資本コストを上回り続けるか",
+    "triggers": "ROIC が2年続けて資本コストを下回れば なし", "changes": "- 初回の分析", "gaps": "- なし",
 }
-RISK = "| EV 化 | {timing} | ブランド | 業界概要 | brief.md 7. |"
+RISK = "| EV 化 | {category} | {timing} | ブランド | 業界概要 | brief.md 7. |"
+NO_RISK = "| なし | — | — | — | 業界概要・有報のリスクを確認 | — |"
+
+
+def risk(timing: str = "5〜10年", category: str = "技術") -> str:
+    return RISK.format(timing=timing, category=category)
 
 
 def fill(md: Path, rows: str | None = None, risks: str | None = None, **answers: str) -> None:
     values = dict(ANSWERS, **{k.replace("_", "-"): v for k, v in answers.items()})
-    values["moat-rows"] = rows if rows is not None else moat_rows(switching="該当", license="該当")
-    values["risk-rows"] = risks if risks is not None else RISK.format(timing="5〜10年")
+    values["moat-rows"] = rows if rows is not None else moat_rows(switching="強", license="中")
+    values["risk-rows"] = risks if risks is not None else risk()
     md.write_text(FILL_ANY.sub(lambda m: values[m.group(1)], md.read_text(encoding="utf-8")), encoding="utf-8")
 
 
@@ -231,13 +257,113 @@ def company_obj(root: Path) -> P.Company:
     return P.Company(root, root / "companies" / "7203_toyota")
 
 
-def prepared(root: Path, capsys, date: str = DAY) -> Path:
-    code, out = run(root, "prepare", "--company", "7203", "--date", date, capsys=capsys)
+def prepared(root: Path, capsys, date: str = DAY, *extra: str) -> Path:
+    code, out = run(root, "prepare", "--company", "7203", "--date", date, *extra, capsys=capsys)
     assert code == 0, out
     return root / out["md"]
 
 
-# ---------- metrics ----------
+def built(root: Path, capsys, **fill_args) -> dict:
+    md = prepared(root, capsys)
+    fill(md, **fill_args)
+    code, out = run(root, "build", "--company", "7203", capsys=capsys)
+    assert code == 0, out
+    return out
+
+
+# ---------- ROIC and pricing power (mt_returns) ----------
+
+def _value(v: float) -> SS.S.Value:
+    return SS.S.Value(v, "test", True)
+
+
+def test_roic_rows_average_capital_and_untaxed_losses():
+    series = {"operating_income": {"2025-03": _value(10.0), "2026-03": _value(-5.0)},
+              "equity": {"2025-03": _value(40.0), "2026-03": _value(60.0)},
+              "debt": {"2025-03": _value(10.0), "2026-03": _value(10.0)}}
+    first, second = R.roic_rows(series, 30.0, 7.0)
+    assert (first["invested"], first["roic"], first["spread"]) == (50.0, 14.0, 7.0)
+    assert (second["invested"], second["roic"]) == (60.0, -8.3)  # (70 + 50) / 2; a loss is not reduced by the tax
+
+
+def test_roic_skips_years_without_debt_or_positive_capital():
+    series = {"operating_income": {"2025-03": _value(10.0), "2026-03": _value(10.0)},
+              "equity": {"2025-03": _value(-40.0), "2026-03": _value(40.0)},
+              "debt": {"2025-03": _value(10.0)}}
+    assert R.roic_rows(series, 30.0, 7.0) == []
+
+
+def _spreads(values: list[float]) -> list[dict]:
+    return [{"year": f"{2016 + i}-03", "spread": s} for i, s in enumerate(values)]
+
+
+@pytest.mark.parametrize("spreads, rating", [
+    ([6.0] * 10, "強い"),
+    ([3.0] * 10, "弱い"),  # above every year, but the median spread is under 5pt
+    ([6.0] * 6, "弱い"),  # too few years for 強い
+    ([6.0] * 7 + [-1.0] * 3, "なし"),  # the last 3 years at or below the cost of capital
+    ([-1.0] * 6 + [6.0] * 4, "なし"),  # above in fewer than half of the years
+    ([6.0] * 4, None),
+    ([-1.0] * 4, "なし"),  # a short history can still show no excess return
+])
+def test_rate_returns(spreads, rating):
+    assert R.rate_returns(_spreads(spreads), 7.0)["rating"] == rating
+
+
+def test_operating_losses_mean_no_excess_return_without_roic():
+    result = R.rate_returns([], 9.0, [-3.0, -2.0, -1.0])
+    assert result["rating"] == "なし" and "営業赤字" in result["basis"]
+    assert R.rate_returns([], 9.0, [-3.0, 2.0])["rating"] is None
+
+
+def test_border_years_are_listed():
+    result = R.rate_returns(_spreads([6.0] * 9 + [1.5]), 7.0)
+    assert result["border_years"] == ["2025-03"] and "境界" in result["basis"]
+
+
+@pytest.mark.parametrize("spreads, trend", [
+    ([0.0] * 5 + [3.0] * 5, "拡大"), ([3.0] * 5 + [0.0] * 5, "縮小"), ([3.0] * 10, "安定"),
+    ([0.0] * 3 + [3.0] * 3, "拡大"), ([1.0] * 4, "不明"),
+])
+def test_trend(spreads, trend):
+    assert R.trend(spreads) == trend
+
+
+@pytest.mark.parametrize("recent, word", [(12.0, "大"), (5.0, "中"), (1.0, "小"), (0.0, "なし"), (None, "不明")])
+def test_width(recent, word):
+    assert R.width(recent) == word
+
+
+def _gross(values: dict[int, float]) -> dict[str, float]:
+    return {f"{y}-03": v for y, v in values.items()}
+
+
+@pytest.mark.parametrize("margins, peer, rating", [
+    ({y: 40.0 for y in range(2017, 2027)}, 35.0, "強い"),
+    ({y: 40.0 for y in range(2017, 2027)}, 45.0, "普通"),  # stable but below the peers
+    ({**{y: 40.0 for y in range(2017, 2027)}, 2023: 37.0}, None, "弱い"),  # fell 3pt through the cost inflation
+    ({y: 30.0 + 2 * (y - 2017) for y in range(2017, 2027)}, None, "弱い"),  # a range of 18pt
+    ({y: 40.0 for y in range(2023, 2027)}, None, None),
+])
+def test_rate_pricing(margins, peer, rating):
+    assert R.rate_pricing(_gross(margins), peer)["rating"] == rating
+
+
+def test_peer_gross_is_the_median_of_each_peers_first_row():
+    costs = [{"name": "a", "self": False, "cost": 60.0}, {"name": "a", "self": False, "cost": 90.0},
+             {"name": "b", "self": False, "cost": 70.0}, {"name": "me", "self": True, "cost": 10.0}]
+    assert R.peer_gross(costs) == 35.0
+
+
+@pytest.mark.parametrize("spread, share, trend", [
+    ("縮小", "安定", "縮小"), ("安定", "低下", "縮小"), ("拡大", "拡大", "拡大"), ("拡大", "不明", "安定"),
+    ("不明", "不明", "不明"), ("安定", "横ばい〜微減", "安定"),
+])
+def test_moat_trend(spread, share, trend):
+    assert D.moat_trend(spread, share) == trend
+
+
+# ---------- margin comparison (mt_metrics) ----------
 
 def test_self_series_reads_row_table_and_skips_forecasts(repo):
     margins, sources = X.self_series(company_obj(repo), [])
@@ -255,14 +381,20 @@ def test_non_consolidated_sub_table_is_skipped(tmp_path):
     assert "2015-03" not in margins
 
 
-def test_comparison_matches_fiscal_years_within_six_months(repo):
+def test_comparison_uses_the_peer_median_and_matches_fiscal_years_within_six_months(repo):
     company = company_obj(repo)
     cands = X.candidates(company, I.gather_moat(company))
     last = cands["rows"][-1]
-    assert last["avg"] == 6.0 and last["diff"] == 4.0
+    assert last["avg"] == 6.0 and last["mean"] == 6.0 and last["diff"] == 4.0
     assert [m["year"] for m in last["peers"]] == ["2026-03", "2026-02"]
-    assert cands["margin"]["rating"] == "強い" and cands["margin"]["fixed"]
-    assert cands["margin"]["years_above"] == 10
+    assert cands["margin"]["rating"] == "強い" and cands["margin"]["years_above"] == 10
+    assert cands["returns"]["rating"] == "強い" and cands["returns"]["years"] == 10
+
+
+def test_median_is_not_pulled_by_one_outlier_peer():
+    peers = [{"name": n, "series": [{"year": "2026-03", "margin": m}]} for n, m in (("a", 5.0), ("b", 6.0), ("c", 30.0))]
+    row = X.comparison_rows({"2026-03": 8.0}, peers)[0]
+    assert (row["avg"], row["mean"], row["diff"]) == (6.0, 13.7, 2.0)
 
 
 def test_seven_month_gap_is_not_matched():
@@ -288,12 +420,6 @@ def test_margin_candidate(values, rating, years):
 def test_missing_year_ends_the_run():
     values = {"2012-03": 10.0, **{f"{y}-03": 10.0 for y in range(2020, 2027)}}
     assert X.consecutive_above(X.comparison_rows(values, _peer(values))) == (7, "2026-03")
-
-
-def test_short_history_notes_that_strong_is_impossible():
-    values = {f"{y}-03": 10.0 for y in range(2022, 2027)}
-    cand = X.margin_candidate(X.comparison_rows(values, _peer(values)))
-    assert cand["rating"] == "弱い" and "7 年に満たない" in cand["basis"]
 
 
 def test_no_peers_means_no_candidate():
@@ -349,6 +475,11 @@ def test_check_requests_collect_for_new_sections(tmp_path, capsys):
         "collect-peers-valuation": ["競合: 売上原価率・販管費率（コスト構造）"]}
 
 
+def test_new_sources_are_optional(repo, capsys):
+    _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["next"] == "prepare"  # インストールベース・セグメント・外部の評価 are not in the raw: not collected
+
+
 def test_unavailable_retention_is_not_recollected_and_peer_kpi_rows_do_not_count(tmp_path, capsys):
     company = _company(tmp_path, retention="")
     _three_c(tmp_path)
@@ -362,6 +493,19 @@ def test_unavailable_retention_is_not_recollected_and_peer_kpi_rows_do_not_count
     _, out = run(tmp_path, "check", "--company", "7203", "--date", DAY, capsys=capsys)
     assert out["next"] == "prepare"
     assert "事業概要: 継続率・解約率・ストック型売上の比率" in out["unavailable"]
+
+
+def test_missing_balance_history_requests_collection_once(tmp_path, capsys):
+    company = _company(tmp_path, balance=False)
+    _three_c(tmp_path)
+    _, out = run(tmp_path, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["next"] == "collect"
+    assert out["missing_inputs"] == [{"agent": "collect-filings", "items": [X.ROIC_ITEM]}]
+    (company / "status.md").write_text(
+        "# 収集状況\n\n## 3. 未取得項目\n\n| 項目 | 理由 | 試した経路 |\n|---|---|---|\n"
+        "| ROIC の財務時系列（自己資本・有利子負債） | 有報に無い | EDINET |\n", encoding="utf-8")
+    _, out = run(tmp_path, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["next"] == "prepare"
 
 
 def test_check_without_raw_needs_full_collect(tmp_path, capsys):
@@ -386,17 +530,22 @@ def test_list_shows_moat_and_three_c_state(repo, capsys):
 def test_full_cycle_then_fresh_triggered_and_expired(repo, capsys):
     md = prepared(repo, capsys)
     text = md.read_text(encoding="utf-8")
+    assert "| 2026-03 | 10 | 50 | 13.9% | +6.9pt | — | — |" in text
     assert "| 2026-03 | 10.0% | 6.0% | +4.0pt |" in text and "強い（確定）" in text
-    assert "明確: 品質で優れる" in text
+    assert "| 幅（超過利潤の大きさ） | 中 |" in text and "明確: 品質で優れる" in text
     brief = (md.parent / f"{DAY}_brief.md").read_text(encoding="utf-8")
     assert "| 継続率 | 92% | 93% |" in brief and "モート分析で確かめること: 利益率の10年推移" in brief
+    assert "超過収益（入口）: 強い" in brief and "新規参入 0社、撤退 2社" in brief
     fill(md)
     code, out = run(repo, "build", "--company", "7203", capsys=capsys)
     assert code == 0, out
-    assert out["verdict"] == "広い" and out["backing"] == "強い"
-    assert out["effective_moats"] == ["スイッチングコスト", "規制・特許・許認可"]
+    assert out["verdict"] == "広い" and out["backing"] == "強い" and out["trend"] == "安定"
+    assert out["effective_moats"] == ["規制・特許・許認可", "スイッチングコスト"]
     result = json.loads((md.parent / f"{DAY}_moat.json").read_text(encoding="utf-8"))
     assert result["valid_until"] == "2027-10-12" and result["three_c"]["verdict"] == "明確"
+    assert result["version"] == D.VERSION and result["returns"]["rating"] == "強い"
+    assert result["axes"]["depth"]["rating"] == "深い"
+    assert {m["type"]: m["group"] for m in result["moats"]}["ブランド"] == "無形資産"
     assert "**広い**" in md.read_text(encoding="utf-8")
 
     _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
@@ -413,74 +562,72 @@ def test_full_cycle_then_fresh_triggered_and_expired(repo, capsys):
 
 
 def test_newer_financials_of_the_same_period_do_not_trigger(repo, capsys):
-    md = prepared(repo, capsys)
-    fill(md)
-    run(repo, "build", "--company", "7203", capsys=capsys)
+    built(repo, capsys)
     (repo / "companies" / "7203_toyota" / "raw" / "ir" / "2026-10-15_financials-historical.md").write_text(
-        FINANCIALS.format(rows=_rows(range(2017, 2028), 3, SELF_MARGIN)), encoding="utf-8")
+        _financials(SELF_MARGIN, years=range(2017, 2028)), encoding="utf-8")
     _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-16", capsys=capsys)
     assert out["result"] == "fresh", out  # STEP 1 waits for the next 有報
 
 
-@pytest.mark.parametrize("moats, share, timing, verdict", [
-    (dict(switching="該当", license="該当"), "安定", "5〜10年", "広い"),
-    (dict(switching="該当", license="該当"), "安定", "5年以内", "狭い"),
-    (dict(switching="該当", license="該当"), "横ばい〜微減", "5〜10年", "狭い"),
-    (dict(switching="該当"), "拡大", "5〜10年", "狭い"),
-    (dict(switching="不明"), "安定", "5〜10年", "なし"),
-    (dict(switching="該当", license="該当"), "低下", "5〜10年", "なし"),
+@pytest.mark.parametrize("moats, answers, timing, verdict", [
+    (dict(switching="強", license="中"), {}, "5〜10年", "広い"),
+    (dict(switching="強"), {}, "5〜10年", "広い"),  # one 強 is enough
+    (dict(switching="中", license="中"), {}, "5〜10年", "広い"),
+    (dict(switching="強", license="中"), {}, "5年以内", "狭い"),
+    (dict(switching="強", license="中"), {"share_trend": "低下"}, "5〜10年", "狭い"),  # the trend is 縮小
+    (dict(switching="強", license="中"), {"depth_rating": "浅い"}, "5〜10年", "狭い"),
+    (dict(switching="中"), {}, "5〜10年", "狭い"),
+    (dict(switching="弱"), {}, "5〜10年", "なし"),
+    (dict(switching="不明"), {}, "5〜10年", "判定保留"),
 ])
-def test_verdict(repo, capsys, moats, share, timing, verdict):
-    md = prepared(repo, capsys)
-    fill(md, rows=moat_rows(**moats), risks=RISK.format(timing=timing), share_trend=share)
-    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
-    assert code == 0, out
-    assert out["verdict"] == verdict
+def test_verdict(repo, capsys, moats, answers, timing, verdict):
+    out = built(repo, capsys, rows=moat_rows(**moats), risks=risk(timing), **answers)
+    assert out["verdict"] == verdict, out["verdict_reason"]
 
 
-def test_no_backing_corrects_claimed_moats(tmp_path, capsys):
+def test_no_excess_return_removes_claimed_moats(tmp_path, capsys):
     _templates(tmp_path)
-    _company(tmp_path, self_profit=4)  # below both peers
+    _company(tmp_path, self_profit=4)  # ROIC 5.6% under the 7% cost of capital
     _three_c(tmp_path)
-    md = prepared(tmp_path, capsys)
-    fill(md)
-    _, out = run(tmp_path, "build", "--company", "7203", capsys=capsys)
+    out = built(tmp_path, capsys)
     assert out["verdict"] == "なし" and out["corrected"] and out["effective_moats"] == []
-    assert "「該当なし」に修正" in md.read_text(encoding="utf-8")
+    assert out["backing"] == "なし" and out["width"] == "なし"
+    md = tmp_path / out["md"]
+    assert "超過収益に表れていないため除いた" in md.read_text(encoding="utf-8")
 
 
-def test_no_moat_when_margins_cannot_be_compared(tmp_path, capsys):
+def test_pending_when_the_roic_cannot_be_computed(tmp_path, capsys):
     _templates(tmp_path)
-    _company(tmp_path, alpha_years=[], beta_years=[])
+    _company(tmp_path, balance=False)
     _three_c(tmp_path)
-    md = prepared(tmp_path, capsys)
+    md = prepared(tmp_path, capsys, DAY, "--skip-collect")
     fill(md)
-    _, out = run(tmp_path, "build", "--company", "7203", capsys=capsys)
-    assert out["verdict"] == "なし" and out["backing"] == "不明" and out["effective_moats"] == []
-    assert "保守的" in out["verdict_reason"]
-    result = json.loads((md.parent / f"{DAY}_moat.json").read_text(encoding="utf-8"))
-    assert result["conservative"]
+    code, out = run(tmp_path, "build", "--company", "7203", capsys=capsys)
+    assert code == 0, out
+    assert out["verdict"] == "判定保留" and out["backing"] == "不明" and out["effective_moats"] == []
 
 
 def test_no_risk_row(repo, capsys):
-    md = prepared(repo, capsys)
-    fill(md, risks="| なし | — | — | 業界概要・有報のリスクを確認 | — |")
-    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
-    assert code == 0 and out["near_risks"] == []
+    out = built(repo, capsys, risks=NO_RISK)
+    assert out["near_risks"] == []
 
 
 # ---------- validation ----------
 
-@pytest.mark.parametrize("rows, risks, message", [
-    (moat_rows().replace("ブランド", "ブランド力"), None, "この順・この名前"),
-    (moat_rows(brand="ある"), None, "判定は 該当/該当なし/不明"),
-    (moat_rows(brand="該当").replace("| brief.md 2. |", "| — |", 1), None, "情報源が空"),
-    (None, RISK.format(timing="3年"), "時期は"),
-    (None, "| なし | — | — | 確認 | — |\n" + RISK.format(timing="5年以内"), "1行だけ"),
+@pytest.mark.parametrize("rows, risks, answers, message", [
+    (moat_rows().replace("ブランド", "ブランド力"), None, {}, "この順・この名前"),
+    (moat_rows(brand="ある"), None, {}, "判定は 強/中/弱/該当なし/不明"),
+    (moat_rows(brand="強").replace("| brief.md 2. |", "| — |", 1), None, {}, "情報源が空"),
+    (moat_rows(brand="強").replace("| 数値 ブランド |", "| — |"), None, {}, "数値の痕跡が空"),
+    (None, risk("3年"), {}, "時期は"),
+    (None, risk(category="天災"), {}, "分類は"),
+    (None, NO_RISK + "\n" + risk("5年以内"), {}, "1行だけ"),
+    (None, None, {"depth_rating": "ある"}, "深さの評価は"),
+    (None, None, {"reach_reason": "—"}, "拡張性の根拠が空"),
 ])
-def test_validation(repo, capsys, rows, risks, message):
+def test_validation(repo, capsys, rows, risks, answers, message):
     md = prepared(repo, capsys)
-    fill(md, rows=rows, risks=risks)
+    fill(md, rows=rows, risks=risks, **answers)
     code, out = run(repo, "build", "--company", "7203", capsys=capsys)
     assert code == 1 and any(message in issue for issue in out["issues"]), out
 
@@ -496,20 +643,36 @@ def test_forbidden_phrase_and_flags(repo, capsys):
 
 
 def test_second_analysis_requires_change_reason(repo, capsys):
-    md = prepared(repo, capsys)
-    fill(md)
-    run(repo, "build", "--company", "7203", capsys=capsys)
+    built(repo, capsys)
     later = "2026-11-01"
     _three_c(repo, date="2026-10-20", verdict="あいまい")  # a changed upstream conclusion re-opens the moat
-    md2 = prepared(repo, capsys, date=later)
-    assert "スイッチングコスト 該当" in md2.read_text(encoding="utf-8")
-    fill(md2, rows=moat_rows(switching="該当なし", license="該当"), changes="- スイッチングコストを見直した")
+    md2 = prepared(repo, capsys, later)
+    assert "スイッチングコスト 強" in md2.read_text(encoding="utf-8")
+    fill(md2, rows=moat_rows(switching="該当なし", license="中"))
     _, out = run(repo, "build", "--company", "7203", "--date", later, capsys=capsys)
     assert any("前回から変更" in issue for issue in out["issues"])
-    md2.write_text(md2.read_text(encoding="utf-8").replace("事実 スイッチングコスト", "前回から変更: 継続率が低下"),
+    md2.write_text(md2.read_text(encoding="utf-8").replace("確認した資料 スイッチングコスト", "前回から変更: 継続率が低下"),
                    encoding="utf-8")
     code, out = run(repo, "build", "--company", "7203", "--date", later, capsys=capsys)
     assert code == 0 and out["previous"]["verdict"] == "広い"
+
+
+def test_results_on_the_old_scale_are_not_compared(repo, capsys):
+    old = repo / "companies" / "7203_toyota" / "analysis" / "moat"
+    old.mkdir(parents=True)
+    (old / "2026-10-08_moat.md").write_text("# 旧\n", encoding="utf-8")
+    (old / "2026-10-08_moat.json").write_text(json.dumps({
+        "verdict": "なし", "valid_until": "2099-01-01", "inputs": [],
+        "moats": [{"type": "スイッチングコスト", "rating": "該当なし"}], "share": {"trend": "不明"}},
+        ensure_ascii=False), encoding="utf-8")
+    md = prepared(repo, capsys, DAY, "--redo")
+    assert "旧基準" in md.read_text(encoding="utf-8")
+    values = dict(ANSWERS, **{"moat-rows": moat_rows(switching="強"), "risk-rows": risk()})
+    md.write_text(FILL_ANY.sub(lambda m: m.group(0) if m.group(1) in D.BUILD_KEYS else values[m.group(1)],
+                               md.read_text(encoding="utf-8")), encoding="utf-8")
+    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 0, out
+    assert "判定の基準を改めた" in md.read_text(encoding="utf-8")
 
 
 def test_prepare_keeps_draft_unless_redo_and_supersedes_on_same_day_redo(repo, capsys):
@@ -581,19 +744,6 @@ def test_untouched_skeleton_is_regenerated_without_redo(repo, capsys):
     assert "| 71.0% | 19.0% |" in md.read_text(encoding="utf-8")
 
 
-def test_short_peer_history_requests_collection_once(tmp_path, capsys):
-    company = _company(tmp_path, alpha_years=range(2022, 2027), beta_years=range(2022, 2027))
-    _three_c(tmp_path)
-    _, out = run(tmp_path, "check", "--company", "7203", "--date", DAY, capsys=capsys)
-    assert out["next"] == "collect"
-    assert out["missing_inputs"] == [{"agent": "collect-peers-valuation", "items": [X.HISTORY_ITEM]}]
-    (company / "status.md").write_text(
-        "# 収集状況\n\n## 3. 未取得項目\n\n| 項目 | 理由 | 試した経路 |\n|---|---|---|\n"
-        "| 営業利益率の長期推移（アルファ社、5年分のみ） | IRBANK も5年 | IRBANK |\n", encoding="utf-8")
-    _, out = run(tmp_path, "check", "--company", "7203", "--date", DAY, capsys=capsys)
-    assert out["next"] == "prepare"
-
-
 def test_peer_updates_do_not_trigger(repo, capsys):
     md = prepared(repo, capsys)
     fill(md)
@@ -605,9 +755,7 @@ def test_peer_updates_do_not_trigger(repo, capsys):
 
 
 def test_new_fiscal_year_yuho_triggers(repo, capsys):
-    md = prepared(repo, capsys)
-    fill(md)
-    run(repo, "build", "--company", "7203", capsys=capsys)
+    built(repo, capsys)
     _raw(repo, "filings", "2026-10-15_2027-03_yuho.md", YUHO + "\n## 1. 主要な経営指標等の推移\n\n"
          "| 年度 | 売上高 | 営業利益 |\n|---|---|---|\n| 2027/03 | 100 | 12 |\n")
     _, out = run(repo, "check", "--company", "7203", "--date", "2026-10-16", capsys=capsys)
@@ -644,12 +792,12 @@ def test_brief_is_lighter_and_warns(tmp_path, capsys):
     _templates(tmp_path)
     cost = (COST.replace("| 販管費率 |", "| 販管費 |").replace("| 20.0% |", "| 2,000 |")
             .replace("| 15.0% |", "| 1,500 |").replace("| 10.0% | 有報（一次） |", "| 10.5% | 有報（一次） |"))
-    _company(tmp_path, cost=cost)  # amounts only (no 販管費率), self margin 10.5% vs 10.0% in 3.1
+    _company(tmp_path, cost=cost)  # amounts only (no 販管費率), self margin 10.5% vs 10.0% in 2.2
     _three_c(tmp_path)
     code, out = run(tmp_path, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
     assert code == 0
     brief = (tmp_path / out["brief"]).read_text(encoding="utf-8")
-    assert "| 年度 | 自社 | 同業平均 |" not in brief and "md の 3.1" in brief
+    assert "| 年度 | 自社 | 同業中央値 |" not in brief and "md の 2.1" in brief
     assert any("販管費率" in w for w in out["warnings"])
     assert any("2026-03" in w and "10.0%" in w and "10.5%" in w for w in out["warnings"])
     assert "## 警告" in brief
@@ -660,12 +808,11 @@ def test_build_fills_swot_candidates_changes_and_gaps_from_the_rows(repo, capsys
     code, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
     assert out["filled_at_build"] == ["strengths", "threats", "changes", "gaps"]
     assert not set(out["fill_keys"]) & set(D.BUILD_KEYS)
-    values = dict(ANSWERS, **{"moat-rows": moat_rows(switching="該当", license="該当"),
-                              "risk-rows": RISK.format(timing="5〜10年")})
+    values = dict(ANSWERS, **{"moat-rows": moat_rows(switching="強", license="中"), "risk-rows": risk()})
     md.write_text(FILL_ANY.sub(lambda m: m.group(0) if m.group(1) in D.BUILD_KEYS else values[m.group(1)],
                                md.read_text(encoding="utf-8")), encoding="utf-8")
     code, out = run(repo, "build", "--company", "7203", capsys=capsys)
     assert code == 0, out
     text = md.read_text(encoding="utf-8")
-    assert "| SWOT の強み（S）候補 | スイッチングコスト（" in text and "／規制・特許・許認可（" in text
-    assert "（5〜10年。影響するモート:" in text and "## 7. 前回からの変更点\n\n- 初回の分析" in text
+    assert "| SWOT の強み（S）候補 | 規制・特許・許認可（中。" in text and "／スイッチングコスト（強。" in text
+    assert "（5〜10年。影響するモート:" in text and "## 10. 前回からの変更点\n\n- 初回の分析" in text

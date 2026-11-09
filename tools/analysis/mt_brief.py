@@ -12,12 +12,14 @@ from mt_paths import Company
 
 # brief chapter: (title, input keys). The comparison numbers come first (chapter 1); every raw section once.
 CHAPTERS = (
-    ("ブランド・価格決定力の材料", ("pricing", "peer_claims")),
-    ("スイッチングコスト・ネットワーク効果の材料", ("retention", "customer_base", "kpi", "peer_kpi")),
-    ("シェアの推移の材料（3.3）", ("share", "peer_share")),
-    ("コスト優位の材料", ("peer_cost", "industry_margin")),
-    ("規制・特許・許認可の材料", ("ip",)),
-    ("持続性の材料（4章）", ("structural", "risks")),
+    ("無形資産: ブランド・価格決定力の材料", ("pricing", "peer_claims")),
+    ("無形資産: 規制・特許・許認可の材料", ("ip",)),
+    ("スイッチングコストの材料", ("retention", "installed_base", "customer_base", "kpi", "peer_kpi")),
+    ("ネットワーク効果・効率的規模の材料（市場の大きさ・参入と撤退）", ("market_size", "entry")),
+    ("コスト優位の材料", ("peer_cost", "industry_margin", "segments")),
+    ("シェアの推移の材料（5章）", ("share", "peer_share")),
+    ("持続性の材料（6章）", ("structural", "risks")),
+    ("外部の評価（参考。判定の根拠にはしない）", ("outside_rating",)),
 )
 STATUS_LABEL = {"missing": "raw に無い", "blank": "節はあるが空", "thin": "中身が薄い（見つからなかった旨の記載・空の行）",
                 "unavailable": "取得を試みたが取れていない（status.md）"}
@@ -112,17 +114,24 @@ def render_brief(company: Company, date: str, valid_until: str, found: dict[str,
     out = [f"# モート分析の材料 — {company.display_name()}", "",
            f"**作成日**: {date}（moat.py prepare が生成。手で直さない）", "",
            "> 執筆はこのファイルと md だけを根拠にする（raw・PDF・CSV を開かない）。数値は転記だけで、新しい計算をしない。",
-           "> 数字の裏付け（営業利益率の同業比較）はスクリプトが計算し、build がシェアの推移と合わせて判定する。"]
+           "> 超過収益（ROIC と資本コスト）・価格決定力（粗利率）はスクリプトが計算し、build が源泉の判定・シェアの推移・"
+           "持続性と合わせてモートの強さを判定する。"]
     if warnings:
         out += ["", "## 警告（スクリプトが raw を読み違えた可能性。執筆の前に確かめ、完了報告に書く）", ""]
         out += [f"- {w}" for w in warnings]
     out += ["", "## 0. 前提", "", f"- 分析日: {date} / 有効期限: {valid_until}"]
     out += (_previous_lines(previous) + _three_c_lines(three_c) + _five_forces_lines(five_forces)
             + [_outlook_line(outlook)] + _source_lines(found, company))
-    out += ["", "## 1. 数字の裏付け（スクリプトが計算）", "",
-            f"- 営業利益率の側の判定候補: {candidate_cell(cands['margin'])}",
+    ret, pr = cands["returns"], cands["pricing"]
+    out += ["", "## 1. 数字（スクリプトが計算）", "",
+            f"- 超過収益（入口）: {ret['rating'] or '不明'}: {ret['basis']}",
+            f"  - 堀の幅 {ret['width']}、ROIC と資本コストの差の傾向 {ret['trend']}",
+            "  - 超過収益が「なし」なら、源泉が「強」「中」でもモートとはみなされない（数字に表れていないため）。"
+            "源泉の判定は、超過収益がどの仕組みから生まれているかを説明できるものだけを「強」「中」にする",
+            f"- 価格決定力（粗利率）: {pr['rating'] or '不明'}: {pr['basis']}（ブランドの数値の痕跡に使える）",
+            f"- 営業利益率の同業比較（参考）: {candidate_cell(cands['margin'])}",
             f"- 自社の数値の出典: {'、'.join(cands['sources']) or '—'}",
-            "- 年度ごとの比較（自社・同業平均・差・比較した競合）は md の 3.1、コスト構造と競合の単純平均は md の 3.2 を見る"
+            "- 年度ごとの ROIC は md の 2.1、営業利益率の同業比較は 2.2、粗利率は 3.1、コスト構造と競合の単純平均は 3.2 を見る"
             "（同じ表をここには載せない）"]
     for number, (title, keys) in enumerate(CHAPTERS, start=2):
         out += ["", f"## {number}. {title}"]

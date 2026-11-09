@@ -5,10 +5,16 @@ only the list of inputs differs. Headings come from .ai/templates/collect-compan
 """
 from __future__ import annotations
 
+from dataclasses import replace
+
 from ff_inputs import (Found, Spec, changed_input_files, collect_requests, gather, input_digests,  # noqa: F401
                        raw_files, unavailable_items)  # (re-exported)
 from ff_inputs import newer_trigger_files as ff_newer_trigger_files
 from ff_inputs import raw_seen as ff_raw_seen
+from sf_inputs import SPEC as SAFETY_SPEC
+
+# the peers' balance tables behind their ROIC (mt_returns): optional here, the ROIC gate reads the target's own series
+PEER_BALANCE = tuple(replace(SAFETY_SPEC[key], required=False) for key in ("peer_safety", "peer_dupont", "peer_roe"))
 
 SPECS = (
     Spec("self_financials", "財務時系列: 損益（5〜10年）", "financials-historical", "損益", "collect-filings", True),
@@ -33,7 +39,15 @@ SPECS = (
     Spec("peer_claims", "競合: 主力製品と強み", "competitors", "強み", "collect-peers-valuation", False, ("強み",)),
     Spec("peer_kpi", "競合: 顧客・人員の KPI と第三者評価", "competitors", "顧客・人員", "collect-peers-valuation",
          False, ("顧客・人員",)),
-)
+    # the sources added with the 2026-11 revision (efficient scale, installed base, segments, outside ratings)
+    Spec("installed_base", "事業概要: インストールベースとアフター売上", "business-overview", "インストールベース",
+         "collect-ir", False, ("インストールベース", "アフター売上")),
+    Spec("segments", "有報: セグメント情報", "yuho", "セグメント情報", "collect-filings", False),
+    Spec("market_size", "業界: 市場規模と成長率", "industry-overview", "市場規模", "collect-market", False),
+    Spec("entry", "業界: 参入に必要な条件・新規参入と撤退", "industry-overview", "参入", "collect-market", False),
+    Spec("outside_rating", "業界: 外部の評価（モート）", "industry-overview", "外部の評価", "collect-market", False,
+         ("外部の評価",)),
+) + PEER_BALANCE
 SPEC = {s.key: s for s in SPECS}
 # a newer file of these kinds re-opens a valid result
 TRIGGER_KINDS = ("yuho", "financials-historical", "business-overview", "industry-overview", "competitors")
