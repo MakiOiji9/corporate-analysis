@@ -6,7 +6,7 @@
   half           (profitability, cash-flow): a newer interim (第2四半期・中間) or full-year 決算短信 (or 10-K).
   annual_results (valuation): a newer full-year 決算短信 (or 10-K).
 Every kind is also triggered when an upstream analysis reached a different conclusion than the one in place when
-this analysis was built. Peer, price and business-overview updates, and edits of numbers inside the same period,
+this analysis was built, and when its judging rules changed after the analysis day (RULE_CHANGES). Peer, price and business-overview updates, and edits of numbers inside the same period,
 never trigger: they wait for the validity period (each *_paths.VALID_DAYS).
 
 The basis "at the analysis" is recomputed from the files dated on or before the analysis day, so results built
@@ -152,8 +152,29 @@ def upstream_triggers(company: A.Company, date: str, upstream: list[tuple[str, M
     return out
 
 
+# analysis kind (its folder under analysis/) -> [(the day its judging rules changed, what changed)]: a result built
+# before that day was judged by the old rules. Add a row whenever a rule of an analysis changes.
+RULE_CHANGES: dict[str, list[tuple[str, str]]] = {
+    "five-forces": [("2026-11-10", "売り手を粗利率の3年の変化で、業界内競争を上位3社の合計シェアで判定")],
+    "moat": [("2026-11-10", "ROIC の投下資本にリース負債を加え余剰現金を控除、シェアの推移の候補を算出")],
+    "profitability": [("2026-11-10", "営業利益率の同業比較を直近3年の差の平均と中央値で、業種別のレバレッジの扱い")],
+    "growth": [("2026-11-10", "CAGR を全年の回帰で判定（端点 CAGR は併記）")],
+    "safety": [("2026-11-10", "借入目的の運転資金の区分、ネットキャッシュに短期投資、同業の中央値、業種別の扱い")],
+    "cash-flow": [("2026-11-10", "利益の質の成長補正、金融業の扱い")],
+    "valuation": [("2026-11-10", "EV にリース負債・非支配持分・短期投資、PER/PBR の過去レンジを日次株価から算出、金融業の扱い")],
+}
+
+
+def rule_triggers(company: A.Company, date: str) -> list[str]:
+    """The rule changes made after the analysis day (RULE_CHANGES of this analysis kind)."""
+    folder = getattr(company, "analysis_dir", None)
+    kind = folder.name if folder is not None else ""
+    return [f"判定ルールが変わった（{changed}: {what}）" for changed, what in RULE_CHANGES.get(kind, ()) if date < changed]
+
+
 def triggers(company: A.Company, date: str, unit: str,
              upstream: list[tuple[str, ModuleType]] | tuple = ()) -> list[str]:
     if unit not in UNITS:
         raise ValueError(f"unknown freshness unit: {unit}")
-    return material_triggers(company, date, unit) + upstream_triggers(company, date, list(upstream))
+    return (material_triggers(company, date, unit) + upstream_triggers(company, date, list(upstream))
+            + rule_triggers(company, date))
