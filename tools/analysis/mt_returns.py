@@ -4,8 +4,8 @@
   投下資本 = 自己資本 + 有利子負債 + リース負債 − 余剰現金, the average of the year's opening and closing values when
   both are known. 余剰現金 = 現金 + 短期投資 − 売上高の5% (the cash the business needs), its deduction capped at half
   of the capital (a cash-rich company would otherwise show an inflated ROIC). Lease and short-term investments come
-  from data/financials.csv when it has them; the peers' ROIC keeps 自己資本 + 有利子負債 (no lease or cash in
-  competitors.md).
+  from data/financials.csv when it has them. The peers' ROIC uses the same formula with what competitors.md gives
+  (自己資本・有利子負債・現金・売上高; no lease), so their excess cash is deducted too.
   The cost of capital is fixed per market (HURDLE); the spread is ROIC minus it.
 
   超過収益 (the gate of the moat analysis), over the newest WINDOW years with a ROIC:
@@ -304,8 +304,8 @@ def roic_note(ret: dict) -> str:
     profit = (f"経済的利益（(ROIC − 資本コスト) × 投下資本）: {ep['year']} {_amount(ep['latest'])}、直近{ep['years5']}年の合計 "
               f"{_amount(ep['sum5'])}" if ep["latest"] is not None else "経済的利益: —")
     peers = "、".join(ret["peers"]) or "なし（競合の自己資本・有利子負債・売上高が competitors.md に無い）"
-    return (f"注: 金額の単位は {ret['unit']}。ROIC = 営業利益 × (1 − 法定実効税率 {ret['tax']:.1f}%) ÷ 投下資本（自己資本 + 有利子負債の"
-            f"期首と期末の平均。現金は控除しない）。資本コストは{'日本' if ret['market'] == 'japan' else '米国'}株の固定値 "
+    return (f"注: 金額の単位は {ret['unit']}。ROIC = 営業利益 × (1 − 法定実効税率 {ret['tax']:.1f}%) ÷ 投下資本（自己資本 + 有利子負債 + "
+            f"リース負債 − 余剰現金（現金 + 短期投資 − 売上高の5%。控除は投下資本の半分まで）の期首と期末の平均）。資本コストは{'日本' if ret['market'] == 'japan' else '米国'}株の固定値 "
             f"{ret['hurdle']:.0f}%。同業中央値の対象: {peers}。{profit}。"
             f"スクリプトの判定（超過収益）: {ret['rating'] or '不明'}: {ret['basis']}。堀の幅 {ret['width']}、差の傾向 {ret['trend']}")
 

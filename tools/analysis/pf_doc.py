@@ -84,7 +84,7 @@ def peer_table_rows(name: str, own: list[dict], comparison: dict) -> str:
         lines.append(f"| {p['name']} | {_span(p['years'])} | {_factor_cells(p)} | "
                      f"{'一次' if p['primary'] else '二次を含む'} |")
     if comparison["peers"]:
-        lines.append(f"| 競合の単純平均 | — | {_factor_cells(comparison['peer_avg'])} | スクリプトが計算（自社を除く） |")
+        lines.append(f"| 競合の中央値 | — | {_factor_cells(comparison['peer_avg'])} | スクリプトが計算（自社を除く） |")
     else:
         lines.append("| 競合 | — | — | — | — | — | competitors.md「収益性の分解」に計算できる競合の行が無い |")
     return "\n".join(lines)
@@ -130,7 +130,7 @@ ROE_NOTE = ("注: ROE（計算）= 当期純利益 ÷ 期首期末平均の自�
 def margin_note(s2: dict) -> str:
     sources = "、".join(s2["sources"]) or "—"
     return (f"注: 自社は {sources}、競合は competitors.md「売上高・営業利益」の実績（会社予想は除く）からスクリプトが計算。"
-            f"同業平均は比較した競合の単純平均（決算期が6か月以内の年度を同じ年として扱う）。直近の比較できる年の差が "
+            f"同業中央値は比較した競合の中央値（決算期が6か月以内の年度を同じ年として扱う）。比較できる直近3年の差の平均が "
             f"±{SAME_PT:.0f}pt 以内なら同等。")
 
 

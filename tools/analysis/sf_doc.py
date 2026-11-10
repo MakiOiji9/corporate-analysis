@@ -48,7 +48,7 @@ def peer_table_rows(name: str, s1: dict) -> str:
                      f"{'一次' if p['primary'] else '二次を含む'} |")
     if s1["peers"]:
         avg = s1["peer_avg"]
-        lines.append(f"| 競合の単純平均 | — | {' | '.join(fmt(k, avg[k]) for k in NAMES)} | — | "
+        lines.append(f"| 競合の中央値 | — | {' | '.join(fmt(k, avg[k]) for k in NAMES)} | — | "
                      "スクリプトが計算（自社を除く。値のある競合だけ） |")
     else:
         lines.append(f"| 競合 | — | — | — | — | — | 自社の直近期（±{MATCH_MONTHS}か月）に合う競合の行が無い |")
@@ -91,11 +91,12 @@ def level_note(s1: dict) -> str:
     excluded = ("業種が銀行・保険・証券・不動産・リースなどのため、目安は使わず同業平均だけと比べる。"
                 if s1["excluded"] else "")
     return (f"注: {excluded}自己資本比率 = 自己資本 ÷ 総資産、D/E レシオ = 有利子負債 ÷ 自己資本、流動比率 = 流動資産 ÷ "
-            "流動負債、ネットキャッシュ = 現金及び現金同等物（無ければ現金及び預金）− 有利子負債。いずれも期末残高。"
+            "流動負債、ネットキャッシュ = 現金及び現金同等物（無ければ現金及び預金）+ 短期投資（data/financials.csv にあれば）"
+            "− 有利子負債。いずれも期末残高。"
             "自己資本は「自己資本」の記載値、無い年は 総資産 × 自己資本比率（純資産は使わない）。有利子負債は「有利子負債」"
             "の行、無ければ借入金・社債の内訳の合計（リース債務は含まない）で、どちらも無い年は不明（0 とみなさない）。"
             "目安を下回っても同業平均と同等以上（自己資本比率 −2pt、流動比率 −5pt、D/E ×1.05 以内）ならクリア。"
-            f"同業平均は決算期が自社の直近期から{MATCH_MONTHS}か月以内の競合の単純平均。")
+            f"同業平均は決算期が自社の直近期から{MATCH_MONTHS}か月以内の競合の中央値（飛び抜けた1社に引っ張られないため）。")
 
 
 def render_skeleton(template: str, values: dict, cands: dict) -> str:

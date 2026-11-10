@@ -64,8 +64,9 @@ def rating_cell(rating: str | None, basis: str) -> str:
 
 def growth_note(notes: list[dict]) -> str:
     split = "".join(f"{n['text']}。" for n in notes)
-    return (f"注: CAGR =（最終年 ÷ 初年）^(1 ÷ 年数) − 1。売上高と EPS が揃う直近最大10年で計算する。{split}"
-            "初年が赤字の指標は CAGR を計算しない。（二次）は集計サイトの値。")
+    return (f"注: CAGR は売上高と EPS が揃う直近最大10年の全年に対数の直線を当てはめた回帰 CAGR（景気の山・谷の年が始点・"
+            f"終点でも左右されにくい）。赤字の年があるか5年未満なら端点 CAGR =（最終年 ÷ 初年）^(1 ÷ 年数) − 1。{split}"
+            "初年が赤字の指標は端点 CAGR を計算しない。（二次）は集計サイトの値。")
 
 
 def _metric_text(m: dict) -> str:
