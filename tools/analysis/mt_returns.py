@@ -1,8 +1,11 @@
 """Excess returns and pricing power behind the moat (企業分析フレームワーク.md 1-3 手順1・手順2).
 
   ROIC = 税引後営業利益 ÷ 投下資本. 税引後営業利益 = 営業利益 × (1 − 法定実効税率) (a loss is not reduced by the tax);
-  投下資本 = 自己資本 + 有利子負債, the average of the year's opening and closing values when both are known.
-  Cash is not deducted (a cash-rich company shows a lower ROIC: the conservative side).
+  投下資本 = 自己資本 + 有利子負債 + リース負債 − 余剰現金, the average of the year's opening and closing values when
+  both are known. 余剰現金 = 現金 + 短期投資 − 売上高の5% (the cash the business needs), its deduction capped at half
+  of the capital (a cash-rich company would otherwise show an inflated ROIC). Lease and short-term investments come
+  from data/financials.csv when it has them; the peers' ROIC keeps 自己資本 + 有利子負債 (no lease or cash in
+  competitors.md).
   The cost of capital is fixed per market (HURDLE); the spread is ROIC minus it.
 
   超過収益 (the gate of the moat analysis), over the newest WINDOW years with a ROIC:
@@ -32,6 +35,8 @@ from tc_metrics import _is_self, same_company
 
 HURDLE = {"japan": 7.0, "us": 9.0}  # 資本コスト（%）。市場ごとの固定値
 TAX = {"japan": 30.6, "us": 25.0}  # 法定実効税率（%）
+OPERATING_CASH_SHARE = 0.05  # 事業に必要な手元資金とみなす売上高の割合（これを超える現金・短期投資が余剰現金）
+EXCESS_CASH_CAP = 0.5  # 余剰現金の控除は控除前の投下資本の半分まで
 WINDOW = 10
 MIN_YEARS = 5
 STRONG_YEARS = 7
@@ -73,8 +78,28 @@ def _nopat(operating: float, tax: float) -> float:
     return operating * (1 - tax / 100) if operating > 0 else operating
 
 
+def _get(series: SS.S.Series, field: str, year: str) -> float:
+    value = series.get(field, {}).get(year)
+    return value.value if value is not None else 0.0
+
+
+def excess_cash(series: SS.S.Series, year: str) -> float:
+    """Cash and short-term investments above OPERATING_CASH_SHARE of sales (0 without sales or cash)."""
+    sales = series.get("sales", {}).get(year)
+    cash = _get(series, "cash", year) + _get(series, "short_investments", year)
+    return max(0.0, cash - OPERATING_CASH_SHARE * sales.value) if sales is not None and cash else 0.0
+
+
 def _capital(series: SS.S.Series) -> dict[str, float]:
-    return {y: series["equity"][y].value + series["debt"][y].value for y in series["equity"] if y in series["debt"]}
+    """投下資本 = 自己資本 + 有利子負債 + リース負債 − 余剰現金, the deduction capped at EXCESS_CASH_CAP of the
+    capital before it (a cash-rich company would otherwise show an inflated ROIC)."""
+    out = {}
+    for y in series["equity"]:
+        if y not in series["debt"]:
+            continue
+        gross = series["equity"][y].value + series["debt"][y].value + _get(series, "lease", y)
+        out[y] = gross - min(excess_cash(series, y), EXCESS_CASH_CAP * gross) if gross > 0 else gross
+    return out
 
 
 def roic_rows(series: SS.S.Series, tax: float, hurdle: float) -> list[dict]:

@@ -27,6 +27,7 @@ import an_common as A
 import mt_metrics as MT
 import pf_inputs as I
 import pf_series as S
+import sector_rules as SR
 from ff_metrics import _months_apart, peer_margins
 
 MIN_YEARS, MAX_YEARS = 5, 10
@@ -216,14 +217,23 @@ def compare_text(key: str, own: float, peer: float) -> str:
     return f"{name} {fmt_factor(own, key)} と同業平均 {fmt_factor(peer, key)}（{gap}）"
 
 
-def step3(own: list[dict], comparison: dict) -> dict:
+def step3(own: list[dict], comparison: dict, leverage_note: str | None = None) -> dict:
+    """leverage_note: set when the industry borrows as part of its business (sector_rules.LEVERAGE_NORMAL); the
+    leverage then never makes the ROE 借入依存, and the note is added to the basis."""
     lev = own[-1]["leverage"] if own else None
-    base = {"latest_leverage": lev, "comparison": comparison}
+    base = {"latest_leverage": lev, "comparison": comparison, "leverage_note": leverage_note}
+    result = _step3(own, comparison, lev, base, float("inf") if leverage_note else LEVERAGE_LIMIT)
+    if leverage_note and lev is not None and lev > LEVERAGE_LIMIT:
+        result = {**result, "basis": f"{result['basis']}。{leverage_note}"}
+    return result
+
+
+def _step3(own: list[dict], comparison: dict, lev: float | None, base: dict, limit: float) -> dict:
     if not own:
         return {**base, "source": "不明", "drivers": [], "basis": "自社の3要素を計算できない",
                 "sentence": "ROE の源泉は不明（自社の3要素を計算できない）"}
     if not comparison["peers"]:
-        if lev > LEVERAGE_LIMIT:
+        if lev > limit:
             return {**base, "source": "借入依存", "drivers": ["財務レバレッジ"],
                     "basis": f"同業と比べられないが、財務レバレッジが {lev:.2f} 倍（{LEVERAGE_LIMIT:.0f}倍超）",
                     "sentence": f"ROE の源泉は財務レバレッジ（{lev:.2f}倍。同業比較なし）で借入依存"}
@@ -232,7 +242,7 @@ def step3(own: list[dict], comparison: dict) -> dict:
     own_avg, peer = comparison["self"], comparison["peer_avg"]
     above = [name for key, name in FACTORS[:2] if is_above(key, own_avg[key], peer[key])]
     compared = "、".join(compare_text(key, own_avg[key], peer[key]) for key, _ in FACTORS)
-    if lev > LEVERAGE_LIMIT and is_above("leverage", own_avg["leverage"], peer["leverage"]):
+    if lev > limit and is_above("leverage", own_avg["leverage"], peer["leverage"]):
         source, drivers = "借入依存", ["財務レバレッジ"]
         why = f"財務レバレッジが {lev:.2f} 倍（{LEVERAGE_LIMIT:.0f}倍超）で同業平均を上回る（{compared}）"
     elif above:
@@ -414,7 +424,9 @@ def candidates(company, found: dict) -> dict:
     own = dupont_rows(series)
     roes = roe_rows(series, own)
     comparison = peer_comparison(own, S.peer_series(company, found["peer_dupont"]))
-    s1, s2, s3 = step1(roes), step2(company, found), step3(own, comparison)
+    normal, info = SR.applies(company, SR.LEVERAGE_NORMAL)
+    leverage_note = SR.note(info, "借入が事業の一部のため、財務レバレッジの高さでは借入依存としない") if normal else None
+    s1, s2, s3 = step1(roes), step2(company, found), step3(own, comparison, leverage_note)
     verdict, why, conservative = judge(s1, s2, s3)
     one_off = one_off_rows(series, [r["year"] for r in roes], own)
     return {"series": series, "dupont": own, "roe_rows": roes, "step1": s1, "step2": s2, "step3": s3,

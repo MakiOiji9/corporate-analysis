@@ -8,7 +8,11 @@
     売上 CAGR >= GROWTH_CAGR、直近の営業CF > 期初の営業CF) を満たせば 普通、満たさなければ 懸念
   手順3 (利益の質, WINDOW years): 営業CF ÷ 純利益 の平均 (純損失の年があれば 累計営業CF ÷ 累計純利益):
     >= 1.0 良好 / >= 0.8 普通 / < 0.8 懸念 / 累計純利益 <= 0 -> 判定不能 (純損失). The growth of receivables and
-    inventories against sales is always shown; above the sales growth it is flagged when 手順3 is 懸念.
+    inventories against sales is always shown; above the sales growth it is flagged when 手順3 is 懸念. A 懸念
+    of a company growing sales by 10% a year or more whose receivables and inventories grow no faster than sales
+    (ratio >= 0.5) is raised to 普通 (growth_absorbed: the cash lags because growth needs working capital).
+  At the end: an industry where deposits and loans run through the operating CF (sector_rules.NO_CASH_FLOW) is
+    判定保留.
   手順4 (CF パターン): each year's signs (営業・投資・財務) rated by the framework's table (営業CF マイナスの年は
     懸念, (+,+,+) は 普通); the most frequent rating of the newest WINDOW years (at least PATTERN_MIN_YEARS),
     a tie going to the more conservative one.
@@ -25,12 +29,14 @@ from collections import Counter
 import an_common as A
 import cf_inputs as I
 import cf_series as S
+import sector_rules as SR
 
 MIN_YEARS, MAX_YEARS = 5, 10
 WINDOW = 5  # 手順2〜5 は直近5年
 PATTERN_MIN_YEARS = 3
 GROWTH_CAGR = 5.0  # % 成長投資期とみなす売上 CAGR（2-2 の高成長の基準）
 GOOD_RATIO, FAIR_RATIO = 1.0, 0.8
+WC_GROWTH_CAGR, WC_FLOOR = 10.0, 0.5  # 手順3 の成長補正: 売上 CAGR 10%以上、比率 0.5倍以上
 RATIO_NEAR = 0.05  # 営業CF対純利益比率が基準からこの幅以内なら境界
 FCF_NEAR_SHARE = 0.05  # 累計FCF が累計営業CF の絶対値のこの割合以内なら境界
 RETURN_NEAR_SHARE = 0.10  # 累計還元と累計FCF の差が累計FCF のこの割合以内なら境界
@@ -273,9 +279,29 @@ def step3(rows: list[dict], series: dict) -> dict:
                and w["cagr"] > sales_growth]
     flag_text = (f"。{'・'.join(flagged)}の増加率が売上高を上回る（売れていない在庫・回収できていない売上の可能性。要確認）"
                  if flagged else "")
+    growth_note = growth_absorbed(rating, ratio, wc)
+    if growth_note:
+        rating, flag_text = "普通", f"。{growth_note}"
     return {**base, "rating": rating, "ratio": round(ratio, 2), "method": method, "flagged": flagged,
+            "growth_adjusted": bool(growth_note),
             "basis": f"営業CF対純利益比率 {ratio:.2f}倍（{method}。1.0倍以上 良好 / 0.8倍以上 普通）{flag_text}",
             "sentence": f"営業CF対純利益比率は{method}で{ratio:.2f}倍。{rating}{flag_text}"}
+
+
+def growth_absorbed(rating: str, ratio: float, wc: list[dict]) -> str | None:
+    """A 懸念 ratio explained by growth: sales grow by WC_GROWTH_CAGR or more a year, every known working-capital
+    line (receivables, inventories) grows no faster than sales, and the ratio is at least WC_FLOOR. A fast-growing
+    company has to fund the receivables and stock of its larger sales, so the cash lags the profit without the
+    profit being of poor quality. Raised to 普通 at most (never 良好)."""
+    sales_growth = wc[0]["cagr"] if wc else None
+    known = [w for w in wc[1:] if w["cagr"] is not None]
+    if rating != "懸念" or sales_growth is None or sales_growth < WC_GROWTH_CAGR or ratio < WC_FLOOR or not known:
+        return None
+    if any(w["cagr"] > sales_growth for w in known):
+        return None
+    lines = "、".join(f"{w['name']} {w['cagr']:+.1f}%" for w in known)
+    return (f"売上高が年 {sales_growth:.1f}% 伸びる中で{lines}（いずれも売上高以下）のため、成長に伴う運転資本の増加とみて"
+            f"懸念を普通に補正（{WC_FLOOR}倍未満なら補正しない）")
 
 
 # ---------- 手順4 ----------
@@ -496,6 +522,9 @@ def candidates(company) -> dict:
     rows = cf_rows(series)
     s1, s2, s3, s4, s5 = step1(rows), step2(rows), step3(rows, series), step4(rows), step5(rows)
     verdict, why = judge(s1, s2, s3, s4, s5)
+    excluded, info = SR.applies(company, SR.NO_CASH_FLOW)
+    if excluded:  # deposits and loans run through the operating CF: the tests say nothing about the business
+        verdict, why = "判定保留", SR.note(info, "預金・貸出などの資金の出入りが営業CF に入るため、キャッシュフロー分析の対象外")
     return {"series": series, "rows": rows, "step1": s1, "step2": s2, "step3": s3, "step4": s4, "step5": s5,
             "borderline": borderline(s2, s3, s5, rows), "verdict": verdict, "why": why,
             "conservative": [f"{name}を判定できず → 懸念とみなした" for name in unjudged_steps(s1, s2, s3, s4)]}

@@ -1,7 +1,8 @@
 """Every number and judgement of 企業分析フレームワーク.md 2-3 (安全性).
 
   自己資本比率 = 自己資本 ÷ 総資産, D/E = 有利子負債 ÷ 自己資本, 流動比率 = 流動資産 ÷ 流動負債,
-  ネットキャッシュ = 現金及び現金同等物 − 有利子負債 (all year-end balances).
+  ネットキャッシュ = 現金及び現金同等物 + 短期投資 − 有利子負債 (all year-end balances; 短期投資 from
+  data/financials.csv when it has them). インタレスト・カバレッジ = 営業利益 ÷ 支払利息 is shown, not scored.
 
   手順1 (現状の水準, the newest year): each indicator against its 目安 (自己資本比率 >= 40%, D/E <= 1倍,
     流動比率 >= 120%) and against the peer average (up to 5 peers, fiscal years within 6 months): クリア when it
@@ -25,6 +26,7 @@ import json
 import re
 
 import an_common as A
+import sector_rules as SR
 import sf_inputs as I
 import sf_series as SS
 from ff_inputs import main_business
@@ -37,6 +39,7 @@ PEER_BAND = {"equity_ratio": 2.0, "current_ratio": 5.0}  # pt below the peer ave
 DE_PEER_RATIO, DE_PEER_PT = 1.05, 0.05  # D/E up to x1.05 (or +0.05倍) of the peer average is 同等
 BORDER = {"equity_ratio": 4.0, "current_ratio": 10.0, "de": 0.1}  # twice the band: borderline comparisons
 NET_CASH_BORDER = 0.05  # |net cash| within 5% of total assets
+COVERAGE_COMFORT, COVERAGE_TIGHT = 5.0, 1.5  # インタレスト・カバレッジ (shown, not scored)
 INDICATORS = (("equity_ratio", "自己資本比率"), ("de", "D/E レシオ"), ("current_ratio", "流動比率"))
 NAMES = dict(INDICATORS)
 TREND_YEARS, MIN_TREND_YEARS = 5, 3
@@ -84,7 +87,8 @@ def balance_rows(series: SS.S.Series) -> list[dict]:
     for year in years:
         r = {f: _v(series, f, year) for f in ("total_assets", "equity", "debt", "cash", "current_assets",
                                                "current_liabilities", "cfo", "cfi", "cff", "sales",
-                                               "operating_income", "net_income")}
+                                               "operating_income", "net_income", "short_investments",
+                                               "interest_expense")}
         assets, equity, debt = r["total_assets"], r["equity"], r["debt"]
         reported = _v(series, "equity_ratio", year)
         r["equity_ratio"] = equity / assets * 100 if equity is not None and assets else reported
@@ -93,7 +97,11 @@ def balance_rows(series: SS.S.Series) -> list[dict]:
         r["de"] = debt / equity if debt is not None and equity is not None and equity > 0 else None
         r["current_ratio"] = (r["current_assets"] / r["current_liabilities"] * 100
                               if r["current_assets"] is not None and r["current_liabilities"] else None)
-        r["net_cash"] = r["cash"] - debt if r["cash"] is not None and debt is not None else None
+        # short-term investments (time deposits, MMFs) are as good as cash for paying the debt back
+        r["net_cash"] = (r["cash"] + (r["short_investments"] or 0) - debt
+                         if r["cash"] is not None and debt is not None else None)
+        op, interest = r["operating_income"], r["interest_expense"]
+        r["interest_coverage"] = op / interest if op is not None and interest else None
         if all(r[k] is None for k, _ in INDICATORS) and not r["insolvent"]:
             continue
         used = [series[f].get(year) for f in ("total_assets", "equity", "debt", "current_assets",
@@ -107,6 +115,9 @@ def balance_rows(series: SS.S.Series) -> list[dict]:
 # ---------- 手順1 ----------
 
 def sector_excluded(company) -> bool:
+    """Peers only (no fixed 目安): the industry of data/profile.json when known, else the 主力事業 text."""
+    if SR.sector(company)["group"] is not None:
+        return SR.applies(company, SR.PEER_ONLY_SAFETY)[0]
     return bool(EXCLUDED_SECTOR.search(main_business(company)))
 
 
@@ -187,10 +198,22 @@ def step1(rows: list[dict], peers: list[dict], excluded: bool, unit: str = "百�
     debt_free = net_cash is not None and net_cash > 0
     summary = "、".join(f"{i['name']} {fmt(i['key'], i['value'])} {i['rating']}" for i in items)
     year = own["year"] if own else "—"
+    coverage = own.get("interest_coverage") if own else None
     return {"year": year, "own": own, "peers": matched, "peer_avg": avg, "items": items, "counts": counts,
             "excluded": excluded, "net_cash": net_cash, "debt_free": debt_free, "unit": unit,
+            "interest_coverage": coverage, "coverage_text": coverage_text(coverage),
             "sentence": (f"{year}: {summary}（クリア {counts[CLEAR]}・未達 {counts[MISS]}・不明 {counts[UNKNOWN]}）。"
-                         f"ネットキャッシュ {money(net_cash)} {unit}" + ("で実質無借金" if debt_free else ""))}
+                         f"ネットキャッシュ {money(net_cash)} {unit}" + ("で実質無借金" if debt_free else "")
+                         + (f"。{coverage_text(coverage)}" if coverage is not None else ""))}
+
+
+def coverage_text(coverage: float | None) -> str:
+    """インタレスト・カバレッジ (営業利益 ÷ 支払利息): shown beside the three indicators, not scored."""
+    if coverage is None:
+        return "インタレスト・カバレッジ 不明（支払利息が無いか材料なし）"
+    word = ("利払いに余裕あり" if coverage >= COVERAGE_COMFORT else "利払いの余裕が小さい" if coverage < COVERAGE_TIGHT
+            else "利払いは賄えている")
+    return f"インタレスト・カバレッジ {coverage:.1f}倍（{word}。{COVERAGE_COMFORT:.0f}倍以上で余裕、{COVERAGE_TIGHT}倍未満で注意）"
 
 
 # ---------- 手順2 ----------

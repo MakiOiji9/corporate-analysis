@@ -22,7 +22,9 @@ from tc_metrics import _is_self
 
 FIELDS = ("total_assets", "equity", "equity_derived", "equity_ratio", "debt", "debt_short", "debt_current_long", "debt_long",
           "debt_bonds", "debt_bonds_current", "debt_cp", "cash", "cash_deposits", "current_assets",
-          "current_liabilities", "cfo", "cfi", "cff", "sales", "operating_income", "net_income")
+          "current_liabilities", "cfo", "cfi", "cff", "sales", "operating_income", "net_income",
+          # data/financials.csv only (the EV and net-cash items, the interest coverage)
+          "lease", "lease_current", "lease_noncurrent", "nci", "short_investments", "interest_expense")
 DEBT_PARTS = ("debt_short", "debt_current_long", "debt_long", "debt_bonds", "debt_bonds_current", "debt_cp")
 LABELS = {
     "total_assets": S.LABELS["total_assets"],
@@ -57,7 +59,10 @@ CSV_ITEMS = {"total_assets": "total_assets", "equity_ratio": "equity_ratio", "ca
              "current_liabilities": "current_liabilities", "short_term_loans": "debt_short",
              "current_portion_long_term_loans": "debt_current_long", "long_term_loans": "debt_long",
              "bonds": "debt_bonds", "cfo": "cfo", "cfi": "cfi", "cff": "cff", "net_sales": "sales",
-             "operating_income": "operating_income", "net_income": "net_income"}
+             "operating_income": "operating_income", "net_income": "net_income",
+             "lease_liabilities_current": "lease_current", "lease_liabilities_noncurrent": "lease_noncurrent",
+             "non_controlling_interests": "nci", "short_term_investments": "short_investments",
+             "interest_expense": "interest_expense"}
 # edgar.py writes StockholdersEquity (the parent's equity, without the minority interest) as net_assets
 US_CSV_ITEMS = {**CSV_ITEMS, "net_assets": "equity"}
 TDNET_ITEMS = {"TotalAssets": "total_assets", "OwnersEquity": "equity", "CapitalAdequacyRatio": "equity_ratio",
@@ -96,8 +101,17 @@ def with_cash(series: S.Series) -> S.Series:
     return {**series, "cash": dict(sorted(cash.items()))}
 
 
+def with_lease(series: S.Series) -> S.Series:
+    """リース負債 = current + non-current where both are known. Returns a new Series."""
+    years = set(series["lease_current"]) & set(series["lease_noncurrent"])
+    lease = {y: S.Value(series["lease_current"][y].value + series["lease_noncurrent"][y].value, "リース負債（流動＋非流動）",
+                        series["lease_current"][y].primary and series["lease_noncurrent"][y].primary)
+             for y in sorted(years)}
+    return {**series, "lease": {**lease, **series["lease"]}}
+
+
 def finish(series: S.Series) -> S.Series:
-    return with_cash(with_debt(S.with_equity(series)))
+    return with_lease(with_cash(with_debt(S.with_equity(series))))
 
 
 # ---------- competitors.md tables ----------

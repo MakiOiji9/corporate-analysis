@@ -289,8 +289,9 @@ def bps_tdnet(company) -> dict | None:
 
 
 def self_years(company) -> dict:
-    """{rows: [{year, net_income, extra_gain, extra_loss, operating_income, depreciation, debt, cash, equity, eps}],
-    splits, odd, unit}. EPS is on the newest share basis."""
+    """{rows: [{year, net_income, extra_gain, extra_loss, operating_income, depreciation, debt, cash, lease, nci,
+    short_investments, equity, eps}], splits, odd, unit}. EPS is on the newest share basis; lease, nci and
+    short_investments come from data/financials.csv only (None without it)."""
     pf, sf, cf, gr = S.self_series(company), SS.self_series(company), CS.self_series(company), GS.self_series(company)
     eps, splits, odd = GS.adjusted_eps(gr)
     years = sorted(set(pf["net_income"]) | set(gr["net_income"]) | set(sf["operating_income"]))
@@ -303,6 +304,8 @@ def self_years(company) -> dict:
             "operating_income": (_value(sf, "operating_income", y) if y in sf["operating_income"]
                                  else _value(gr, "operating_income", y)),
             "depreciation": _value(cf, "depreciation", y), "debt": _value(sf, "debt", y), "cash": _value(sf, "cash", y),
+            "lease": _value(sf, "lease", y), "nci": _value(sf, "nci", y),
+            "short_investments": _value(sf, "short_investments", y),
             "equity": _value(sf, "equity", y) if y in sf["equity"] else _value(pf, "equity", y),
             "eps": eps.get(y)})
     return {"rows": rows, "splits": splits, "odd": odd, "unit": SS.unit_label(company)}

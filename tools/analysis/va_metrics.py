@@ -34,6 +34,7 @@ import sf_paths as SP
 import sw_paths as WP
 import va_inputs as I
 import va_rules as R
+import sector_rules as SR
 import va_series as V
 
 TAX_RATE = 0.30
@@ -354,12 +355,31 @@ def peg_step(base: dict, per: dict, growth: dict | None) -> dict:
 
 # ---------- 3-4 EV/EBITDA ----------
 
+def ev_claims(row: dict) -> tuple[float | None, float | None, list[str]]:
+    """(claims on the business, cash-like assets, the items added): EV = 時価総額 + 有利子負債 + リース負債 +
+    非支配持分 − 現金 − 短期投資. Lease, minority and short-term investments are added only when data/financials.csv
+    has them (the peers' EV in competitors.md has none of them)."""
+    debt, cash = row.get("debt"), row.get("cash")
+    if debt is None or cash is None:
+        return debt, cash, []
+    added = []
+    for key, label in (("lease", "リース負債"), ("nci", "非支配持分")):
+        if row.get(key):
+            debt += row[key]
+            added.append(f"{label} +{amount(row[key])}")
+    if row.get("short_investments"):
+        cash += row["short_investments"]
+        added.append(f"短期投資 −{amount(row['short_investments'])}")
+    return debt, cash, added
+
+
 def ev_history(base: dict) -> list[dict]:
     """[{year, high, low, basis}]: EV/EBITDA computed from the yearly PER (or PBR) range."""
     out = []
     for h in base["history"][-R.RANGE_YEARS:]:
         row = _row(base, h["year"])
-        op, dep, debt, cash = (row.get(k) for k in ("operating_income", "depreciation", "debt", "cash"))
+        op, dep = row.get("operating_income"), row.get("depreciation")
+        debt, cash, _ = ev_claims(row)
         if None in (op, dep, debt, cash) or op + dep <= 0:
             continue
         ni, equity = row.get("net_income"), row.get("equity")
@@ -397,16 +417,20 @@ def _divergence(per: dict, ev: dict, latest: dict) -> dict | None:
             "reasons": reasons or ["数値の上では目立つ要因なし（現金・減価償却・借入のいずれも基準未満）"]}
 
 
-def ev_step(base: dict, per: dict) -> dict:
+def ev_step(base: dict, per: dict, excluded: str | None = None) -> dict:
+    """excluded: the sector note when EV/EBITDA does not apply to the industry (sector_rules.NO_EV)."""
     latest = _row(base, base["latest_year"])
-    op, dep, debt, cash = (latest.get(k) for k in ("operating_income", "depreciation", "debt", "cash"))
+    op, dep = latest.get("operating_income"), latest.get("depreciation")
+    debt, cash, added = ev_claims(latest)
     cap = base["market_cap"]
     ebitda = op + dep if op is not None and dep is not None else None
     ev = cap["value"] + debt - cash if cap and debt is not None and cash is not None else None
     net_cash = cash - debt if cash is not None and debt is not None else None
     out = {"year": base["latest_year"], "market_cap": cap, "debt": debt, "cash": cash, "operating_income": op,
            "depreciation": dep, "ebitda": ebitda, "ev": ev, "net_cash": net_cash, "history": ev_history(base),
-           "divergence": None, "borderline": []}
+           "ev_added": added, "divergence": None, "borderline": []}
+    if excluded:
+        return {**out, "rating": R.NA, "value": None, "rule": None, "sentence": f"評価対象外（{excluded}）"}
     if ebitda is not None and ebitda <= 0:
         return {**out, "rating": R.NA, "value": None, "rule": None,
                 "sentence": f"評価対象外（EBITDA {amount(ebitda)} がプラスでない）"}
@@ -431,8 +455,9 @@ def ev_step(base: dict, per: dict) -> dict:
                           f"{sensitivity['rating']}（判定が変わる。株式数の確定が必要）")
     note = (f"。株式数が未確定のため上限（{sensitivity['shares']:,.0f}株）でも計算: {sensitivity['value']:.1f}倍で"
             f"{sensitivity['rating']}（{'判定が変わる' if sensitivity['changes'] else '判定は同じ'}）" if sensitivity else "")
+    added_note = f"。EV に {'・'.join(added)} を含む（同業の EV は含まない）" if added else ""
     result = {**out, "rating": rule["rating"], "value": value, "rule": rule, "sensitivity": sensitivity,
-              "sentence": f"EV/EBITDA {times(value)}: {rule['basis']}（過去レンジは算出値）{note}",
+              "sentence": f"EV/EBITDA {times(value)}: {rule['basis']}（過去レンジは算出値）{note}{added_note}",
               "borderline": borderline}
     return {**result, "divergence": _divergence(per, result, latest)}
 
@@ -517,7 +542,8 @@ def candidates(company, found: dict, today: str, measures: str | None = None) ->
     per = per_step(base, g)
     pbr = pbr_step(base, measures)
     peg = peg_step(base, per, g)
-    ev = ev_step(base, per)
+    no_ev, info = SR.applies(company, SR.NO_EV)
+    ev = ev_step(base, per, SR.note(info, "借入と預金が事業そのもののため、EV/EBITDA は使わない") if no_ev else None)
     items = {"per": per, "pbr": pbr, "peg": peg, "ev": ev}
     upstream = others(company)
     s3 = step3(items, upstream)

@@ -30,6 +30,7 @@ ticker, name, url, market, mode, 企業ディレクトリ, 収集日, 取得経�
 ## Phase 3: 財務データの時系列（5〜10年）
 1. **年次財務**
    - EDINET 経路: `edinet.py list --code {ticker} --fy-end-month {決算月} --years 10` で過去10期の有報を探し、**全期**を `edinet.py fetch --kind csv` で取得してから `xbrl_financials.py --all --company {dir}` を1回実行する（財務諸表は各有報に2期分しか無いので、5期おきでは減価償却費・借入金・リース負債などが歯抜けになる。`--all` は sources/ の自社の有報だけを古い順に取り込み、同業の有報は飛ばす）
+   - 業種: `company_profile.py --company {dir}` で `data/profile.json`（日本株は EDINET コードリストの提出者業種、米国株は SEC の SIC）を作る。分析の業種別ルール（金融・不動産など）が読む
    - **日本株は `data/financials.csv` が無ければ Phase 3 は未完了**。`--all` の出力の「years」が5年未満なら、取れなかった期と理由を報告の3章に書く
    - PDF 経路: 過去の有報 PDF を `fetch.py --text` → `find_pages.py fin`（各有報に2期分）
    - どちらでも取れない年度だけ IRBANK・株探で補い、確度「二次」と明記
