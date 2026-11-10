@@ -1,14 +1,13 @@
 # データ鮮度・未取得項目 — ULSグループ
 
-**最終更新**: 2026-10-31（mode=update、collect-peers-valuation。valuation スキルの指定項目のみ: 株価のみ（自社 raw/ir/2026-10-31_valuation-data.md 1〜3章、競合 raw/market/2026-10-31_competitors.md 6章。基準日 2026-10-30 終値）と competitors.md 12章「EV/EBITDA の材料」（自社と競合5社）。前回 2026-10-21 以降の EDINET 提出書類なし）。以前: 2026-10-21（mode=update、collect-filings。growth スキルの指定項目のみ: financials-historical.md 6章「減収・減益の年の会社説明」・7章「M&A・連結範囲の変更」を raw/ir/2026-10-21_financials-historical.md に新規収集。前回 2026-10-13 以降の EDINET 提出書類なし）。同日、safety スキルの指定項目で collect-filings（financials-historical.md 3章「貸借・CF の主要項目」: 2017〜2026年3月期の有利子負債の行・自己資本・現金及び現金同等物・流動資産・流動負債・3CF）と collect-peers-valuation（competitors.md 11章「安全性の指標」: 自社と競合5社）を raw/ir/2026-10-21_financials-historical.md・raw/market/2026-10-21_competitors.md に追加。同日、cash-flow スキルの指定項目で collect-filings（financials-historical.md 1章「損益・貸借・CF」のうち営業CF の内訳: 2017〜2026年3月期の税金等調整前当期純利益・減価償却費・売上債権の増減額・棚卸資産の増減額・法人税等の支払額）を raw/ir/2026-10-21_financials-historical.md に追記
-
+**最終更新**: 2026-10-31（mode=update、collect-peers-valuation。valuation スキルの指定項目のみ: 株価のみ（自社 raw/ir/2026-10-31_valuation-data.md 1〜3章、競合 raw/market/2026-10-31_competitors.md 6章。基準日 2026-10-30 終値）と competitors.md 12章「EV/EBITDA の材料」（自社と競合5社）。前回 2026-10-21 以降の EDINET 提出書類なし）。以前: 2026-10-21（mode=update、collect-filings。growth スキルの指定項目のみ: financials-historical.md 6章「減収・減益の年の会社説明」・7章「M&A・連結範囲の変更」を raw/ir/2026-10-21_financials-historical.md に新規収集。前回 2026-10-13 以降の EDINET 提出書類なし）。同日、safety スキルの指定項目で collect-filings（financials-historical.md 3章「貸借・CF の主要項目」: 2017〜2026年3月期の有利子負債の行・自己資本・現金及び現金同等物・流動資産・流動負債・3CF）と collect-peers-valuation（competitors.md 11章「安全性の指標」: 自社と競合5社）を raw/ir/2026-10-21_financials-historical.md・raw/market/2026-10-21_competitors.md に追加。同日、cash-flow スキルの指定項目で collect-filings（financials-historical.md 1章「損益・貸借・CF」のうち営業CF の内訳: 2017〜2026年3月期の税金等調整前当期純利益・減価償却費・売上債権の増減額・棚卸資産の増減額・法人税等の支払額）を raw/ir/2026-10-21_financials-historical.md に追記（2026-11-10 に株価のみ更新: refresh_valuation.py）
 > collect-company-info を実行するたびに上書きする。`mode=update` はまずこのファイルと `sources/manifest.csv` を読む。
 
 ## 1. データ鮮度
 
 | 区分 | 最新データの時点 | 取得日 | raw ファイル | 次回更新トリガー |
 |---|---|---|---|---|
-| 株価・株価指標 | 2026-10-30 終値（自社・競合とも） | 2026-10-31 | raw/ir/2026-10-31_valuation-data.md（1〜3章）、raw/market/2026-10-31_competitors.md（6章・12章）。年次レンジ・アナリスト予想は raw/ir/2026-10-11_valuation-data.md | 再実行のたび（valuation は基準日が7日より古いと取り直しを求める） |
+| 株価・株価指標 | 2026-11-10 終値 | 2026-11-10 | raw/ir/2026-11-10_valuation-data.md | 再実行のたび（valuation は基準日が7日より古いと取り直しを求める） |
 | 四半期決算 | 2027年3月期 1Q（2026-08-12 公表） | 2026-10-11 | data/tdnet_facts.csv | 2027年3月期 中間決算の発表（前年は 2025-11-07。日付は IR カレンダーで要確認） |
 | 通期決算・会社予想 | 2026年3月期（予想は2027年3月期） | 2026-10-11 | raw/ir/2026-10-11_financials-historical.md | 本決算発表（例年5月中旬） |
 | 貸借・CF の時系列（安全性） | 2017年3月期〜2026年3月期（10年。有利子負債は全期間 0（科目なし）） | 2026-10-21 | raw/ir/2026-10-21_financials-historical.md（3章のみ。1章・4〜5章は 2026-10-11 版、6章・7章は同日の成長性の差分） | 本決算発表・有報提出 |
