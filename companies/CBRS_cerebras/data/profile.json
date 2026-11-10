@@ -1,0 +1,11 @@
+{
+ "ticker": "CBRS",
+ "cik": "0002021728",
+ "name": "Cerebras Systems Inc.",
+ "sic": 3674,
+ "sector_name": "Semiconductors & Related Devices",
+ "fiscal_year_end": "1231",
+ "sector_source": "SEC submissions（SIC）",
+ "market": "us",
+ "retrieved": "2026-11-10"
+}
