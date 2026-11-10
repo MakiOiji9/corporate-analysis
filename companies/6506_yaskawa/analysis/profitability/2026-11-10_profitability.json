@@ -1,0 +1,652 @@
+{
+ "company": "6506_yaskawa",
+ "name": "安川電機（6506）",
+ "date": "2026-11-10",
+ "valid_until": "2027-05-29",
+ "verdict": "良好",
+ "verdict_reason": "手順1が良好、営業利益率が同業平均以上、ROE の源泉が本業由来",
+ "conservative": [],
+ "step1": {
+  "rating": "良好",
+  "basis": "平均 10% 以上かつ最低 5% 以上、赤字の年なし",
+  "sentence": "ROE は平均12.7%、最低6.6%（2020-02）で良好。直近3年は低下傾向（13.6% → 13.7% → 7.7%）",
+  "years": 10,
+  "first": "2017-02",
+  "last": "2026-02",
+  "average": 12.7,
+  "minimum": 6.6,
+  "minimum_year": "2020-02",
+  "losses": [],
+  "direction": "低下"
+ },
+ "step2": {
+  "rating": "同等",
+  "basis": "2024-02〜2026-02 の3年の差の平均 +0.3pt（±1pt 以内は同等。直近 -1.4pt）",
+  "sentence": "営業利益率は8.7%（2026-02）で同業中央値10.1%との差 -1.4pt。2024-02〜2026-02 の3年の差の平均 +0.3pt で同等。5年の推移は悪化",
+  "year": "2026-02",
+  "self": 8.7,
+  "avg": 10.1,
+  "diff": -1.4,
+  "trend": "悪化",
+  "rows": [
+   {
+    "year": "2022-02",
+    "self": 11.0,
+    "avg": 10.9,
+    "mean": 13.8,
+    "diff": 0.1,
+    "peers": [
+     {
+      "name": "ファナック（3月期、日本基準）",
+      "year": "2022-03",
+      "margin": 25.0
+     },
+     {
+      "name": "三菱電機（3月期。2022年3月期以降は IFRS を EDINET で確認。それ以前は IRBANK 表示のまま）",
+      "year": "2022-03",
+      "margin": 5.6
+     },
+     {
+      "name": "山洋電気（3月期。2022年3月期以降は IFRS を EDINET で確認）",
+      "year": "2022-03",
+      "margin": 10.9
+     }
+    ]
+   },
+   {
+    "year": "2023-02",
+    "self": 12.3,
+    "avg": 11.1,
+    "mean": 12.9,
+    "diff": 1.2,
+    "peers": [
+     {
+      "name": "ファナック（3月期、日本基準）",
+      "year": "2023-03",
+      "margin": 22.5
+     },
+     {
+      "name": "三菱電機（3月期。2022年3月期以降は IFRS を EDINET で確認。それ以前は IRBANK 表示のまま）",
+      "year": "2023-03",
+      "margin": 5.2
+     },
+     {
+      "name": "山洋電気（3月期。2022年3月期以降は IFRS を EDINET で確認）",
+      "year": "2023-03",
+      "margin": 11.1
+     }
+    ]
+   },
+   {
+    "year": "2024-02",
+    "self": 11.5,
+    "avg": 10.5,
+    "mean": 11.5,
+    "diff": 1.0,
+    "peers": [
+     {
+      "name": "ファナック（3月期、日本基準）",
+      "year": "2024-03",
+      "margin": 17.8
+     },
+     {
+      "name": "三菱電機（3月期。2022年3月期以降は IFRS を EDINET で確認。それ以前は IRBANK 表示のまま）",
+      "year": "2024-03",
+      "margin": 6.2
+     },
+     {
+      "name": "山洋電気（3月期。2022年3月期以降は IFRS を EDINET で確認）",
+      "year": "2024-03",
+      "margin": 10.5
+     }
+    ]
+   },
+   {
+    "year": "2025-02",
+    "self": 9.3,
+    "avg": 8.1,
+    "mean": 11.7,
+    "diff": 1.2,
+    "peers": [
+     {
+      "name": "ファナック（3月期、日本基準）",
+      "year": "2025-03",
+      "margin": 19.9
+     },
+     {
+      "name": "三菱電機（3月期。2022年3月期以降は IFRS を EDINET で確認。それ以前は IRBANK 表示のまま）",
+      "year": "2025-03",
+      "margin": 7.1
+     },
+     {
+      "name": "山洋電気（3月期。2022年3月期以降は IFRS を EDINET で確認）",
+      "year": "2025-03",
+      "margin": 8.1
+     }
+    ]
+   },
+   {
+    "year": "2026-02",
+    "self": 8.7,
+    "avg": 10.1,
+    "mean": 12.9,
+    "diff": -1.4,
+    "peers": [
+     {
+      "name": "ファナック（3月期、日本基準）",
+      "year": "2026-03",
+      "margin": 21.4
+     },
+     {
+      "name": "三菱電機（3月期。2022年3月期以降は IFRS を EDINET で確認。それ以前は IRBANK 表示のまま）",
+      "year": "2026-03",
+      "margin": 7.3
+     },
+     {
+      "name": "山洋電気（3月期。2022年3月期以降は IFRS を EDINET で確認）",
+      "year": "2026-03",
+      "margin": 10.1
+     }
+    ]
+   }
+  ],
+  "sources": [
+   "data/*.csv",
+   "competitors.md の自社欄"
+  ]
+ },
+ "step3": {
+  "source": "本業由来",
+  "drivers": [
+   "総資産回転率"
+  ],
+  "basis": "総資産回転率が同業平均を上回る（売上高純利益率 8.6% と同業平均 8.3%（+0.4pt、±1pt 以内は同等）、総資産回転率 0.82回 と同業平均 0.76回（比 1.09、±5% 以内は同等）、財務レバレッジ 1.82倍 と同業平均 1.45倍（比 1.26、±5% 以内は同等））",
+  "sentence": "ROE の源泉は総資産回転率（本業の強さ）",
+  "latest_leverage": 1.7012003542028795,
+  "years": [
+   "2022-02",
+   "2023-02",
+   "2024-02",
+   "2025-02",
+   "2026-02"
+  ],
+  "self": {
+   "margin": 8.644810142167266,
+   "turnover": 0.8245346283480943,
+   "leverage": 1.8204053125026,
+   "roe": 13.097487455912818
+  },
+  "peers": [
+   {
+    "name": "ファナック",
+    "years": [
+     "2022-03",
+     "2023-03",
+     "2024-03",
+     "2025-03",
+     "2026-03"
+    ],
+    "primary": false,
+    "margin": 19.17504929259107,
+    "turnover": 0.4268044121336211,
+    "leverage": 1.1429106560478222,
+    "roe": 9.367729858295721
+   },
+   {
+    "name": "三菱電機",
+    "years": [
+     "2022-03",
+     "2023-03",
+     "2024-03",
+     "2025-03",
+     "2026-03"
+    ],
+    "primary": false,
+    "margin": 5.405261879408688,
+    "turnover": 0.889282570300393,
+    "leverage": 1.6759838276716728,
+    "roe": 7.997424352639561
+   },
+   {
+    "name": "山洋電気",
+    "years": [
+     "2022-03",
+     "2023-03",
+     "2024-03",
+     "2025-03",
+     "2026-03"
+    ],
+    "primary": false,
+    "margin": 8.293783606002968,
+    "turnover": 0.7575157010018932,
+    "leverage": 1.4456419912553902,
+    "roe": 9.363911241696286
+   }
+  ],
+  "peer_avg": {
+   "margin": 8.293783606002968,
+   "turnover": 0.7575157010018932,
+   "leverage": 1.4456419912553902,
+   "roe": 9.363911241696286
+  }
+ },
+ "roe_rows": [
+  {
+   "year": "2017-02",
+   "roe": 10.7,
+   "basis": "開示（一次）",
+   "reported": 10.7,
+   "reported_primary": true,
+   "computed": 10.7,
+   "net_income": 20397.0,
+   "avg_equity": 189784.82450000002,
+   "averaged": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2018-02",
+   "roe": 18.3,
+   "basis": "開示（一次）",
+   "reported": 18.3,
+   "reported_primary": true,
+   "computed": 18.5,
+   "net_income": 39749.0,
+   "avg_equity": 215345.05400000003,
+   "averaged": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2019-02",
+   "roe": 17.9,
+   "basis": "開示（一次）",
+   "reported": 17.9,
+   "reported_primary": true,
+   "computed": 17.9,
+   "net_income": 42524.0,
+   "avg_equity": 238164.777,
+   "averaged": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2020-02",
+   "roe": 6.6,
+   "basis": "開示（一次）",
+   "reported": 6.6,
+   "reported_primary": true,
+   "computed": 6.6,
+   "net_income": 15572.0,
+   "avg_equity": 236203.79499999998,
+   "averaged": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2021-02",
+   "roe": 8.0,
+   "basis": "開示（一次）",
+   "reported": 8.0,
+   "reported_primary": true,
+   "computed": 8.0,
+   "net_income": 18927.0,
+   "avg_equity": 237314.0,
+   "averaged": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2022-02",
+   "roe": 14.3,
+   "basis": "開示（一次）",
+   "reported": 14.3,
+   "reported_primary": true,
+   "computed": 14.3,
+   "net_income": 38354.0,
+   "avg_equity": 268750.0,
+   "averaged": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2023-02",
+   "roe": 16.2,
+   "basis": "開示（一次）",
+   "reported": 16.2,
+   "reported_primary": true,
+   "computed": 16.2,
+   "net_income": 51783.0,
+   "avg_equity": 319366.5,
+   "averaged": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2024-02",
+   "roe": 13.6,
+   "basis": "開示（一次）",
+   "reported": 13.6,
+   "reported_primary": true,
+   "computed": 13.6,
+   "net_income": 50687.0,
+   "avg_equity": 373418.5,
+   "averaged": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2025-02",
+   "roe": 13.7,
+   "basis": "開示（一次）",
+   "reported": 13.7,
+   "reported_primary": true,
+   "computed": 13.7,
+   "net_income": 56987.0,
+   "avg_equity": 415263.0,
+   "averaged": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2026-02",
+   "roe": 7.7,
+   "basis": "開示（一次）",
+   "reported": 7.7,
+   "reported_primary": true,
+   "computed": 7.7,
+   "net_income": 35240.0,
+   "avg_equity": 457365.0,
+   "averaged": true,
+   "source": "data/financials.csv（EDINET）"
+  }
+ ],
+ "dupont": [
+  {
+   "year": "2015-02",
+   "sales": 400153.0,
+   "net_income": 24819.0,
+   "avg_assets": 388205.0,
+   "avg_equity": 171198.405,
+   "margin": 6.2024,
+   "turnover": 1.0308,
+   "leverage": 2.2676,
+   "roe": 14.4972,
+   "averaged": false,
+   "primary": true
+  },
+  {
+   "year": "2016-02",
+   "sales": 411260.0,
+   "net_income": 22365.0,
+   "avg_assets": 380869.0,
+   "avg_equity": 176180.955,
+   "margin": 5.4382,
+   "turnover": 1.0798,
+   "leverage": 2.1618,
+   "roe": 12.6943,
+   "averaged": true,
+   "primary": true
+  },
+  {
+   "year": "2017-02",
+   "sales": 394883.0,
+   "net_income": 20397.0,
+   "avg_assets": 380522.5,
+   "avg_equity": 189784.8245,
+   "margin": 5.1653,
+   "turnover": 1.0377,
+   "leverage": 2.005,
+   "roe": 10.7474,
+   "averaged": true,
+   "primary": true
+  },
+  {
+   "year": "2018-02",
+   "sales": 448523.0,
+   "net_income": 39749.0,
+   "avg_assets": 418402.0,
+   "avg_equity": 215345.054,
+   "margin": 8.8622,
+   "turnover": 1.072,
+   "leverage": 1.9429,
+   "roe": 18.4583,
+   "averaged": true,
+   "primary": true
+  },
+  {
+   "year": "2019-02",
+   "sales": 474638.0,
+   "net_income": 42524.0,
+   "avg_assets": 456628.5,
+   "avg_equity": 238164.777,
+   "margin": 8.9592,
+   "turnover": 1.0394,
+   "leverage": 1.9173,
+   "roe": 17.8549,
+   "averaged": true,
+   "primary": true
+  },
+  {
+   "year": "2020-02",
+   "sales": 410957.0,
+   "net_income": 15572.0,
+   "avg_assets": 457046.0,
+   "avg_equity": 236203.795,
+   "margin": 3.7892,
+   "turnover": 0.8992,
+   "leverage": 1.935,
+   "roe": 6.5926,
+   "averaged": true,
+   "primary": true
+  },
+  {
+   "year": "2021-02",
+   "sales": 389712.0,
+   "net_income": 18927.0,
+   "avg_assets": 468777.5,
+   "avg_equity": 237314.0,
+   "margin": 4.8567,
+   "turnover": 0.8313,
+   "leverage": 1.9753,
+   "roe": 7.9755,
+   "averaged": true,
+   "primary": true
+  },
+  {
+   "year": "2022-02",
+   "sales": 479082.0,
+   "net_income": 38354.0,
+   "avg_assets": 523233.0,
+   "avg_equity": 268750.0,
+   "margin": 8.0057,
+   "turnover": 0.9156,
+   "leverage": 1.9469,
+   "roe": 14.2713,
+   "averaged": true,
+   "primary": true
+  },
+  {
+   "year": "2023-02",
+   "sales": 555955.0,
+   "net_income": 51783.0,
+   "avg_assets": 606085.0,
+   "avg_equity": 319366.5,
+   "margin": 9.3142,
+   "turnover": 0.9173,
+   "leverage": 1.8978,
+   "roe": 16.2143,
+   "averaged": true,
+   "primary": true
+  },
+  {
+   "year": "2024-02",
+   "sales": 575658.0,
+   "net_income": 50687.0,
+   "avg_assets": 677733.5,
+   "avg_equity": 373418.5,
+   "margin": 8.8051,
+   "turnover": 0.8494,
+   "leverage": 1.8149,
+   "roe": 13.5738,
+   "averaged": true,
+   "primary": true
+  },
+  {
+   "year": "2025-02",
+   "sales": 537682.0,
+   "net_income": 56987.0,
+   "avg_assets": 723054.5,
+   "avg_equity": 415263.0,
+   "margin": 10.5986,
+   "turnover": 0.7436,
+   "leverage": 1.7412,
+   "roe": 13.7231,
+   "averaged": true,
+   "primary": true
+  },
+  {
+   "year": "2026-02",
+   "sales": 542122.0,
+   "net_income": 35240.0,
+   "avg_assets": 778069.5,
+   "avg_equity": 457365.0,
+   "margin": 6.5004,
+   "turnover": 0.6968,
+   "leverage": 1.7012,
+   "roe": 7.705,
+   "averaged": true,
+   "primary": true
+  }
+ ],
+ "change_years": [
+  {
+   "year": "2018-02",
+   "from": 10.7,
+   "to": 18.5,
+   "main": "売上高純利益率",
+   "moves": "売上高純利益率 5.2%→8.9%、総資産回転率 1.04回→1.07回、財務レバレッジ 2.01倍→1.94倍、特別損益の純額 —→-1,744百万円",
+   "background": "不明（brief に記載なし）。特別損益の純額は -1,744百万円で当期純利益の -4.4% にとどまり、純利益率の上昇は特別損益では説明できない"
+  },
+  {
+   "year": "2020-02",
+   "from": 17.9,
+   "to": 6.6,
+   "main": "売上高純利益率",
+   "moves": "売上高純利益率 9.0%→3.8%、総資産回転率 1.04回→0.90回、財務レバレッジ 1.92倍→1.93倍、営業利益率 11.2%→5.9%、特別損益の純額 3,319→—百万円",
+   "background": "営業利益率が 11.2% から 5.9% に下がった本業の減益が主因で、総資産回転率も 1.04回から 0.90回に下がった。減益の理由そのものは不明（brief に記載なし）"
+  },
+  {
+   "year": "2022-02",
+   "from": 8.0,
+   "to": 14.3,
+   "main": "売上高純利益率",
+   "moves": "売上高純利益率 4.9%→8.0%、総資産回転率 0.83回→0.92回、財務レバレッジ 1.98倍→1.95倍、営業利益率 7.0%→11.0%",
+   "background": "営業利益率が 7.0% から 11.0% に上がった本業の増益が主因で、総資産回転率も 0.83回から 0.92回に上がった。増益の理由そのものは不明（brief に記載なし）"
+  },
+  {
+   "year": "2024-02",
+   "from": 16.2,
+   "to": 13.6,
+   "main": "総資産回転率",
+   "moves": "売上高純利益率 9.3%→8.8%、総資産回転率 0.92回→0.85回、財務レバレッジ 1.90倍→1.81倍、営業利益率 12.3%→11.5%",
+   "background": "不明（brief に記載なし）。総資産回転率が 0.92回から 0.85回に下がり、営業利益率も 12.3% から 11.5% に下がったが、資産が増えた理由（棚卸資産・設備投資など）は brief に無い"
+  },
+  {
+   "year": "2026-02",
+   "from": 13.7,
+   "to": 7.7,
+   "main": "売上高純利益率",
+   "moves": "売上高純利益率 10.6%→6.5%、総資産回転率 0.74回→0.70回、財務レバレッジ 1.74倍→1.70倍、営業利益率 9.3%→8.7%",
+   "background": "前期の 2025年2月期に煙台東星磁性材料の株式の一部譲渡益・残存株式の再評価益 26,777百万円（営業利益の外）を計上した反動で、親会社帰属利益が前期比 △38.2% になった。本業も為替影響と間接費の増加で営業利益率が 9.3% から 8.7% に下がった（有報 p.38-39）"
+  }
+ ],
+ "one_off": [
+  {
+   "year": "2018-02",
+   "gain": 1513.0,
+   "loss": 3257.0,
+   "net_income": 39749.0,
+   "share": -4.4,
+   "check": false,
+   "adjusted_roe": null
+  },
+  {
+   "year": "2019-02",
+   "gain": 6148.0,
+   "loss": 2829.0,
+   "net_income": 42524.0,
+   "share": 7.8,
+   "check": false,
+   "adjusted_roe": null
+  }
+ ],
+ "one_off_step1": null,
+ "one_off_assessment": "特別損益は各年とも当期純利益の10%未満で、ROE の水準を左右していない",
+ "peer_gap": "同業と最も差があるのは財務レバレッジ（1.82倍、同業中央値 1.45倍）で、会社は親会社所有者帰属持分比率 50%以上を安定水準としつつ一定のネット D/E レシオを目安に効率性を重視し、手元現預金は月商1ヵ月程度にとどめる方針（有報 p.40）。売上高純利益率は 8.6% で同業中央値 8.3% と同等で、ROE の差は純利益率ではなく総資産回転率とレバレッジによる",
+ "borderline": [
+  "手順1: ROE の最低 6.6% が基準 5% に近い",
+  "手順2: 営業利益率の差 -1.4pt（±1pt が同等の幅）",
+  "手順3: 売上高純利益率 8.6% と同業平均 8.3%（+0.4pt、±1pt 以内は同等）",
+  "手順3: 総資産回転率 0.82回 と同業平均 0.76回（比 1.09、±5% 以内は同等）"
+ ],
+ "consistency": [
+  {
+   "check": "モートが広い ⇔ 高い利益率",
+   "step1": "モート なし",
+   "step2": "営業利益率 同等",
+   "result": "対象外（モート なし）"
+  },
+  {
+   "check": "勝てる理由が明確 ⇔ 収益性",
+   "step1": "勝てる理由 あいまい",
+   "step2": "ROE 13.1%（同業平均 9.4%）、営業利益率 同等",
+   "result": "対象外（勝てる理由 あいまい）"
+  }
+ ],
+ "consistency_comment": "該当する STEP 1 の結論なし",
+ "handoff": {
+  "report_points": "収益性は良好（手順1が良好、営業利益率が同業平均以上、ROE の源泉が本業由来）。ROE は平均12.7%、最低6.6%（2020-02）で良好。直近3年は低下傾向（13.6% → 13.7% → 7.7%）。営業利益率は8.7%（2026-02）で同業中央値10.1%との差 -1.4pt。2024-02〜2026-02 の3年の差の平均 +0.3pt で同等。5年の推移は悪化。ROE の源泉は本業由来（総資産回転率が同業平均を上回る（売上高純利益率 8.6% と同業平均 8.3%（+0.4pt、±1pt 以内は同等）、総資産回転率 0.82回 と同業平均 0.76回（比 1.09、±5% 以内は同等）、財務レバレッジ 1.82倍 と同業平均 1.45倍（比 1.26、±5% 以内は同等）））。",
+  "targets": "中計「Dash 35」は 2029年度に ROE 12.0%以上・ROIC 11.0%以上・営業利益率 15.4% を掲げ、2025年度実績（ROE 7.7%・営業利益率 8.7%）から大きな改善が要る。会社は営業利益・営業利益率を最重要 KGI とし、棚卸資産の削減で ROE・ROIC を改善すると説明している",
+  "step2_checks": "財務レバレッジの低さが手元資金・自己資本の厚さによるものか（安全性）、利益率の水準が売上の成長を伴っているか（成長性）、純利益が営業CF で裏付けられているか（キャッシュフロー）",
+  "triggers": "平均 ROE が 10% を下回るか最低 ROE が 5% を下回れば手順1は普通、平均が 8% を下回るか赤字の年が出れば懸念。営業利益率が同業平均を 1pt 超下回れば手順2は下回る（収益性は普通以下）。境界に近い比較: 手順1: ROE の最低 6.6% が基準 5% に近い、手順2: 営業利益率の差 -1.4pt（±1pt が同等の幅）、手順3: 売上高純利益率 8.6% と同業平均 8.3%（+0.4pt、±1pt 以内は同等）、手順3: 総資産回転率 0.82回 と同業平均 0.76回（比 1.09、±5% 以内は同等）。"
+ },
+ "changes": [
+  "収益性: 普通 → 良好（前回 2026-11-01）",
+  "手順2: 下回る → 同等（前回 2026-11-01）",
+  "営業利益率の同業との差（pt）: -4.2 → -1.4（前回 2026-11-01）"
+ ],
+ "gaps": [
+  "なし"
+ ],
+ "inputs": [
+  "companies/6506_yaskawa/raw/filings/2026-11-01_2026-02_yuho.md",
+  "companies/6506_yaskawa/raw/ir/2026-11-01_financials-historical.md",
+  "companies/6506_yaskawa/raw/ir/2026-11-01_mid-term-plan.md",
+  "companies/6506_yaskawa/raw/market/2026-11-01_competitors.md"
+ ],
+ "seen": [
+  "companies/6506_yaskawa/raw/filings/2026-11-01_2026-02_yuho.md",
+  "companies/6506_yaskawa/raw/ir/2026-11-01_financials-historical.md",
+  "companies/6506_yaskawa/raw/ir/2026-11-01_mid-term-plan.md",
+  "companies/6506_yaskawa/raw/market/2026-11-01_competitors.md"
+ ],
+ "input_digests": {
+  "self_pl": "84417acc0bf2e542f405246a24ecab9d9dbca063",
+  "self_return": "83099178a3e8fe4fb63f5162b740a935c2d066ec",
+  "summary": "41bed366ef72c1a53a5acdfd149538819f08c598",
+  "special": "cdb2192d14cc7b41c4b1f26b9f37653b82113a0b",
+  "policy": "9d2f422862d4794c3ef60676d5a9b1c9e93a5311",
+  "targets": "93d51a007d9a7c934779ee5901b4e32a291b0a5a",
+  "capital": "803353416bbd6597f47fc13ae38e0209ec649c5c",
+  "peers": "33cb27f8268fe3edc3290250b7e9e5d0ab02f84a",
+  "peer_roe": "01f259970ae44a8e1ddee4c78fe5b2666ae37f04",
+  "peer_dupont": "3452689170b736e48a277368bc8a5b1f575b36eb",
+  "yearly_series": "a2889c6b835513c840069f9a68ef1fc4e6733593"
+ },
+ "moat": {
+  "date": "2026-11-10",
+  "verdict": "なし"
+ },
+ "three_c": {
+  "date": "2026-11-01",
+  "verdict": "あいまい"
+ },
+ "outlook": "market/report/2026-10-26_outlook.md",
+ "previous": {
+  "date": "2026-11-01",
+  "verdict": "普通"
+ },
+ "md": "companies/6506_yaskawa/analysis/profitability/2026-11-10_profitability.md"
+}

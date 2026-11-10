@@ -1,0 +1,521 @@
+{
+ "company": "6506_yaskawa",
+ "name": "安川電機（6506）",
+ "date": "2026-11-10",
+ "valid_until": "2027-05-29",
+ "verdict": "普通",
+ "verdict_reason": "手順1が普通、手順3が普通",
+ "conservative": [],
+ "step1": {
+  "rating": "普通",
+  "basis": "マイナスは 2023-02 の1回で、翌年にプラスへ戻った（一時要因とみなす）",
+  "sentence": "営業CF は10年（2017-02〜2026-02）で、マイナスは 2023-02 の1回で、翌年にプラスへ戻った（一時要因とみなす）。普通",
+  "years": 10,
+  "first": "2017-02",
+  "last": "2026-02",
+  "negative_years": [
+   "2023-02"
+  ]
+ },
+ "step2": {
+  "rating": "良好",
+  "basis": "5年累計 71,610、プラスの年 4/5（累計プラスで過半数の年がプラス）",
+  "sentence": "FCF は2022-02〜2026-02の5年累計 71,610、プラスの年 4/5（累計プラスで過半数の年がプラス）。良好",
+  "window": [
+   "2022-02",
+   "2023-02",
+   "2024-02",
+   "2025-02",
+   "2026-02"
+  ],
+  "total": 71610.0,
+  "positive_years": 4,
+  "growth": {
+   "met": false,
+   "heavy_years": [
+    "2023-02"
+   ],
+   "sales_cagr": 3.1,
+   "cfo_rising": true,
+   "text": "投資CF の流出が営業CF を超えた年 2023-02 / 売上 CAGR 3.1%（基準 5%以上） / 営業CF 49,233 → 52,170（増加）"
+  }
+ },
+ "step3": {
+  "rating": "普通",
+  "basis": "営業CF対純利益比率 0.90倍（5年累計。平均 0.96倍より低い方。1.0倍以上 良好 / 0.8倍以上 普通）",
+  "sentence": "営業CF対純利益比率は5年累計。平均 0.96倍より低い方で0.90倍。普通",
+  "window": [
+   "2022-02",
+   "2023-02",
+   "2024-02",
+   "2025-02",
+   "2026-02"
+  ],
+  "ratio": 0.9,
+  "method": "5年累計。平均 0.96倍より低い方",
+  "loss": false,
+  "average": 0.96,
+  "cumulative": 0.9,
+  "without_oldest": 0.88,
+  "recent_text": "2025-02 0.99倍、2026-02 1.48倍（0.8倍未満を含む）",
+  "below_text": "2023-02 -0.04倍",
+  "flagged": [],
+  "working_capital": [
+   {
+    "field": "sales",
+    "name": "売上高",
+    "first_year": "2022-02",
+    "last_year": "2026-02",
+    "first": 479082.0,
+    "last": 542122.0,
+    "cagr": 3.1
+   },
+   {
+    "field": "receivables",
+    "name": "売上債権",
+    "first_year": "2022-02",
+    "last_year": "2026-02",
+    "first": 149646.0,
+    "last": 163942.0,
+    "cagr": 2.3
+   },
+   {
+    "field": "inventories",
+    "name": "棚卸資産",
+    "first_year": "2022-02",
+    "last_year": "2026-02",
+    "first": 131767.0,
+    "last": 210764.0,
+    "cagr": 12.5
+   }
+  ],
+  "gap_rows": [
+   {
+    "year": "2022-02",
+    "gap": 10879.0,
+    "items": {
+     "depreciation": 17475.0,
+     "receivables_change": -12010.0,
+     "inventories_change": -20743.0,
+     "tax_gap": 6252.0
+    },
+    "other": 19905.0,
+    "main": "その他（表の項目以外）"
+   },
+   {
+    "year": "2023-02",
+    "gap": -53992.0,
+    "items": {
+     "depreciation": 19669.0,
+     "receivables_change": -13440.0,
+     "inventories_change": -40257.0,
+     "tax_gap": 84.0
+    },
+    "other": -20048.0,
+    "main": "棚卸資産の増減"
+   },
+   {
+    "year": "2024-02",
+    "gap": 3932.0,
+    "items": {
+     "depreciation": 20802.0,
+     "receivables_change": 9687.0,
+     "inventories_change": -17726.0,
+     "tax_gap": -4010.0
+    },
+    "other": -4821.0,
+    "main": "減価償却費"
+   },
+   {
+    "year": "2025-02",
+    "gap": -482.0,
+    "items": {
+     "depreciation": 20799.0,
+     "receivables_change": 11335.0,
+     "inventories_change": -3165.0,
+     "tax_gap": 5604.0
+    },
+    "other": -35055.0,
+    "main": "その他（表の項目以外）"
+   },
+   {
+    "year": "2026-02",
+    "gap": 16930.0,
+    "items": {
+     "depreciation": 21084.0,
+     "receivables_change": 280.0,
+     "inventories_change": 6668.0,
+     "tax_gap": -83.0
+    },
+    "other": -11019.0,
+    "main": "減価償却費"
+   }
+  ]
+ },
+ "step4": {
+  "rating": "良好",
+  "basis": "直近5年の評価が 懸念 1年、良好 4年（最も多い評価を採る。同数なら保守的な方）",
+  "sentence": "CF パターンは直近5年の評価が 懸念 1年、良好 4年（最も多い評価を採る。同数なら保守的な方）で良好。直近 2026-02 は（+、−、−）本業で稼ぎ、投資を行い、財務CF の流出は主に株主還元",
+  "rows": [
+   {
+    "year": "2022-02",
+    "signs": [
+     "+",
+     "−",
+     "−"
+    ],
+    "rating": "良好",
+    "state": "本業で稼ぎ、投資を行い、財務CF の流出は主に借入の返済など"
+   },
+   {
+    "year": "2023-02",
+    "signs": [
+     "−",
+     "−",
+     "+"
+    ],
+    "rating": "懸念",
+    "state": "本業で稼げず、借入・増資で投資している"
+   },
+   {
+    "year": "2024-02",
+    "signs": [
+     "+",
+     "−",
+     "−"
+    ],
+    "rating": "良好",
+    "state": "本業で稼ぎ、投資を行い、財務CF の流出は主に株主還元"
+   },
+   {
+    "year": "2025-02",
+    "signs": [
+     "+",
+     "−",
+     "−"
+    ],
+    "rating": "良好",
+    "state": "本業で稼ぎ、投資を行い、財務CF の流出は主に株主還元"
+   },
+   {
+    "year": "2026-02",
+    "signs": [
+     "+",
+     "−",
+     "−"
+    ],
+    "rating": "良好",
+    "state": "本業で稼ぎ、投資を行い、財務CF の流出は主に株主還元"
+   }
+  ],
+  "counts": {
+   "良好": 4,
+   "懸念": 1
+  }
+ },
+ "step5": {
+  "rating": "問題なし",
+  "basis": "2022-02〜2026-02（5年）の還元額 累計 86,856、FCF 累計 71,610、還元が FCF を上回った年 2年（還元は継続的には FCF を上回っていない）",
+  "sentence": "株主還元は2022-02〜2026-02（5年）の還元額 累計 86,856、FCF 累計 71,610、還元が FCF を上回った年 2年（還元は継続的には FCF を上回っていない）。問題なし",
+  "total_return": 86856.0,
+  "total_fcf": 71610.0,
+  "over_years": [
+   "2023-02",
+   "2026-02"
+  ],
+  "rows": [
+   {
+    "year": "2022-02",
+    "dividends": 9955.0,
+    "buybacks": 3.0,
+    "total": 9958.0,
+    "fcf": 25068.0,
+    "gap": -15110.0,
+    "zero_filled": []
+   },
+   {
+    "year": "2023-02",
+    "dividends": 15172.0,
+    "buybacks": 1.0,
+    "total": 15173.0,
+    "fcf": -21903.0,
+    "gap": 37076.0,
+    "zero_filled": []
+   },
+   {
+    "year": "2024-02",
+    "dividends": 16764.0,
+    "buybacks": 603.0,
+    "total": 17367.0,
+    "fcf": 25273.0,
+    "gap": -7906.0,
+    "zero_filled": []
+   },
+   {
+    "year": "2025-02",
+    "dividends": 17285.0,
+    "buybacks": 9401.0,
+    "total": 26686.0,
+    "fcf": 35218.0,
+    "gap": -8532.0,
+    "zero_filled": []
+   },
+   {
+    "year": "2026-02",
+    "dividends": 17670.0,
+    "buybacks": 2.0,
+    "total": 17672.0,
+    "fcf": 7954.0,
+    "gap": 9718.0,
+    "zero_filled": []
+   }
+  ]
+ },
+ "cf_rows": [
+  {
+   "year": "2017-02",
+   "cfo": 33752.0,
+   "cfi": -18936.0,
+   "cff": -16453.0,
+   "fcf": 14816.0,
+   "net_income": 20397.0,
+   "ratio": 1.65,
+   "sales": 394883.0,
+   "capex": null,
+   "acquisitions": null,
+   "dividends": null,
+   "buybacks": null,
+   "primary": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2018-02",
+   "cfo": 46054.0,
+   "cfi": -18852.0,
+   "cff": -14820.0,
+   "fcf": 27202.0,
+   "net_income": 39749.0,
+   "ratio": 1.16,
+   "sales": 448523.0,
+   "capex": null,
+   "acquisitions": null,
+   "dividends": 7997.0,
+   "buybacks": 1040.0,
+   "primary": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2019-02",
+   "cfo": 34347.0,
+   "cfi": -27111.0,
+   "cff": -10268.0,
+   "fcf": 7236.0,
+   "net_income": 42524.0,
+   "ratio": 0.81,
+   "sales": 474638.0,
+   "capex": 23057.0,
+   "acquisitions": null,
+   "dividends": 12181.0,
+   "buybacks": 9390.0,
+   "primary": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2020-02",
+   "cfo": 21480.0,
+   "cfi": -20645.0,
+   "cff": 491.0,
+   "fcf": 835.0,
+   "net_income": 15572.0,
+   "ratio": 1.38,
+   "sales": 410957.0,
+   "capex": 22325.0,
+   "acquisitions": null,
+   "dividends": 13647.0,
+   "buybacks": 9697.0,
+   "primary": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2021-02",
+   "cfo": 39602.0,
+   "cfi": -9601.0,
+   "cff": -20284.0,
+   "fcf": 30001.0,
+   "net_income": 18927.0,
+   "ratio": 2.09,
+   "sales": 389712.0,
+   "capex": 8609.0,
+   "acquisitions": null,
+   "dividends": 9932.0,
+   "buybacks": 1.0,
+   "primary": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2022-02",
+   "cfo": 49233.0,
+   "cfi": -24165.0,
+   "cff": -22475.0,
+   "fcf": 25068.0,
+   "net_income": 38354.0,
+   "ratio": 1.28,
+   "sales": 479082.0,
+   "capex": 24227.0,
+   "acquisitions": null,
+   "dividends": 9955.0,
+   "buybacks": 3.0,
+   "primary": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2023-02",
+   "cfo": -2209.0,
+   "cfi": -19694.0,
+   "cff": 7197.0,
+   "fcf": -21903.0,
+   "net_income": 51783.0,
+   "ratio": -0.04,
+   "sales": 555955.0,
+   "capex": 21931.0,
+   "acquisitions": null,
+   "dividends": 15172.0,
+   "buybacks": 1.0,
+   "primary": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2024-02",
+   "cfo": 54619.0,
+   "cfi": -29346.0,
+   "cff": -29416.0,
+   "fcf": 25273.0,
+   "net_income": 50687.0,
+   "ratio": 1.08,
+   "sales": 575658.0,
+   "capex": 31025.0,
+   "acquisitions": null,
+   "dividends": 16764.0,
+   "buybacks": 603.0,
+   "primary": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2025-02",
+   "cfo": 56505.0,
+   "cfi": -21287.0,
+   "cff": -15673.0,
+   "fcf": 35218.0,
+   "net_income": 56987.0,
+   "ratio": 0.99,
+   "sales": 537682.0,
+   "capex": 37304.0,
+   "acquisitions": null,
+   "dividends": 17285.0,
+   "buybacks": 9401.0,
+   "primary": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2026-02",
+   "cfo": 52170.0,
+   "cfi": -44216.0,
+   "cff": -8626.0,
+   "fcf": 7954.0,
+   "net_income": 35240.0,
+   "ratio": 1.48,
+   "sales": 542122.0,
+   "capex": 46240.0,
+   "acquisitions": null,
+   "dividends": 17670.0,
+   "buybacks": 2.0,
+   "primary": true,
+   "source": "data/financials.csv（EDINET）"
+  }
+ ],
+ "borderline": [],
+ "backgrounds": {
+  "negative_cfo": "2023-02: 当期純利益 51,783百万円の黒字の年で、3章の内訳では棚卸資産の増加（-40,257百万円）が営業CF − 純利益（-53,992百万円）の主因。在庫を積み増した事業上の理由は不明（brief に記載なし）",
+  "investment": "投資CF の流出が最も大きい 2026-02 は、有形固定資産及び無形資産の取得による支出が 46,240百万円で、子会社株式の取得の行は無い。重点として基幹システムの立ち上げ、米国キャンパス構想、インドの生産能力拡大が挙がるが、金額の内訳は brief に記載なし。FCF がマイナスの 2023-02 は投資CF より営業CF のマイナスが要因",
+  "quality_gap": "主因は 2022-02 その他（表の項目以外）、2023-02 棚卸資産の増減、2024-02 減価償却費、2025-02 その他（表の項目以外）、2026-02 減価償却費。2023-02 の棚卸資産の積み増しの事業上の理由と、その他の中身は不明（brief に記載なし）"
+ },
+ "relation": [
+  {
+   "check": "収益性が良好 ⇔ 利益の質",
+   "step2": "収益性 良好",
+   "cash": "営業CF対純利益比率 0.90倍（手順3 普通）",
+   "result": "整合"
+  },
+  {
+   "check": "ROE が本業由来 ⇔ 営業CF の安定",
+   "step2": "ROE の源泉 本業由来",
+   "cash": "手順1 普通",
+   "result": "整合"
+  },
+  {
+   "check": "成長性 ⇔ 運転資本",
+   "step2": "成長性 普通",
+   "cash": "年平均増加率: 売上高 +3.1%、売上債権 +2.3%、棚卸資産 +12.5%",
+   "result": "要確認（成長が棚卸資産の積み上がりを伴う）"
+  },
+  {
+   "check": "安全性 ⇔ 還元・FCF",
+   "step2": "安全性 良好（ネットキャッシュ -45,644）",
+   "cash": "手順5 問題なし",
+   "result": "整合"
+  }
+ ],
+ "relation_comment": "成長性 ⇔ 運転資本が要確認: 棚卸資産の年平均増加率 +12.5% が売上高 +3.1% を上回っており、成長性（普通）の売上の伸びが在庫の積み上がりを伴う。在庫の回転が戻らなければ、営業CF対純利益比率（0.90倍）と成長性の評価を割り引く候補",
+ "handoff": {
+  "report_points": "キャッシュフローは普通（手順1が普通、手順3が普通）。営業CF は10年（2017-02〜2026-02）で、マイナスは 2023-02 の1回で、翌年にプラスへ戻った（一時要因とみなす）。普通。FCF は2022-02〜2026-02の5年累計 71,610、プラスの年 4/5（累計プラスで過半数の年がプラス）。良好。営業CF対純利益比率は5年累計。平均 0.96倍より低い方で0.90倍。普通。",
+  "capital_policy": "中計は配当性向の目標と累計の成長投資を掲げている。2022-02〜2026-02 の還元額の累計 86,856百万円は FCF の累計 71,610百万円を上回るが、上回った年は2年で継続的ではなく、差は借入と手元資金で賄っている（ネットキャッシュはマイナス）",
+  "step2_checks": "投資CF の支出が売上・利益の成長に表れているか（成長性）、営業CF を下回る純利益の水準を額面どおりに受け取れるか（収益性）",
+  "triggers": "営業CF のマイナスが続けば手順1は懸念、直近5年の FCF の累計がマイナスになれば手順2は懸念、営業CF対純利益比率が1.0倍以上なら良好、0.8倍未満なら懸念（手順3）。"
+ },
+ "changes": [
+  "なし"
+ ],
+ "gaps": [
+  "財務時系列: キャッシュ・フロー: raw に無い"
+ ],
+ "inputs": [
+  "companies/6506_yaskawa/raw/filings/2026-11-01_2026-02_yuho.md",
+  "companies/6506_yaskawa/raw/ir/2026-11-01_financials-historical.md",
+  "companies/6506_yaskawa/raw/ir/2026-11-01_mid-term-plan.md"
+ ],
+ "seen": [
+  "companies/6506_yaskawa/raw/filings/2026-11-01_2026-02_yuho.md",
+  "companies/6506_yaskawa/raw/ir/2026-11-01_financials-historical.md",
+  "companies/6506_yaskawa/raw/ir/2026-11-01_mid-term-plan.md"
+ ],
+ "input_digests": {
+  "cf_table": "84417acc0bf2e542f405246a24ecab9d9dbca063",
+  "cf_section": "",
+  "self_return": "83099178a3e8fe4fb63f5162b740a935c2d066ec",
+  "summary": "41bed366ef72c1a53a5acdfd149538819f08c598",
+  "statements": "28235acbdeade7bb99e9123581cfce441196f1dd",
+  "capex": "ad49f5f9f827331f587ed09a8ab5beb46631ec4e",
+  "policy": "9d2f422862d4794c3ef60676d5a9b1c9e93a5311",
+  "targets": "93d51a007d9a7c934779ee5901b4e32a291b0a5a",
+  "capital": "803353416bbd6597f47fc13ae38e0209ec649c5c",
+  "yearly_series": "efabf24abf6e99b48cb55cd0728fad112dac0147"
+ },
+ "profitability": {
+  "date": "2026-11-10",
+  "verdict": "良好"
+ },
+ "growth": {
+  "date": "2026-11-10",
+  "verdict": "普通"
+ },
+ "safety": {
+  "date": "2026-11-10",
+  "verdict": "良好"
+ },
+ "outlook": "market/report/2026-10-26_outlook.md",
+ "previous": {
+  "date": "2026-11-01",
+  "verdict": "普通"
+ },
+ "md": "companies/6506_yaskawa/analysis/cash-flow/2026-11-10_cash-flow.md"
+}
