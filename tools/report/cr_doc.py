@@ -12,6 +12,7 @@ from string import Template
 import charts as C
 import cr_judge as J
 import cr_legends as L
+import cr_technicals as T
 import mdparse as M
 import outlook as O
 from validate import check_fill, check_structure, check_tables
@@ -19,10 +20,10 @@ from validate import check_fill, check_structure, check_tables
 HORIZONS = (("short", "短期（〜3ヶ月）"), ("mid", "中期（6ヶ月〜1年）"), ("long", "長期（3年以上）"))
 TEXT_KEYS = (("about", "2."), ("short", "3.1"), ("mid", "3.2"), ("long", "3.3"),
              ("thesis", "4.1"), ("break", "4.2"), ("watch", "4.3"),
-             ("buffett", "5.1"), ("soros", "5.2"), ("rogers", "5.3"))
+             ("buffett", "5.1"), ("soros", "5.2"), ("rogers", "5.3"), ("technical", "6.1"))
 LIST_KEYS = ("break", "watch")
 LEGEND_LIMIT = 200
-LIMITS = {"about": 200, "short": 300, "mid": 300, "long": 350, "thesis": 200,
+LIMITS = {"about": 200, "short": 300, "mid": 300, "long": 350, "thesis": 200, "technical": 250,
           **{key: LEGEND_LIMIT for key in L.KEYS}}
 SUMMARY_TITLE, SUMMARY_LINES, SUMMARY_LIMIT = "3行まとめ", 3, 60
 LIST_RANGE = (2, 4)
@@ -141,6 +142,10 @@ def _horizon_lines(facts: dict, key: str, label: str) -> list[str]:
     lines += ["", "判定を動かす要因: " + ("、".join(d for d in distance if d) or "—")
               + ("。" + "、".join(movers) if movers else "。1段の変化で判定が変わる要素は無い"), ""]
     return lines
+
+
+def technicals(facts: dict) -> dict:
+    return (facts.get("prices") or {}).get("technicals") or {}
 
 
 def _prices(facts: dict) -> list[str]:
@@ -304,6 +309,7 @@ def render_brief(facts: dict, md_rel: str) -> str:
     lines = [f"# 企業分析レポートの材料 — {facts['name']}", "",
              f"作成日: {facts['date']}。書く先: {md_rel}（FILL の欄だけ）。判定と数値はこの brief のものを使い、変えない。", ""]
     lines += _premise(facts) + _analyses(facts) + [""] + _horizons(facts) + _prices(facts) + [""]
+    lines += T.brief_lines(technicals(facts), facts["horizons"]["long"]["verdict"])
     lines += _recent(facts) + _conditions(facts) + L.brief_lines(facts)
     lines += ["## 6. 材料不足（4.3 の材料）", ""]
     lines += [f"- {g['label']}: {g['gap']}" for g in facts["gaps"]] or ["- なし"]
@@ -368,6 +374,7 @@ def render_skeleton(template: str, facts: dict, brief_rel: str) -> str:
         "outlook": (f"{o['path']}（{facts['market']}: {o.get('overall') or '—'}。参照のみ）" if o.get("path")
                     else "—（完成済みの outlook.md なし）"),
         "horizon_rows": horizon_rows(facts), "legend_rows": L.rows(facts), "review": facts["review"],
+        "technical_rows": T.table_rows(technicals(facts)),
         **{f"{key}_verdict": verdict_label(facts["horizons"][key]) for key, _ in HORIZONS},
     }
     return Template(template).safe_substitute(values)
@@ -420,6 +427,7 @@ def validate(text: str, template: str, facts: dict) -> tuple[list[str], list[str
             if factors and not any(n in parsed[key] for n in factors):
                 issues.append(f"{label}の説明に{side}（{'・'.join(factors)} のどれか）が無い（根拠の数値と一緒に書く）")
     issues += L.validate(parsed, _section(text, "5."), facts)
+    issues += T.validate(parsed["technical"], _section(text, "6."), technicals(facts))
     issues += O._check_words(_body(text))
     warnings = [f"{names[k]} が {len(parsed[k])} 字（目安 {n} 字以内）" for k, n in LIMITS.items() if len(parsed[k]) > n]
     warnings += [f"3行まとめの{i}行目が {len(s)} 字（目安 {SUMMARY_LIMIT} 字以内）"

@@ -1,7 +1,7 @@
 """Price history of a company for the report: ranges, moving averages, the monthly chart series and yearly rows.
 
-Reads companies/{ticker}_{name}/data/prices.csv (tools/collect/stock_prices.py; split-adjusted closes, highs and
-lows). Every window is counted back from the latest trading day; a window longer than the stored history is
+Reads companies/{ticker}_{name}/data/prices.csv (tools/collect/stock_prices.py; split-adjusted closes, highs, lows
+and volume); cr_technicals.evaluate() of the same rows goes under "technicals". Every window is counted back from the latest trading day; a window longer than the stored history is
 marked partial (上場来・取得期間) instead of pretending to cover it. Without prices.csv the yearly 最高・最低株価
 table collected in raw/ir/*_valuation-data.md is passed through as text (fallback, no chart).
 """
@@ -11,6 +11,7 @@ import csv
 import datetime as dt
 from pathlib import Path
 
+import cr_technicals as T
 import mdparse as M
 
 WINDOWS = (("52週", 365), ("3年", 365 * 3 + 1), ("5年", 365 * 5 + 1), ("10年", 365 * 10 + 2))
@@ -21,8 +22,16 @@ FALLBACK_KEY = "株価レンジ"
 YEAR_START_SLACK = "01-10"  # a first year starting after this day is a partial year
 
 
+def _volume(text: str | None) -> float | None:
+    try:
+        return float(text) if text else None
+    except ValueError:
+        return None
+
+
 def load(path: Path) -> list[dict]:
-    """[{date, close, high, low}] oldest first; rows without a numeric close are skipped."""
+    """[{date, close, high, low, volume}] oldest first (volume None when missing); rows without a numeric close
+    are skipped."""
     if not path.exists():
         return []
     out = []
@@ -36,7 +45,8 @@ def load(path: Path) -> list[dict]:
                 low = float(r["low"]) if r.get("low") else close
             except (KeyError, TypeError, ValueError):
                 continue
-            out.append({"date": r["date"], "close": close, "high": max(high, close), "low": min(low, close)})
+            out.append({"date": r["date"], "close": close, "high": max(high, close), "low": min(low, close),
+                        "volume": _volume(r.get("volume"))})
     return sorted(out, key=lambda r: r["date"])
 
 
@@ -124,13 +134,5 @@ def summarize(company_path: Path) -> dict:
     return {"source": "prices", "path": "data/prices.csv", "first": rows[0]["date"], "last": rows[-1]["date"],
             "current": rows[-1]["close"], "days": len(rows),
             "ranges": [window(rows, label, days) for label, days in WINDOWS],
-            "averages": averages(rows), "monthly": monthly(rows), "yearly": yearly(rows)}
-
-
-def short_inputs(prices: dict) -> tuple[float | None, float | None]:
-    """(position in the 52-week range %, gap to the 26-week moving average %) for the short-term verdict."""
-    if prices.get("source") != "prices":
-        return None, None
-    pos = next((w["position"] for w in prices["ranges"] if w["label"] == "52週"), None)
-    gap = next((a["gap"] for a in prices["averages"] if a["label"] == CHART_MA), None)
-    return pos, gap
+            "averages": averages(rows), "monthly": monthly(rows), "yearly": yearly(rows),
+            "technicals": T.evaluate(rows)}

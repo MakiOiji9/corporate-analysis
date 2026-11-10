@@ -91,7 +91,7 @@ def test_thresholds(score, verdict):
 def test_missing_factors_are_left_out_and_reweighted():
     factors = {**_all(1.0), "price": _f(None), "progress": _f(None)}
     result = J.horizon_score("short", factors)
-    assert result["score"] == pytest.approx(1.0) and set(result["unknown"]) == {"株価の位置・勢い", "直近の決算の進捗"}
+    assert result["score"] == pytest.approx(1.0) and set(result["unknown"]) == {"株価のテクニカル（トレンド・勢い・位置）", "直近の決算の進捗"}
     assert J.horizon_score("short", {k: _f(None) for k in factors})["verdict"] == "判定保留"
 
 

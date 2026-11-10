@@ -39,6 +39,7 @@ import cr_facts as F  # noqa: E402
 import cr_legends as L  # noqa: E402
 import cr_render as R  # noqa: E402
 import cr_status as S  # noqa: E402
+import cr_technicals as T  # noqa: E402
 import stock_prices as SP  # noqa: E402
 from common import atomic_write_text, utf8_stdout  # noqa: E402
 
@@ -123,14 +124,22 @@ def _prepare_gate(status: dict, args: argparse.Namespace) -> str | None:
 
 
 def _refresh_table(md: str, facts: dict) -> str:
-    """A started draft keeps its words; the script-owned rows (conclusion, 投資の神) follow today's facts."""
-    rows = iter(D.horizon_rows(facts).splitlines())
-    legend_rows = iter(L.rows(facts).splitlines())
-    return L.ROW.sub(lambda _: next(legend_rows, ""), HORIZON_ROW.sub(lambda _: next(rows, ""), md))
+    """A started draft keeps its words; the script-owned rows (conclusion, 投資の神, テクニカル) follow today's
+    facts."""
+    for pattern, text in ((HORIZON_ROW, D.horizon_rows(facts)), (L.ROW, L.rows(facts)),
+                          (T.ROW, T.table_rows(D.technicals(facts)))):
+        rows = iter(text.splitlines())
+        md = pattern.sub(lambda _, rows=rows: next(rows, ""), md)
+    return md
 
 
 def _legends(facts: dict) -> dict:
     return {k: v["verdict"] for k, v in (facts.get("legends") or {}).items()}
+
+
+def _technical(facts: dict) -> dict:
+    t = D.technicals(facts)
+    return {"state": t.get("state"), "score": t.get("score")}
 
 
 def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
@@ -166,6 +175,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
         "price_source": facts["prices"]["source"], "step1": _grade(facts["step1"]), "step2": _grade(facts["step2"]),
         "step3": facts["step3"]["verdict"],
         "horizons": {k: D.verdict_label(h) for k, h in facts["horizons"].items()}, "legends": _legends(facts),
+        "technical": _technical(facts),
         "outlook": facts["outlook"].get("path"), "outlook_stale": facts["outlook"].get("stale"),
         "used_existing": [f"{s['skill']}（{s['date']}）" for s in facts["stale"]],
     })
@@ -188,7 +198,7 @@ def result_json(company: S.Company, facts: dict, date: str, warnings: list[str])
                      for k, h in facts["horizons"].items()},
         "step1": {k: facts["step1"][k] for k in ("grade", "pending", "why")},
         "step2": {k: facts["step2"][k] for k in ("grade", "pending", "why", "mismatch")},
-        "step3": facts["step3"], "price": facts["price"], "legends": _legends(facts),
+        "step3": facts["step3"], "price": facts["price"], "legends": _legends(facts), "technical": _technical(facts),
         "price_range": {"source": p["source"], "current": p.get("current"), "first": p.get("first"),
                         "last": p.get("last"), "position_52w": w52["position"] if w52 else None},
         "analyses": {k: {"date": a["date"], "verdict": a["verdict"]} for k, a in facts["analyses"].items()},
@@ -220,7 +230,7 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     return emit({"ok": True, "html": result["html"], "json": company.rel(json_path), "date": date,
                  "horizons": {k: D.verdict_label(h) for k, h in facts["horizons"].items()},
                  "step1": _grade(facts["step1"]), "step2": _grade(facts["step2"]), "step3": facts["step3"]["verdict"],
-                 "legends": _legends(facts), "warnings": warnings})
+                 "legends": _legends(facts), "technical": _technical(facts), "warnings": warnings})
 
 
 def cmd_run(args: argparse.Namespace, root: Path) -> int:

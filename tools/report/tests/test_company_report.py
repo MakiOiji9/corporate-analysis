@@ -16,6 +16,7 @@ import company_report as CR  # noqa: E402
 import cr_doc as D  # noqa: E402
 import cr_legends as L  # noqa: E402
 import cr_status as S  # noqa: E402
+import cr_technicals as T  # noqa: E402
 import mdparse as M  # noqa: E402
 import write_guard as WG  # noqa: E402
 
@@ -141,7 +142,7 @@ FILLED = {
 }
 
 
-FACTOR_WORDS = "地合い・株価の位置・直近の決算の進捗・株価の割安さ・成長性・収益性・キャッシュフロー・安全性・業界の魅力度・" \
+FACTOR_WORDS = "地合い・株価のテクニカル・直近の決算の進捗・株価の割安さ・成長性・収益性・キャッシュフロー・安全性・業界の魅力度・" \
                "勝てる理由・強みの持続性・強みで脅威に対抗できるか"
 
 
@@ -160,6 +161,9 @@ def _fill(text: str, horizons: dict) -> str:
             return f"{horizons[key]}。{FACTOR_WORDS}を確かめた。"
         if key in legends:
             return f"{L.SHORT[key]}{L.PHRASE}: {legends[key]}。項目の値で決めた。"
+        if key == "technical":
+            state = re.search(r"^\| 状態 \| (.+?)（", text, re.M)
+            return f"今の状態は{state.group(1) if state else T.NO_DATA}。RSI と移動平均で決まった。"
         return FILLED.get(key, "投資の理由は実績で選ばれること。")
     return FILL_ANY.sub(repl, text)
 
@@ -213,7 +217,8 @@ def test_prepare_fill_build_flow(repo, capsys):
     assert out["horizons"] == {"short": "投資検討", "mid": "投資検討", "long": "投資検討"}
     # 4.2 comes from the brief's candidates; 4.3 stays with the writer when there are too few gaps for 2 lines
     assert set(out["fill_keys"]) == {"summary", "about", "short", "mid", "long", "thesis", "watch",
-                                     "buffett", "soros", "rogers"}
+                                     "buffett", "soros", "rogers", "technical"}
+    assert out["technical"]["state"] and out["technical"]["score"] is not None
     assert set(out["legends"]) == set(L.KEYS)
     assert all(v in (L.PREFER, L.HOLD, L.AVOID) for v in out["legends"].values())
     md = company / "reports" / f"{TODAY}_company-report.md"
@@ -228,6 +233,8 @@ def test_prepare_fill_build_flow(repo, capsys):
     assert "<svg" in html and "投資検討" in html and "52週" in html and "用語集" in html and "ROE" in html
     assert "<dt>FCF</dt>" in html  # FCF is in the report now (the investors' view, B6), so it is in the glossary
     assert 'id="legends"' in html and "ウォーレン・バフェット" in html
+    assert 'id="technical"' in html and "押し目の目安" in html and 'class="hl sup"' in html and "<dt>RSI</dt>" in html
+    assert "## 4.1 テクニカル" in (company / "reports" / f"{TODAY}_company-report_brief.md").read_text(encoding="utf-8")
     assert "## 投資の神の視点" in (company / "reports" / f"{TODAY}_company-report_brief.md").read_text(encoding="utf-8")
     result = json.loads((company / "reports" / f"{TODAY}_company-report.json").read_text(encoding="utf-8"))
     assert result["horizons"]["long"]["verdict"] == "投資検討" and result["price_range"]["source"] == "prices"

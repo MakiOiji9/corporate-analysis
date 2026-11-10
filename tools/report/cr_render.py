@@ -14,6 +14,7 @@ import cr_glossary as G
 import cr_judge as J
 import cr_legends as L
 import cr_sections as X
+import cr_technicals as T
 from slides import esc, table
 
 VERDICT_CLASS = {J.CONSIDER: "v-consider", J.WATCH: "v-watch", J.PASS: "v-pass", J.PENDING: "v-pending"}
@@ -22,11 +23,13 @@ PERIODS = {"short": "短期", "mid": "中期", "long": "長期"}
 OK_HTML = {True: '<span class="ok-yes">○ 満たす</span>', False: '<span class="ok-no">× 満たさない</span>',
            None: '<span class="ok-unk">不明</span>'}
 TOC = (("conclusion", "結論"), ("reasons", "期間ごとの良い点・悪い点"), ("step1", "STEP 1 事業"),
-       ("step2", "STEP 2 財務"), ("step3", "STEP 3 株価"), ("price", "株価のレンジ"), ("thesis", "投資の理由"),
-       ("legends", "投資の神の視点"), ("gaps", "材料不足"), ("glossary", "用語集"))
+       ("step2", "STEP 2 財務"), ("step3", "STEP 3 株価"), ("price", "株価のレンジ"), ("technical", "売買の目安"),
+       ("thesis", "投資の理由"), ("legends", "投資の神の視点"), ("gaps", "材料不足"), ("glossary", "用語集"))
+TECH_LEAD = ("日々の株価から計算した今のチャートの状態と、注目する価格の水準。水準は「ここを下回ったら」「ここに近づいたら」と"
+             "見るための条件の目安で、株価の予想でも売買の推奨でもない。事業・財務の判定（結論）は変えない。")
 LEGEND_LEAD = ("3人の投資哲学をこの会社の分析結果に当てはめた参考の視点。評価はスクリプトが資料の条件で決め、"
                "結論の判定の点数には入らない。本人が実際にこの会社をこう評価したという意味ではない。")
-PLAIN_HORIZONS = (("短期", "〜3ヶ月", "地合い・株価の位置と勢い・直近の決算の進み具合・割安さを重く見る。値動きの影響が大きく、根拠は弱い。"),
+PLAIN_HORIZONS = (("短期", "〜3ヶ月", "地合い・株価のテクニカル（流れ・勢い・位置）・直近の決算の進み具合・割安さを重く見る。値動きの影響が大きく、根拠は弱い。"),
                   ("中期", "6ヶ月〜1年", "割安さと業績の勢い（成長性・決算の進捗）を重く見て、財務と地合いも加える。"),
                   ("長期", "3年以上", "事業の強さ（勝てる理由・モート・業界）を重く見て、財務と割安さを加える。"
                    "フレームワークの判定マトリクスも参考に示す。"))
@@ -280,6 +283,63 @@ def price_section(facts: dict) -> str:
     return _section("price", "06", "株価の過去レンジ", lead, body)
 
 
+# ---------------------------------------------------------------- technical
+
+def _level_box(cls: str, title: str, items: list[dict], note: str = "") -> str:
+    rows = "".join(f"<li>{esc(x['label'])} <b>{esc(C.fmt(x['price'], 0))}</b>（{esc(C.fmt(x['gap'], 1, True))}%）</li>"
+                   for x in items) or '<li class="muted">—</li>'
+    extra = f'<p class="small muted">{esc(note)}</p>' if note else ""
+    return f'<div class="tech-box {cls}"><h4>{esc(title)}</h4><ul>{rows}</ul>{extra}</div>'
+
+
+def _legend_row(items: list[tuple[str, str]]) -> str:
+    return '<div class="legend">' + "".join(f'<span><i class="sw {c}"></i>{esc(lab)}</span>' for c, lab in items) + "</div>"
+
+
+def _tech_charts(t: dict) -> str:
+    ch, lv = t["chart"], t["levels"]
+    stop = lv.get("stop")
+    hlines = ([{"label": "押し目", "value": x["price"], "cls": "sup"} for x in lv["supports"]]
+              + [{"label": "利益確定", "value": x["price"], "cls": "res"} for x in lv["resistances"]]
+              + ([{"label": "損切り", "value": stop["price"], "cls": "stop"}] if stop else []))
+    series = [{"label": "終値", "points": ch["close"]}, {"label": "13週線", "points": ch["ma_short"]},
+              {"label": "26週線", "points": ch["ma_mid"]},
+              {"label": "ボリンジャーバンド +2σ", "points": ch["bb_upper"], "cls": "band"},
+              {"label": "ボリンジャーバンド −2σ", "points": ch["bb_lower"], "cls": "band"}]
+    legend = _legend_row([("s0", "終値"), ("s1", "13週線"), ("s2", "26週線"), ("band", "ボリンジャーバンド ±2σ")])
+    price = (f'<figure class="chartbox"><figcaption><b>直近1年の株価と目安の水準</b>{legend}</figcaption>'
+             f'{C.line_chart(series, "直近1年の株価と目安の水準", 0, hlines=hlines)}'
+             '<div class="source">緑の点線＝押し目の目安、黄＝利益確定の目安、赤＝損切りの目安。出典: data/prices.csv</div></figure>')
+    rsi = C.line_chart([{"label": "RSI(14)", "points": ch["rsi"]}], "RSI", 0, height=170,
+                       hlines=[{"label": "買われすぎ", "value": T.RSI_HIGH, "cls": "ref"},
+                               {"label": "売られすぎ", "value": T.RSI_LOW, "cls": "ref"}])
+    macd = C.bar_chart(ch["macd_hist"], "MACD ヒストグラム", 1, height=170)
+    return (price + f'<div class="cols"><figure class="chartbox"><figcaption><b>RSI（14日）</b></figcaption>{rsi}'
+            f'</figure><figure class="chartbox"><figcaption><b>MACD のヒストグラム（MACD − シグナル）</b></figcaption>'
+            f'{macd}</figure></div>')
+
+
+def technical_section(facts: dict, parsed: dict) -> str:
+    t = D.technicals(facts)
+    if not t.get("ok") or t["state"] == T.NO_DATA:
+        return _section("technical", "07", "売買の目安（テクニカルの参考）", TECH_LEAD,
+                        f'<p class="muted">{esc(T.NO_DATA)}</p>{_paragraphs(parsed.get("technical") or "")}')
+    lv = t["levels"]
+    stop = lv.get("stop")
+    boxes = ('<div class="tech-grid">' + _level_box("sup", "押し目の目安（下の支持線）", lv["supports"])
+             + _level_box("res", "利益確定の目安（上の抵抗線）", lv["resistances"])
+             + _level_box("stop", "損切りの目安", [stop] if stop else [], stop["basis"] if stop else "") + "</div>")
+    head = (f'<p><b>今の状態</b>: <span class="badge v-watch">{esc(t["state"])}</span>'
+            f'　テクニカル点数 {esc(D.score_text(t["score"]))}（短期・中期の判定の「株価のテクニカル」）</p>')
+    rows = [["トレンド", t["trend"]["value"]], ["勢い", t["momentum"]["value"]], ["位置", t["position"]["value"]],
+            ["出来高", t["volume"]["value"]], ["シグナル", "、".join(t["signals"]) or "なし"]]
+    note = T.alignment(t, facts["horizons"]["long"]["verdict"])
+    body = (head + _paragraphs(parsed.get("technical") or "") + boxes
+            + (f'<p class="small"><b>長期の判定との関係</b>: {esc(note)}</p>' if note else "")
+            + table(["見たもの", "値"], [[esc(a), esc(b)] for a, b in rows]) + _tech_charts(t))
+    return _section("technical", "07", "売買の目安（テクニカルの参考）", TECH_LEAD, body)
+
+
 # ---------------------------------------------------------------- thesis / gaps / glossary
 
 def thesis(facts: dict, parsed: dict) -> str:
@@ -287,7 +347,7 @@ def thesis(facts: dict, parsed: dict) -> str:
             f'</div><div class="panel"><h3>判断が崩れる条件</h3>{_list(parsed["break"])}</div></div>'
             f'<h3>次に確かめること</h3>{_list(parsed["watch"])}'
             f'<p class="small"><b>次回の見直し</b>: {esc(facts["review"])}</p>')
-    return _section("thesis", "07", "投資の理由と判断が崩れる条件", "", body)
+    return _section("thesis", "08", "投資の理由と判断が崩れる条件", "", body)
 
 
 def _legend_card(v: dict, prose: str) -> str:
@@ -306,7 +366,7 @@ def legends(facts: dict, parsed: dict) -> str:
     if not found:
         return ""
     cards = "".join(_legend_card(v, _paragraphs(parsed.get(k) or "")) for k, v in found.items())
-    return _section("legends", "08", "投資の神の視点（参考）", LEGEND_LEAD, f'<div class="steps">{cards}</div>')
+    return _section("legends", "09", "投資の神の視点（参考）", LEGEND_LEAD, f'<div class="steps">{cards}</div>')
 
 
 def _link(facts: dict, md: str | None) -> str:
@@ -326,19 +386,20 @@ def gaps(facts: dict) -> str:
     body = (_list([f"{g['label']}: {g['gap']}" for g in facts["gaps"]]) + stale_html
             + "<h3>このレポートが使った分析</h3>"
             + table(["STEP", "分析", "分析日", "結論", "ファイル"], rows, nowrap=frozenset({2})))
-    return _section("gaps", "09", "材料不足と使った分析", "判定に影響しうる、まだ確かめられていない点。", body)
+    return _section("gaps", "10", "材料不足と使った分析", "判定に影響しうる、まだ確かめられていない点。", body)
 
 
 def glossary(text: str) -> str:
     terms = G.terms_in(text)
     body = (f'<dl class="gloss">{"".join(f"<dt>{esc(t)}</dt><dd>{esc(d)}</dd>" for t, d in terms)}</dl>' if terms
             else '<p class="muted">なし</p>')
-    return _section("glossary", "10", "用語集", "このレポートに出てくる言葉の意味。", body)
+    return _section("glossary", "11", "用語集", "このレポートに出てくる言葉の意味。", body)
 
 
 def render(template: str, facts: dict, parsed: dict, md_text: str) -> str:
     main = X.annotate(conclusion(facts, parsed) + reasons(facts, parsed) + step1(facts) + step2(facts) + step3(facts)
-                      + price_section(facts) + thesis(facts, parsed) + legends(facts, parsed) + gaps(facts))
+                      + price_section(facts) + technical_section(facts, parsed) + thesis(facts, parsed)
+                      + legends(facts, parsed) + gaps(facts))
     body = (masthead(facts) + "<main>" + main
             + glossary(md_text + D.render_brief(facts, "").split(D.WRITING_RULES)[0])
             + f'</main><footer><div class="wrap"><p>{esc(DISCLAIMER)}</p>'

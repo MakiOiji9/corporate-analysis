@@ -11,6 +11,7 @@ from html import escape
 
 EMPTY = '<div class="chart-empty">データ未取得</div>'
 LABEL_GAP = 13  # px between end-of-line labels
+HIT_POINTS = 130  # hover dots only up to this many points per series
 
 
 def fmt(value: float | None, decimals: int = 1, signed: bool = False) -> str:
@@ -87,13 +88,30 @@ def _spread_labels(items: list[tuple[float, str]], top: float, bottom: float) ->
     return placed
 
 
-def line_chart(series: list[dict], title: str, decimals: int = 1, width: int = 720, height: int = 300) -> str:
-    """series: [{"label", "points": [[date, value], ...]}]; mark class s{i} follows the series index."""
+def _hlines(hlines: list[dict], y, left: float, right: float, decimals: int) -> list[str]:
+    """Horizontal reference lines ({label, value, cls}) with their label at the left end."""
+    out = []
+    for h in hlines:
+        yy = y(h["value"])
+        cls = escape(h.get("cls") or "")
+        out.append(f'<line class="hl {cls}" x1="{left}" x2="{right}" y1="{yy:.1f}" y2="{yy:.1f}">'
+                   f'<title>{escape(h["label"])}: {fmt(h["value"], decimals)}</title></line>')
+        out.append(f'<text class="hl-l {cls}" x="{left + 4}" y="{yy - 4:.1f}">{escape(h["label"])} '
+                   f'{fmt(h["value"], decimals)}</text>')
+    return out
+
+
+def line_chart(series: list[dict], title: str, decimals: int = 1, width: int = 720, height: int = 300,
+               hlines: list[dict] | None = None) -> str:
+    """series: [{"label", "points": [[date, value], ...], "cls"?}]; the mark class is cls or s{i} (series index).
+    hlines: horizontal reference lines [{label, value, cls}] drawn across the chart and kept inside the scale.
+    Hover dots are drawn only for series of up to HIT_POINTS points (a daily series would make the file heavy)."""
     drawn = [(i, s) for i, s in enumerate(series) if s.get("points")]
     if not drawn:
         return EMPTY
+    hlines = hlines or []
     left, right, top, bottom = 52, width - 78, 14, height - 30
-    values = [p[1] for _, s in drawn for p in s["points"]]
+    values = [p[1] for _, s in drawn for p in s["points"]] + [h["value"] for h in hlines]
     dates = sorted({p[0] for _, s in drawn for p in s["points"]})
     ticks = nice_ticks(min(values), max(values))
     x0, x1 = _ordinal(dates[0]), _ordinal(dates[-1])
@@ -105,16 +123,21 @@ def line_chart(series: list[dict], title: str, decimals: int = 1, width: int = 7
         return bottom - (bottom - top) * (v - ticks[0]) / (ticks[-1] - ticks[0])
 
     body = _y_axis(ticks, y, left, right) + _x_axis([(d, x(d)) for d in dates], bottom)
+    body += _hlines(hlines, y, left, right, decimals)
     labels = []
     for i, s in drawn:
         pts = s["points"]
+        cls = escape(s.get("cls") or f"s{i}")
         path = "M" + " L".join(f"{x(d):.1f},{y(v):.1f}" for d, v in pts)
-        body.append(f'<path class="ln s{i}" d="{path}"/>')
-        body += [f'<circle class="hit" cx="{x(d):.1f}" cy="{y(v):.1f}" r="5">'
-                 f'<title>{escape(s["label"])} {escape(d)}: {fmt(v, decimals)}</title></circle>' for d, v in pts]
+        body.append(f'<path class="ln {cls}" d="{path}"><title>{escape(s["label"])}</title></path>')
+        if len(pts) <= HIT_POINTS:
+            body += [f'<circle class="hit" cx="{x(d):.1f}" cy="{y(v):.1f}" r="5">'
+                     f'<title>{escape(s["label"])} {escape(d)}: {fmt(v, decimals)}</title></circle>' for d, v in pts]
+        if s.get("cls"):  # a styled helper line (a band): no end label
+            continue
         d_last, v_last = pts[-1]
-        body.append(f'<circle class="dot s{i}" cx="{x(d_last):.1f}" cy="{y(v_last):.1f}" r="3.5"/>')
-        labels.append((y(v_last), f'class="end s{i}">{fmt(v_last, decimals)}'))
+        body.append(f'<circle class="dot {cls}" cx="{x(d_last):.1f}" cy="{y(v_last):.1f}" r="3.5"/>')
+        labels.append((y(v_last), f'class="end {cls}">{fmt(v_last, decimals)}'))
     for yy, html in _spread_labels(labels, top, bottom):
         body.append(f'<text x="{right + 8}" y="{yy + 4:.1f}" {html}</text>')
     return _frame(width, height, title, body)

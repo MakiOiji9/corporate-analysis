@@ -185,6 +185,22 @@ svg.chart .bar:hover { fill-opacity: 1; }
 svg .ln.s0 { stroke: var(--c0); } svg .ln.s1 { stroke: var(--c1); stroke-dasharray: 5 4; } svg .ln.s2 { stroke: var(--c2); }
 text.s0, circle.s0 { fill: var(--c0); } text.s1, circle.s1 { fill: var(--c1); } text.s2, circle.s2 { fill: var(--c2); }
 .sw.s0 { background: var(--c0); } .sw.s1 { background: var(--c1); } .sw.s2 { background: var(--c2); }
+svg.chart .ln.band { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 2 3; }
+.sw.band { background: var(--ink-3); }
+svg.chart .hl { stroke-width: 1.2; stroke-dasharray: 6 4; }
+svg.chart .hl.sup { stroke: var(--consider); } svg.chart .hl.res { stroke: var(--watch); }
+svg.chart .hl.stop { stroke: var(--pass); } svg.chart .hl.ref { stroke: var(--ink-3); }
+svg.chart .hl-l { font-size: 10.5px; font-variant-numeric: tabular-nums; fill: var(--ink-2); }
+svg.chart .hl-l.sup { fill: var(--consider); } svg.chart .hl-l.res { fill: var(--watch); }
+svg.chart .hl-l.stop { fill: var(--pass); }
+.tech-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 8px 0 14px; }
+.tech-box { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 10px 12px;
+  min-width: 0; }
+.tech-box h4 { margin: 0 0 6px; font-size: var(--step--1); }
+.tech-box.sup { border-top: 4px solid var(--consider); } .tech-box.res { border-top: 4px solid var(--watch); }
+.tech-box.stop { border-top: 4px solid var(--pass); }
+.tech-box ul { margin: 0; padding-left: 0; list-style: none; font-size: var(--step--1); font-variant-numeric: tabular-nums; }
+@media (max-width: 720px) { .tech-grid { grid-template-columns: 1fr; } }
 .chart-empty { display: grid; place-items: center; min-height: 140px; color: var(--ink-3); font-size: var(--step--1);
   border: 1px dashed var(--rule); border-radius: 8px; }
 

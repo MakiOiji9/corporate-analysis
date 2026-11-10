@@ -5,19 +5,16 @@ Each factor is {score: +1..−1 or None (no material), value, reason, source, pe
              (良好/高/明確/広い/Yes +1, 普通/中/あいまい/狭い/条件付き 0, 懸念/低/なし/No −1, 判定保留 0 and pending)
   valuation  the average score of the four indicators (−1..+1); the raw STEP 3 verdict when no average
   market     the outlook's row for the horizon (平常 +1, 注意 0, 警戒 −1)
-  price      the 52-week position (≤33% +1, ≥67% −1, else 0) averaged with the gap to the 26-week moving average
-             (beyond ±15% −1, else 0)
+  price      the technical score of cr_technicals (trend, momentum and position averaged; −1..+1)
   progress   the latest quarter's operating-income progress against the same quarter a year earlier (or the
              standard pace): ≥110% +1, <90% −1, else 0
 """
 from __future__ import annotations
 
 import cr_judge as J
-import cr_prices as CP
+import cr_technicals as T
 
 PERIOD_KEYS = {"short": "短期", "mid": "中期", "long": "長期"}
-LOW_ZONE, TOP_ZONE = 33, 67
-MA_GAP_LIMIT = 15.0
 PROGRESS_UP, PROGRESS_DOWN = 1.1, 0.9
 ANALYSIS_KEYS = ("growth", "profitability", "cash_flow", "safety", "five_forces", "three_c", "moat", "swot")
 
@@ -63,18 +60,10 @@ def market_factor(outlook: dict, horizon: str) -> dict:
 
 
 def price_factor(prices: dict) -> dict:
-    position, gap = CP.short_inputs(prices)
-    parts = []
-    if position is not None:
-        parts.append(1.0 if position <= LOW_ZONE else -1.0 if position >= TOP_ZONE else 0.0)
-    if gap is not None:
-        parts.append(-1.0 if abs(gap) > MA_GAP_LIMIT else 0.0)
-    if not parts:
-        return _factor(None, "不明（株価の時系列が無い）", "", "株価の過去レンジ")
-    value = "、".join(([f"52週レンジの位置 {position:.0f}%"] if position is not None else [])
-                     + ([f"26週移動平均との差 {gap:+.1f}%"] if gap is not None else []))
-    reason = f"位置 {LOW_ZONE}% 以下は +1、{TOP_ZONE}% 以上は −1。移動平均との差が ±{MA_GAP_LIMIT:.0f}% を超えると −1"
-    return _factor(sum(parts) / len(parts), value, reason, "株価の過去レンジ（data/prices.csv）")
+    t = prices.get("technicals") or {}
+    if prices.get("source") != "prices" or t.get("score") is None:
+        return _factor(None, T.value_text(t), "", "株価のテクニカル")
+    return _factor(t["score"], T.value_text(t), T.REASON, "株価のテクニカル（data/prices.csv）")
 
 
 def progress_factor(growth: dict) -> dict:

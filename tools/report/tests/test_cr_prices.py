@@ -47,12 +47,21 @@ def test_summarize_ranges_and_averages(tmp_path):
     assert s["averages"][2]["value"] == pytest.approx((100 * 195 + 150 * 65) / 260)
 
 
-def test_short_inputs(tmp_path):
+def test_load_reads_volume_and_summarize_adds_technicals(tmp_path):
     company = tmp_path / "c"
     _write(company, [100.0] * 200)
-    pos, gap = CP.short_inputs(CP.summarize(company))
-    assert pos == 50.0 and gap == 0.0
-    assert CP.short_inputs({"source": "none"}) == (None, None)
+    rows = CP.load(company / "data" / "prices.csv")
+    assert rows[0]["volume"] == 100.0
+    t = CP.summarize(company)["technicals"]
+    assert t["ok"] and t["position"]["position"] == 50.0 and t["position"]["gap"] == 0.0
+    assert t["trend"]["score"] is None  # 200 rows < one year of 52-week line plus its slope
+
+
+def test_missing_volume_is_none(tmp_path):
+    company = tmp_path / "c"
+    (company / "data").mkdir(parents=True)
+    (company / "data" / "prices.csv").write_text(HEADER + "2026-01-05,1,2,1,1,1,,2026-10-31\n", encoding="utf-8")
+    assert CP.load(company / "data" / "prices.csv")[0]["volume"] is None
 
 
 def test_short_history_has_no_long_averages(tmp_path):

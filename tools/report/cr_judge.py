@@ -38,7 +38,7 @@ WEIGHTS = {  # percent; each horizon sums to 100
     "long": {"market": 5, "valuation": 15, "growth": 10, "profitability": 10, "cash_flow": 10, "safety": 5,
              "five_forces": 10, "three_c": 15, "moat": 15, "swot": 5},
 }
-FACTOR_LABELS = {"market": "地合い", "price": "株価の位置・勢い", "progress": "直近の決算の進捗",
+FACTOR_LABELS = {"market": "地合い", "price": "株価のテクニカル（トレンド・勢い・位置）", "progress": "直近の決算の進捗",
                  "valuation": "株価の割安さ（STEP 3）", "growth": "成長性", "profitability": "収益性",
                  "cash_flow": "キャッシュフロー", "safety": "安全性", "five_forces": "業界の魅力度（ファイブフォース）",
                  "three_c": "勝てる理由（3C）", "moat": "強みの持続性（モート）", "swot": "強みで脅威に対抗できるか（SWOT）"}
