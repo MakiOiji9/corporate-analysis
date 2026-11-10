@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import math
+import statistics
 
 import an_common as A
 import mt_metrics as MT
@@ -40,6 +41,8 @@ BORDERLINE_WIDTH = 2.0  # a comparison within twice its band is reported as bord
 CHANGE_PT = 2.0  # ROE moves of this size are decomposed (3.3)
 LEVERAGE_LIMIT = 3.0  # 自己資本比率 33% 未満に相当
 MARGIN_YEARS = 5
+MARGIN_GAP_YEARS = 3  # 手順2: the mean gap to the peer median over the newest 3 compared years
+MIN_PEERS = 3  # fewer peers in the newest year: the comparison is noted as 参考
 COMPARE_YEARS = 5
 MATCH_MONTHS = 6
 MISMATCH_PT = 1.0  # reported vs computed ROE
@@ -149,6 +152,14 @@ def _step1_rating(rows: list[dict], values: list[float], losses: list[str]) -> d
 
 # ---------- 手順2 ----------
 
+def margin_gap(compared: list[dict]) -> tuple[float, list[dict], str]:
+    """(mean gap to the peer median, the years used, 上回る/同等/下回る) over the newest MARGIN_GAP_YEARS compared
+    years: one year, or one change of the peer set, does not flip the rating."""
+    recent = compared[-MARGIN_GAP_YEARS:]
+    gap = round(sum(r["diff"] for r in recent) / len(recent), 1)
+    return gap, recent, "上回る" if gap > SAME_PT else "下回る" if gap < -SAME_PT else "同等"
+
+
 def step2(company, found: dict) -> dict:
     listed = peer_margins(found["peers"])
     margins, sources = MT.self_series(company, listed)
@@ -160,12 +171,16 @@ def step2(company, found: dict) -> dict:
         return {**base, "rating": None, "basis": "自社と競合の営業利益率を同じ年度で比べられない",
                 "sentence": f"営業利益率は同業と比べられない（自社の{len(rows)}年の推移は{trend}）"}
     latest = compared[-1]
-    rating = "上回る" if latest["diff"] > SAME_PT else "下回る" if latest["diff"] < -SAME_PT else "同等"
+    gap, recent, rating = margin_gap(compared)
+    few = len(latest["peers"]) < MIN_PEERS
+    span = f"{recent[0]['year']}〜{recent[-1]['year']} の{len(recent)}年" if len(recent) > 1 else latest["year"]
+    few_note = f"。同業が{len(latest['peers'])}社で{MIN_PEERS}社に満たず、参考の比較" if few else ""
     return {**base, "rating": rating, "year": latest["year"], "self": latest["self"], "avg": latest["avg"],
-            "diff": latest["diff"],
-            "basis": f"{latest['year']} の差 {latest['diff']:+.1f}pt（±{SAME_PT:.0f}pt 以内は同等）",
-            "sentence": (f"営業利益率は{latest['self']:.1f}%（{latest['year']}）で、同業平均{latest['avg']:.1f}%を"
-                         f"{rating}（差 {latest['diff']:+.1f}pt）。{len(rows)}年の推移は{trend}")}
+            "diff": latest["diff"], "mean_gap": gap, "gap_years": [r["year"] for r in recent], "few_peers": few,
+            "basis": f"{span}の差の平均 {gap:+.1f}pt（±{SAME_PT:.0f}pt 以内は同等。直近 {latest['diff']:+.1f}pt）{few_note}",
+            "sentence": (f"営業利益率は{latest['self']:.1f}%（{latest['year']}）で同業中央値{latest['avg']:.1f}%との差"
+                         f" {latest['diff']:+.1f}pt。{span}の差の平均 {gap:+.1f}pt で{rating}。"
+                         f"{len(rows)}年の推移は{trend}{few_note}")}
 
 
 # ---------- 手順3 ----------
@@ -178,6 +193,10 @@ def _nearest(rows: list[dict], year: str) -> dict | None:
 
 def _mean(values: list[float]) -> float | None:
     return sum(values) / len(values) if values else None
+
+
+def _median(values: list[float]) -> float | None:
+    return statistics.median(values) if values else None
 
 
 def peer_comparison(own: list[dict], peers: list[dict]) -> dict:
@@ -195,7 +214,7 @@ def peer_comparison(own: list[dict], peers: list[dict]) -> dict:
     self_avg = {k: _mean([r[k] for r in years]) for k in keys}
     peers_out = [{"name": name, "years": [m["year"] for m in rows], "primary": all(m["primary"] for m in rows),
                   **{k: _mean([m[k] for m in rows]) for k in keys}} for name, rows in per_peer.items() if rows]
-    peer_avg = {k: _mean([p[k] for p in peers_out]) for k in keys}
+    peer_avg = {k: _median([p[k] for p in peers_out]) for k in keys}  # the median: one outlier peer moves a mean
     return {"years": [r["year"] for r in years], "self": self_avg, "peers": peers_out, "peer_avg": peer_avg,
             "peer_rows": peer_rows}
 

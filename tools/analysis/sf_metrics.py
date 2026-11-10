@@ -24,6 +24,7 @@ from __future__ import annotations
 import itertools
 import json
 import re
+import statistics
 
 import an_common as A
 import sector_rules as SR
@@ -140,7 +141,13 @@ def _mean(values: list[float]) -> float | None:
 
 
 def peer_average(rows: list[dict]) -> dict[str, float | None]:
-    return {k: _mean([r[k] for r in rows if r[k] is not None]) for k, _ in INDICATORS}
+    """The peers' median per indicator (named average for the readers; one outlier peer, such as a conglomerate,
+    moves a mean)."""
+    return {k: _median([r[k] for r in rows if r[k] is not None]) for k, _ in INDICATORS}
+
+
+def _median(values: list[float]) -> float | None:
+    return statistics.median(values) if values else None
 
 
 def meets_target(key: str, value: float) -> bool:

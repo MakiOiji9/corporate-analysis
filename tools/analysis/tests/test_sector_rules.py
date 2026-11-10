@@ -89,6 +89,21 @@ def test_cash_flow_growth_correction(rating, ratio, wc, adjusted):
     assert bool(CF.growth_absorbed(rating, ratio, wc)) is adjusted
 
 
+def test_margin_gap_uses_three_years():
+    rows = [{"year": f"202{i}-03", "diff": d} for i, d in enumerate([5.0, -3.0, 0.5, 2.0, -1.8])]
+    gap, recent, rating = PF.margin_gap(rows)
+    assert [r["year"] for r in recent] == ["2022-03", "2023-03", "2024-03"] and gap == 0.2 and rating == "同等"
+    assert PF.margin_gap(rows[:1])[2] == "上回る"  # one year only: that year decides
+
+
+def test_safety_peer_average_is_the_median():
+    rows = [{"equity_ratio": 40.0, "de": 0.2, "current_ratio": 150.0},
+            {"equity_ratio": 50.0, "de": 0.3, "current_ratio": 160.0},
+            {"equity_ratio": 90.0, "de": 3.0, "current_ratio": None}]  # one outlier peer
+    avg = SF.peer_average(rows)
+    assert avg["equity_ratio"] == 50.0 and avg["de"] == 0.3 and avg["current_ratio"] == 155.0
+
+
 @pytest.mark.parametrize("coverage, word", [
     (15.4, "余裕あり"), (3.0, "賄えている"), (1.2, "余裕が小さい"), (None, "不明"),
 ])
