@@ -10,11 +10,12 @@
     is positive (実質無借金). Banks, insurers, brokers, real estate and lessors use the peer average only.
   手順2 (推移, the newest 5 years, at least 3): 悪化傾向 when the equity ratio fell 10pt or more, or D/E rose in
     each of the last 3 years and ends above the first year.
-  手順3 (借入の目的, the years whose debt rose by 1% of total assets or more): 営業CF < 0 or a net loss ->
-    赤字補填・運転資金不足 (懸念); investing outflow >= half the increase -> 成長投資 (許容 when sales and operating
-    income are higher within 2 years, else 要確認); otherwise その他 (要確認). Overall: 懸念 / 許容 / 要確認 / 不明.
-  手順4 (結論): 懸念: 2 indicators or more 未達, or 悪化傾向 with 借入目的 懸念 / 良好: all 3 クリア and no 悪化傾向 /
-    普通: otherwise. Two or more 不明 indicators -> 判定保留; with one 不明 (or an unknown trend / purpose) the rule
+  手順3 (借入の目的, the years whose debt rose by 1% of total assets or more): a net loss -> 赤字補填 (懸念);
+    営業CF < 0 with a profit -> 運転資金 (要確認; stock or receivables grew), with the profit unknown -> 懸念;
+    investing outflow >= half the increase -> 成長投資 (許容 when sales and operating income are higher within
+    2 years, else 要確認); otherwise その他 (要確認). Overall: 懸念 / 許容 / 要確認 / 不明.
+  手順4 (結論): 懸念: 2 indicators or more 未達, or 悪化傾向 with 借入目的 懸念 / 良好: all 3 クリア, no 悪化傾向
+    and 借入目的 not 懸念 / 普通: otherwise. Two or more 不明 indicators -> 判定保留; with one 不明 (or an unknown trend / purpose) the rule
     is applied with every possible value and 判定保留 is returned unless they agree.
 """
 from __future__ import annotations
@@ -54,6 +55,7 @@ PEER_ITEM = I.SPEC["peer_safety"].label
 CLEAR, MISS, UNKNOWN = "クリア", "未達", "不明"
 WORSE, STABLE = "悪化傾向", "悪化傾向なし"
 OK_PURPOSE, CHECK_PURPOSE, BAD_PURPOSE = "許容", "要確認", "懸念"
+WORKING_CAPITAL = "運転資金（営業CF はマイナスだが純利益は黒字。在庫・売上債権の増加など）"
 
 
 # ---------- formatting ----------
@@ -240,8 +242,14 @@ def classify(rows: list[dict], prev: dict, cur: dict) -> dict:
         last = later[-1]
         out["after"] = (f"売上高 {money(cur['sales'])}→{money(last['sales'])}、営業利益 "
                         f"{money(cur['operating_income'])}→{money(last['operating_income'])}（{last['year']}）")
-    if (cur["cfo"] is not None and cur["cfo"] < 0) or (cur["net_income"] is not None and cur["net_income"] < 0):
-        return {**out, "kind": "赤字補填・運転資金不足", "rating": BAD_PURPOSE}
+    ni, cfo = cur["net_income"], cur["cfo"]
+    if ni is not None and ni < 0:
+        return {**out, "kind": "赤字補填", "rating": BAD_PURPOSE}
+    if cfo is not None and cfo < 0:
+        if ni is None:
+            return {**out, "kind": "赤字補填・運転資金不足（純利益が不明）", "rating": BAD_PURPOSE}
+        # profitable but cash went into stock or receivables: a working-capital need, not a loss to cover
+        return {**out, "kind": WORKING_CAPITAL, "rating": CHECK_PURPOSE}
     if cur["cfo"] is None or cur["cfi"] is None:
         return {**out, "kind": "不明（営業CF・投資CF の材料なし）", "rating": CHECK_PURPOSE}
     if -cur["cfi"] < INVEST_SHARE * increase:
@@ -279,7 +287,7 @@ def _rule(ratings: dict[str, str], trend: str, purpose: str) -> str:
     misses = [k for k, r in ratings.items() if r == MISS]
     if len(misses) >= 2 or (trend == WORSE and purpose == BAD_PURPOSE):
         return "懸念"
-    if not misses and trend == STABLE:
+    if not misses and trend == STABLE and purpose != BAD_PURPOSE:
         return "良好"
     return "普通"
 
@@ -330,6 +338,8 @@ def _why(verdict: str, s1: dict, s2: dict, s3: dict, unknown: list[str]) -> str:
         reasons.append(f"{'・'.join(misses)}が未達")
     if s2["rating"] == WORSE:
         reasons.append(f"悪化傾向あり（{s2['basis']}。借入の目的は懸念でない）")
+    elif s3["rating"] == BAD_PURPOSE:
+        reasons.append(f"推移は悪化傾向なしだが、借入の目的が懸念（{s3['basis']}）")
     return "、".join(reasons or ["良好の条件を満たさない"]) + note
 
 

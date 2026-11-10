@@ -295,8 +295,11 @@ def _debt_rows(cfo: float = 800, ni: float = 600, cfi: float = -900, later_sales
 @pytest.mark.parametrize("kw, kind, rating", [
     ({}, "成長投資（成果あり）", "許容"),
     ({"later_sales": 9000}, "成長投資（売上高・営業利益の伸びが見えない）", "要確認"),
-    ({"cfo": -100}, "赤字補填・運転資金不足", "懸念"),
-    ({"ni": -10}, "赤字補填・運転資金不足", "懸念"),
+    # a profitable year with a negative operating CF (stock or receivables grew) is working capital, not a loss
+    ({"cfo": -100}, "運転資金（営業CF はマイナスだが純利益は黒字。在庫・売上債権の増加など）", "要確認"),
+    ({"ni": -10}, "赤字補填", "懸念"),
+    ({"cfo": -100, "ni": -10}, "赤字補填", "懸念"),
+    ({"cfo": -100, "ni": None}, "赤字補填・運転資金不足（純利益が不明）", "懸念"),
     ({"cfi": -100}, "その他（投資CF の支出が増加額の半分未満）", "要確認"),
 ])
 def test_step3_classifies_the_debt_increase(kw, kind, rating):
@@ -325,7 +328,8 @@ def _s1(*ratings: str) -> dict:
     (("不明", "クリア", "クリア"), "悪化傾向なし", "許容", "普通"),  # 良好 or 普通
     (("不明", "未達", "未達"), "悪化傾向なし", "許容", "懸念"),  # 懸念 either way
     (("未達", "不明", "クリア"), "悪化傾向", "許容", "懸念"),  # 普通 or 懸念
-    (("クリア", "クリア", "クリア"), "悪化傾向なし", "不明", "良好"),  # the purpose only matters with 悪化傾向
+    (("クリア", "クリア", "クリア"), "悪化傾向なし", "懸念", "普通"),  # a 懸念 purpose rules out 良好
+    (("クリア", "クリア", "クリア"), "悪化傾向なし", "不明", "普通"),  # 良好 or 普通: the worst is taken
     (("クリア", "クリア", "クリア"), "不明", "許容", "普通"),       # 良好 or 普通
     (("不明", "不明", "不明"), "悪化傾向なし", "許容", "判定保留"),  # no indicator known at all
 ])

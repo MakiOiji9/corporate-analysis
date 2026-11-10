@@ -17,7 +17,9 @@
   3-4 EV/EBITDA: EV = 時価総額 + 有利子負債 − 現金, EBITDA = 営業利益 + 減価償却費 (newest year); EBITDA <= 0 ->
     評価対象外; the past range is computed (時価総額 ≈ PER × 純利益, or PBR × 自己資本 in a loss year); the common
     rule; 手順2 a judgement opposite to PER gets the candidate reasons (net cash, heavy depreciation, heavy debt).
-  STEP 3: va_rules.score; 手順3 a 割安 becomes 妥当 when a STEP 2 analysis is 懸念 or the SWOT is No.
+  STEP 3: va_rules.score; 手順3 (最終確認) never moves the verdict: a 割安 with a STEP 2 analysis 懸念 or the SWOT
+    No is noted 割安だが理由あり (those concerns are scored in the company report, so raising it to 妥当 here
+    would count them twice).
 """
 from __future__ import annotations
 
