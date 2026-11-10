@@ -481,6 +481,10 @@ def test_candidates_end_to_end(repo):
     assert cands["verdict"] == R.LOW and cands["step3"]["average"] == pytest.approx(0.75)
     assert cands["peg"]["cases"]["standard"] == pytest.approx(8.0)  # min(EPS CAGR 8.0, plan 10.0)
     assert any(p.startswith("PER:") for p in cands["flip_prices"])
+    flips = cands["flip_values"]
+    assert flips["per_cheap"] < flips["per_rich"] and flips["pbr_cheap"] < flips["pbr_fair"] < flips["pbr_rich"]
+    # the numbers are the ones the text shows
+    assert any(f"{flips['per_cheap']:,.0f}" in p for p in cands["flip_prices"] if p.startswith("PER:"))
     assert X.warnings(cands) == []
 
 

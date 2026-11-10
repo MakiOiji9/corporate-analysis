@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import csv
 import datetime as dt
+import math
 from pathlib import Path
 
 import cr_technicals as T
@@ -114,6 +115,91 @@ def yearly(rows: list[dict]) -> list[dict]:
     return list(reversed(out))[:YEARLY_MAX]
 
 
+# ---------------------------------------------------------------- long-term trend
+
+TREND_WINDOWS = (("10年", 120), ("5年", 60), ("3年", 36))  # months; the longest one with data decides
+WINDOW_COVER = 0.9   # a window needs 90% of its months
+TREND_R2 = 0.5       # how well a straight line in logs fits before it is called a trend
+TREND_RATE = 5.0     # % a year
+BAND_PCT = (0.1, 0.9)  # the range band: the 10th〜90th percentile of the month-end closes
+EARNINGS_GAP = 5.0   # pt: price growth within this of EPS growth is "in line with earnings"
+UP, DOWN, RANGE = "上昇トレンド", "下降トレンド", "レンジ"
+
+
+def _month_ends(rows: list[dict]) -> list[tuple[str, float]]:
+    ends: dict[str, tuple[str, float]] = {}
+    for r in rows:
+        ends[r["date"][:7]] = (r["date"], r["close"])
+    return [ends[m] for m in sorted(ends)]
+
+
+def _fit(values: list[float]) -> tuple[float, float, float]:
+    """(slope a year, intercept, r²) of ln(value) on years since the first month."""
+    xs = [i / 12 for i in range(len(values))]
+    ys = [math.log(v) for v in values]
+    mx, my = sum(xs) / len(xs), sum(ys) / len(ys)
+    sxx = sum((x - mx) ** 2 for x in xs)
+    sxy = sum((x - mx) * (y - my) for x, y in zip(xs, ys))
+    syy = sum((y - my) ** 2 for y in ys)
+    slope = sxy / sxx
+    r2 = (sxy * sxy / (sxx * syy)) if syy else 0.0
+    return slope, my - slope * mx, r2
+
+
+def _drawdown(values: list[float]) -> float:
+    peak, worst = values[0], 0.0
+    for v in values:
+        peak = max(peak, v)
+        worst = min(worst, v / peak - 1)
+    return round(worst * 100, 1)
+
+
+def _trend_window(points: list[tuple[str, float]]) -> dict:
+    values = [v for _, v in points]
+    slope, intercept, r2 = _fit(values)
+    annual = (math.exp(slope) - 1) * 100
+    verdict = (UP if annual >= TREND_RATE else DOWN if annual <= -TREND_RATE else RANGE) if r2 >= TREND_R2 else RANGE
+    ordered = sorted(values)
+    band = tuple(round(ordered[int(p * (len(ordered) - 1))], 2) for p in BAND_PCT)
+    line = [[d, round(math.exp(intercept + slope * i / 12), 2)] for i, (d, _) in enumerate(points)]
+    return {"verdict": verdict, "annual": round(annual, 1), "r2": round(r2, 2), "band": band,
+            "max_drawdown": _drawdown(values), "start": points[0][0], "line": line}
+
+
+def long_trend(rows: list[dict]) -> dict:
+    """Whether the price has grown or moved sideways over the long run: a straight line through the month-end
+    closes in logs over 10 / 5 / 3 years (年率・あてはまり R²), the max drawdown and, for a range, its band. The
+    longest window with data decides."""
+    points = _month_ends(rows)
+    windows = {label: _trend_window(points[-n:]) for label, n in TREND_WINDOWS
+               if len(points) >= n * WINDOW_COVER and all(v > 0 for _, v in points[-n:])}
+    if not windows:
+        return {"verdict": None, "windows": {}, "sentence": "", "basis": None, "line": []}
+    basis = next(label for label, _ in TREND_WINDOWS if label in windows)
+    w = windows[basis]
+    if w["verdict"] == RANGE:
+        sentence = (f"{basis}の株価は {w['band'][0]:,.0f}〜{w['band'][1]:,.0f} のレンジ（月末の終値の8割がこの幅。"
+                    f"傾向線は年率 {w['annual']:+.1f}%、あてはまり R² {w['r2']:.2f}）")
+    else:
+        sentence = f"{basis}の株価は年率 {w['annual']:+.1f}% の{w['verdict']}（傾向線のあてはまり R² {w['r2']:.2f}）"
+    sentence += f"。この間の最大の下落は {w['max_drawdown']:.0f}%"
+    return {"verdict": w["verdict"], "basis": basis, "windows": {k: {x: v for x, v in d.items() if x != "line"}
+                                                                for k, d in windows.items()},
+            "sentence": sentence, "line": w["line"]}
+
+
+def versus_earnings(price_rate: float | None, eps_rate: float | None) -> str:
+    """Price growth against EPS growth: in line with earnings, re-rated up, or rated down."""
+    if price_rate is None or eps_rate is None:
+        return ""
+    head = f"株価の伸び（年率 {price_rate:+.1f}%）は EPS の伸び（{eps_rate:+.1f}%）"
+    if abs(price_rate - eps_rate) <= EARNINGS_GAP:
+        return head + "とほぼ同じで、株価は業績に連動している"
+    if price_rate > eps_rate:
+        return head + "を上回り、業績に加えて評価の見直し（PER の上昇）が株価を押し上げた"
+    return head + "を下回り、業績ほどには株価が伸びず市場の評価が下がった（PER の低下）"
+
+
 def fallback(company_path: Path) -> dict | None:
     """The yearly price-range table of the newest valuation-data raw that has one (text as collected)."""
     for path in sorted((company_path / "raw" / "ir").glob("*_valuation-data.md"), reverse=True):
@@ -135,4 +221,4 @@ def summarize(company_path: Path) -> dict:
             "current": rows[-1]["close"], "days": len(rows),
             "ranges": [window(rows, label, days) for label, days in WINDOWS],
             "averages": averages(rows), "monthly": monthly(rows), "yearly": yearly(rows),
-            "technicals": T.evaluate(rows)}
+            "long_trend": long_trend(rows), "technicals": T.evaluate(rows)}

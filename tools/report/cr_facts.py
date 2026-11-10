@@ -12,6 +12,7 @@ import cr_judge as J
 import cr_legends as L
 import cr_plain as P
 import cr_positioning as POS
+import cr_scenarios as SC
 import cr_prices as CP
 import cr_status as S
 import mdparse as M
@@ -112,6 +113,7 @@ def _valuation(r: dict) -> dict:
              for key, name in (("per", "PER"), ("pbr", "PBR"), ("peg", "PEG"), ("ev", "EV/EBITDA"))}
     axis = _get(r, "per", "rule", "axis1") or {}
     return {"price": r.get("price"), "items": items, "sheet": r.get("sheet"), "flip_prices": r.get("flip_prices") or [],
+            "flip_values": r.get("flip_values") or {},
             "per_actual": _get(r, "per", "per_actual"), "per_forecast": _get(r, "per", "per_forecast"),
             "pbr": _get(r, "pbr", "pbr"), "per_range": {k: axis.get(k) for k in ("low", "high", "position")},
             "cheap_reason": _get(r, "handoff", "cheap_reason"), "final_check": _get(r, "step3", "final_check"),
@@ -199,10 +201,20 @@ def gaps(found: dict[str, dict]) -> list[dict]:
     return out[:GAP_LIMIT]
 
 
+def with_earnings(prices: dict, eps_cagr: float | None) -> dict:
+    """The long-term trend with the price growth set against the EPS growth (growth analysis' CAGR)."""
+    trend = prices.get("long_trend") or {}
+    if not trend.get("basis"):
+        return prices
+    rate = trend["windows"][trend["basis"]]["annual"]
+    return {**prices, "long_trend": {**trend, "vs_eps": CP.versus_earnings(rate, eps_cagr)}}
+
+
 def build(root: Path, company: S.Company, today: str, status: dict) -> dict:
     found = {step.key: analysis(step, company) for step in S.STEPS}
     market = market_of(company)
-    prices = {**CP.summarize(company.path), "positioning": POS.summarize(company.path)}
+    prices = with_earnings({**CP.summarize(company.path), "positioning": POS.summarize(company.path)},
+                           _get(found["growth"], "detail", "cagr", "eps"))
     outlook = {**status["outlook"], **outlook_rows(root, status["outlook"], market)}
     price = _get(found["valuation"], "detail", "price") or {}
     per_forecast = _get(found["valuation"], "detail", "per_forecast")
@@ -217,4 +229,8 @@ def build(root: Path, company: S.Company, today: str, status: dict) -> dict:
         "stale": [{k: s[k] for k in ("skill", "label", "step", "date", "result", "reason")}
                   for s in status["steps"] if s["result"] != "fresh"],
     }
-    return {**facts, "legends": L.evaluate(facts)}
+    context = {"outlook": outlook.get("overall"), "week": outlook.get("week"), "review": facts["review"],
+               "trend": (prices.get("long_trend") or {}).get("verdict")}
+    scenarios = SC.build(prices.get("technicals") or {},
+                         _get(found["valuation"], "detail", "flip_values") or {}, context)
+    return {**facts, "legends": L.evaluate(facts), "scenarios": scenarios}

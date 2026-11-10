@@ -275,7 +275,10 @@ def levels(rows: list[dict], mas: dict[int, list], upper: float | None, atr_valu
                          "52週安値が支持線でなければ、52週安値より下にはしない"}
     elif atr_value:
         stop = {**_level("株価の 2 ATR 下", current - 2 * atr_value, current), "basis": "下に支持線が無いため"}
-    return {"supports": supports, "resistances": resistances, "stop": stop, "atr": _round(atr_value)}
+    # every line, low to high: the trading scenarios look for the next one below / above any entry price
+    lines = [{"label": label, "price": round(price, 2)} for label, price in sorted(below + above, key=lambda x: x[1])]
+    return {"supports": supports, "resistances": resistances, "stop": stop, "atr": _round(atr_value),
+            "lines": lines}
 
 
 def state(trend: dict, momentum: dict, close: float, ma_short: float | None) -> str:

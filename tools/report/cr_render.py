@@ -285,14 +285,35 @@ def _price_tables(p: dict) -> str:
     return "<h3>期間ごとの高値・安値</h3>" + ranges + "<h3>年ごとの高値・安値</h3>" + years
 
 
+TREND_CLASS = {"上昇トレンド": "v-consider", "レンジ": "v-watch", "下降トレンド": "v-pass"}
+
+
+def _long_trend(trend: dict) -> str:
+    """長期の流れ: 上昇トレンド / 下降トレンド / レンジ from the month-end closes, with each window's numbers."""
+    if not trend.get("verdict"):
+        return ""
+    rows = [[esc(label), esc(w["verdict"]), f"{w['annual']:+.1f}%", f"{w['r2']:.2f}", f"{w['max_drawdown']:.0f}%",
+             esc(f"{C.fmt(w['band'][0], 0)}〜{C.fmt(w['band'][1], 0)}")] for label, w in trend["windows"].items()]
+    return (f'<h3>長期の流れ</h3><p><span class="badge {TREND_CLASS.get(trend["verdict"], "")}">'
+            f'{esc(trend["verdict"])}</span> {esc(trend["sentence"])}</p>'
+            + (f'<p class="small">{esc(trend["vs_eps"])}</p>' if trend.get("vs_eps") else "")
+            + table(["期間", "判定", "傾向線の年率", "あてはまり（R²）", "最大の下落", "月末の終値の8割の幅"], rows,
+                    right=frozenset({2, 3, 4}))
+            + '<p class="small muted">月末の終値の対数に直線を当てはめた傾き（年率）。あてはまり 0.5 以上で年率 ±5% を超えれば'
+              "上昇・下降トレンド、それ以外はレンジ。過去の値動きの説明で、先行きの予想ではない。</p>")
+
+
 def price_section(facts: dict) -> str:
     p = facts["prices"]
     lead = "過去の高値と安値の間で、今の株価がどこにあるか（0%＝安値、100%＝高値）。位置はレンジの説明で、先行きの予想ではない。"
     if p["source"] != "prices":
         return _fallback(p, lead)
     tracks = '<div class="panel ranges">' + "".join(_track(w) for w in p["ranges"]) + "</div>"
+    trend = p.get("long_trend") or {}
     series = [{"label": "月末の終値", "points": p["monthly"]["close"]},
               {"label": "26週移動平均", "points": p["monthly"]["ma"]}]
+    if trend.get("line"):
+        series.append({"label": f"長期の傾向線（{trend['basis']}）", "points": trend["line"]})
     legend = '<div class="legend">' + "".join(f'<span><i class="sw s{i}"></i>{esc(s["label"])}</span>'
                                               for i, s in enumerate(series)) + "</div>"
     chart = (f'<figure class="chartbox"><figcaption><b>株価の推移（{esc(p["first"])}〜{esc(p["last"])}）</b>{legend}'
@@ -303,7 +324,7 @@ def price_section(facts: dict) -> str:
     per = facts["analyses"]["valuation"]["detail"].get("per_range") or {}
     per_line = (f"PER（株価が利益の何倍か）の過去5期のレンジは {C.fmt(per.get('low'))}〜{C.fmt(per.get('high'))}倍で、"
                 f"今はその中の位置 {per.get('position')}%" if per.get("low") is not None else "")
-    body = (f"<h3>今の株価の位置</h3>{tracks}<h3>株価の推移</h3>{chart}"
+    body = (f"<h3>今の株価の位置</h3>{tracks}{_long_trend(trend)}<h3>株価の推移</h3>{chart}"
             f'<p class="small">移動平均: {esc(ma or "—")}</p>'
             + (f'<p class="small">{esc(per_line)}</p>' if per_line else "") + _price_tables(p))
     return _section("price", "06", "株価の過去レンジ", lead, body)
@@ -349,6 +370,35 @@ def _tech_charts(t: dict) -> str:
             f'{macd}</figure></div>')
 
 
+SCENARIO_LEAD = ("買いを検討する価格の候補ごとに、根拠・損切り・利益確定の目安と、その価格で買った場合のリスクを並べた。"
+                 "価格はチャートの支持線・抵抗線と株価指標の割安・適正の水準から計算した条件の目安で、"
+                 "その価格になるという予想でも、売買の推奨でもない。リスクリワード＝利確1までの上昇幅 ÷ 損切りまでの下落幅。")
+
+
+def _price_cell(level: dict | None, pct: float | None = None) -> str:
+    if not level:
+        return "—"
+    tail = f"（{C.fmt(pct, 1, True)}%）" if pct is not None else ""
+    return f'<b>{esc(C.fmt(level["price"], 0))}</b>{esc(tail)}<br><span class="small muted">{esc(level["label"])}</span>'
+
+
+def _scenarios(s: dict) -> str:
+    if not s.get("ok"):
+        return ""
+    rows = [[f'<b>{esc(C.fmt(b["price"], 0))}</b><br><span class="small">{esc(b["basis"])}</span>',
+             _price_cell(b["stop"], b["down"]), _price_cell(b["target1"], b["up1"]), _price_cell(b["target2"], b["up2"]),
+             esc("—" if b["rr"] is None else f'{b["rr"]:.2f}'),
+             '<ul class="plain small">' + "".join(f"<li>{esc(r)}</li>" for r in b["risks"]) + "</ul>"]
+            for b in s["buys"]]
+    holder = s.get("holder") or {}
+    hold_rows = ([["利益確定を考える価格", _price_cell(x)] for x in holder.get("take") or []]
+                 + [["撤退を考える価格", _price_cell(x)] for x in holder.get("exit") or []])
+    return (f'<h3>売買シナリオ（参考）</h3><p class="small">{esc(SCENARIO_LEAD)}</p>'
+            + table(["買いを検討する価格（根拠）", "損切り", "利益確定1", "利益確定2", "リスクリワード",
+                     "その価格で買った場合のリスク"], rows, right=frozenset({4}))
+            + ("<h4>保有している場合の目安</h4>" + table(["目安", "価格"], hold_rows) if hold_rows else ""))
+
+
 def technical_section(facts: dict, parsed: dict) -> str:
     t = D.technicals(facts)
     if not t.get("ok") or t["state"] == T.NO_DATA:
@@ -368,6 +418,7 @@ def technical_section(facts: dict, parsed: dict) -> str:
     note = T.alignment(t, facts["horizons"]["long"]["verdict"])
     body = (head + _paragraphs(parsed.get("technical") or "") + boxes
             + (f'<p class="small"><b>長期の判定との関係</b>: {esc(note)}</p>' if note else "")
+            + _scenarios(facts.get("scenarios") or {})
             + table(["見たもの", "値"], [[esc(a), esc(b)] for a, b in rows]) + _tech_charts(t))
     return _section("technical", "07", "売買の目安（テクニカルの参考）", TECH_LEAD, body)
 

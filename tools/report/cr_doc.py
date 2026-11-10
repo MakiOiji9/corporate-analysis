@@ -164,6 +164,10 @@ def _prices(facts: dict) -> list[str]:
                       f"{w['position']:.0f}%", f"{C.fmt(w['from_high'], 1, True)}%"] for w in p["ranges"]])
     lines += ["", "- 移動平均: " + "、".join(
         f"{a['label']} {C.fmt(a['value'], 0)}（乖離 {C.fmt(a['gap'], 1, True)}%）" for a in p["averages"])]
+    trend = p.get("long_trend") or {}
+    if trend.get("verdict"):
+        lines.append(f"- 長期の流れ: {trend['verdict']}。{trend['sentence']}"
+                     + (f"。{trend['vs_eps']}" if trend.get("vs_eps") else ""))
     return lines
 
 
@@ -277,6 +281,23 @@ def _conditions(facts: dict) -> list[str]:
             + ["", "### 5.3 株価の水準で判定が変わる条件（下がれば【改善】、上がれば【悪化】）", ""] + of(PRICE_WORD) + [""])
 
 
+def _scenario_lines(s: dict) -> list[str]:
+    """4.2 売買シナリオ (the HTML draws the table; the technical text may refer to these prices, as conditions)."""
+    if not s.get("ok"):
+        return []
+    lines = ["## 4.2 売買シナリオ（参考。スクリプトが HTML に表で載せる。条件の目安で予想・推奨ではない）", ""]
+    for b in s["buys"]:
+        t1, t2 = b["target1"] or {}, b["target2"] or {}
+        lines.append(f"- {C.fmt(b['price'], 0)}（{b['basis']}）: 損切り {C.fmt(b['stop']['price'], 0)}"
+                     f"（{C.fmt(b['down'], 1, True)}%）、利益確定1 {C.fmt(t1.get('price'), 0)}（{t1.get('label') or '—'}）、"
+                     f"利益確定2 {C.fmt(t2.get('price'), 0)}（{t2.get('label') or '—'}）、リスクリワード "
+                     f"{'—' if b['rr'] is None else format(b['rr'], '.2f')}。リスク: {'／'.join(b['risks'])}")
+    holder = s.get("holder") or {}
+    lines.append("- 保有者の目安: 利益確定 " + "、".join(f"{C.fmt(x['price'], 0)}（{x['label']}）" for x in holder.get("take") or [])
+                 + "。撤退 " + "、".join(f"{C.fmt(x['price'], 0)}（{x['label']}）" for x in holder.get("exit") or []))
+    return lines + [""]
+
+
 def _premise(facts: dict) -> list[str]:
     o, price = facts["outlook"], facts["price"] or {}
     lines = ["## 1. 対象と前提", "",
@@ -311,6 +332,7 @@ def render_brief(facts: dict, md_rel: str) -> str:
     lines += _premise(facts) + _analyses(facts) + [""] + _horizons(facts) + _prices(facts) + [""]
     lines += T.brief_lines(technicals(facts), facts["horizons"]["long"]["verdict"],
                            (facts.get("prices") or {}).get("positioning"))
+    lines += _scenario_lines(facts.get("scenarios") or {})
     lines += _recent(facts) + _conditions(facts) + L.brief_lines(facts)
     lines += ["## 6. 材料不足（4.3 の材料）", ""]
     lines += [f"- {g['label']}: {g['gap']}" for g in facts["gaps"]] or ["- なし"]

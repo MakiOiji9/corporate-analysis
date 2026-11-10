@@ -528,6 +528,21 @@ def flip_prices(per: dict, pbr: dict, peg: dict, currency: str) -> list[str]:
     return out
 
 
+def flip_values(per: dict, pbr: dict) -> dict:
+    """The same thresholds as flip_prices() as numbers (the report's trading scenarios use them):
+    per_cheap / per_rich (the PER range's 割安圏・割高圏 edges), pbr_cheap / pbr_fair / pbr_rich (適正PBR ∓20%)."""
+    out: dict = {}
+    eps = per["eps_for_per"]
+    bounds = _boundary_values(per["rule"]) if per["rating"] != R.NA else None
+    if bounds and eps:
+        out.update(per_cheap=round(bounds[0] * eps, 2), per_rich=round(bounds[1] * eps, 2))
+    fair, bps = pbr["fair"]["fair"], pbr["bps"]
+    if fair and bps:
+        out.update(pbr_cheap=round(fair * (1 - FAIR_PBR_BAND) * bps, 2), pbr_fair=round(fair * bps, 2),
+                   pbr_rich=round(fair * (1 + FAIR_PBR_BAND) * bps, 2))
+    return out
+
+
 # ---------- everything ----------
 
 def _price_age(base: dict, today: str) -> int | None:
@@ -549,7 +564,7 @@ def candidates(company, found: dict, today: str, measures: str | None = None) ->
     s3 = step3(items, upstream)
     return {"base": base, **items, "step3": s3, "verdict": s3["verdict"], "why": s3["why"], "upstream": upstream,
             "growth_date": growth[0] if growth else None, "price_age": _price_age(base, today),
-            "flip_prices": flip_prices(per, pbr, peg, base["price"]["currency"]),
+            "flip_prices": flip_prices(per, pbr, peg, base["price"]["currency"]), "flip_values": flip_values(per, pbr),
             "borderline": per["borderline"] + pbr["borderline"] + peg["borderline"] + ev["borderline"]}
 
 

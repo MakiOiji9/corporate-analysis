@@ -99,3 +99,53 @@ def test_fallback_reads_the_raw_range_table(tmp_path):
 
 def test_no_prices_at_all(tmp_path):
     assert CP.summarize(tmp_path / "none") == {"source": "none", "fallback": None}
+
+
+# ---------------------------------------------------------------- long-term trend
+
+def _monthly_rows(values: list[float], start: str = "2016-01-29") -> list[dict]:
+    """One row per month (enough for the monthly regression)."""
+    day = dt.date.fromisoformat(start)
+    out = []
+    for i, v in enumerate(values):
+        d = dt.date(day.year + (day.month - 1 + i) // 12, (day.month - 1 + i) % 12 + 1, 28)
+        out.append({"date": d.isoformat(), "close": v, "high": v, "low": v, "volume": None})
+    return out
+
+
+def test_long_trend_up():
+    rows = _monthly_rows([100 * 1.01 ** i for i in range(120)])  # +12.7% a year, a straight line in logs
+    t = CP.long_trend(rows)
+    ten = t["windows"]["10年"]
+    assert ten["verdict"] == "上昇トレンド" and ten["r2"] > 0.99
+    assert ten["annual"] == pytest.approx(12.7, abs=0.1)
+    assert t["verdict"] == "上昇トレンド" and t["basis"] == "10年"
+
+
+def test_long_trend_down_and_drawdown():
+    rows = _monthly_rows([1000 * 0.99 ** i for i in range(60)])
+    t = CP.long_trend(rows)
+    assert t["windows"]["5年"]["verdict"] == "下降トレンド"
+    assert t["windows"]["5年"]["max_drawdown"] == pytest.approx(-44.7, abs=0.2)
+    assert "10年" not in t["windows"]  # five years of data only
+
+
+def test_long_trend_range_has_a_band():
+    rows = _monthly_rows([100 + (20 if i % 2 else -20) for i in range(120)])
+    t = CP.long_trend(rows)
+    ten = t["windows"]["10年"]
+    assert ten["verdict"] == "レンジ"
+    assert ten["band"] == (80.0, 120.0)
+    assert "80" in t["sentence"] and "120" in t["sentence"]
+
+
+def test_long_trend_needs_three_years():
+    assert CP.long_trend(_monthly_rows([100.0] * 20)) == {"verdict": None, "windows": {}, "sentence": "",
+                                                         "basis": None, "line": []}
+
+
+def test_price_against_earnings():
+    assert "業績に連動" in CP.versus_earnings(10.0, 9.0)
+    assert "評価の見直し" in CP.versus_earnings(20.0, 5.0)
+    assert "評価が下がった" in CP.versus_earnings(-5.0, 8.0)
+    assert CP.versus_earnings(None, 5.0) == ""
