@@ -105,6 +105,16 @@ def test_upstream_created_after_the_analysis_triggers(tmp_path):
         "3Cの結論が 未実施 → 明確 に変わった（2026-07-10）"]
 
 
+def test_upstream_reads_the_verdict_of_a_deleted_result(tmp_path):
+    company = _company(tmp_path)
+    for date, verdict in (("2026-07-01", "あいまい"), ("2026-08-01", "あいまい"), ("2026-09-01", "あいまい")):
+        _three_c(company, date, verdict)
+    A.prune(company.path / "analysis" / "three-c", "_three-c.md")
+    assert not (company.path / "analysis" / "three-c" / "2026-07-01_three-c.json").exists()
+    # the analysis built on 07-02 used the 07-01 3C: same conclusion, so no trigger (not "未実施 → あいまい")
+    assert T.upstream_triggers(company, "2026-07-02", [("3C", TP)]) == []
+
+
 def test_unknown_unit_is_rejected(tmp_path):
     with pytest.raises(ValueError):
         T.triggers(_company(tmp_path), "2026-07-01", "monthly")

@@ -12,6 +12,7 @@ import datetime as dt
 import hashlib
 import json
 import re
+import shutil
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TypeVar
@@ -122,6 +123,55 @@ def supersede_today(directory: Path, date: str) -> Path | None:
             target.rmdir()
         raise
     return target
+
+
+KEEP_RESULTS = 2  # the latest result and the one before it (the previous-result comparisons read no further back)
+HISTORY_FILE = "_history.json"
+DATE_PREFIX = re.compile(r"^(\d{4}-\d{2}-\d{2})_")
+
+
+def _verdict(result: dict | None) -> str | None:
+    return (result or {}).get("verdict") or (result or {}).get("attractiveness")
+
+
+def prune(directory: Path, md_suffix: str, keep: int = KEEP_RESULTS) -> list[Path]:
+    """Delete what is older than the newest `keep` finished results (every {date}_* file of an older date, and the
+    _superseded/ folder) to save space. A draft newer than them stays. The verdict of each deleted result goes to
+    _history.json, so the freshness check can still tell what an upstream analysis said on an old day.
+    Returns the deleted paths (git keeps the history)."""
+    if not directory.exists():
+        return []
+    removed: list[Path] = []
+    superseded = directory / SUPERSEDED_DIR
+    if superseded.exists():
+        shutil.rmtree(superseded)
+        removed.append(superseded)
+    finished = [date for date, path in dated_files(directory, md_suffix) if not is_draft(path)]
+    if len(finished) <= keep:
+        return removed
+    cutoff = finished[-keep]
+    old = sorted(p for p in directory.iterdir()
+                 if p.is_file() and (m := DATE_PREFIX.match(p.name)) and m.group(1) < cutoff)
+    history_path = directory / HISTORY_FILE
+    history = load_result(history_path) or {"pruned": {}}
+    json_suffix = md_suffix[:-3] + ".json"
+    for p in old:
+        if p.name.endswith(json_suffix) and (verdict := _verdict(load_result(p))):
+            history["pruned"][p.name[:10]] = {"verdict": verdict}
+    if history["pruned"]:
+        history["pruned"] = dict(sorted(history["pruned"].items()))
+        history_path.write_text(json.dumps(history, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    for p in old:
+        p.unlink()
+        removed.append(p)
+    return removed
+
+
+def history_verdict(directory: Path, before: str) -> tuple[str, str] | None:
+    """(date, verdict) of the newest deleted result dated on or before `before` (prune's _history.json)."""
+    pruned = (load_result(directory / HISTORY_FILE) or {}).get("pruned") or {}
+    hits = [(d, v["verdict"]) for d, v in pruned.items() if d <= before and v.get("verdict")]
+    return max(hits) if hits else None
 
 
 def is_draft(path: Path) -> bool:

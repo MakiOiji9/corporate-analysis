@@ -313,8 +313,10 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     result = result_json(company, date, text, parsed, cands)
     json_path = company.file(date, P.JSON_SUFFIX)
     atomic_write_text(json_path, json.dumps(result, ensure_ascii=False, indent=1) + "\n")
+    pruned = A.prune(company.analysis_dir, P.MD_SUFFIX)  # keep the latest result and the one before it
     return emit({
         "ok": True, "md": company.rel(md_path), "json": company.rel(json_path), "date": date,
+        "pruned": [company.rel(p) for p in pruned],
         "verdict": cands["verdict"], "verdict_reason": cands["why"], "step1": cands["step1"]["sentence"],
         "step2": cands["step2"]["sentence"], "step3": cands["step3"]["sentence"],
         "valid_until": result["valid_until"], "previous": result["previous"],

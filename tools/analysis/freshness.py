@@ -146,7 +146,10 @@ def upstream_triggers(company: A.Company, date: str, upstream: list[tuple[str, M
         if not now or now[0] <= date:
             continue
         then = paths.latest_result(target, before=_day_after(date))
-        before, after = verdict_of(then[1]) if then else None, verdict_of(now[1])
+        # a result older than the two kept ones was deleted (an_common.prune): its verdict is in _history.json
+        old = None if then else A.history_verdict(target.analysis_dir, date)
+        before = verdict_of(then[1]) if then else (old[1] if old else None)
+        after = verdict_of(now[1])
         if before != after:
             out.append(f"{label}の結論が {before or '未実施'} → {after} に変わった（{now[0]}）")
     return out

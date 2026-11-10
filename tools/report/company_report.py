@@ -233,7 +233,9 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     atomic_write_text(html_path, page)
     result = result_json(company, facts, date, warnings)
     atomic_write_text(json_path, json.dumps(result, ensure_ascii=False, indent=1) + "\n")
+    pruned = A.prune(company.reports_dir, S.MD_SUFFIX)  # keep the latest report and the one before it
     return emit({"ok": True, "html": result["html"], "json": company.rel(json_path), "date": date,
+                 "pruned": [company.rel(p) for p in pruned],
                  "horizons": {k: D.verdict_label(h) for k, h in facts["horizons"].items()},
                  "step1": _grade(facts["step1"]), "step2": _grade(facts["step2"]), "step3": facts["step3"]["verdict"],
                  "legends": _legends(facts), "technical": _technical(facts), "warnings": warnings})

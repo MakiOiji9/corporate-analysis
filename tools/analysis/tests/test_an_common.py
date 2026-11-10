@@ -74,3 +74,49 @@ def test_supersede_keeps_the_original_error_when_the_rollback_also_fails(tmp_pat
     monkeypatch.setattr(Path, "rename", real_rename)
     notes = " ".join(getattr(caught.value, "__notes__", []))
     assert f"{DAY}_brief.md" in notes and "_superseded" in notes  # tells where the stranded file is
+
+
+# ---------------------------------------------------------------- retention (latest + one before)
+
+def _built(directory: Path, date: str, verdict: str = "中", draft: bool = False) -> None:
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / f"{date}_x.md").write_text("<!-- FILL:a -->" if draft else "done", encoding="utf-8")
+    (directory / f"{date}_x.json").write_text(f'{{"verdict": "{verdict}"}}', encoding="utf-8")
+    (directory / f"{date}_x_brief.md").write_text("b", encoding="utf-8")
+
+
+def test_prune_keeps_the_two_newest_finished_dates(tmp_path):
+    for date, verdict in (("2026-01-01", "低"), ("2026-05-01", "中"), ("2026-08-01", "中"), ("2026-11-01", "高")):
+        _built(tmp_path, date, verdict)
+    (tmp_path / "_superseded" / "2026-11-01-1").mkdir(parents=True)
+    (tmp_path / "_superseded" / "2026-11-01-1" / "2026-11-01_x.md").write_text("old", encoding="utf-8")
+    removed = A.prune(tmp_path, "_x.md")
+    left = sorted(p.name for p in tmp_path.iterdir())
+    assert left == ["2026-08-01_x.json", "2026-08-01_x.md", "2026-08-01_x_brief.md", "2026-11-01_x.json",
+                    "2026-11-01_x.md", "2026-11-01_x_brief.md", "_history.json"]
+    assert len(removed) == 7  # 2 dates x 3 files + the _superseded folder
+    assert A.history_verdict(tmp_path, "2026-06-30") == ("2026-05-01", "中")
+    assert A.history_verdict(tmp_path, "2026-03-01") == ("2026-01-01", "低")
+    assert A.history_verdict(tmp_path, "2025-12-31") is None
+
+
+def test_prune_keeps_a_newer_draft_and_the_finished_ones_under_it(tmp_path):
+    for date in ("2026-01-01", "2026-05-01", "2026-08-01"):
+        _built(tmp_path, date)
+    _built(tmp_path, "2026-11-01", draft=True)
+    A.prune(tmp_path, "_x.md")
+    dates = sorted({p.name[:10] for p in tmp_path.glob("2026-*")})
+    assert dates == ["2026-05-01", "2026-08-01", "2026-11-01"]
+
+
+def test_prune_with_two_or_fewer_results_removes_nothing_but_superseded(tmp_path):
+    _built(tmp_path, "2026-08-01")
+    _built(tmp_path, "2026-11-01")
+    (tmp_path / "_superseded").mkdir()
+    removed = A.prune(tmp_path, "_x.md")
+    assert removed == [tmp_path / "_superseded"]
+    assert not (tmp_path / "_history.json").exists()
+
+
+def test_prune_on_a_missing_directory(tmp_path):
+    assert A.prune(tmp_path / "none", "_x.md") == []
