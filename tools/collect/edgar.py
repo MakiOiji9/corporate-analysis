@@ -49,6 +49,14 @@ DURATION_ITEMS = {
     "capex_tangible": ["PaymentsToAcquirePropertyPlantAndEquipment"],
     "dividends_paid": ["PaymentsOfDividends", "PaymentsOfDividendsCommonStock"],
     "treasury_stock_purchase": ["PaymentsForRepurchaseOfCommonStock"],
+    "gross_profit": ["GrossProfit"],
+    "interest_expense": ["InterestExpense", "InterestExpenseNonoperating", "InterestExpenseDebt"],
+    "income_taxes": ["IncomeTaxExpenseBenefit"],
+    "profit_before_tax": [
+        "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+        "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments"],
+    "share_based_compensation": ["ShareBasedCompensation", "AllocatedShareBasedCompensationExpense"],
+    "lease_repayments": ["FinanceLeasePrincipalPayments"],
 }
 INSTANT_ITEMS = {
     "summary.total_assets": ["Assets"],
@@ -59,6 +67,20 @@ INSTANT_ITEMS = {
     "receivables": ["AccountsReceivableNetCurrent"],
     "inventories": ["InventoryNet"],
     "summary.cash_equivalents": ["CashAndCashEquivalentsAtCarryingValue"],
+    # debt, leases and the EV items; the item names follow xbrl_financials.py so the analyses read both markets
+    "short_term_loans": ["ShortTermBorrowings", "CommercialPaper"],
+    "current_portion_long_term_loans": ["LongTermDebtCurrent", "LongTermDebtAndCapitalLeaseObligationsCurrent"],
+    "long_term_loans": ["LongTermDebtNoncurrent", "LongTermDebtAndCapitalLeaseObligations"],
+    "convertible_notes": ["ConvertibleNotesPayable", "ConvertibleDebtNoncurrent"],
+    "lease_liabilities_current": ["OperatingLeaseLiabilityCurrent"],
+    "lease_liabilities_noncurrent": ["OperatingLeaseLiabilityNoncurrent"],
+    "finance_lease_liabilities": ["FinanceLeaseLiability"],
+    "short_term_investments": ["ShortTermInvestments", "MarketableSecuritiesCurrent", "AvailableForSaleSecuritiesDebtSecuritiesCurrent"],
+    "investment_securities": ["MarketableSecuritiesNoncurrent", "LongTermInvestments"],
+    "non_controlling_interests": ["MinorityInterest"],
+    "goodwill": ["Goodwill"],
+    "intangible_assets": ["IntangibleAssetsNetExcludingGoodwill"],
+    "shares_outstanding": ["CommonStockSharesOutstanding"],
 }
 # statement-level aliases that ff_metrics / tc_metrics read without the 'summary.' prefix
 ALIASES = {"summary.net_sales": "net_sales"}
@@ -73,17 +95,21 @@ def _normalise(value: float, unit: str) -> tuple[str, str]:
         return f"{value / USD_PER_MILLION:.3f}".rstrip("0").rstrip("."), "百万ドル"
     if unit == "USD/shares":
         return f"{value:g}", "ドル"
+    if unit == "shares":
+        return f"{value:.0f}", "株"
     return f"{value:g}", unit
 
 
+UNIT_ORDER = ("USD", "USD/shares", "shares")
+
+
 def _facts_for(gaap: dict, tags: list[str]) -> list[tuple[str, dict]]:
-    """(tag, fact) pairs of the first tag that has data, in unit order USD, USD/shares."""
+    """(tag, fact) pairs of the first tag that has data, in unit order USD, USD/shares, shares."""
     for tag in tags:
         units = gaap.get(tag, {}).get("units", {})
-        facts = units.get("USD") or units.get("USD/shares")
-        if facts:
-            unit = "USD" if units.get("USD") else "USD/shares"
-            return [(tag, {**f, "_unit": unit}) for f in facts]
+        unit = next((u for u in UNIT_ORDER if units.get(u)), None)
+        if unit:
+            return [(tag, {**f, "_unit": unit}) for f in units[unit]]
     return []
 
 
@@ -189,6 +215,9 @@ def main() -> None:
     for r in sorted(rows, key=lambda r: (r["item"], r["period_end"])):
         print(f"{r['period_end']}\t{r['item']}\t{r['value']}\t{r['unit']}\t{r['context']}")
     if args.company:
+        if not rows:  # a header-only file would look like data to the analyses
+            raise SystemExit("no annual values in companyfacts (no 10-K yet?): financials.csv not written; "
+                             "copy the annual figures of the S-1/424B4 into raw instead")
         out = company_dir(args.company) / "data" / "financials.csv"
         upsert(out, rows)
         print(f"\nupserted {len(rows)} rows -> {out}")

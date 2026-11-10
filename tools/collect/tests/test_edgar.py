@@ -49,6 +49,25 @@ def test_years_limit_drops_older_fiscal_years():
     assert ends == {"2025-12-31"}
 
 
+def test_debt_leases_sbc_and_shares_are_extracted():
+    facts = {"facts": {"us-gaap": {
+        **FACTS["facts"]["us-gaap"],
+        "LongTermDebtNoncurrent": {"units": {"USD": [_fact(120_500_000, "2025-12-31")]}},
+        "OperatingLeaseLiabilityNoncurrent": {"units": {"USD": [_fact(40_000_000, "2025-12-31")]}},
+        "MarketableSecuritiesCurrent": {"units": {"USD": [_fact(300_000_000, "2025-12-31")]}},
+        "ShareBasedCompensation": {"units": {"USD": [_fact(55_000_000, "2025-12-31", "2025-01-01")]}},
+        "InterestExpense": {"units": {"USD": [_fact(9_000_000, "2025-12-31", "2025-01-01")]}},
+        "CommonStockSharesOutstanding": {"units": {"shares": [_fact(210_000_000, "2025-12-31")]}},
+    }}}
+    rows = {(r["period_end"], r["item"]): (r["value"], r["unit"]) for r in annual_rows(facts)}
+    assert rows[("2025-12-31", "long_term_loans")] == ("120.5", "百万ドル")
+    assert rows[("2025-12-31", "lease_liabilities_noncurrent")] == ("40", "百万ドル")
+    assert rows[("2025-12-31", "short_term_investments")] == ("300", "百万ドル")
+    assert rows[("2025-12-31", "share_based_compensation")] == ("55", "百万ドル")
+    assert rows[("2025-12-31", "interest_expense")] == ("9", "百万ドル")
+    assert rows[("2025-12-31", "shares_outstanding")] == ("210000000", "株")
+
+
 def test_render_uses_dollar_unit_for_edgar_rows():
     table = financials_table(annual_rows(FACTS), 10)
     assert "項目（百万ドル）" in table and "EPS（ドル）" in table

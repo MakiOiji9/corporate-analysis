@@ -3,6 +3,7 @@
 Usage:
   xbrl_financials.py <extracted_dir_or_zip> --company <dir> [--doc-id ID]   # upsert data/financials.csv
   xbrl_financials.py <extracted_dir_or_zip> --dump <regex>                  # inspect raw rows (element/label)
+  xbrl_financials.py --all --company <dir>    # every own annual report under sources/ (peers' are skipped)
 
 Reads the jpcrp*.csv (UTF-16, tab separated) of the main document. Extracts the
 5-year 「主要な経営指標等の推移」(summary, split-adjusted as reported) and the
@@ -28,6 +29,9 @@ FIELDS = ["doc_id", "period_end", "item", "value", "unit", "element", "context"]
 JPY_PER_MILLION = 1_000_000
 # 'pure' values that are a multiple or a count, not a ratio to show in %
 PURE_NOT_PERCENT = {"summary.per": "倍", "summary.employees": "人"}
+# an EDINET document id (8 letters / digits) + _csv; not the XBRL_TO_CSV folder inside a package (Windows globs
+# ignore case)
+PACKAGE = re.compile(r"^[A-Za-z0-9]{8}_csv$")
 RELATIVE_YEARS = {"CurrentYear": 0, "Prior1Year": 1, "Prior2Year": 2, "Prior3Year": 3, "Prior4Year": 4}
 
 # item -> candidate element local names (first found wins). Summary items come from
@@ -80,7 +84,8 @@ STATEMENT_ITEMS = {
     "receivables": ["TradeAndOtherReceivablesCAIFRS", "TradeReceivablesCAIFRS",
                     "NotesAndAccountsReceivableTradeAndContractAssets",
                     "AccountsReceivableTradeAndContractAssets",
-                    "NotesAndAccountsReceivableTrade", "AccountsReceivableTrade"],
+                    "NotesAndAccountsReceivableTrade", "AccountsReceivableTrade",
+                    "AccountsReceivableAndContractAssetsCA"],  # a common company-extension name (e.g. 3798)
     "inventories": ["InventoriesCAIFRS", "Inventories"],
     "work_in_process": ["WorkInProcess"],
     "current_assets": ["CurrentAssetsIFRS", "CurrentAssets"],
@@ -96,7 +101,10 @@ STATEMENT_ITEMS = {
     "cfo": ["NetCashProvidedByUsedInOperatingActivitiesIFRS", "NetCashProvidedByUsedInOperatingActivities"],
     "cfi": ["NetCashProvidedByUsedInInvestingActivitiesIFRS", "NetCashProvidedByUsedInInvestmentActivities"],
     "cff": ["NetCashProvidedByUsedInFinancingActivitiesIFRS", "NetCashProvidedByUsedInFinancingActivities"],
-    "depreciation": ["DepreciationAndAmortizationOpeCFIFRS", "DepreciationAndAmortizationOpeCF"],
+    # newer IFRS filers tag the CF line with a company extension that includes impairment; the 営業費用 note is the
+    # standard element without it
+    "depreciation": ["DepreciationAndAmortizationOpeCFIFRS", "DepreciationAndAmortizationOperatingExpensesIFRS",
+                     "DepreciationAndAmortizationOpeCF"],
     "capex_tangible": ["PurchaseOfPropertyPlantAndEquipmentInvCFIFRS",
                        "PurchaseOfPropertyPlantAndEquipmentAndIntangibleAssetsInvCFIFRS",
                        "PurchaseOfPropertyPlantAndEquipmentInvCF"],
@@ -108,6 +116,21 @@ STATEMENT_ITEMS = {
     "dividends_paid": ["DividendsPaidFinCFIFRS", "CashDividendsPaidFinCF"],
     "treasury_stock_purchase": ["PaymentsForPurchaseOfTreasurySharesFinCFIFRS", "PurchaseOfTreasuryStockFinCF"],
     "cash_equivalents": ["CashAndCashEquivalentsIFRS", "CashAndCashEquivalents"],
+    # for EV, net cash, adjusted FCF and the interest coverage
+    "lease_liabilities_current": ["LeaseLiabilitiesCLIFRS", "LeaseObligationsCL"],
+    "lease_liabilities_noncurrent": ["LeaseLiabilitiesNCLIFRS", "LeaseObligationsNCL"],
+    "non_controlling_interests": ["NonControllingInterestsIFRS", "NonControllingInterests"],
+    "goodwill": ["GoodwillIFRS", "Goodwill"],
+    "intangible_assets": ["IntangibleAssetsIFRS", "IntangibleAssets"],
+    "short_term_investments": ["OtherFinancialAssetsCAIFRS", "ShortTermInvestmentSecurities", "SecuritiesCA"],
+    "investment_securities": ["InvestmentSecurities"],
+    "equity_method_investments": ["InvestmentsAccountedForUsingEquityMethodIFRS"],
+    "interest_expense": ["FinanceCostsIFRS", "InterestExpensesNOE"],  # IFRS 金融費用 (interest and other costs)
+    "income_taxes": ["IncomeTaxExpenseIFRS", "IncomeTaxes"],
+    "profit_before_tax": ["ProfitLossBeforeTaxIFRS", "IncomeBeforeIncomeTaxes"],
+    "gross_profit": ["GrossProfitIFRS", "GrossProfit"],
+    "lease_repayments": ["RepaymentsOfLeaseObligationsFinCFIFRS", "RepaymentsOfLeaseLiabilitiesFinCFIFRS",
+                         "RepaymentsOfLeaseObligationsFinCF", "RepaymentsOfFinanceLeaseObligationsFinCF"],
 }
 
 
@@ -210,6 +233,39 @@ def extract(rows: list[Row], doc_id: str) -> list[dict]:
     return out
 
 
+def security_code(rows: list[Row]) -> str | None:
+    """The 4-character securities code of the filer (SecurityCodeDEI is 5 characters with a check digit)."""
+    found = next((r.value for r in rows if r.element.endswith("SecurityCodeDEI") and r.value.strip()), None)
+    return found.strip()[:4].upper() if found else None
+
+
+def filing_sources(root: Path) -> list[Path]:
+    """Every XBRL->CSV package under root: an extracted *_csv directory, else its *_csv.zip."""
+    dirs = {p.name: p for p in root.rglob("*_csv") if p.is_dir() and PACKAGE.match(p.name)}
+    zips = {p.stem: p for p in root.rglob("*_csv.zip") if PACKAGE.match(p.stem)}
+    return [dirs.get(name) or zips[name] for name in sorted(set(dirs) | set(zips))]
+
+
+def extract_all(root: Path, ticker: str) -> tuple[list[dict], list[str], list[str]]:
+    """The rows of every annual report of `ticker` under root, processed oldest fiscal year first so a later
+    filing's restated prior year wins. Returns (rows, doc_ids used oldest first, doc_ids skipped: other filers
+    such as peers, or packages without a fiscal year end)."""
+    filings, skipped = [], []
+    for source in filing_sources(root):
+        doc_id = source.name.split("_")[0]
+        rows = load_rows(source)
+        fy_end = next((r.value for r in rows if r.element.endswith("CurrentFiscalYearEndDateDEI")), None)
+        if not fy_end or security_code(rows) != ticker.upper():
+            skipped.append(doc_id)
+            continue
+        filings.append((fy_end, doc_id, rows))
+    merged: dict[tuple[str, str], dict] = {}
+    for _, doc_id, rows in sorted(filings, key=lambda f: (f[0], f[1])):
+        for r in extract(rows, doc_id):
+            merged[(r["period_end"], r["item"])] = r
+    return list(merged.values()), [d for _, d, _ in sorted(filings, key=lambda f: (f[0], f[1]))], skipped
+
+
 def upsert(csv_path: Path, rows: list[dict]) -> None:
     """Replace rows with the same (period_end, item), keep others (process-safe)."""
     keys = {(r["period_end"], r["item"]) for r in rows}
@@ -222,12 +278,30 @@ def upsert(csv_path: Path, rows: list[dict]) -> None:
 def main() -> None:
     utf8_stdout()
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("source")
+    ap.add_argument("source", nargs="?")
     ap.add_argument("--company")
     ap.add_argument("--doc-id", default="")
     ap.add_argument("--dump")
+    ap.add_argument("--all", action="store_true",
+                    help="every annual report of the company under companies/<dir>/sources (oldest first)")
     args = ap.parse_args()
 
+    if args.all:
+        if not args.company:
+            ap.error("--all needs --company")
+        company = company_dir(args.company)
+        rows, used, skipped = extract_all(company / "sources", company.name.split("_", 1)[0])
+        if not used:
+            raise SystemExit(f"no annual report XBRL->CSV of {company.name} under sources/ (edinet.py fetch --kind csv)")
+        out = company / "data" / "financials.csv"
+        upsert(out, rows)
+        years = sorted({r["period_end"] for r in rows})
+        print(f"upserted {len(rows)} rows from {len(used)} filings ({', '.join(used)}) -> {out}\n"
+              f"years: {years[0]}..{years[-1]} ({len(years)})" + (f"\nskipped (other filers): {', '.join(skipped)}"
+                                                                  if skipped else ""))
+        return
+    if not args.source:
+        ap.error("source is required (or --all --company)")
     source = Path(args.source)
     rows = load_rows(source)
     if args.dump:

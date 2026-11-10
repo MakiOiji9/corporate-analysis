@@ -29,7 +29,8 @@ ticker, name, url, market, mode, 企業ディレクトリ, 収集日, 取得経�
 
 ## Phase 3: 財務データの時系列（5〜10年）
 1. **年次財務**
-   - EDINET 経路: 過去の有報（最新期と5期前などで10年をカバー）を `edinet.py fetch --kind csv` → `xbrl_financials.py {展開先} --company {dir}` を**古い順に**実行
+   - EDINET 経路: `edinet.py list --code {ticker} --fy-end-month {決算月} --years 10` で過去10期の有報を探し、**全期**を `edinet.py fetch --kind csv` で取得してから `xbrl_financials.py --all --company {dir}` を1回実行する（財務諸表は各有報に2期分しか無いので、5期おきでは減価償却費・借入金・リース負債などが歯抜けになる。`--all` は sources/ の自社の有報だけを古い順に取り込み、同業の有報は飛ばす）
+   - **日本株は `data/financials.csv` が無ければ Phase 3 は未完了**。`--all` の出力の「years」が5年未満なら、取れなかった期と理由を報告の3章に書く
    - PDF 経路: 過去の有報 PDF を `fetch.py --text` → `find_pages.py fin`（各有報に2期分）
    - どちらでも取れない年度だけ IRBANK・株探で補い、確度「二次」と明記
 2. **会社計画と実績**: 各期の本決算短信の「次期予想」が期初予想。iXBRL（.htm）を `fetch.py` → `tdnet_summary.py --company {dir}`。期中修正は「業績予想の修正」開示から。古い年度は短信 PDF・株探記事で補い確度を明記

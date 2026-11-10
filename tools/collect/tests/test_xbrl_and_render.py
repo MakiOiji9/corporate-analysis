@@ -5,7 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from render_tables import financials_table, forecast_records  # noqa: E402
-from xbrl_financials import extract, load_rows, upsert  # noqa: E402
+from xbrl_financials import extract, extract_all, load_rows, upsert  # noqa: E402
 
 HEADER = "要素ID\t項目名\tコンテキストID\t相対年度\t連結・個別\t期間・時点\tユニットID\t単位\t値"
 LINES = [
@@ -72,6 +72,57 @@ def test_extract_ifrs_summary_and_statements(tmp_path):
     assert got[("2026-02-28", "long_term_loans")] == ("64457", "百万円")
     assert got[("2026-02-28", "cfo")] == ("52170", "百万円")
     assert got[("2026-02-28", "dividends_paid")] == ("-17670", "百万円")
+
+
+def _filing(dir_: Path, name: str, lines: list[str]) -> None:
+    target = dir_ / name / "XBRL_TO_CSV" / "jpcrp030000-asr-001_E01741-000_x.csv"
+    target.parent.mkdir(parents=True)
+    target.write_text("\n".join([HEADER, *lines]) + "\n", encoding="utf-16")
+
+
+def _dei(fy_end: str, code: str = "65060") -> list[str]:
+    return [f"jpdei_cor:CurrentFiscalYearEndDateDEI\t期末日\tFilingDateInstant\t提出日時点\tその他\t時点\t\t\t{fy_end}",
+            f"jpdei_cor:SecurityCodeDEI\t証券コード\tFilingDateInstant\t提出日時点\tその他\t時点\t\t\t{code}"]
+
+
+def test_extract_leases_minority_goodwill_interest_and_tax(tmp_path):
+    lines = _dei("2026-02-28") + [
+        f"jpigp_cor:{el}\tx\t{ctx}\t当期\t連結\t期間\tJPY\t円\t{value}" for el, ctx, value in (
+            ("LeaseLiabilitiesCLIFRS", "CurrentYearInstant", 3737000000),
+            ("LeaseLiabilitiesNCLIFRS", "CurrentYearInstant", 11085000000),
+            ("NonControllingInterestsIFRS", "CurrentYearInstant", 10073000000),
+            ("GoodwillIFRS", "CurrentYearInstant", 7412000000),
+            ("OtherFinancialAssetsCAIFRS", "CurrentYearInstant", 3162000000),
+            ("InvestmentsAccountedForUsingEquityMethodIFRS", "CurrentYearInstant", 5513000000),
+            ("FinanceCostsIFRS", "CurrentYearDuration", 3067000000),
+            ("IncomeTaxExpenseIFRS", "CurrentYearDuration", 12981000000),
+            ("ProfitLossBeforeTaxIFRS", "CurrentYearDuration", 49563000000),
+            ("GrossProfitIFRS", "CurrentYearDuration", 191236000000),
+            ("RepaymentsOfLeaseObligationsFinCFIFRS", "CurrentYearDuration", -4029000000))]
+    _filing(tmp_path, "a", lines)
+    got = {r["item"]: r["value"] for r in extract(load_rows(tmp_path / "a"), "S100NEW")}
+    assert (got["lease_liabilities_current"], got["lease_liabilities_noncurrent"]) == ("3737", "11085")
+    assert got["non_controlling_interests"] == "10073" and got["goodwill"] == "7412"
+    assert got["short_term_investments"] == "3162" and got["equity_method_investments"] == "5513"
+    assert got["interest_expense"] == "3067" and got["income_taxes"] == "12981"
+    assert got["profit_before_tax"] == "49563" and got["gross_profit"] == "191236"
+    assert got["lease_repayments"] == "-4029"
+
+
+def test_extract_all_keeps_own_filings_oldest_first(tmp_path):
+    sales = "jpigp_cor:RevenueIFRS\t売上収益\t{ctx}\t当期\t連結\t期間\tJPY\t円\t{value:.0f}"
+    _filing(tmp_path, "S100NEW1_csv", _dei("2026-02-28") + [sales.format(ctx="CurrentYearDuration", value=300e6),
+                                                          sales.format(ctx="Prior1YearDuration", value=210e6)])
+    _filing(tmp_path, "S100OLD1_csv", _dei("2025-02-28") + [sales.format(ctx="CurrentYearDuration", value=200e6),
+                                                          sales.format(ctx="Prior1YearDuration", value=100e6)])
+    _filing(tmp_path, "S100PEER_csv", _dei("2026-02-28", "77770") + [sales.format(ctx="CurrentYearDuration",
+                                                                                 value=999e6)])
+    rows, used, skipped = extract_all(tmp_path, "6506")
+    got = {(r["period_end"], r["item"]): r["value"] for r in rows}
+    assert got[("2024-02-29", "net_sales")] == "100"
+    assert got[("2025-02-28", "net_sales")] == "210"  # the newer filing's restated prior year wins
+    assert got[("2026-02-28", "net_sales")] == "300"
+    assert used == ["S100OLD1", "S100NEW1"] and skipped == ["S100PEER"]
 
 
 def test_february_year_ends_keep_the_last_day_of_february(tmp_path):

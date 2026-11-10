@@ -60,4 +60,4 @@
 | Yahoo Finance チャート API | — | — | `https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?range=1y&interval=1d` で日次 OHLC。**二次** |
 
 - IPO 直後の会社は 10-K が無い。年次は 424B4（最終目論見書）と S-1 で代替し、四半期は 10-Q を使う
-- `xbrl_financials.py` / `tdnet_summary.py` は日本株専用のため、米国株は `data/financials.csv` を作れない（raw に手で転記する）
+- `xbrl_financials.py` / `tdnet_summary.py` は日本株専用。米国株の `data/financials.csv` は `edgar.py facts` で作る（有利子負債・リース負債・有価証券・株式報酬・支払利息も取る）。10-K をまだ出していない上場直後の会社は companyfacts に四半期の値しか無いので、年次は S-1/424B4 の本文から raw に転記する

@@ -45,7 +45,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 | `pdf_text.py` | PDF/HTML → ページ区切りテキスト | `<原本>.txt` |
 | `find_pages.py` | テキストから表紙・見出し・財務行・任意パターンのページだけ抽出 | 標準出力 |
 | `edinet.py` | EDINET API v2 の書類一覧・取得（要 `EDINET_API_KEY`） | `sources/`、`.cache/edinet/` |
-| `xbrl_financials.py` | EDINET XBRL→CSV から財務を抽出 | `data/financials.csv` |
+| `xbrl_financials.py` | EDINET XBRL→CSV から財務を抽出（リース負債・非支配持分・のれん・金融費用なども）。`--all --company {dir}` で sources/ の自社の有報をすべて古い順に取り込む | `data/financials.csv` |
 | `tdnet_summary.py` | 決算短信 iXBRL から実績・予想・配当・株式数を抽出 | `data/tdnet_facts.csv` |
 | `edgar.py` | SEC EDGAR の提出書類一覧（`list`）、companyfacts から年次財務を抽出（`facts`。米国株。要 `SEC_USER_AGENT`） | 標準出力、`data/financials.csv` |
 | `render_tables.py` | data の CSV から Markdown 表を出力 | 標準出力 |
