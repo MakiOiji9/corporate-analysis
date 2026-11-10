@@ -10,6 +10,7 @@ import cr_extras as X
 import cr_factors as F
 import cr_judge as J
 import cr_legends as L
+import cr_positioning as POS
 import cr_prices as CP
 import cr_status as S
 import mdparse as M
@@ -198,7 +199,7 @@ def gaps(found: dict[str, dict]) -> list[dict]:
 def build(root: Path, company: S.Company, today: str, status: dict) -> dict:
     found = {step.key: analysis(step, company) for step in S.STEPS}
     market = market_of(company)
-    prices = CP.summarize(company.path)
+    prices = {**CP.summarize(company.path), "positioning": POS.summarize(company.path)}
     outlook = {**status["outlook"], **outlook_rows(root, status["outlook"], market)}
     price = _get(found["valuation"], "detail", "price") or {}
     per_forecast = _get(found["valuation"], "detail", "per_forecast")

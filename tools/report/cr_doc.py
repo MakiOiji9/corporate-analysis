@@ -309,7 +309,8 @@ def render_brief(facts: dict, md_rel: str) -> str:
     lines = [f"# 企業分析レポートの材料 — {facts['name']}", "",
              f"作成日: {facts['date']}。書く先: {md_rel}（FILL の欄だけ）。判定と数値はこの brief のものを使い、変えない。", ""]
     lines += _premise(facts) + _analyses(facts) + [""] + _horizons(facts) + _prices(facts) + [""]
-    lines += T.brief_lines(technicals(facts), facts["horizons"]["long"]["verdict"])
+    lines += T.brief_lines(technicals(facts), facts["horizons"]["long"]["verdict"],
+                           (facts.get("prices") or {}).get("positioning"))
     lines += _recent(facts) + _conditions(facts) + L.brief_lines(facts)
     lines += ["## 6. 材料不足（4.3 の材料）", ""]
     lines += [f"- {g['label']}: {g['gap']}" for g in facts["gaps"]] or ["- なし"]

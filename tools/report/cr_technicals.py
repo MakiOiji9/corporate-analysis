@@ -412,10 +412,18 @@ def alignment(t: dict, long_verdict: str | None) -> str | None:
     return None
 
 
-def brief_lines(t: dict, long_verdict: str | None) -> list[str]:
+def positioning_lines(positioning: dict | None) -> list[str]:
+    """The 需給 sentence (cr_positioning.summarize) and its notes, for the brief."""
+    if not positioning:
+        return []
+    return [f"- {positioning['text']}"] + [f"  - 注目: {n}" for n in positioning.get("notes") or []]
+
+
+def brief_lines(t: dict, long_verdict: str | None, positioning: dict | None = None) -> list[str]:
     lines = ["## 4.1 テクニカル（md 6章の材料。状態・点数・水準はスクリプトが決めた。変えない）", ""]
     if not t.get("ok") or t["state"] == NO_DATA:
-        return lines + [f"- {NO_DATA}。6.1 は「テクニカルの目安は出せない（株価の日数が足りない）」と1文で書く", ""]
+        return lines + [f"- {NO_DATA}。6.1 は「テクニカルの目安は出せない（株価の日数が足りない）」と1文で書く"] \
+            + positioning_lines(positioning) + [""]
     lv, band, vol = t["levels"], t.get("band") or {}, t["volume"]
     stop = lv.get("stop")
     lines += [f"- 状態: **{t['state']}**（テクニカル点数 {t['score']:+.2f}。短期・中期の「株価のテクニカル」の点数）",
@@ -425,7 +433,7 @@ def brief_lines(t: dict, long_verdict: str | None) -> list[str]:
               "- ボリンジャーバンド（20日、±2σ）: " + (f"上 {band['upper']:,.0f}・下 {band['lower']:,.0f}、%b {band['percent_b']:.0f}%"
                                                   if band else "—"),
               f"- {vol['value']}",
-              f"- シグナル: {'、'.join(t['signals']) or 'なし'}", "",
+              f"- シグナル: {'、'.join(t['signals']) or 'なし'}", *positioning_lines(positioning), "",
               "### 参考水準（条件の目安。予想ではない）", "",
               f"- 押し目の目安（下の支持線。近い順）: {_levels_text(lv['supports'])}",
               f"- 利益確定の目安（上の抵抗線。近い順）: {_levels_text(lv['resistances'])}",

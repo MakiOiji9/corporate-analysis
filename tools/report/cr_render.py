@@ -336,8 +336,10 @@ def technical_section(facts: dict, parsed: dict) -> str:
              + _level_box("stop", "損切りの目安", [stop] if stop else [], stop["basis"] if stop else "") + "</div>")
     head = (f'<p><b>今の状態</b>: <span class="badge v-watch">{esc(t["state"])}</span>'
             f'　テクニカル点数 {esc(D.score_text(t["score"]))}（短期・中期の判定の「株価のテクニカル」）</p>')
+    positioning = facts["prices"].get("positioning") or {}
     rows = [["トレンド", t["trend"]["value"]], ["勢い", t["momentum"]["value"]], ["位置", t["position"]["value"]],
-            ["出来高", t["volume"]["value"]], ["シグナル", "、".join(t["signals"]) or "なし"]]
+            ["出来高", t["volume"]["value"]], ["シグナル", "、".join(t["signals"]) or "なし"],
+            ["需給（信用残・空売り）", "。".join([positioning.get("text") or "—", *(positioning.get("notes") or [])])]]
     note = T.alignment(t, facts["horizons"]["long"]["verdict"])
     body = (head + _paragraphs(parsed.get("technical") or "") + boxes
             + (f'<p class="small"><b>長期の判定との関係</b>: {esc(note)}</p>' if note else "")
