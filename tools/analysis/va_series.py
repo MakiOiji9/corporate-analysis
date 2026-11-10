@@ -15,6 +15,7 @@ Amounts are in the unit of the yearly series (百万円 for a Japanese company, 
 """
 from __future__ import annotations
 
+import calendar
 import datetime as dt
 import re
 import unicodedata
@@ -49,6 +50,8 @@ PEER_COLUMNS = {"company": ("会社",), "price": ("株価",), "market_cap": ("�
 # a peer multiple is price ÷ the per-share figure when 6章 gives it (the shown PER of a site may use another date)
 PEER_RATIOS = (("per_actual", "eps_actual"), ("per_forecast", "eps_forecast"), ("pbr", "bps"))
 UNCONFIRMED = "未確認"
+FULL_YEAR_SLACK = 10  # days: prices starting later than this into a fiscal year do not cover it
+COMPUTED_SOURCE, RAW_SOURCE = "data/prices.csv × EPS・BPS（算出）", "株価データ 4章（raw）"
 NO_ACTION = re.compile(r"^\s*(—|-|なし|該当なし)?\s*$")
 TDNET_BPS_CONTEXT = re.compile(r"^(CurrentYearInstant|CurrentAccumulatedQ\dInstant)_ConsolidatedMember_ResultMember$")
 
@@ -239,6 +242,70 @@ def history_data(found: Found) -> list[dict]:
                         rows.setdefault(year, {})[key] = v
     return [{"year": y, **{k: v.get(k) for k in ("per_high", "per_low", "pbr_high", "pbr_low", "per_end")}}
             for y, v in sorted(rows.items())]
+
+
+# ---------- the range computed from the daily prices ----------
+
+def _month_end(year: str) -> dt.date:
+    """'2026-02' -> 2026-02-28 (the last day of a fiscal year end month)."""
+    y, m = int(year[:4]), int(year[5:7])
+    return dt.date(y, m, calendar.monthrange(y, m)[1])
+
+
+def _daily(company) -> list[tuple[str, float, float]]:
+    """(date, high, low) of data/prices.csv (split-adjusted, tools/collect/stock_prices.py), oldest first."""
+    path = company.path / "data" / "prices.csv"
+    out = []
+    for r in read_csv_rows(path) if path.exists() else []:
+        try:
+            close = float(r["close"])
+            out.append((r["date"], float(r.get("high") or close), float(r.get("low") or close)))
+        except (KeyError, TypeError, ValueError):
+            continue
+    return sorted(out)
+
+
+def price_history(company, years: dict) -> list[dict]:
+    """[{year, per_high, per_low, pbr_high, pbr_low, source}] from the daily prices of each fiscal year (the 12
+    months up to its year end) and that year's EPS on the newest share basis (prices.csv is split-adjusted the same
+    way). BPS on that basis = 自己資本 × EPS ÷ 純利益 (the average share count behind the EPS; an estimate). A year
+    needs a positive EPS (PER) or a positive net income and equity (PBR), and prices from its first month."""
+    daily = _daily(company)
+    if not daily:
+        return []
+    out = []
+    for row in years["rows"]:
+        end = _month_end(row["year"])
+        start = end - dt.timedelta(days=365)
+        if daily[0][0] > (start + dt.timedelta(days=FULL_YEAR_SLACK)).isoformat():
+            continue  # the prices do not cover this fiscal year
+        span = [(h, lo) for d, h, lo in daily if start.isoformat() < d <= end.isoformat()]
+        if not span:
+            continue
+        high, low = max(h for h, _ in span), min(lo for _, lo in span)
+        eps, ni, equity = row.get("eps"), row.get("net_income"), row.get("equity")
+        per = (high / eps, low / eps) if eps and eps > 0 else (None, None)
+        bps = equity * eps / ni if eps and ni and ni > 0 and equity and equity > 0 else None
+        pbr = (high / bps, low / bps) if bps else (None, None)
+        if per[0] is None and pbr[0] is None:
+            continue
+        out.append({"year": row["year"], "per_high": _r2(per[0]), "per_low": _r2(per[1]), "pbr_high": _r2(pbr[0]),
+                    "pbr_low": _r2(pbr[1]), "source": COMPUTED_SOURCE})
+    return out
+
+
+def _r2(value: float | None) -> float | None:
+    return round(value, 2) if value is not None else None
+
+
+def merged_history(computed: list[dict], reported: list[dict]) -> list[dict]:
+    """The computed years win for the four range values; the raw table fills the years the prices do not cover
+    and keeps its 期末PER."""
+    by_year = {h["year"]: {**h, "source": RAW_SOURCE} for h in reported}
+    for h in computed:
+        old = by_year.get(h["year"], {"per_end": None})
+        by_year[h["year"]] = {**old, **{k: v for k, v in h.items() if v is not None or k == "source"}}
+    return [by_year[y] for y in sorted(by_year)]
 
 
 # ---------- the target's years ----------
@@ -486,6 +553,7 @@ def base(company, found: dict[str, Found]) -> dict:
         per_share = {**per_share, "bps": tdnet}
     price = price_data(found["price"])
     return {"price": price, "per_share": per_share, "reported": reported_data(found["current"]),
-            "history": history_data(found["history"]), "analyst": analyst_growth(found["analyst"]),
+            "history": merged_history(price_history(company, years), history_data(found["history"])),
+            "analyst": analyst_growth(found["analyst"]),
             "years": years, "latest_year": latest, "forecast_eps": forecast_eps(company, per_share, latest),
             "market_cap": market_cap(price, years["unit"]), "peers": peers(company, found)}

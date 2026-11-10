@@ -129,6 +129,37 @@ def test_roic_capital_adds_leases_and_deducts_capped_excess_cash():
     assert MR._capital(series(**{"2026-03": {"equity": 100, "debt": 20, "cash": 500}})) == {"2026-03": 120.0}
 
 
+def _prices(path: Path, days: list[tuple[str, float, float]]) -> None:
+    (path / "data").mkdir(parents=True, exist_ok=True)
+    lines = ["date,open,high,low,close,adj_close,volume,retrieved"]
+    lines += [f"{d},{h},{h},{lo},{lo},{lo},100,2026-11-10" for d, h, lo in days]
+    (path / "data" / "prices.csv").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def test_price_history_from_daily_prices_and_eps(tmp_path):
+    import datetime as dt
+
+    import va_series as V
+    start = dt.date(2024, 4, 1)
+    days = [((start + dt.timedelta(days=i)).isoformat(), 120.0 if i == 100 else 100.0, 80.0 if i == 200 else 90.0)
+            for i in range(730)]
+    company = SimpleNamespace(path=tmp_path, ticker="9999")
+    _prices(tmp_path, days)
+    years = {"rows": [{"year": "2024-03", "eps": 5.0, "net_income": 50.0, "equity": 500.0},   # before the prices
+                      {"year": "2025-03", "eps": 10.0, "net_income": 100.0, "equity": 1000.0},
+                      {"year": "2026-03", "eps": -1.0, "net_income": -10.0, "equity": 900.0}]}  # a loss year
+    got = V.price_history(company, years)
+    # 2025-03: high 120 and low 80 within the year; EPS 10 -> PER 12 / 8; BPS = 1000 × 10 ÷ 100 = 100 -> PBR 1.2 / 0.8
+    assert got == [{"year": "2025-03", "per_high": 12.0, "per_low": 8.0, "pbr_high": 1.2, "pbr_low": 0.8,
+                    "source": V.COMPUTED_SOURCE}]
+    merged = V.merged_history(got, [{"year": "2024-03", "per_high": 30.0, "per_low": 20.0, "pbr_high": 3.0,
+                                     "pbr_low": 2.0, "per_end": 25.0},
+                                    {"year": "2025-03", "per_high": 99.0, "per_low": 1.0, "pbr_high": None,
+                                     "pbr_low": None, "per_end": 11.0}])
+    assert [(h["year"], h["per_high"], h["per_end"], h["source"]) for h in merged] == [
+        ("2024-03", 30.0, 25.0, V.RAW_SOURCE), ("2025-03", 12.0, 11.0, V.COMPUTED_SOURCE)]
+
+
 def test_ev_claims_adds_leases_minority_and_short_investments():
     row = {"debt": 100.0, "cash": 50.0, "lease": 15.0, "nci": 10.0, "short_investments": 5.0}
     debt, cash, added = VA.ev_claims(row)
