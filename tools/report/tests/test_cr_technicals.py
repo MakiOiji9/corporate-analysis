@@ -87,6 +87,15 @@ def test_stop_is_labelled_52_week_low_when_clamped():
     assert stop["label"] == "52週安値" and stop["price"] == 60.0
 
 
+def test_price_under_every_average_still_has_the_52_week_low_as_support():
+    # a fall to 82, just above the year's low of 79 (one dip): the averages and recent lows are all above the price
+    closes = [100.0] * 200 + [80.0] + [100.0] * 160 + [100.0 - i for i in range(1, 19)]
+    t = T.evaluate(_rows(closes))
+    assert [x["label"] for x in t["levels"]["supports"]] == [T.LOW_52]
+    stop = t["levels"]["stop"]
+    assert stop["label"] == f"{T.LOW_52}の 1 ATR 下" and stop["price"] < 79.0
+
+
 def test_short_history_scores_position_only():
     t = T.evaluate(_rows([10.0, 12.0, 11.0]))
     assert t["ok"] and t["trend"]["score"] is None and t["momentum"]["score"] is None

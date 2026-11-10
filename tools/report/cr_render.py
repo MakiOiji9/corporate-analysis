@@ -25,6 +25,7 @@ OK_HTML = {True: '<span class="ok-yes">○ 満たす</span>', False: '<span clas
 TOC = (("conclusion", "結論"), ("reasons", "期間ごとの良い点・悪い点"), ("step1", "STEP 1 事業"),
        ("step2", "STEP 2 財務"), ("step3", "STEP 3 株価"), ("price", "株価のレンジ"), ("technical", "売買の目安"),
        ("thesis", "投資の理由"), ("legends", "投資の神の視点"), ("gaps", "材料不足"), ("glossary", "用語集"))
+SMALL_CHART_WIDTH = 380
 TECH_LEAD = ("日々の株価から計算した今のチャートの状態と、注目する価格の水準。水準は「ここを下回ったら」「ここに近づいたら」と"
              "見るための条件の目安で、株価の予想でも売買の推奨でもない。事業・財務の判定（結論）は変えない。")
 LEGEND_LEAD = ("3人の投資哲学をこの会社の分析結果に当てはめた参考の視点。評価はスクリプトが資料の条件で決め、"
@@ -307,13 +308,17 @@ def _tech_charts(t: dict) -> str:
               {"label": "ボリンジャーバンド +2σ", "points": ch["bb_upper"], "cls": "band"},
               {"label": "ボリンジャーバンド −2σ", "points": ch["bb_lower"], "cls": "band"}]
     legend = _legend_row([("s0", "終値"), ("s1", "13週線"), ("s2", "26週線"), ("band", "ボリンジャーバンド ±2σ")])
+    drawn = {h["cls"] for h in hlines}
+    colours = "、".join(text for cls, text in (("sup", "緑の点線＝押し目の目安"), ("res", "紫＝利益確定の目安"),
+                                               ("stop", "赤＝損切りの目安")) if cls in drawn)
     price = (f'<figure class="chartbox"><figcaption><b>直近1年の株価と目安の水準</b>{legend}</figcaption>'
              f'{C.line_chart(series, "直近1年の株価と目安の水準", 0, hlines=hlines)}'
-             '<div class="source">緑の点線＝押し目の目安、黄＝利益確定の目安、赤＝損切りの目安。出典: data/prices.csv</div></figure>')
-    rsi = C.line_chart([{"label": "RSI(14)", "points": ch["rsi"]}], "RSI", 0, height=170,
+             f'<div class="source">{esc(colours + "。" if colours else "")}出典: data/prices.csv</div></figure>')
+    # drawn narrow so the text stays readable when two charts share a row
+    rsi = C.line_chart([{"label": "RSI(14)", "points": ch["rsi"]}], "RSI", 0, width=SMALL_CHART_WIDTH, height=220,
                        hlines=[{"label": "買われすぎ", "value": T.RSI_HIGH, "cls": "ref"},
                                {"label": "売られすぎ", "value": T.RSI_LOW, "cls": "ref"}])
-    macd = C.bar_chart(ch["macd_hist"], "MACD ヒストグラム", 1, height=170)
+    macd = C.bar_chart(ch["macd_hist"], "MACD ヒストグラム", 1, width=SMALL_CHART_WIDTH, height=220)
     return (price + f'<div class="cols"><figure class="chartbox"><figcaption><b>RSI（14日）</b></figcaption>{rsi}'
             f'</figure><figure class="chartbox"><figcaption><b>MACD のヒストグラム（MACD − シグナル）</b></figcaption>'
             f'{macd}</figure></div>')

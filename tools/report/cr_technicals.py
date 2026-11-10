@@ -42,6 +42,7 @@ CHART_DAYS = 250
 
 UP_TREND, DOWN_TREND, RANGE = "上昇トレンド", "下降トレンド", "もみ合い"
 NO_DATA = "判定不能（株価の日数が足りない）"
+LOW_52 = "52週安値"
 TABLE_LABELS = ("状態", "押し目の目安（下の支持線）", "利益確定の目安（上の抵抗線）", "損切りの目安", "シグナル")
 ROW = re.compile(r"^\| (" + "|".join(TABLE_LABELS) + r") \|.*$", re.M)
 # a forecast of the price reaching a level (「2,000円まで上がる。」), not a condition (「2,000円まで下がったら」);
@@ -256,7 +257,7 @@ def levels(rows: list[dict], mas: dict[int, list], upper: float | None, atr_valu
     highs, lows = swings(rows)
     hi52, lo52 = year_range(rows)
     below = [(MA_LABELS[n], mas[n][-1]) for n in (MA_MID, MA_LONG) if mas[n][-1] is not None]
-    below += [(f"直近の安値（{d}）", p) for d, p in lows]
+    below += [(f"直近の安値（{d}）", p) for d, p in lows] + [(LOW_52, lo52)]
     above = [(f"直近の高値（{d}）", p) for d, p in highs] + [("52週高値", hi52)]
     if upper is not None:
         above.append(("ボリンジャーバンド +2σ", upper))
@@ -264,12 +265,14 @@ def levels(rows: list[dict], mas: dict[int, list], upper: float | None, atr_valu
     resistances = _nearest([x for x in above if x[1] > current], current, below=False)
     stop = None
     if supports and atr_value:
-        below_support = supports[0]["price"] - atr_value
-        label = f"{supports[0]['label']}の 1 ATR 下" if below_support >= lo52 else "52週安値"
-        price = max(below_support, lo52)
-        if price < current:
-            stop = {**_level(label, price, current),
-                    "basis": f"最も近い支持線から1日の平均的な値幅（ATR {atr_value:,.0f}）だけ下。52週安値より下にはしない"}
+        # 1 ATR under the nearest support, but not under the 52-week low unless that low is the support itself
+        support = supports[0]
+        price, label = support["price"] - atr_value, f"{support['label']}の 1 ATR 下"
+        if support["label"] != LOW_52 and price < lo52:
+            price, label = lo52, LOW_52
+        stop = {**_level(label, price, current),
+                "basis": f"最も近い支持線から1日の平均的な値幅（ATR {atr_value:,.0f}）だけ下。"
+                         "52週安値が支持線でなければ、52週安値より下にはしない"}
     elif atr_value:
         stop = {**_level("株価の 2 ATR 下", current - 2 * atr_value, current), "basis": "下に支持線が無いため"}
     return {"supports": supports, "resistances": resistances, "stop": stop, "atr": _round(atr_value)}

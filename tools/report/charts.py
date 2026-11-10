@@ -89,15 +89,18 @@ def _spread_labels(items: list[tuple[float, str]], top: float, bottom: float) ->
 
 
 def _hlines(hlines: list[dict], y, left: float, right: float, decimals: int) -> list[str]:
-    """Horizontal reference lines ({label, value, cls}) with their label at the left end."""
-    out = []
+    """Horizontal reference lines ({label, value, cls}) with their labels at the left end, pushed apart vertically
+    so lines close together keep readable labels."""
+    out, labels = [], []
     for h in hlines:
         yy = y(h["value"])
         cls = escape(h.get("cls") or "")
         out.append(f'<line class="hl {cls}" x1="{left}" x2="{right}" y1="{yy:.1f}" y2="{yy:.1f}">'
                    f'<title>{escape(h["label"])}: {fmt(h["value"], decimals)}</title></line>')
-        out.append(f'<text class="hl-l {cls}" x="{left + 4}" y="{yy - 4:.1f}">{escape(h["label"])} '
-                   f'{fmt(h["value"], decimals)}</text>')
+        labels.append((yy - 4, f'class="hl-l {cls}">{escape(h["label"])} {fmt(h["value"], decimals)}'))
+    top = min((yy for yy, _ in labels), default=0) - LABEL_GAP * len(labels)
+    for yy, html in _spread_labels(labels, top, float("inf")):
+        out.append(f'<text x="{left + 4}" y="{yy:.1f}" {html}</text>')
     return out
 
 

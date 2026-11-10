@@ -25,6 +25,7 @@
   --watch: #a86400;
   --pass: #b3261e;
   --pending: #5a6472;
+  --lvl-res: #7b3fa8;
   --consider-bg: #e3f0e8;
   --watch-bg: #f6ead3;
   --pass-bg: #f6e0dd;
@@ -47,7 +48,7 @@
     --paper: #111317; --surface: #191c22; --surface-2: #22262e; --ink: #ece7dc; --ink-2: #bdb7ab; --ink-3: #8f939c;
     --rule: #333843; --rule-soft: #272b33; --accent: #79a6e6; --c0: #79a6e6; --c1: #dcae45; --c2: #8f939c;
     --pos: #4cc08a; --neg: #f0645a; --consider: #4cc08a; --watch: #f0a63a; --pass: #f0645a; --pending: #9aa3b0;
-    --consider-bg: #16312a; --watch-bg: #3a2d14; --pass-bg: #3d1d1b; --pending-bg: #262a31; --on-badge: #111317;
+    --lvl-res: #c79bea; --consider-bg: #16312a; --watch-bg: #3a2d14; --pass-bg: #3d1d1b; --pending-bg: #262a31; --on-badge: #111317;
     --shadow: 0 1px 0 rgba(0, 0, 0, .3), 0 12px 30px -18px rgba(0, 0, 0, .8);
     color-scheme: dark;
   }
@@ -56,7 +57,7 @@
   --paper: #111317; --surface: #191c22; --surface-2: #22262e; --ink: #ece7dc; --ink-2: #bdb7ab; --ink-3: #8f939c;
   --rule: #333843; --rule-soft: #272b33; --accent: #79a6e6; --c0: #79a6e6; --c1: #dcae45; --c2: #8f939c;
   --pos: #4cc08a; --neg: #f0645a; --consider: #4cc08a; --watch: #f0a63a; --pass: #f0645a; --pending: #9aa3b0;
-  --consider-bg: #16312a; --watch-bg: #3a2d14; --pass-bg: #3d1d1b; --pending-bg: #262a31; --on-badge: #111317;
+  --lvl-res: #c79bea; --consider-bg: #16312a; --watch-bg: #3a2d14; --pass-bg: #3d1d1b; --pending-bg: #262a31; --on-badge: #111317;
   --shadow: 0 1px 0 rgba(0, 0, 0, .3), 0 12px 30px -18px rgba(0, 0, 0, .8);
   color-scheme: dark;
 }
@@ -187,17 +188,18 @@ text.s0, circle.s0 { fill: var(--c0); } text.s1, circle.s1 { fill: var(--c1); } 
 .sw.s0 { background: var(--c0); } .sw.s1 { background: var(--c1); } .sw.s2 { background: var(--c2); }
 svg.chart .ln.band { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 2 3; }
 .sw.band { background: var(--ink-3); }
-svg.chart .hl { stroke-width: 1.2; stroke-dasharray: 6 4; }
-svg.chart .hl.sup { stroke: var(--consider); } svg.chart .hl.res { stroke: var(--watch); }
-svg.chart .hl.stop { stroke: var(--pass); } svg.chart .hl.ref { stroke: var(--ink-3); }
-svg.chart .hl-l { font-size: 10.5px; font-variant-numeric: tabular-nums; fill: var(--ink-2); }
-svg.chart .hl-l.sup { fill: var(--consider); } svg.chart .hl-l.res { fill: var(--watch); }
+svg.chart .hl { stroke-width: 1.4; stroke-dasharray: 1 4; stroke-linecap: round; }
+svg.chart .hl.sup { stroke: var(--consider); } svg.chart .hl.res { stroke: var(--lvl-res); }
+svg.chart .hl.stop { stroke: var(--pass); } svg.chart .hl.ref { stroke: var(--ink-3); stroke-dasharray: 4 4; }
+svg.chart .hl-l { font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; fill: var(--ink-2);
+  paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
+svg.chart .hl-l.sup { fill: var(--consider); } svg.chart .hl-l.res { fill: var(--lvl-res); }
 svg.chart .hl-l.stop { fill: var(--pass); }
 .tech-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 8px 0 14px; }
 .tech-box { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 10px 12px;
   min-width: 0; }
 .tech-box h4 { margin: 0 0 6px; font-size: var(--step--1); }
-.tech-box.sup { border-top: 4px solid var(--consider); } .tech-box.res { border-top: 4px solid var(--watch); }
+.tech-box.sup { border-top: 4px solid var(--consider); } .tech-box.res { border-top: 4px solid var(--lvl-res); }
 .tech-box.stop { border-top: 4px solid var(--pass); }
 .tech-box ul { margin: 0; padding-left: 0; list-style: none; font-size: var(--step--1); font-variant-numeric: tabular-nums; }
 @media (max-width: 720px) { .tech-grid { grid-template-columns: 1fr; } }
