@@ -3,6 +3,7 @@
 Usage:
   edgar.py list  --ticker CBRS [--forms 10-K,10-Q,S-1,424B4,8-K] [--limit 40]   # filings with document URLs
   edgar.py facts --ticker CBRS [--company CBRS_cerebras] [--years 10]          # annual values; upsert data/financials.csv
+  edgar.py quarters --ticker CBRS [--company CBRS_cerebras] [--quarters 8]     # 3-month values; data/quarterly.csv
 
 facts reads the us-gaap annual (about 12-month) values of every filing (10-K, and S-1/424B4 before the
 first 10-K) and the balance-sheet values at those fiscal year ends. A later filing wins for the same
@@ -20,7 +21,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # scripts run with python -I
-from common import CACHE_DIR, atomic_write_text, company_dir, http_get, utf8_stdout  # noqa: E402
+from common import CACHE_DIR, atomic_write_text, company_dir, http_get, utf8_stdout, write_csv_atomic  # noqa: E402
 from xbrl_financials import upsert  # noqa: E402
 
 TICKERS_URL = "https://www.sec.gov/files/company_tickers.json"
@@ -146,6 +147,32 @@ def annual_rows(companyfacts: dict, years: int = 10) -> list[dict]:
     return out + equity_ratio_rows(out)
 
 
+QUARTER_DAYS = (80, 100)  # a fiscal quarter of 13 weeks or 3 months
+QUARTER_ITEMS = {"net_sales": DURATION_ITEMS["summary.net_sales"], "gross_profit": ["GrossProfit"],
+                 "operating_income": ["OperatingIncomeLoss"], "net_income": ["NetIncomeLoss"],
+                 "eps": ["EarningsPerShareBasic"]}
+QUARTER_FIELDS = ["period_start", "period_end", "item", "value", "unit", "element", "form", "filed", "accession"]
+
+
+def quarterly_rows(companyfacts: dict, quarters: int = 8) -> list[dict]:
+    """The three-month values (10-Q, and a 10-K's fourth quarter when it tags one) of the newest `quarters`
+    quarters, the most recently filed fact winning. Cash flows are year-to-date in a 10-Q, so they are not here."""
+    gaap = companyfacts.get("facts", {}).get("us-gaap", {})
+    out: list[dict] = []
+    for item, tags in QUARTER_ITEMS.items():
+        facts = [(t, f) for t, f in _facts_for(gaap, tags)
+                 if f.get("start") and QUARTER_DAYS[0] <= _days(f["start"], f["end"]) <= QUARTER_DAYS[1]]
+        for end, (tag, fact) in _latest(facts).items():
+            value, unit = _normalise(float(fact["val"]), fact["_unit"])
+            out.append({"period_start": fact["start"], "period_end": end, "item": item, "value": value, "unit": unit,
+                        "element": f"us-gaap:{tag}", "form": fact.get("form", ""), "filed": fact.get("filed", ""),
+                        "accession": fact.get("accn", "")})
+    if quarters <= 0:
+        return []
+    ends = sorted({r["period_end"] for r in out if r["item"] in ("net_sales", "net_income")})[-quarters:]
+    return sorted((r for r in out if r["period_end"] in ends), key=lambda r: (r["period_end"], r["item"]))
+
+
 def equity_ratio_rows(rows: list[dict]) -> list[dict]:
     by_end: dict[str, dict[str, dict]] = {}
     for r in rows:
@@ -159,6 +186,18 @@ def equity_ratio_rows(rows: list[dict]) -> list[dict]:
                         "value": f"{ratio:.1f}", "unit": "%",
                         "element": "computed:StockholdersEquity/Assets", "context": equity["context"]})
     return out
+
+
+def write_quarters(rows: list[dict], company: str | None) -> None:
+    for r in rows:
+        print(f"{r['period_start']}..{r['period_end']}\t{r['item']}\t{r['value']}\t{r['unit']}\t{r['form']}")
+    if not company:
+        return
+    if not rows:
+        raise SystemExit("no quarterly values in companyfacts: quarterly.csv not written")
+    out = company_dir(company) / "data" / "quarterly.csv"
+    write_csv_atomic(out, QUARTER_FIELDS, rows)
+    print(f"\nwrote {len(rows)} rows ({len({r['period_end'] for r in rows})} quarters) -> {out}")
 
 
 def filing_rows(submissions: dict, forms: set[str], limit: int) -> list[dict]:
@@ -191,13 +230,14 @@ def lookup_cik(ticker: str) -> int:
 def main() -> None:
     utf8_stdout()
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=("list", "facts"))
+    ap.add_argument("command", choices=("list", "facts", "quarters"))
     ap.add_argument("--ticker")
     ap.add_argument("--cik", type=int)
     ap.add_argument("--forms", default=DEFAULT_FORMS)
     ap.add_argument("--limit", type=int, default=40)
     ap.add_argument("--company")
     ap.add_argument("--years", type=int, default=10)
+    ap.add_argument("--quarters", type=int, default=8)
     args = ap.parse_args()
     if not (args.cik or args.ticker):
         ap.error("--ticker or --cik is required")
@@ -209,7 +249,11 @@ def main() -> None:
             for r in filing_rows(subs, set(args.forms.split(",")), args.limit):
                 print(f"{r['form']}\t{r['filed']}\t{r['report']}\t{r['accession']}\t{r['url']}")
             return
-        rows = annual_rows(http_get(FACTS_URL.format(cik=cik)).json(), args.years)
+        facts = http_get(FACTS_URL.format(cik=cik)).json()
+        if args.command == "quarters":
+            write_quarters(quarterly_rows(facts, args.quarters), args.company)
+            return
+        rows = annual_rows(facts, args.years)
     except RuntimeError as exc:  # SEC_USER_AGENT missing
         raise SystemExit(str(exc)) from exc
     for r in sorted(rows, key=lambda r: (r["item"], r["period_end"])):

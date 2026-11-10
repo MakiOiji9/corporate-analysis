@@ -3,7 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from edgar import annual_rows, filing_rows  # noqa: E402
+from edgar import annual_rows, filing_rows, quarterly_rows  # noqa: E402
 from render_tables import financials_table  # noqa: E402
 
 
@@ -66,6 +66,13 @@ def test_debt_leases_sbc_and_shares_are_extracted():
     assert rows[("2025-12-31", "share_based_compensation")] == ("55", "百万ドル")
     assert rows[("2025-12-31", "interest_expense")] == ("9", "百万ドル")
     assert rows[("2025-12-31", "shares_outstanding")] == ("210000000", "株")
+
+
+def test_quarterly_rows_keep_three_month_values_only():
+    rows = {(r["period_end"], r["item"]): r for r in quarterly_rows(FACTS)}
+    assert rows[("2026-06-30", "net_sales")]["value"] == "180" and rows[("2026-06-30", "net_sales")]["form"] == "10-Q"
+    assert ("2025-12-31", "net_sales") not in rows  # a full year is not a quarter
+    assert quarterly_rows(FACTS, quarters=0) == []
 
 
 def test_render_uses_dollar_unit_for_edgar_rows():

@@ -48,7 +48,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 | `xbrl_financials.py` | EDINET XBRL→CSV から財務を抽出（リース負債・非支配持分・のれん・金融費用なども）。`--all --company {dir}` で sources/ の自社の有報をすべて古い順に取り込む | `data/financials.csv` |
 | `company_profile.py` | 業種（日本株: EDINET コードリストの提出者業種、米国株: SEC の SIC）。分析の業種別ルール（`tools/analysis/sector_rules.py`）が読む | `data/profile.json` |
 | `tdnet_summary.py` | 決算短信 iXBRL から実績・予想・配当・株式数を抽出 | `data/tdnet_facts.csv` |
-| `edgar.py` | SEC EDGAR の提出書類一覧（`list`）、companyfacts から年次財務を抽出（`facts`。米国株。要 `SEC_USER_AGENT`） | 標準出力、`data/financials.csv` |
+| `edgar.py` | SEC EDGAR の提出書類一覧（`list`）、companyfacts から年次財務を抽出（`facts`）、四半期（3か月）の売上高・利益を抽出（`quarters`）。米国株。要 `SEC_USER_AGENT` | 標準出力、`data/financials.csv`、`data/quarterly.csv` |
 | `render_tables.py` | data の CSV から Markdown 表を出力 | 標準出力 |
 | `sources_admin.py` | manifest の誤登録行を除去（`remove`。原本は `sources/_removed/` へ移動） | `sources/manifest.csv` |
 
