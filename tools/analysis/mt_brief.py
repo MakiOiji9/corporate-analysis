@@ -130,6 +130,8 @@ def render_brief(company: Company, date: str, valid_until: str, found: dict[str,
             "源泉の判定は、超過収益がどの仕組みから生まれているかを説明できるものだけを「強」「中」にする",
             f"- 価格決定力（粗利率）: {pr['rating'] or '不明'}: {pr['basis']}（ブランドの数値の痕跡に使える）",
             f"- 営業利益率の同業比較（参考）: {candidate_cell(cands['margin'])}",
+            f"- シェアの推移（スクリプトの候補。5章の1語をこれより良くするなら根拠を書く）: "
+            f"{(cands.get('share_trend') or {}).get('trend', '不明')}: {(cands.get('share_trend') or {}).get('basis', '—')}",
             f"- 自社の数値の出典: {'、'.join(cands['sources']) or '—'}",
             "- 年度ごとの ROIC は md の 2.1、営業利益率の同業比較は 2.2、粗利率は 3.1、コスト構造と競合の単純平均は 3.2 を見る"
             "（同じ表をここには載せない）"]

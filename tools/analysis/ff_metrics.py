@@ -2,7 +2,9 @@
 
 Only criteria that are pure numbers in 企業分析フレームワーク.md are decided here:
   ③ 買い手: largest single customer share of sales  (<10% 弱 / 10-20% 中 / >=20% 強, 強 is final)
-  ④ 売り手: largest year-on-year fall of the gross margin (<2pt 弱 / 2-5pt 中 / >=5pt 強)
+  ④ 売り手: the fall of the gross margin over the newest 3 years (<2pt 弱 / 2-5pt 中 / >=5pt 強); the largest
+     year-on-year fall when there is no year 3 years back
+  ⑤ 業界内の競争: the top-3 share of the industry raw (share_tables.concentration: <30% 強 / 30-60% 中 / >=60% 弱)
 The writer may rate less favourably freely; a more favourable rating needs a reason (checked by build).
 """
 from __future__ import annotations
@@ -11,6 +13,7 @@ import re
 from pathlib import Path
 
 import mdparse as M
+import share_tables as ST
 from common import read_csv_rows
 from ff_inputs import Found, raw_files
 from ff_paths import Company
@@ -98,7 +101,7 @@ def _margins_from_csv(path: Path, kind: str = "gross") -> dict[str, float]:
     by_year: dict[str, dict[str, float]] = {}
     for row in read_csv_rows(path):
         item, period = row.get("item", ""), row.get("period_end", "")[:7]
-        if item in ("net_sales", "cost_of_sales", "operating_income") and period:
+        if item in ("net_sales", "cost_of_sales", "gross_profit", "operating_income") and period:
             try:
                 by_year.setdefault(period, {})[item] = float(row.get("value", ""))
             except ValueError:
@@ -106,8 +109,12 @@ def _margins_from_csv(path: Path, kind: str = "gross") -> dict[str, float]:
     if kind == "operating":
         return {y: v["operating_income"] / v["net_sales"] * 100
                 for y, v in by_year.items() if v.get("net_sales") and "operating_income" in v}
-    return {y: (v["net_sales"] - v["cost_of_sales"]) / v["net_sales"] * 100
-            for y, v in by_year.items() if v.get("net_sales") and "cost_of_sales" in v}
+    out = {}
+    for y, v in by_year.items():  # 売上総利益 when reported, else 売上高 − 売上原価
+        if v.get("net_sales") and ("gross_profit" in v or "cost_of_sales" in v):
+            gross = v["gross_profit"] if "gross_profit" in v else v["net_sales"] - v["cost_of_sales"]
+            out[y] = gross / v["net_sales"] * 100
+    return out
 
 
 def _margins_from_table(table: list[list[str]], kind: str = "gross") -> dict[str, float]:
@@ -187,13 +194,30 @@ def supplier(company: Company) -> dict:
         return {"rating": None, "fixed": False, "series": series, "sources": sources, "max_drop": None,
                 "basis": f"連続する2年度の粗利率がそろわない{gap_note}"}
     drop, start, end = max((margins[a] - margins[b], a, b) for a, b in consecutive)
+    single = (f"前年比の最大低下 {max(drop, 0.0):.1f}pt" + (f"（{start} {margins[start]:.1f}% → {end} {margins[end]:.1f}%）"
+                                                            if drop > 0 else ""))
+    trend = three_year_drop(margins)
+    if trend is not None:  # a 3-year change: one year of product mix or a one-off does not decide it
+        drop3, first, last = trend
+        return {"rating": _rate(max(drop3, 0.0), SUPPLIER_LIMITS), "fixed": False, "series": series,
+                "sources": sources, "max_drop": round(max(drop, 0.0), 1), "drop3": round(drop3, 1),
+                "basis": (f"粗利率の3年の変化 {-drop3:+.1f}pt（{first} {margins[first]:.1f}% → {last} "
+                          f"{margins[last]:.1f}%）。目安（低下幅）: 2pt未満 弱 / 2〜5pt 中 / 5pt以上 強。参考: {single}{gap_note}")}
     if drop <= 0:
         return {"rating": "弱", "fixed": False, "series": series, "sources": sources, "max_drop": 0.0,
                 "basis": f"粗利率は {years[0]}〜{years[-1]} に前年比で低下した年なし{gap_note}"}
     return {"rating": _rate(drop, SUPPLIER_LIMITS), "fixed": False, "series": series, "sources": sources,
             "max_drop": round(drop, 1),
-            "basis": (f"粗利率の前年比の最大低下 {drop:.1f}pt（{start} {margins[start]:.1f}% → {end} "
-                      f"{margins[end]:.1f}%）。目安: 2pt未満 弱 / 2〜5pt 中 / 5pt以上 強{gap_note}")}
+            "basis": f"粗利率の{single}。目安: 2pt未満 弱 / 2〜5pt 中 / 5pt以上 強（3年の変化を出せる年数が無い）{gap_note}"}
+
+
+def three_year_drop(margins: dict[str, float]) -> tuple[float, str, str] | None:
+    """(fall of the gross margin over 3 years, first year, last year) ending at the newest year; None without a
+    year exactly 36 months before it."""
+    years = list(margins)
+    last = years[-1]
+    first = next((y for y in years if _months_apart(y, last) == 36), None)
+    return (margins[first] - margins[last], first, last) if first else None
 
 
 # ---------- ⑤ 業界内の競争（数値の提示のみ） ----------
@@ -288,6 +312,8 @@ def candidates(company: Company, found: dict[str, Found]) -> dict[str, dict]:
     """Script candidate per factor key (entry/substitutes/buyers/suppliers/rivalry)."""
     none = {"rating": None, "fixed": False, "basis": "数値だけで決まる基準なし"}
     growth = market_growth(found["market_size"])
-    rivalry = dict(none, basis="数値だけで決まる基準なし。市場の成長率: " + ("; ".join(growth[:4]) or "—"))
+    growth_text = "市場の成長率: " + ("; ".join(growth[:4]) or "—")
+    rivalry = ST.concentration(found["share"])
+    rivalry = {**rivalry, "basis": f"{rivalry['basis']}。{growth_text}"}
     return {"entry": none, "substitutes": none, "buyers": buyer(found["customers"]),
             "suppliers": supplier(company), "rivalry": rivalry}

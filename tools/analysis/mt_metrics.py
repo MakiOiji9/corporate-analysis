@@ -16,6 +16,7 @@ import statistics
 import an_common as A
 import mdparse as M
 import mt_returns as R
+import share_tables as ST
 from ff_inputs import Found, raw_files
 from ff_metrics import FORECAST, PERCENT, _margins_from_table, _months_apart, _peer_rows, _year, peer_margins
 from tc_metrics import MAX_PEERS, _is_self, _series_from_data
@@ -149,7 +150,8 @@ def candidates(company, found: dict[str, Found]) -> dict:
     rows = comparison_rows(margins, peers(company, found["peers"]))
     costs = cost_rows(company, found["peer_cost"])
     return {"margin": margin_candidate(rows), "rows": rows, "sources": sources, "costs": costs,
-            "returns": R.returns(company, found), "pricing": R.pricing(company, costs)}
+            "returns": R.returns(company, found), "pricing": R.pricing(company, costs),
+            "share_trend": ST.share_trend(found["share"])}
 
 
 # ---------- 収集の要求 ----------
