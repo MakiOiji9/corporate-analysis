@@ -11,7 +11,7 @@ import re
 import glossary as G
 import mdparse as M
 import scoring as SC
-from brief import handoff_rows, sector_rows
+from brief import handoff_rows, sector_rows, wind_rows
 from validate import check_fill, check_structure, check_tables
 
 JUDGMENTS = SC.ATTENTION_WORDS
@@ -76,7 +76,36 @@ def parse(text: str) -> dict:
         "plain_summary": _sub_bullets(text, "今週を3行で"),
         "plain_caution": _sub_bullets(text, "気をつけること"),
         "sector_table": M.section(text, "12."),
+        "wind_table": M.section(text, "13.1", level=3),
+        "winds": parse_winds(text),
     }
+
+
+WIND_DIRECTIONS = ("追い風", "向かい風")
+WIND_KINDS = ("政策・予算", "通商・規制", "金利・為替", "需要")
+
+
+def parse_winds(text: str) -> list[dict]:
+    """13.2: [{market (japan/us), sector, direction, kind, basis, source}] (the 「材料なし」 row is dropped)."""
+    return [{"market": MARKET_KEY.get(r.get("市場", ""), r.get("市場", "")), "sector": r.get("業種", ""),
+             "direction": r.get("方向", ""), "kind": r.get("区分", ""), "basis": r.get("根拠", ""),
+             "source": r.get("出典", "")}
+            for r in M.table_dicts(M.section(text, "13.2", level=3)) if not M.is_blank(r.get("業種"))]
+
+
+def _check_winds(parsed: dict) -> list[str]:
+    issues = []
+    for w in parsed.get("winds") or []:
+        where = f"13.2 {w['sector']}"
+        if w["market"] not in MARKET_KEY.values():
+            issues.append(f"{where}: 市場は 日本 / 米国: 「{w['market']}」")
+        if w["direction"] not in WIND_DIRECTIONS:
+            issues.append(f"{where}: 方向は {' / '.join(WIND_DIRECTIONS)}: 「{w['direction']}」")
+        if w["kind"] not in WIND_KINDS:
+            issues.append(f"{where}: 区分は {' / '.join(WIND_KINDS)}: 「{w['kind']}」")
+        if M.is_blank(w["source"]):
+            issues.append(f"{where}: 出典を書く（出典の無い一般論は書かない）")
+    return issues
 
 
 def _sub_bullets(text: str, keyword: str) -> list[str]:
@@ -172,7 +201,7 @@ def validate(text: str, template_text: str) -> list[str]:
     if issues:
         return issues  # content checks are meaningless while the skeleton is incomplete
     parsed = parse(text)
-    return _check_judgments(parsed) + _check_lists(parsed) + _check_words(text)
+    return _check_judgments(parsed) + _check_lists(parsed) + _check_winds(parsed) + _check_words(text)
 
 
 # ---------------------------------------------------------------- checks against facts.json
@@ -254,6 +283,11 @@ def check_against_facts(parsed: dict, facts: dict) -> list[str]:
         issues.append("10. 企業分析への引き継ぎがスクリプトの記入（facts.json）と違う。手で変えない")
     if "sectors" in facts and sector_rows(facts) not in parsed["sector_table"]:
         issues.append("12. 業種の動きがスクリプトの記入（facts.json）と違う。手で変えない")
+    if "sectors" in facts and wind_rows(facts) not in parsed["wind_table"]:
+        issues.append("13.1 株価の相対の強さがスクリプトの記入（facts.json）と違う。手で変えない")
+    names = {m: {r["name"] for r in s.get("rows") or []} for m, s in (facts.get("sectors") or {}).items()}
+    issues += [f"13.2 {w['sector']}: 業種は 13.1 の業種名（{dict(MARKETS).get(w['market'], w['market'])}）で書く"
+               for w in parsed.get("winds") or [] if w["market"] in names and w["sector"] not in names[w["market"]]]
     return issues + _check_plain(parsed)
 
 

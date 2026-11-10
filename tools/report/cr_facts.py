@@ -4,6 +4,7 @@ the writer only adds words (cr_doc.py), and the HTML (cr_render.py) is drawn fro
 """
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import cr_extras as X
@@ -13,6 +14,7 @@ import cr_legends as L
 import cr_plain as P
 import cr_positioning as POS
 import cr_scenarios as SC
+import cr_winds as WI
 import cr_prices as CP
 import cr_status as S
 import mdparse as M
@@ -233,4 +235,14 @@ def build(root: Path, company: S.Company, today: str, status: dict) -> dict:
                "trend": (prices.get("long_trend") or {}).get("verdict")}
     scenarios = SC.build(prices.get("technicals") or {},
                          _get(found["valuation"], "detail", "flip_values") or {}, context)
-    return {**facts, "legends": L.evaluate(facts), "scenarios": scenarios}
+    winds = WI.evaluate(root, _profile(company), status["outlook"],
+                        _get(found["five_forces"], "detail", "industry") or "")
+    return {**facts, "legends": L.evaluate(facts), "scenarios": scenarios, "winds": winds}
+
+
+def _profile(company: S.Company) -> dict:
+    path = company.path / "data" / "profile.json"
+    try:
+        return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    except ValueError:
+        return {}

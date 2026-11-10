@@ -9,8 +9,22 @@ from __future__ import annotations
 from derived import Points, last, shifted, value_before
 
 INDEX = {"japan": ("JP_NIKKEI225", "日経平均"), "us": ("US_SP500", "S&P500")}
-SPANS = {"m1": 30, "m3": 91}
+SPANS = {"m1": 30, "m3": 91, "m6": 182, "m12": 365}
 RANK = 3
+STRONG_GAP = 5.0  # pt against the index over both 6 and 12 months: a sector the market has been favouring
+STRONG, WEAK, NEUTRAL, UNKNOWN = "強い", "弱い", "中立", "不明"
+
+
+def strength(rel6: float | None, rel12: float | None) -> str:
+    """The sector's relative strength: 強い when it beat the index by STRONG_GAP over both 6 and 12 months, 弱い
+    when it lagged by as much over both, else 中立 (不明 without a year of data)."""
+    if rel6 is None or rel12 is None:
+        return UNKNOWN
+    if rel6 >= STRONG_GAP and rel12 >= STRONG_GAP:
+        return STRONG
+    if rel6 <= -STRONG_GAP and rel12 <= -STRONG_GAP:
+        return WEAK
+    return NEUTRAL
 
 
 GAP_DAYS = 7          # the base point may be at most this much older than the span start (holidays)
@@ -46,7 +60,8 @@ def sector_rows(entries: list[dict], series: dict[str, Points], index_points: Po
         rows.append({"id": e["id"], "name": e["name"], "symbol": e.get("params", {}).get("symbol", ""),
                      "date": p[0] if p else None, "close": p[1] if p else None,
                      "m1": change["m1"], "m3": change["m3"], "rel1": rel["m1"], "rel3": rel["m3"],
-                     "source": e.get("source", "")})
+                     "m6": change["m6"], "m12": change["m12"], "rel6": rel["m6"], "rel12": rel["m12"],
+                     "strength": strength(rel["m6"], rel["m12"]), "source": e.get("source", "")})
     return rows
 
 

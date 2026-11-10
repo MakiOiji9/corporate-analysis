@@ -303,6 +303,28 @@ def _long_trend(trend: dict) -> str:
               "上昇・下降トレンド、それ以外はレンジ。過去の値動きの説明で、先行きの予想ではない。</p>")
 
 
+WIND_CLASS = {"追い風": "v-consider", "中立": "v-watch", "向かい風": "v-pass"}
+
+
+def _winds(w: dict) -> str:
+    """業界の追い風・向かい風: the sector's strength and the written facts of the weekly market report."""
+    if not w.get("ok"):
+        return (f'<h3>業界の追い風・向かい風</h3><p class="small muted">材料なし（{esc(w.get("why") or "")}）</p>'
+                if w else "")
+    rows = [["株価の相対の強さ", esc(w["strength"]),
+             esc(f"6か月 指数との差 {C.fmt(w.get('rel6'), 1, True)}pt・12か月 {C.fmt(w.get('rel12'), 1, True)}pt"),
+             "週次の地合いレポート"]]
+    rows += [[esc(i["kind"]), esc(i["direction"]), esc(i["basis"]), esc(i["source"])] for i in w["items"]]
+    related = ("<p class=\"small\"><b>事業に関係しうる地合いの出来事（点数に入れない）</b></p>"
+               + _list(w["related"]) if w.get("related") else "")
+    return (f'<h3>業界の追い風・向かい風（{esc(w["market"])}・{esc(w["sector"])}）</h3>'
+            f'<p><span class="badge {WIND_CLASS.get(w["verdict"], "")}">{esc(w["verdict"])}</span> '
+            f'{esc(w["why"])}（地合いレポート {esc(w["week"])} の週）</p>'
+            + table(["見たもの", "方向", "内容", "出典"], rows) + related
+            + '<p class="small muted">株価の強さ（強い +1・弱い −1）と、地合いレポートが業種ごとに挙げた事実（追い風 +1・'
+              "向かい風 −1）の合計。参考の表示で、判定の点数には入らない。</p>")
+
+
 def price_section(facts: dict) -> str:
     p = facts["prices"]
     lead = "過去の高値と安値の間で、今の株価がどこにあるか（0%＝安値、100%＝高値）。位置はレンジの説明で、先行きの予想ではない。"
@@ -324,7 +346,8 @@ def price_section(facts: dict) -> str:
     per = facts["analyses"]["valuation"]["detail"].get("per_range") or {}
     per_line = (f"PER（株価が利益の何倍か）の過去5期のレンジは {C.fmt(per.get('low'))}〜{C.fmt(per.get('high'))}倍で、"
                 f"今はその中の位置 {per.get('position')}%" if per.get("low") is not None else "")
-    body = (f"<h3>今の株価の位置</h3>{tracks}{_long_trend(trend)}<h3>株価の推移</h3>{chart}"
+    body = (f"<h3>今の株価の位置</h3>{tracks}{_long_trend(trend)}{_winds(facts.get('winds') or {})}"
+            f"<h3>株価の推移</h3>{chart}"
             f'<p class="small">移動平均: {esc(ma or "—")}</p>'
             + (f'<p class="small">{esc(per_line)}</p>' if per_line else "") + _price_tables(p))
     return _section("price", "06", "株価の過去レンジ", lead, body)

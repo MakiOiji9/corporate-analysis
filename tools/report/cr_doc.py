@@ -298,6 +298,19 @@ def _scenario_lines(s: dict) -> list[str]:
     return lines + [""]
 
 
+def _wind_lines(w: dict) -> list[str]:
+    """4.3 業界の追い風・向かい風 (the HTML draws the table)."""
+    if not w:
+        return []
+    head = ["## 4.3 業界の追い風・向かい風（参考。地合いレポートから。点数に入らない）", ""]
+    if not w.get("ok"):
+        return head + [f"- 材料なし（{w.get('why')}）", ""]
+    lines = [f"- {w['market']}・{w['sector']}: {w['verdict']}。{w['why']}（{w['week']} の週）"]
+    lines += [f"  - {i['direction']}（{i['kind']}）: {i['basis']}（{i['source']}）" for i in w["items"]]
+    lines += [f"  - 事業に関係しうる出来事: {r}" for r in w.get("related") or []]
+    return head + lines + [""]
+
+
 def _premise(facts: dict) -> list[str]:
     o, price = facts["outlook"], facts["price"] or {}
     lines = ["## 1. 対象と前提", "",
@@ -332,7 +345,7 @@ def render_brief(facts: dict, md_rel: str) -> str:
     lines += _premise(facts) + _analyses(facts) + [""] + _horizons(facts) + _prices(facts) + [""]
     lines += T.brief_lines(technicals(facts), facts["horizons"]["long"]["verdict"],
                            (facts.get("prices") or {}).get("positioning"))
-    lines += _scenario_lines(facts.get("scenarios") or {})
+    lines += _scenario_lines(facts.get("scenarios") or {}) + _wind_lines(facts.get("winds") or {})
     lines += _recent(facts) + _conditions(facts) + L.brief_lines(facts)
     lines += ["## 6. 材料不足（4.3 の材料）", ""]
     lines += [f"- {g['label']}: {g['gap']}" for g in facts["gaps"]] or ["- なし"]

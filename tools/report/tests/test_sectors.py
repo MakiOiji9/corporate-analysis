@@ -45,6 +45,25 @@ def test_a_stalled_etf_is_not_compared_with_a_later_index_span():
     assert out["rows"][0]["m1"] is None and out["rows"][0]["rel1"] is None
 
 
+def _year(start: float, end: float) -> list[tuple[str, float]]:
+    return _line(start, end, days=400)
+
+
+@pytest.mark.parametrize("sector_end, word", [(150, "強い"), (90, "弱い"), (112, "中立")])
+def test_strength_needs_both_six_and_twelve_months(sector_end, word):
+    catalogs = {"US_SEC_AAA": _entry("US_SEC_AAA", "A")}
+    out = SE.build_sectors(catalogs, {"US_SP500": _year(100, 110), "US_SEC_AAA": _year(100, sector_end)})["us"]
+    row = out["rows"][0]
+    assert row["rel6"] is not None and row["rel12"] is not None
+    assert row["strength"] == word
+
+
+def test_strength_without_a_year_of_data_is_unknown():
+    catalogs = {"US_SEC_AAA": _entry("US_SEC_AAA", "A")}
+    out = SE.build_sectors(catalogs, {"US_SP500": _line(100, 110), "US_SEC_AAA": _line(100, 150)})["us"]
+    assert out["rows"][0]["rel12"] is None and out["rows"][0]["strength"] == "不明"
+
+
 def test_short_lists_and_missing_series():
     catalogs = {e["id"]: e for e in (_entry("US_SEC_AAA", "A"), _entry("US_SEC_BBB", "B"))}
     out = SE.build_sectors(catalogs, {"US_SP500": _line(100, 110), "US_SEC_AAA": _line(100, 120)})["us"]

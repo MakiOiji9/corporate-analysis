@@ -214,6 +214,8 @@ def _fill(text: str, judgment: str = "平常") -> str:
                     "| 関税 | 日米 | 小 | 輸出 | brief.md 6. |")
         if key == "limits":
             return "- 判断に影響する欠損なし"
+        if key == "winds":
+            return "| — | — | — | — | 材料なし | — |"
         return "記述 <script>alert(1)</script>"
     return FILL_ANY.sub(value, text)
 
@@ -641,3 +643,14 @@ def test_validate_rejects_changed_headings(repo, capsys):
     text, template = _filled(repo, capsys)
     issues = O.validate(text.replace("## 5. リスク要因", "## 5. リスク"), template)
     assert any("テンプレートと違う" in i for i in issues)
+
+
+def test_winds_rows_are_checked(repo, capsys):
+    text, template = _filled(repo, capsys)
+    none_row = "| — | — | — | — | 材料なし | — |"
+    good = "| 日本 | 機械 | 向かい風 | 通商・規制 | 米国の輸入調整の布告（10-28）で輸出が減りうる | 大統領令一覧 |"
+    assert O.validate(text.replace(none_row, good), template) == []
+    assert O.parse(text.replace(none_row, good))["winds"][0]["direction"] == "向かい風"
+    bad = "| 日本 | 機械 | 逆風 | 関税 | 根拠 | — |"
+    issues = O.validate(text.replace(none_row, bad), template)
+    assert any("方向" in i for i in issues) and any("区分" in i for i in issues) and any("出典" in i for i in issues)

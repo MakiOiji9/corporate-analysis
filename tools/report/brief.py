@@ -274,7 +274,7 @@ def render_brief(paths: Paths, facts: dict) -> str:
               table(["市場", "イベント", "日付", "市場予想", "前回", "出典", "確度"],
                     [[MARKET_LABEL.get(c["market"], ""), c.get("イベント"), c.get("日付"), c.get("市場予想"),
                       c.get("前回"), c.get("出典"), c.get("確度")] for c in facts.get("consensus", [])])]
-    lines += sector_table_lines(facts)
+    lines += sector_table_lines(facts) + wind_brief_lines(facts)
     return "\n".join(lines) + "\n"
 
 
@@ -370,6 +370,29 @@ def sector_rows(facts: dict) -> str:
     return "\n".join(out) or row([M.DASH, M.DASH, "業種のデータなし", M.DASH, M.DASH, M.DASH, M.DASH])
 
 
+def wind_rows(facts: dict) -> str:
+    """Section 13.1 of outlook.md (script-filled): every sector's 6- and 12-month gap against the index."""
+    out = []
+    for market, label in (("japan", "日本"), ("us", "米国")):
+        sec = (facts.get("sectors") or {}).get(market)
+        for r in (sec or {}).get("rows") or []:
+            out.append(row([label, r["name"], _pct(r.get("m6")), _pct(r.get("rel6")), _pct(r.get("m12")),
+                            _pct(r.get("rel12")), r.get("strength") or M.DASH]))
+    return "\n".join(out) or row([M.DASH, "業種のデータなし", M.DASH, M.DASH, M.DASH, M.DASH, M.DASH])
+
+
+def wind_brief_lines(facts: dict) -> list[str]:
+    """Brief 16: what 13.2 may use (the facts are in the earlier sections; nothing new is looked up)."""
+    names = {label: [r["name"] for r in ((facts.get("sectors") or {}).get(market) or {}).get("rows") or []]
+             for market, label in (("japan", "日本"), ("us", "米国"))}
+    return ["", "## 16. 業種の追い風・向かい風（outlook 13.2 の材料）", "",
+            "13.1 の株価の強さはスクリプトが記入する。13.2 には、この brief の政策・財政の文書の要旨、注目イベント、報道、"
+            "金利・為替の動きのうち、特定の業種に効く事実を1件1行で書く（例: 輸入関税の布告 → 機械・資本財に向かい風、"
+            "円安 → 輸出型の自動車・輸送機・電機・精密に追い風、金利上昇 → 銀行に追い風・不動産に向かい風）。"
+            "出典の無い一般論・推測は書かない。業種名は次のどれか:",
+            *[f"- {label}: {'、'.join(n)}" for label, n in names.items() if n]]
+
+
 def sector_table_lines(facts: dict) -> list[str]:
     """Brief 15: every sector, strongest first by the 1-month gap against the index."""
     lines = ["", "## 15. 業種の動き（業種 ETF の終値から計算）", "",
@@ -436,6 +459,6 @@ def render_outlook(paths: Paths, facts: dict, template: str, today: str) -> str:
         "prev_japan": previous_word(prev, "japan"), "prev_us": previous_word(prev, "us"),
         "event_rows": outlook_event_rows(facts), "limits": limits_bullets(facts),
         "viewpoint_rows": viewpoint_rows(facts), "change_rows": change_rows(facts),
-        "handoff_rows": handoff_rows(facts), "sector_rows": sector_rows(facts),
+        "handoff_rows": handoff_rows(facts), "sector_rows": sector_rows(facts), "wind_rows": wind_rows(facts),
     }
     return Template(template).safe_substitute(values)
