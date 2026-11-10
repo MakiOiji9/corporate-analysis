@@ -13,9 +13,16 @@ import cr_doc as D
 import cr_glossary as G
 import cr_judge as J
 import cr_legends as L
+import cr_plain as P
 import cr_sections as X
 import cr_technicals as T
-from slides import esc, table
+import slides
+from slides import table
+
+
+def esc(text: object) -> str:
+    """slides.esc after the reader's-words pass (an internal term written anywhere still reads plainly)."""
+    return slides.esc(P.plain(text) if isinstance(text, str) else text)
 
 VERDICT_CLASS = {J.CONSIDER: "v-consider", J.WATCH: "v-watch", J.PASS: "v-pass", J.PENDING: "v-pending"}
 SPANS = {"short": "〜3ヶ月", "mid": "6ヶ月〜1年", "long": "3年以上"}
@@ -37,7 +44,7 @@ PLAIN_HORIZONS = (("短期", "〜3ヶ月", "地合い・株価のテクニカル
 WEIGHT_NOTE = (f"各要素を +1（良い）・0（中間）・−1（悪い）の点数にし、期間ごとの重みで平均した。"
                f"+{J.UP} 以上で投資検討、{J.DOWN} 以下で見送り、その間はウォッチ。"
                "営業CF のマイナスが続く・FCF の累計がマイナス・安全性の悪化などの深刻な赤信号は、点数にかかわらず見送り。")
-DISCLAIMER = ("本レポートは公表資料と収集データをもとに企業分析フレームワークの手順で整理したもので、投資の勧誘・推奨ではありません。"
+DISCLAIMER = ("本レポートは公表資料と収集データをもとに企業分析フレームワークに沿って整理したもので、投資の勧誘・推奨ではありません。"
               "判定は作成日時点の材料による位置づけで、将来の株価を予想するものではありません。最終的な投資判断はご自身で行ってください。")
 
 
@@ -92,8 +99,19 @@ def _card(key: str, h: dict) -> str:
     bad = "・".join(r["label"].split("（")[0] for r in h["bad"][:2]) or "なし"
     return (f'<div class="vcard {VERDICT_CLASS.get(word, "")}"><div class="period">{esc(PERIODS[key])}'
             f'（{esc(SPANS[key])}）</div><div class="word">{esc(word)}<span class="vscore">{esc(score)}</span></div>'
-            f'{X.gauge(h["score"])}<p class="why"><span class="ok-yes">＋</span> {esc(good)}<br>'
+            f'{X.gauge(h["score"])}{_knockout_line(h)}<p class="why"><span class="ok-yes">＋</span> {esc(good)}<br>'
             f'<span class="ok-no">−</span> {esc(bad)}</p></div>')
+
+
+def _knockout_line(h: dict) -> str:
+    """When a knockout (赤信号・STEP 1 C) decided the verdict, the card says so: the score alone would read otherwise."""
+    if not h.get("knockout") or h["score"] is None:
+        return ""
+    by_score = J._verdict_for(h["score"])
+    if by_score == h["verdict"]:
+        return ""
+    return (f'<p class="small knock">点数だけなら{esc(by_score)}だが、{esc("、".join(h["knockout"]))}のため'
+            f'{esc(h["verdict"])}</p>')
 
 
 def _stale_notice(facts: dict) -> str:
@@ -123,7 +141,8 @@ def reasons(facts: dict, parsed: dict) -> str:
                                    facts.get("matrix") if key == "long" else None)
                    for key in ("short", "mid", "long"))
     return _section("reasons", "02", "期間ごとの良い点・悪い点",
-                    "期間ごとに重視する要素が違う。点数を押し上げた要素が良い点、押し下げた要素が悪い点。" + WEIGHT_NOTE, body)
+                    "期間ごとに重視する要素が違う。点数を押し上げた要素が良い点、押し下げた要素が悪い点"
+                    "（点数の決め方は「結論」の「判定の読み方」）。", body)
 
 
 # ---------------------------------------------------------------- STEP 1-3
@@ -132,7 +151,7 @@ def _stepcards(facts: dict, keys: tuple[str, ...]) -> str:
     cards = ""
     for key in keys:
         a = facts["analyses"][key]
-        flag = '<span class="cons">保守的に判定</span>' if a.get("conservative") else ""
+        flag = '<span class="cons">材料不足のため慎重に判定</span>' if a.get("conservative") else ""
         cards += (f'<div class="stepcard"><div class="label">{esc(a["step"])} {esc(a["label"])}'
                   f'（{esc(a["date"] or "未実施")}）</div><div class="res">{esc(a["verdict"] or "—")}{flag}</div>'
                   f'<p>{esc(a["reason"])}</p></div>')
@@ -161,7 +180,7 @@ def step1(facts: dict) -> str:
 
 def _conservative(a: dict) -> str:
     notes = a.get("conservative") or []
-    return (f'<p class="small"><b>保守的に判定（材料不足）</b>: {esc("。".join(notes))}</p>' if notes else "")
+    return (f'<p class="small"><b>材料不足のため慎重に判定した点</b>: {esc("。".join(notes))}</p>' if notes else "")
 
 
 def _year_date(year: str) -> str:
@@ -272,7 +291,7 @@ def price_section(facts: dict) -> str:
                                               for i, s in enumerate(series)) + "</div>"
     chart = (f'<figure class="chartbox"><figcaption><b>株価の推移（{esc(p["first"])}〜{esc(p["last"])}）</b>{legend}'
              f'</figcaption>{C.line_chart(series, "株価の推移", 0)}'
-             '<div class="source">分割調整済み。出典: Yahoo Finance（data/prices.csv）</div></figure>')
+             '<div class="source">分割調整済み。出典: Yahoo Finance（日々の株価）</div></figure>')
     ma = "、".join(f"{a['label']} {C.fmt(a['value'], 0)}（今の株価との差 {C.fmt(a['gap'], 1, True)}%）"
                   for a in p["averages"] if a["value"])
     per = facts["analyses"]["valuation"]["detail"].get("per_range") or {}
@@ -313,7 +332,7 @@ def _tech_charts(t: dict) -> str:
                                                ("stop", "赤＝損切りの目安")) if cls in drawn)
     price = (f'<figure class="chartbox"><figcaption><b>直近1年の株価と目安の水準</b>{legend}</figcaption>'
              f'{C.line_chart(series, "直近1年の株価と目安の水準", 0, hlines=hlines)}'
-             f'<div class="source">{esc(colours + "。" if colours else "")}出典: data/prices.csv</div></figure>')
+             f'<div class="source">{esc(colours + "。" if colours else "")}出典: 日々の株価（Yahoo Finance）</div></figure>')
     # drawn narrow so the text stays readable when two charts share a row
     rsi = C.line_chart([{"label": "RSI(14)", "points": ch["rsi"]}], "RSI", 0, width=SMALL_CHART_WIDTH, height=220,
                        hlines=[{"label": "買われすぎ", "value": T.RSI_HIGH, "cls": "ref"},
@@ -381,7 +400,7 @@ def _link(facts: dict, md: str | None) -> str:
         return "—"
     prefix = f"companies/{facts['company']}/"
     href = "../" + md[len(prefix):] if md.startswith(prefix) else md
-    return f'<a href="{esc(href)}">{esc(md.rsplit("/", 1)[-1])}</a>'
+    return f'<a href="{slides.esc(href)}">分析の本文</a>'
 
 
 def gaps(facts: dict) -> str:
@@ -410,5 +429,5 @@ def render(template: str, facts: dict, parsed: dict, md_text: str) -> str:
     body = (masthead(facts) + "<main>" + main
             + glossary(md_text + D.render_brief(facts, "").split(D.WRITING_RULES)[0])
             + f'</main><footer><div class="wrap"><p>{esc(DISCLAIMER)}</p>'
-              f'<p>生成: tools/report/company_report.py build（{esc(facts["date"])}）</p></div></footer>')
+              f'<p>作成: 企業分析レポートの作成スクリプト（{esc(facts["date"])}）</p></div></footer>')
     return Template(template).safe_substitute(title=esc(f"{facts['name']} 企業分析レポート {facts['date']}"), body=body)

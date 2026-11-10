@@ -12,7 +12,14 @@ from html import escape
 import charts as C
 import cr_glossary as G
 import cr_judge as J
-from slides import esc, table
+import cr_plain as P
+import slides
+from slides import table
+
+
+def esc(text: object) -> str:
+    """slides.esc after the reader's-words pass (cr_plain)."""
+    return slides.esc(P.plain(text) if isinstance(text, str) else text)
 
 VERDICT_CLASS = {J.CONSIDER: "v-consider", J.WATCH: "v-watch", J.PASS: "v-pass", J.PENDING: "v-pending"}
 IMPACT_CLASS = {"大": "imp-hi", "中": "imp-mid", "小": "imp-lo", "不明": "imp-unk"}
@@ -61,7 +68,7 @@ def _movers(h: dict) -> str:
         parts.append(f"投資検討まであと {s['to_up']:+.2f} 点")
     if s.get("to_down") is not None:
         parts.append(f"見送りまであと {s['to_down']:.2f} 点")
-    movers = [f"{m['label']}が{m['direction']}{m['verdict']}" for m in s.get("movers") or []]
+    movers = [J.mover_text(m, h["rows"]) for m in s.get("movers") or []]
     text = "、".join(parts) or "—"
     text += "。" + ("、".join(movers) if movers else "1つの要素が1段変わっても判定は変わらない")
     return f'<p class="small"><b>判定を動かす要因</b>: {esc(text)}</p>'
@@ -91,6 +98,22 @@ def horizon_block(label: str, span: str, h: dict, prose: str, matrix: dict | Non
 
 # ---------------------------------------------------------------- 3C / SWOT
 
+LONG_NOTE = re.compile(r"\s*[（(][^（）()]{6,}[）)]")
+
+
+def short_name(name: str | None) -> str:
+    """A company name without the collector's notes ('X（3月期。2022年3月期以降は IFRS を…）' -> 'X')."""
+    return LONG_NOTE.sub("", name or "").strip() or (name or "")
+
+
+def _competitor_conclusion(detail: dict) -> str:
+    rating = detail.get("competitor") or "—"
+    unknown = any(k.get("self") == "？" for k in detail.get("kbf_table") or [])
+    if rating == "同等" and unknown:
+        return "同等（選ばれる理由（KBF）を比べる材料が足りず、同程度とみなした。数値の差は上の表のとおり）"
+    return rating
+
+
 def _mark(mark: str | None) -> str:
     return f'<span class="mk {MARK_CLASS.get(mark or "", "")}">{esc(mark or "—")}</span>'
 
@@ -102,14 +125,14 @@ def _three_c_cards(detail: dict) -> str:
                 f'<p class="small"><b>選ぶときに重視すること（KBF。上ほど重要）</b></p><ol class="kbf">{kbf}</ol>'
                 f'<p class="small"><b>市場の成長性</b>: {esc(detail.get("growth") or "—")}。'
                 f'{esc(detail.get("growth_reason") or "")}</p></div>')
-    comp_rows = [[esc(c["name"]) + (" <b>（対象）</b>" if c.get("self") else ""),
+    comp_rows = [[esc(short_name(c["name"])) + (" <b>（対象）</b>" if c.get("self") else ""),
                   esc(num(c["sales"] / YEN_OKU, "億円", 0) if c.get("sales") else "—"),
                   esc(num(c.get("margin"), "%")), esc(num(c.get("cagr"), "%")), esc(num(c.get("share"), "%"))]
                  for c in detail.get("comparison") or []]
     competitor = (f'<div class="c3 c-competitor"><div class="c3-h">Competitor（競合）</div>'
                   + table(["会社", "売上高", "営業利益率", "3年CAGR", "シェア"], comp_rows,
                           right=frozenset({1, 2, 3, 4}))
-                  + f'<p class="small"><b>比較の結論</b>: {esc(detail.get("competitor") or "—")}。'
+                  + f'<p class="small"><b>比較の結論</b>: {esc(_competitor_conclusion(detail))}。'
                     f'{esc(detail.get("competitor_reason") or "")}</p></div>')
     company = (f'<div class="c3 c-company"><div class="c3-h">Company（自社）</div>'
                f'<p class="small"><b>強み</b>: {esc(detail.get("strengths") or "—")}</p>'
@@ -124,7 +147,7 @@ def three_c_block(detail: dict, analysis: dict) -> str:
     kbf_rows = [[esc(k["kbf"]), _mark(k["self"])] + [_mark(k["peers"].get(p)) for p in peers] + [esc(k.get("basis"))]
                 for k in detail.get("kbf_table") or []]
     letters = [f"競合{chr(ord('A') + i)}" for i in range(len(peers))]
-    legend = "、".join(f"{letter}: {esc(p)}" for letter, p in zip(letters, peers))
+    legend = "、".join(f"{letter}: {esc(short_name(p))}" for letter, p in zip(letters, peers))
     kbf_table = ((f'<p class="small muted">{legend}</p>' if legend else "")
                  + table(["KBF", "自社"] + letters + ["根拠"], kbf_rows, nowrap=frozenset(range(len(peers) + 2))))
     conservative = "".join(f"<li>{esc(c)}</li>" for c in analysis.get("conservative") or [])
@@ -184,7 +207,7 @@ def peers_block(facts: dict) -> str:
     body = []
     summary = [peers[k] for k in ("mean", "median") if peers.get(k)]  # the average beside the median
     for r in rows + summary:
-        name = esc(r["name"]) + (" <b>（対象）</b>" if r.get("self") else "")
+        name = esc(short_name(r["name"])) + (" <b>（対象）</b>" if r.get("self") else "")
         cls = "self-row" if r.get("self") else ("median-row" if r in summary else "")
         body.append([f'<span class="{cls}">{name}</span>'] + [esc(num(r.get(k), u, 1)) for k, _, u in cols])
     return ('<h3>同業比較</h3>' + table(["会社"] + [label for _, label, _ in cols], body,
@@ -195,17 +218,19 @@ def peers_block(facts: dict) -> str:
 def dividends_block(facts: dict) -> str:
     d = facts.get("dividends") or {}
     if not d.get("source"):
-        return '<h3>株主還元</h3><p class="muted">—（決算短信に記載なし）</p>'
+        return '<h3>株主還元</h3><p class="muted">配当の資料（決算短信・有価証券報告書）が集まっていない。</p>'
     steps = (facts["analyses"]["cash_flow"].get("detail") or {}).get("steps") or []
     cf5 = steps[4] if len(steps) > 4 else {}
+    basis = d.get("yield_basis") or "予想"
     rows = [["1株配当（実績）", esc(num(d.get("actual"), "円")), esc((d.get("actual_fy") or "—")[:7] + " 期")],
-            ["1株配当（会社予想）", esc(num(d.get("forecast"), "円")), esc((d.get("forecast_fy") or "—")[:7] + " 期")],
-            ["配当利回り（予想配当 ÷ 株価）", esc(num(d.get("yield"), "%", 2)), "株価はバリュエーションの基準日"],
+            ["1株配当（会社予想）", esc(num(d.get("forecast"), "円")), esc((d.get("forecast_fy") or "—")[:7] + " 期")
+             if d.get("forecast") is not None else "会社予想を集めていない"],
+            [f"配当利回り（{basis}配当 ÷ 株価）", esc(num(d.get("yield"), "%", 2)), "株価はバリュエーションの基準日"],
             ["配当性向（予想配当 ÷ 予想EPS）", esc(num(d.get("payout_forecast"), "%")),
              f"実績の配当性向 {esc(num(d.get('payout_actual'), '%'))}"]]
     return ("<h3>株主還元</h3>" + table(["項目", "値", "補足"], rows, right=frozenset({1}))
             + f'<p class="small">還元と FCF: {esc((cf5 or {}).get("sentence") or "—")}</p>'
-            + f'<p class="source">出典: {esc(d["source"])}・キャッシュフロー分析 手順5</p>')
+            + f'<p class="source">出典: {esc(d["source"])}・キャッシュフロー分析（株主還元の持続性）</p>')
 
 
 # ---------------------------------------------------------------- tooltips

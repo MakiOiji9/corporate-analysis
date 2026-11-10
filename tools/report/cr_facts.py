@@ -10,6 +10,7 @@ import cr_extras as X
 import cr_factors as F
 import cr_judge as J
 import cr_legends as L
+import cr_plain as P
 import cr_positioning as POS
 import cr_prices as CP
 import cr_status as S
@@ -134,9 +135,11 @@ def analysis(step: S.Step, company: S.Company) -> dict:
                 "detail": {}}
     date, r = found
     gaps = [g for g in r.get("gaps") or [] if not M.is_blank(g) and g != "なし"]
-    return {**base, "date": date, "verdict": r.get(step.verdict_key), "reason": r.get("verdict_reason") or "",
-            "points": _get(r, "handoff", "report_points") or "", "gaps": gaps, "md": r.get("md"),
-            "conservative": r.get("conservative") or [], "detail": DETAILS[step.key](r)}
+    # the analyses write for the next step ("手順1が良好", file paths); the report is read on its own
+    words = P.plain_tree({"reason": r.get("verdict_reason") or "", "points": _get(r, "handoff", "report_points") or "",
+                          "gaps": gaps, "conservative": r.get("conservative") or [],
+                          "detail": DETAILS[step.key](r)}, step.key)
+    return {**base, "date": date, "verdict": r.get(step.verdict_key), "md": r.get("md"), **words}
 
 
 # ---------------------------------------------------------------- outlook / review

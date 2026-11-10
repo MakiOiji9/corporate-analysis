@@ -37,6 +37,7 @@ import cr_batch as B  # noqa: E402
 import cr_doc as D  # noqa: E402
 import cr_facts as F  # noqa: E402
 import cr_legends as L  # noqa: E402
+import cr_plain as P  # noqa: E402
 import cr_render as R  # noqa: E402
 import cr_status as S  # noqa: E402
 import cr_technicals as T  # noqa: E402
@@ -224,7 +225,12 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     if issues:
         return emit({"ok": False, "md": company.rel(md_path), "issues": issues, "warnings": warnings})
     html_path, json_path = company.file(date, S.HTML_SUFFIX), company.file(date, S.JSON_SUFFIX)
-    atomic_write_text(html_path, R.render(_template(root, "report.html"), facts, D.parse(text), text))
+    page = R.render(_template(root, "report.html"), facts, D.parse(text), text)
+    leaks = P.leaks(page)
+    if leaks:  # the page is read on its own: no step numbers, file paths or tool names
+        return emit({"ok": False, "md": company.rel(md_path), "warnings": warnings,
+                     "issues": [f"読み手に通じない内部の言葉が本文に残っている（書いた欄なら言い換える）: {x}" for x in leaks]})
+    atomic_write_text(html_path, page)
     result = result_json(company, facts, date, warnings)
     atomic_write_text(json_path, json.dumps(result, ensure_ascii=False, indent=1) + "\n")
     return emit({"ok": True, "html": result["html"], "json": company.rel(json_path), "date": date,

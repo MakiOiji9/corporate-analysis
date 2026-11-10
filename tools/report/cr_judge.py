@@ -99,7 +99,8 @@ def mismatches(moat: str | None, win: str | None, profitability: str | None, mar
 def red_flags(cf_steps: list[dict], safety: str | None, safety_trend: str | None) -> list[str]:
     """Serious red flags: they pass every horizon and make STEP 2 C. cf_steps are the cash-flow 手順1〜2."""
     flags = []
-    labels = ("営業CF がマイナスの年が続く（キャッシュフロー手順1が懸念）", "FCF の累計がマイナス（キャッシュフロー手順2が懸念）")
+    labels = ("営業CF がマイナスの年が続く（キャッシュフローの「営業CF の安定性」が懸念）",
+              "FCF の累計がマイナス（キャッシュフローの「FCF の創出力」が懸念）")
     for label, step in zip(labels, cf_steps[:2]):
         if (step or {}).get("rating") == "懸念":
             flags.append(label)
@@ -226,6 +227,32 @@ def sensitivity(horizon: str, factors: dict[str, dict], flags: list[str] | tuple
                 out["movers"].append({"key": key, "label": FACTOR_LABELS[key], "direction": word,
                                       "verdict": other["verdict"], "score": other["score"]})
     return out
+
+
+LADDERS = {  # the factor's words from −1 to +1 (a one-step move reads as a concrete condition)
+    **{k: ("懸念", "普通", "良好") for k in ("growth", "profitability", "cash_flow", "safety")},
+    "five_forces": ("低", "中", "高"), "three_c": ("なし", "あいまい", "明確"), "moat": ("なし", "狭い", "広い"),
+    "swot": ("No", "条件付き", "Yes"), "market": ("警戒", "注意", "平常"), "valuation": ("割高", "妥当", "割安")}
+NUMERIC_MOVES = {
+    ("price", 1): "株価のテクニカルが上向き（上昇トレンドへの転換・売られすぎからの反発）に変われば",
+    ("price", -1): "株価のテクニカルが下向き（下降トレンド・買われすぎ）に変われば",
+    ("progress", 1): "次の決算で営業利益の進捗が前年同期の110%以上になれば",
+    ("progress", -1): "次の決算で営業利益の進捗が前年同期の90%を下回れば"}
+
+
+def mover_text(mover: dict, rows: list[dict]) -> str:
+    """'成長性が「良好」になれば（今は「普通」）投資検討': the one-step move of sensitivity() as a condition."""
+    step = 1 if mover["direction"] == "1段良くなれば" else -1
+    text = NUMERIC_MOVES.get((mover["key"], step))
+    ladder = LADDERS.get(mover["key"])
+    row = next((r for r in rows if r["key"] == mover["key"]), None)
+    if text is None and ladder and row and row["score"] is not None:
+        now = max(-1, min(1, round(row["score"])))
+        if -1 <= now + step <= 1:
+            text = f"{mover['label']}が「{ladder[now + step + 1]}」になれば（今は「{ladder[now + 1]}」）"
+        else:  # a fractional score (valuation's average) already rounds to the end word
+            text = f"{mover['label']}が「{ladder[now + 1]}」で揃えば"
+    return f"{text or mover['label'] + 'が' + mover['direction']}{mover['verdict']}"
 
 
 def matrix_reference(s1: dict, s2: dict, s3: str | None) -> dict:

@@ -63,6 +63,23 @@ def _latest(rows: list[dict], filed: dict, element: str, context: str, member: s
     return _num(best["value"]), best.get("fiscal_year_end")
 
 
+def _yuho_dividend(company_path: Path) -> tuple[float | None, str | None, float | None]:
+    """The newest 1株配当 and 配当性向 of the annual reports' summary (data/financials.csv), for companies without
+    the 決算短信 facts."""
+    path = company_path / "data" / "financials.csv"
+    if not path.exists():
+        return None, None, None
+    with path.open(encoding="utf-8", newline="") as f:
+        rows = list(csv.DictReader(f))
+    latest = {}
+    for r in sorted(rows, key=lambda r: r.get("period_end") or ""):
+        if r.get("item") in ("summary.dps", "summary.payout_ratio") and _num(r.get("value")) is not None:
+            latest[r["item"]] = (_num(r["value"]), r["period_end"][:7])
+    dps, fy = latest.get("summary.dps", (None, None))
+    payout = latest.get("summary.payout_ratio", (None, None))
+    return dps, fy, payout[0] if payout[1] == fy else None
+
+
 def dividends(company_path: Path, price: float | None, per_forecast: float | None) -> dict:
     rows = _annual_rows(company_path)
     filed = {r.get("doc_id"): FR._filed(r.get("filing_date", "")) or "" for r in rows}
@@ -72,12 +89,18 @@ def dividends(company_path: Path, price: float | None, per_forecast: float | Non
     if forecast is None or (nxt_fy and forecast_fy and nxt_fy > forecast_fy):
         forecast, forecast_fy = nxt, nxt_fy
     payout_actual, _ = _latest(rows, filed, "PayoutRatio", "CurrentYearDuration", "ResultMember")
+    source = "決算短信" if rows else None
+    if actual is None:
+        actual, actual_fy, payout_actual = _yuho_dividend(company_path)
+        source = "有価証券報告書の主要な経営指標" if actual is not None else source
+    # without a company forecast the yield is on the latest actual dividend (labelled so in the report)
+    basis = forecast if forecast is not None else actual
     eps_forecast = price / per_forecast if price and per_forecast else None
     return {"actual": actual, "actual_fy": actual_fy, "forecast": forecast, "forecast_fy": forecast_fy,
-            "payout_actual": payout_actual,
-            "yield": round(forecast / price * 100, 2) if forecast is not None and price else None,
+            "payout_actual": payout_actual, "yield_basis": "予想" if forecast is not None else "実績",
+            "yield": round(basis / price * 100, 2) if basis is not None and price else None,
             "payout_forecast": round(forecast / eps_forecast * 100, 1) if forecast is not None and eps_forecast else None,
-            "source": "data/tdnet_facts.csv（決算短信）" if rows else None}
+            "source": source}
 
 
 def _median(values: list[float | None]) -> float | None:

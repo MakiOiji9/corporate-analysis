@@ -98,7 +98,7 @@ def summarize(company_path: Path) -> dict:
     path = newest(company_path)
     rows = parse(path.read_text(encoding="utf-8")) if path else []
     if not rows:
-        return {"ok": False, "text": "需給（信用残・空売り）: 材料なし（raw/market/*_positioning.md が無い）", "notes": []}
+        return {"ok": False, "text": "需給（信用残・空売り）: 材料なし（信用残・空売りのデータを集めていない）", "notes": []}
     last = rows[-1]
     jp_lines, jp_notes = _japan(rows, last)
     us_lines, us_notes = _us(rows, last)

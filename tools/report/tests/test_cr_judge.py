@@ -179,3 +179,26 @@ def test_matrix_reference(g1, g2, s3, verdict):
 
 def test_matrix_reference_without_valuation_caps_at_watch():
     assert J.matrix_reference(_s("A"), _s("A"), "判定保留")["verdict"] == "ウォッチ"
+
+
+# ---------------------------------------------------------------- movers as concrete conditions
+
+def _rows(**scores):
+    return [{"key": k, "score": v} for k, v in scores.items()]
+
+
+def test_mover_text_names_the_next_word():
+    m = {"key": "growth", "label": "成長性", "direction": "1段良くなれば", "verdict": "投資検討"}
+    assert J.mover_text(m, _rows(growth=0.0)) == "成長性が「良好」になれば（今は「普通」）投資検討"
+    m = {"key": "market", "label": "地合い", "direction": "1段良くなれば", "verdict": "ウォッチ"}
+    assert J.mover_text(m, _rows(market=-1.0)) == "地合いが「注意」になれば（今は「警戒」）ウォッチ"
+
+
+def test_mover_text_for_numeric_factors():
+    m = {"key": "progress", "label": "直近の決算の進捗", "direction": "1段悪くなれば", "verdict": "見送り"}
+    assert J.mover_text(m, _rows(progress=0.0)) == "次の決算で営業利益の進捗が前年同期の90%を下回れば見送り"
+
+
+def test_mover_text_with_a_fractional_valuation_score():
+    m = {"key": "valuation", "label": "株価の割安さ（STEP 3）", "direction": "1段良くなれば", "verdict": "投資検討"}
+    assert J.mover_text(m, _rows(valuation=0.6)) == "株価の割安さ（STEP 3）が「割安」で揃えば投資検討"

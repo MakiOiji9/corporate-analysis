@@ -186,12 +186,9 @@ def _improvements(facts: dict) -> list[str]:
     for key, label in HORIZONS:
         h = facts["horizons"][key]
         s = h.get("sensitivity") or {}
-        near = s.get("nearest")
-        if near and near["gap"] > 0:
-            out.append(f"{label}の点数が {near['gap']:+.2f} 上がれば{near['to']}（今 {score_text(h['score'])}）")
         ups = [m for m in s.get("movers") or [] if m["direction"] == "1段良くなれば"][:MOVERS_SHOWN]
-        if ups:
-            out.append(f"{label}: " + "、".join(f"{m['label']}が1段良くなれば{m['verdict']}" for m in ups))
+        # the concrete condition only: a score gap ("+0.10 上がれば") means nothing to the reader
+        out += [f"{label}の判定: {J.mover_text(m, h['rows'])}" for m in ups]
     return out
 
 
@@ -318,7 +315,10 @@ def render_brief(facts: dict, md_rel: str) -> str:
               "- 判定語（投資検討・ウォッチ・見送り・判定保留）は表と同じものを使う。各期間の説明は判定語から書き始める",
               "- 専門用語（ROE・PER・PBR・FCF・モートなど）は初めて出るところで「（＝…）」と言い換える。用語集は HTML に自動で付く",
               "- 使わない語: " + "・".join(O.FORBIDDEN) + "。株価の水準の予想も書かない",
-              "- 分析ファイルに無いこと（一般論・推測）を補わない。分からないことは「不明」と書き、良い方に解釈しない"]
+              "- 分析ファイルに無いこと（一般論・推測）を補わない。分からないことは「不明」と書き、良い方に解釈しない",
+              "- レポートだけを読む人に通じる言葉で書く。「手順N」は確かめた中身（例: 「ROE の水準と安定性」）に、ファイル名は"
+              "資料の名前（例: 有価証券報告書・地合いレポート）に言い換え、brief・FILL・収集エージェントの名前は書かない"
+              "（残っていると build が止まる）"]
     return "\n".join(lines) + "\n"
 
 

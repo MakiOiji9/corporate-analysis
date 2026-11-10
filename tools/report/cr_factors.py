@@ -56,14 +56,15 @@ def market_factor(outlook: dict, horizon: str) -> dict:
     row = (outlook.get("rows") or {}).get(PERIOD_KEYS[horizon]) or {}
     judgment = row.get("judgment")
     return _factor(J.score_of(judgment) if judgment in ("平常", "注意", "警戒") else None, judgment or "不明",
-                   row.get("scenario") or "", f"地合い {outlook.get('path') or '—'}（{PERIOD_KEYS[horizon]}の行）")
+                   row.get("scenario") or "",
+                   f"地合いレポート（{outlook.get('week') or '—'} の週）の{PERIOD_KEYS[horizon]}の見通し")
 
 
 def price_factor(prices: dict) -> dict:
     t = prices.get("technicals") or {}
     if prices.get("source") != "prices" or t.get("score") is None:
         return _factor(None, T.value_text(t), "", "株価のテクニカル")
-    return _factor(t["score"], T.value_text(t), T.REASON, "株価のテクニカル（data/prices.csv）")
+    return _factor(t["score"], T.value_text(t), T.REASON, "株価のテクニカル（日々の株価）")
 
 
 def progress_factor(growth: dict) -> dict:
@@ -71,13 +72,13 @@ def progress_factor(growth: dict) -> dict:
     item = (progress.get("items") or {}).get("operating_income") or {}
     rate, prior, quarter = item.get("progress"), item.get("prior_progress"), progress.get("quarter")
     if rate is None or not quarter:
-        return _factor(None, "不明（四半期の進捗が無い）", "", "成長性分析 progress")
+        return _factor(None, "不明（四半期の進捗が無い）", "", "成長性分析（四半期の進捗）")
     pace, basis = (prior, "前年同期") if prior else (quarter / 4 * 100, "標準ペース")
     ratio = rate / pace if pace else None
     score = None if ratio is None else 1.0 if ratio >= PROGRESS_UP else -1.0 if ratio < PROGRESS_DOWN else 0.0
     value = f"第{quarter}四半期 {rate:.1f}%（{basis} {pace:.1f}%）"
     reason = f"{basis}の {PROGRESS_UP * 100:.0f}% 以上は +1、{PROGRESS_DOWN * 100:.0f}% 未満は −1"
-    return _factor(score, value, reason, "成長性分析 progress（決算短信）")
+    return _factor(score, value, reason, "成長性分析（決算短信の四半期の進捗）")
 
 
 def build(found: dict[str, dict], prices: dict, outlook: dict) -> dict[str, dict[str, dict]]:
