@@ -558,7 +558,8 @@ def test_skeleton_has_numbers_and_fill_keys(repo, capsys):
     code, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
     assert code == 0 and out["decline_years"] == ["2023-03"]
     assert out["fill_keys"][:3] == ["reason-2023-03", "class-2023-03", "swot-2023-03"]
-    assert out["cagr"]["sales"] == pytest.approx(8.1, abs=0.05) and out["candidate"]["step1"] == "高成長"
+    # the regression CAGR over every year (the end-point CAGR is 8.1%)
+    assert out["cagr"]["sales"] == pytest.approx(7.6, abs=0.05) and out["candidate"]["step1"] == "高成長"
     text = (repo / out["md"]).read_text(encoding="utf-8")
     assert "| 手順1の判定 | 高成長（確定）" in text and "| 手順3の判定 | 信頼できる（確定）" in text
     assert "売上高 回復（2024-03）" in text
@@ -723,7 +724,9 @@ def test_uls_regression(uls, capsys):
     company = P.Company(uls, uls / "companies" / "3798_uls-group")
     cands = X.candidates(company, I.gather_growth(company))
     s1, s4 = cands["step1"], cands["step4"]
-    assert round(s1["sales"]["value"], 1) == 15.1 and round(s1["eps"]["value"], 1) == 16.2
+    # the rules use the regression CAGR; the end-point CAGRs (15.1% / 16.2%) are kept beside it
+    assert s1["sales"]["method"] == "回帰" and round(s1["sales"]["value"], 1) == 14.2
+    assert round(s1["endpoint"]["sales"]["value"], 1) == 15.1 and round(s1["endpoint"]["eps"]["value"], 1) == 16.2
     assert s1["rating"] == "高成長" and [d["year"] for d in cands["declines"]] == ["2024-03"]
     assert cands["split_notes"][0]["matched"] and cands["split_notes"][0]["record"]["date"] == "2025-10-01"
     assert round(s4["checks"][1]["organic"], 1) == 14.9 and s4["checks"][1]["status"] == "問題なし"

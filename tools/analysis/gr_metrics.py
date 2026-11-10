@@ -1,6 +1,9 @@
 """CAGR and every judgement of 企業分析フレームワーク.md 2-2 (成長性).
 
-  CAGR = (最終年の値 ÷ 初年の値)^(1 ÷ 年数) − 1, over the newest MAX_YEARS fiscal years with sales.
+  CAGR over the newest MAX_YEARS fiscal years with sales: the regression CAGR (a straight line fitted to the
+  logarithm of every year's value, so a cyclical peak or trough at either end does not decide it) when every year
+  is positive and there are MIN_YEARS years or more; otherwise the end-point CAGR = (最終年の値 ÷ 初年の値)^(1 ÷
+  年数) − 1. The end-point CAGR is kept beside it and a gap over ENDPOINT_GAP_PT is noted.
   手順1 (成長の水準, at least MIN_YEARS years of sales and EPS): 停滞・縮小: 売上か EPS の CAGR がマイナス /
     高成長: 売上 >= 5% かつ EPS >= 7% / 安定成長: それ以外でともにプラス. EPS is split-adjusted (gr_series);
     without enough EPS years the net income stands in and says so. A first year at a loss gives no CAGR.
@@ -23,6 +26,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 
 import an_common as A
@@ -35,6 +39,7 @@ MIN_YEARS, MAX_YEARS = 5, 10
 RECENT_YEARS = 3  # 手順4(a) and 手順3 also look at the newest 3 years (a long CAGR hides a recent change)
 HIGH_SALES, HIGH_EPS = 5.0, 7.0
 BORDER_PT = 1.0  # a CAGR within this of a threshold is borderline
+ENDPOINT_GAP_PT = 3.0  # the end-point and the regression CAGR further apart than this are noted
 RECOVERY_YEARS = 2
 PLAN_HIT = 90.0
 PLAN_BORDER = 5.0  # an achievement within this of PLAN_HIT is borderline
@@ -138,6 +143,42 @@ def cagr(rows: list[dict], key: str) -> dict:
     return {**base, "value": value, "sign": "-" if value < 0 else "+", "reason": ""}
 
 
+def regression_cagr(rows: list[dict], key: str) -> dict | None:
+    """The growth rate of a straight line fitted to ln(value) over the years (every year counts, so a peak or a
+    trough at either end does not decide it). None unless MIN_YEARS or more years and all of them positive."""
+    points = [r for r in rows if r[key] is not None]
+    if len(points) < MIN_YEARS or any(r[key] <= 0 for r in points):
+        return None
+    xs = [_months_apart(points[0]["year"], r["year"]) / 12 for r in points]
+    ys = [math.log(r[key]) for r in points]
+    mx, my = sum(xs) / len(xs), sum(ys) / len(ys)
+    sxx = sum((x - mx) ** 2 for x in xs)
+    if not sxx:
+        return None
+    slope = sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / sxx
+    value = (math.exp(slope) - 1) * 100
+    return {"value": value, "sign": "-" if value < 0 else "+", "points": len(points), "first": points[0]["year"],
+            "last": points[-1]["year"], "span": xs[-1], "reason": "", "method": "回帰"}
+
+
+def growth_rate(rows: list[dict], key: str) -> tuple[dict, dict]:
+    """(the rate the rules use, the end-point CAGR): the regression CAGR when it can be computed, else the
+    end-point CAGR (a loss year or too few years)."""
+    endpoint = {**cagr(rows, key), "method": "端点"}
+    regression = regression_cagr(rows, key)
+    return (regression or endpoint), endpoint
+
+
+def endpoint_note(label: str, used: dict, endpoint: dict) -> str:
+    """「売上は始点・終点の年の影響が大きい…」 when the two CAGRs differ by more than ENDPOINT_GAP_PT."""
+    if used.get("method") != "回帰" or endpoint.get("value") is None:
+        return ""
+    if abs(used["value"] - endpoint["value"]) <= ENDPOINT_GAP_PT:
+        return ""
+    return (f"{label}は始点・終点の年の影響が大きい（端点 CAGR {endpoint['value']:.1f}%、全年の回帰 CAGR "
+            f"{used['value']:.1f}%。判定は回帰を使う）")
+
+
 def fmt_cagr(c: dict) -> str:
     return f"{c['value']:.1f}%" if c.get("value") is not None else f"—（{c.get('reason') or '計算できない'}）"
 
@@ -186,16 +227,20 @@ def step1(rows: list[dict]) -> dict:
     with_ni = len(_window(rows, ("sales", "net_income")))
     eps_key = "eps" if with_eps >= MIN_YEARS or with_eps >= with_ni else "net_income"
     window, basis_cut, basis_note = _basis_window(_window(rows, ("sales", eps_key)), ("sales", eps_key))
-    sales, op, eps = cagr(window, "sales"), cagr(window, "operating_income"), cagr(window, eps_key)
-    ni = cagr(window, "net_income")
+    (sales, sales_end), (op, op_end) = growth_rate(window, "sales"), growth_rate(window, "operating_income")
+    (eps, eps_end), (ni, _) = growth_rate(window, eps_key), growth_rate(window, "net_income")
     years = _filled(window, ("sales", eps_key))
     stand_in = "" if eps_key == "eps" else "（EPS が足りないため当期純利益で代用）"
+    eps_label = "EPS" if eps_key == "eps" else "純利益"
+    notes = [n for n in (endpoint_note("売上", sales, sales_end), endpoint_note(eps_label, eps, eps_end)) if n]
     base = {"years": years, "sales": sales, "operating_income": op, "eps": eps, "net_income": ni,
-            "eps_key": eps_key, "stand_in": stand_in, "window": [r["year"] for r in window],
+            "endpoint": {"sales": sales_end, "operating_income": op_end, "eps": eps_end},
+            "endpoint_notes": notes, "eps_key": eps_key, "stand_in": stand_in, "window": [r["year"] for r in window],
             "first": window[0]["year"] if window else None, "last": window[-1]["year"] if window else None,
             "basis_cut": basis_cut, "basis_note": basis_note}
-    cagrs = (f"売上 CAGR {fmt_cagr(sales)}、営業利益 CAGR {fmt_cagr(op)}、"
-             f"{'EPS' if eps_key == 'eps' else '純利益'} CAGR {fmt_cagr(eps)}")
+    method = "全年の回帰" if "回帰" in (sales.get("method"), eps.get("method")) else "端点"
+    cagrs = (f"売上 CAGR {fmt_cagr(sales)}、営業利益 CAGR {fmt_cagr(op)}、{eps_label} CAGR {fmt_cagr(eps)}"
+             f"（{method}）" + ("。" + "。".join(notes) if notes else ""))
     if years < MIN_YEARS:
         return {**base, "rating": None, "basis": f"売上高と EPS が揃った年が {years} 年で {MIN_YEARS} 年に満たない",
                 "sentence": f"{cagrs}（参考値）。{years}年分しかなく、{MIN_YEARS}年に満たず判定できない"}

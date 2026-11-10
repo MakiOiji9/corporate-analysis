@@ -160,6 +160,21 @@ def test_price_history_from_daily_prices_and_eps(tmp_path):
         ("2024-03", 30.0, 25.0, V.RAW_SOURCE), ("2025-03", 12.0, 11.0, V.COMPUTED_SOURCE)]
 
 
+def test_regression_cagr_ignores_a_peak_start_year():
+    import gr_metrics as GR
+    # a cyclical series that starts at a peak: 150 then a 100 -> 160 climb at 10% a year
+    values = [150.0, 100.0, 110.0, 121.0, 133.1, 146.4, 161.1]
+    rows = [{"year": f"{2019 + i}-02", "eps": v} for i, v in enumerate(values)]
+    used, endpoint = GR.growth_rate(rows, "eps")
+    assert endpoint["value"] == pytest.approx(1.2, abs=0.1)  # (161.1 / 150)^(1/6) − 1
+    # every year counts: the peak still weighs, but far less than as the start point
+    assert used["method"] == "回帰" and used["value"] == pytest.approx(4.3, abs=0.1)
+    assert "始点・終点" in GR.endpoint_note("EPS", used, endpoint)
+    # a loss year: no regression, the end-point CAGR is used
+    loss = [{"year": f"{2019 + i}-02", "eps": v} for i, v in enumerate([100.0, -5.0, 90.0, 100.0, 110.0, 120.0])]
+    assert GR.growth_rate(loss, "eps")[0]["method"] == "端点"
+
+
 def test_ev_claims_adds_leases_minority_and_short_investments():
     row = {"debt": 100.0, "cash": 50.0, "lease": 15.0, "nci": 10.0, "short_investments": 5.0}
     debt, cash, added = VA.ev_claims(row)
