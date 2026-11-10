@@ -17,6 +17,7 @@ sys.path[:0] = [str(TOOLS / "analysis"), str(TOOLS / "collect" / "market"), str(
 
 import an_common as A  # noqa: E402
 import cash_flow  # noqa: E402
+import cr_materials as MT  # noqa: E402
 import cf_paths  # noqa: E402
 import ff_paths  # noqa: E402
 import five_forces  # noqa: E402
@@ -111,8 +112,10 @@ def usable(step: dict, use_existing: bool) -> bool:
 
 
 def next_step(steps: list[dict], outlook: dict, report: dict, today: str, redo: bool,
-              use_existing: bool = False) -> str:
-    """The first analysis that is not usable, then the outlook, then the report itself."""
+              use_existing: bool = False, materials: list[dict] | None = None) -> str:
+    """The first analysis that is not usable, then the outlook, then the report itself. Before a new report is
+    prepared, stale material goes to its collector first (cr_materials; pass materials=None to skip that, after one
+    collection did not bring it)."""
     pending = next((s for s in steps if not usable(s, use_existing)), None)
     if pending:
         return pending["skill"]
@@ -123,12 +126,15 @@ def next_step(steps: list[dict], outlook: dict, report: dict, today: str, redo: 
             return "report_existing"
         if report["state"] in ("draft", "filled"):
             return "write" if report["state"] == "draft" else "build"
-    return "prepare"
+    return (MT.next_for(materials) if materials else None) or "prepare"
 
 
-def check(root: Path, company: Company, today: str, redo: bool = False, use_existing: bool = False) -> dict:
+def check(root: Path, company: Company, today: str, redo: bool = False, use_existing: bool = False,
+          use_stale: bool = False) -> dict:
     steps = [step_state(step, company, today) for step in STEPS]
     outlook = A.latest_outlook(root, today)
     report = report_state(company)
-    return {"steps": steps, "outlook": outlook, "report": report,
-            "next": next_step(steps, outlook, report, today, redo, use_existing)}
+    materials = MT.evaluate(company.path, outlook, today)
+    nxt = next_step(steps, outlook, report, today, redo, use_existing, None if use_stale else materials)
+    return {"steps": steps, "outlook": outlook, "report": report, "materials": materials,
+            "collect": MT.collect_request(materials) if nxt == MT.COLLECT_SKILL else None, "next": nxt}

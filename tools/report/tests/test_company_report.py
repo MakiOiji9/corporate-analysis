@@ -104,7 +104,26 @@ def _company(root: Path, verdicts: dict | None = None) -> Path:
                      f"100,{TODAY}")
     (company / "data").mkdir()
     (company / "data" / "prices.csv").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    _materials(company, TODAY)
     return company
+
+
+NEWS = """# プレスリリース
+
+## 1. 適時開示・プレスリリース
+| 日付 | 見出し | 要旨 | URL |
+|---|---|---|---|
+| 2026-10-28 | 第1四半期決算短信 | 増収 | https://example.com/a |
+| 2026-07-20 | 新サービス | 見出しのみ | https://example.com/b |
+"""
+
+
+def _materials(company: Path, day: str) -> None:
+    """The collected material the report checks for freshness (cr_materials), dated `day`."""
+    for sub, name, text in (("news", f"{day}_press-releases.md", NEWS),
+                            ("ir", f"{day}_valuation-data.md", "# 株価指標\n")):
+        (company / "raw" / sub).mkdir(parents=True, exist_ok=True)
+        (company / "raw" / sub / name).write_text(text, encoding="utf-8")
 
 
 @pytest.fixture
@@ -206,6 +225,29 @@ def test_stale_outlook_asks_for_market_report(repo, capsys):
     _company(repo)
     out = _run(repo, capsys, "check", "--company", "3798", "--date", "2026-12-31")
     assert out["next"] == "market-report"
+
+
+def test_stale_news_asks_collect_company_info_with_the_agent_and_items(repo, capsys):
+    company = _company(repo)
+    for p in (company / "raw" / "news").iterdir():
+        p.unlink()
+    _materials(company, "2026-10-01")  # news and the valuation data are a month old
+    out = _run(repo, capsys, "check", "--company", "3798", "--date", TODAY)
+    assert out["next"] == "collect-company-info"
+    assert out["collect"]["mode"] == "update" and out["collect"]["agents"] == ["collect-ir"]
+    news = next(m for m in out["materials"] if m["key"] == "news")
+    assert news["stale"] and news["date"] == "2026-10-01"
+    # one collection did not bring it: go on with the old material (the report marks it)
+    assert _run(repo, capsys, "check", "--company", "3798", "--date", TODAY, "--use-stale")["next"] == "prepare"
+
+
+def test_news_table_shorter_than_three_months_is_stale(repo, capsys):
+    company = _company(repo)
+    short = NEWS.replace("2026-07-20", "2026-10-20")
+    (company / "raw" / "news" / f"{TODAY}_press-releases.md").write_text(short, encoding="utf-8")
+    out = _run(repo, capsys, "check", "--company", "3798", "--date", TODAY)
+    news = next(m for m in out["materials"] if m["key"] == "news")
+    assert out["next"] == "collect-company-info" and "3か月" in news["why"]
 
 
 def test_prepare_fill_build_flow(repo, capsys):

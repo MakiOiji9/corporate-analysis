@@ -124,12 +124,15 @@ def _pending_step1(status: dict, use_existing: bool) -> str | None:
     return None
 
 
-def run(root: Path, company: S.Company, today: str, use_existing: bool = False) -> dict:
+def run(root: Path, company: S.Company, today: str, use_existing: bool = False, use_stale: bool = False) -> dict:
     by_skill = {s.skill: s for s in S.STEPS}
     out: dict[str, list] = {"built": [], "write": [], "collect": [], "errors": [], "refreshed": [], "blocked": []}
     refreshed: set[str] = set()
+
+    def check() -> dict:
+        return S.check(root, company, today, use_existing=use_existing, use_stale=use_stale)
     for _ in range(MAX_ROUNDS):
-        status = S.check(root, company, today, use_existing=use_existing)
+        status = check()
         step1 = _pending_step1(status, use_existing)
         if step1:
             return _result(status, out, step1)
@@ -147,9 +150,9 @@ def run(root: Path, company: S.Company, today: str, use_existing: bool = False) 
                 break  # the states changed: look again from the top
             out[{"write": "write", "collect": "collect", "blocked": "blocked"}.get(kind, "errors")].append(result)
         if not progressed:
-            return _result(S.check(root, company, today, use_existing=use_existing), out, None)
+            return _result(check(), out, None)
     out["errors"].append({"error": f"{MAX_ROUNDS} 回進めても終わらない"})
-    return _result(S.check(root, company, today, use_existing=use_existing), out, None)
+    return _result(check(), out, None)
 
 
 def _result(status: dict, out: dict, step1: str | None) -> dict:
@@ -165,4 +168,5 @@ def _result(status: dict, out: dict, step1: str | None) -> dict:
         nxt = status["next"]
     return {"ok": not out["errors"], "next": nxt, "built": out["built"], "write": out["write"],
             "collect": out["collect"], "errors": out["errors"], "blocked": out["blocked"], "price_refreshed": out["refreshed"],
+            "collect_request": status.get("collect"),
             "steps": [{k: s[k] for k in ("skill", "result", "date", "verdict")} for s in status["steps"]]}

@@ -213,6 +213,7 @@ def build(root: Path, company: S.Company, today: str, status: dict) -> dict:
         "date": today, "unit": unit_label(company), "price": _get(found["valuation"], "detail", "price") or {},
         "analyses": found, "prices": prices, "outlook": outlook, "review": next_review(company),
         **judgements(found, prices, outlook), "gaps": gaps(found), "steps": status["steps"],
+        "materials": status.get("materials") or [],
         "stale": [{k: s[k] for k in ("skill", "label", "step", "date", "result", "reason")}
                   for s in status["steps"] if s["result"] != "fresh"],
     }

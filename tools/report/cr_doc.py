@@ -12,6 +12,7 @@ from string import Template
 import charts as C
 import cr_judge as J
 import cr_legends as L
+import cr_materials as MT
 import cr_technicals as T
 import mdparse as M
 import outlook as O
@@ -296,6 +297,8 @@ def _premise(facts: dict) -> list[str]:
                      f"営業利益 {C.fmt(latest.get('operating_income'), 0)}・純利益 {C.fmt(latest.get('net_income'), 0)}"
                      f"（{facts['unit']}）、EPS {C.fmt(latest.get('eps'), 1)}")
     lines.append(f"- 次回の見直し: {facts['review']}")
+    if facts.get("materials"):
+        lines.append(f"- 材料の基準日: {MT.as_of_line(facts['materials'])}。古い材料に基づく記述は、基準日の時点のことと分かるように書く")
     for s in facts.get("stale") or []:
         lines.append(f"- 注意: {s['label']}（{s['date']}）は分析後に材料が変わったが作り直していない（{s['reason']}）。"
                      "4.3 に確かめることとして書く")

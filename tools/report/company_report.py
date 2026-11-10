@@ -102,10 +102,15 @@ def cmd_check(args: argparse.Namespace, root: Path) -> int:
     if error:
         return emit(error)
     today = _today(args)
-    status = S.check(root, company, today, args.redo, args.use_existing)
+    status = S.check(root, company, today, args.redo, args.use_existing, args.use_stale)
     return emit({"ok": True, "company": company.dirname, "name": company.display_name(), "date": today,
                  "steps": _compact(status["steps"]), "outlook": status["outlook"], "report": status["report"],
+                 "materials": _materials(status["materials"]), "collect": status["collect"],
                  "next": status["next"]})
+
+
+def _materials(rows: list[dict]) -> list[dict]:
+    return [{k: m[k] for k in ("key", "label", "date", "stale", "why", "by")} for m in rows]
 
 
 def _prepare_gate(status: dict, args: argparse.Namespace) -> str | None:
@@ -148,7 +153,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     if error:
         return emit(error)
     today = _today(args)
-    status = S.check(root, company, today, args.redo, args.use_existing)
+    status = S.check(root, company, today, args.redo, args.use_existing, args.use_stale)
     gate = _prepare_gate(status, args)
     if gate:
         return emit({"ok": False, "error": gate, "next": status["next"], "steps": _compact(status["steps"])})
@@ -245,7 +250,7 @@ def cmd_run(args: argparse.Namespace, root: Path) -> int:
     company, error = _resolve(root, args.company)
     if error:
         return emit(error)
-    return emit({"company": company.dirname, **B.run(root, company, _today(args), args.use_existing)})
+    return emit({"company": company.dirname, **B.run(root, company, _today(args), args.use_existing, args.use_stale)})
 
 
 def cmd_fill(args: argparse.Namespace, root: Path) -> int:
@@ -268,6 +273,9 @@ def main(argv: list[str] | None = None, root: Path = A.REPO_ROOT) -> int:
             p.add_argument("--use-existing", action="store_true",
                            help="分析後に材料が変わった（triggered）分析を作り直さず既存の結果で進む（レポートに明記）。"
                                 "期限切れ・未実施・作成途中の分析は実行する")
+            p.add_argument("--use-stale", action="store_true",
+                           help="古い材料（直近のニュース・アナリスト予想・地合い）を収集し直さずに進む。"
+                                "収集を1回試しても新しくならなかったときだけ（レポートに「古い材料」と出る）")
         if name == "prepare":
             p.add_argument("--skip-prices", action="store_true", help="株価を取りに行かない（data/prices.csv をそのまま使う）")
             p.add_argument("--skip-market-report", action="store_true",

@@ -134,3 +134,29 @@ def test_card_says_when_a_knockout_overrode_the_score():
     assert "点数だけならウォッチだが" in line and "のため見送り" in line
     assert R._knockout_line({**h, "knockout": []}) == ""
     assert R._knockout_line({**h, "score": -0.5}) == ""  # the score alone already says 見送り
+
+
+# ---------------------------------------------------------------- material freshness (cr_materials)
+
+def test_materials_route_market_before_company_collection(tmp_path):
+    import cr_materials as MT
+    company = tmp_path / "c"
+    (company / "raw" / "news").mkdir(parents=True)
+    (company / "raw" / "news" / "2026-11-01_press-releases.md").write_text(
+        "| 日付 | 見出し |\n|---|---|\n| 2026-10-30 | a |\n| 2026-07-01 | b |\n", encoding="utf-8")
+    rows = MT.evaluate(company, {"week": "2026-10-26"}, "2026-11-11")
+    by = {m["key"]: m for m in rows}
+    assert by["news"]["stale"] and by["news"]["why"] == "10日前（上限 7日）"
+    assert by["consensus"]["why"] == "無い" and by["prices"]["date"] is None
+    assert by["market"]["stale"]
+    assert MT.next_for(rows) == "market-report"
+    fresh_market = [m if m["key"] != "market" else {**m, "stale": False} for m in rows]
+    assert MT.next_for(fresh_market) == "collect-company-info"
+    assert MT.collect_request(rows) == {"mode": "update", "agents": ["collect-ir", "collect-peers-valuation"],
+                                        "items": [by["news"]["item"], by["consensus"]["item"]]}
+
+
+def test_stale_prices_alone_do_not_need_collection():
+    import cr_materials as MT
+    rows = [{"key": "prices", "stale": True, "by": MT.PREPARE}]
+    assert MT.next_for(rows) is None and MT.collect_request(rows) is None

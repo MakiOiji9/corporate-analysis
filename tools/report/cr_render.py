@@ -115,12 +115,18 @@ def _knockout_line(h: dict) -> str:
 
 
 def _stale_notice(facts: dict) -> str:
+    out = ""
     stale = facts.get("stale") or []
-    if not stale:
-        return ""
-    names = "、".join(f"{s['label']}（{s['date']}）" for s in stale)
-    return (f'<div class="notice"><b>注意</b>: {esc(names)} は、分析の後に新しい材料が集まったが作り直していない'
-            "（既存の結果で判定した）。理由は「材料不足と使った分析」の節を参照。</div>")
+    if stale:
+        names = "、".join(f"{s['label']}（{s['date']}）" for s in stale)
+        out += (f'<div class="notice"><b>注意</b>: {esc(names)} は、分析の後に新しい材料が集まったが作り直していない'
+                "（既存の結果で判定した）。理由は「材料不足と使った分析」の節を参照。</div>")
+    old = [m for m in facts.get("materials") or [] if m["stale"] and m["key"] != "prices"]
+    if old:
+        names = "、".join(f"{m['label']}（{m['date'] or '無し'}）" for m in old)
+        out += (f'<div class="notice"><b>古い材料</b>: {esc(names)} は集め直しても新しくならなかった。'
+                "その材料に基づく記述は基準日の時点のもの（「材料不足と使った分析」の「材料の基準日」を参照）。</div>")
+    return out
 
 
 def conclusion(facts: dict, parsed: dict) -> str:
@@ -409,7 +415,13 @@ def gaps(facts: dict) -> str:
     stale = facts.get("stale") or []
     stale_html = ("<h3>作り直していない分析（既存の結果を使用）</h3>"
                   + _list([f"{s['label']}（{s['date']}、{s['result']}）: {s['reason']}" for s in stale]) if stale else "")
-    body = (_list([f"{g['label']}: {g['gap']}" for g in facts["gaps"]]) + stale_html
+    materials = facts.get("materials") or []
+    material_html = ("<h3>材料の基準日</h3>" + table(
+        ["材料", "基準日", "状態"],
+        [[esc(m["label"]), esc(m["date"] or "無し"),
+          '<span class="ok-no">古い（' + esc(m["why"]) + "）</span>" if m["stale"] else '<span class="ok-yes">新しい</span>']
+         for m in materials], nowrap=frozenset({1})) if materials else "")
+    body = (_list([f"{g['label']}: {g['gap']}" for g in facts["gaps"]]) + stale_html + material_html
             + "<h3>このレポートが使った分析</h3>"
             + table(["STEP", "分析", "分析日", "結論", "ファイル"], rows, nowrap=frozenset({2})))
     return _section("gaps", "10", "材料不足と使った分析", "判定に影響しうる、まだ確かめられていない点。", body)

@@ -68,7 +68,8 @@ $PY -I tools/report/company_report.py check --company {company} [--redo] [--use-
 | `ok: false` で `company_missing: true` | 企業の情報が無い。ユーザーにホームページ URL を確認し、collect-company-info を `mode=full` で実行してから check をやり直す |
 | `five-forces` / `three-c` / `moat` / `swot` | その分析が新しくない。**そのスキルを引数 `{ticker}` で最後の完了報告まで実行**し、check をやり直す（各スキルが収集・上流の確認を自分で行う。上流の結論（C・懸念・判定保留）では止めない） |
 | `profitability` / `growth` / `safety` / `cash-flow` / `valuation` | STEP 2・3 が新しくない。手順 1.5 の run でまとめて進める（スキルの手順書は読まない） |
-| `market-report` | 地合い判断（outlook.md）が無いか35日より古い（短期・中期の判定に使う）。market-report スキルを実行し、check をやり直す |
+| `market-report` | 地合い判断（outlook.md）が無いか古い（分析が使うのは35日以内、レポートの株価の動き・業種の比較は7日以内。`materials` の `market` 行）。market-report スキルを実行し（材料が古ければ market-report が collect-market-info を先に実行する）、check をやり直す |
+| `collect-company-info` | レポートの材料（`materials`。直近3か月の開示・ニュース、アナリスト予想・株価指標）が古いか無い。**collect-company-info を `{ticker} mode=update 担当={collect.agents をカンマ区切り} 項目={collect.items をカンマ区切り}` で最後まで実行**し、check をやり直す |
 | `prepare` | 9つの分析がすべて新しい。手順 2 へ |
 | `write` | 今日のレポート md が作成途中（FILL が残っている）。手順 2 の prepare を実行してから（判定の表が最新になる）手順 3 の続きから書く |
 | `build` | 今日のレポート md は書き終わっているが build されていない。手順 4 へ |
@@ -79,6 +80,8 @@ $PY -I tools/report/company_report.py check --company {company} [--redo] [--use-
 - **同じスキルは1回の実行につき1回まで**。実行し終えたのに check でまだ同じスキルが `next` に出たら、もう一度は実行せず、そのスキルの `reason` を添えて止まり、ユーザーに報告する（材料の取り直し・作り直しはユーザーの判断）
 - 分析スキルが止まった（ユーザーへの確認待ち・エラー）ときは、このコマンドも止めて状況を報告する
 - check と prepare を1つのコマンドにつなげない（check の `next` を見てから次へ進む）。prepare も鮮度を確かめ、新しくない分析があれば `ok: false` で拒否する
+- 材料の収集（`collect-company-info` / 材料による `market-report`）も1回の実行で1回まで。実行したのにまだ同じ `next` が出たら、check・run・prepare に **`--use-stale`** を付けて進み（レポートに「古い材料」と基準日が出る）、完了報告の「警告」行に古い材料と `why` を書く
+- `materials` の基準日は完了報告の「材料」行に「材料の基準日: …」として書く
 
 ### 1.5 STEP 2・3 の一括実行（スクリプト ⇄ 執筆）
 
@@ -94,7 +97,7 @@ run は、profitability → growth → safety → cash-flow → valuation のう
 | `collect` | `collect` の分析は材料が足りない（`missing_inputs`）。その分析のスキルを最後まで実行し（スキルが収集から build まで行う）、run をやり直す。valuation で `fallback` があるのは株価の取り直しに失敗したとき（collect-company-info の「株価のみ」で取り直す） |
 | `fix` | `errors` の分析は JSON のキーが違う、または build の指摘がある。指摘の箇所だけを直し（JSON を作り直すか md を Edit する）、run をやり直す（2回まで。残れば未完了として報告する） |
 | `five-forces` などの STEP 1 のスキル | STEP 1 が新しくない。手順 1 の表のとおりスキルを実行する |
-| `prepare` / `market-report` ほか | STEP 2・3 はすべて新しい。手順 1 の表の同じ語の行に戻る |
+| `prepare` / `market-report` / `collect-company-info` ほか | STEP 2・3 はすべて新しい。手順 1 の表の同じ語の行に戻る（`collect-company-info` の引数は `collect_request`） |
 
 - brief の「（… の「### 見出し」と同じ内容のため省略。…）」は、同じ日のほかの分析の brief にある節。この実行で読んでいればその内容を使い、読んでいなければその節だけを読む
 - 書く本文の規則は各分析のスキルと同じ（数値は brief にあるものだけ、分からない背景は「不明（brief に記載なし）」、推測で埋めない、「おそらく」「〜と思われる」・投資の勧誘を書かない）。前回からの変更点・欠損・引き継ぎの定型の欄はスクリプトが記入済みなので書かない

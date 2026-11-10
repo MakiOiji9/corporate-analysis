@@ -80,7 +80,7 @@ def setup(tmp_path, monkeypatch):
     monkeypatch.setattr(S, "STEPS", tuple(SimpleNamespace(skill=k, script=fakes[k], paths=_paths_for(k))
                                           for k in B.BATCH))
 
-    def check(root, company, today, redo=False, use_existing=False):
+    def check(root, company, today, redo=False, use_existing=False, use_stale=False):
         rows = [{"skill": k, "result": step1[k], "date": None, "verdict": None} for k in STEP1]
         rows += [{"skill": k, "result": "fresh" if fakes[k].built() else "none", "date": None, "verdict": None}
                  for k in B.BATCH]
