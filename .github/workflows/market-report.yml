@@ -1,0 +1,79 @@
+# Weekly market report: every Monday 0:10 JST, /market-report for the week of that Monday.
+# The skill collects the material itself (collect-market-info) when this week's collection is missing.
+# Credentials: see "GitHub Actions での定期実行" in tools/README.md.
+name: market-report
+
+on:
+  schedule:
+    - cron: "10 15 * * 0" # Sun 15:10 UTC = Mon 0:10 JST
+  workflow_dispatch: {}
+
+# Shared with company-report.yml: one run writes to main at a time (Monday's group A waits for this one).
+concurrency:
+  group: reports
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  TZ: Asia/Tokyo # every script dates its files with the local date
+  CLAUDE_CODE_VERSION: "2.1.123"
+
+jobs:
+  market-report:
+    runs-on: ubuntu-latest
+    environment: reports
+    timeout-minutes: 240
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+
+      - id: setup
+        uses: ./.github/actions/setup-reports
+        with:
+          edinet-api-key: ${{ secrets.EDINET_API_KEY }}
+          fred-api-key: ${{ secrets.FRED_API_KEY }}
+          sec-user-agent: ${{ secrets.SEC_USER_AGENT }}
+          claude-code-version: ${{ env.CLAUDE_CODE_VERSION }}
+
+      - name: Run /market-report
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: bash .github/scripts/run-claude.sh "/market-report" "地合いレポート（$(date +%F)）"
+
+      # Claude can end without the report (a stop that asks the user, a build that kept failing).
+      - name: Check the report was built
+        id: built
+        run: |
+          status="$(.venv/bin/python -I tools/report/market_report.py check || true)"
+          echo "$status"
+          week="$(printf '%s' "$status" | python3 -I -c 'import json,sys; print(json.load(sys.stdin)["week"])')"
+          echo "week=$week" >> "$GITHUB_OUTPUT"
+          printf '%s' "$status" | python3 -I -c 'import json,sys; sys.exit(0 if json.load(sys.stdin).get("html_exists") else 1)' \
+            || { echo "::error::market/report/${week}_market-report.html が作られていない"; exit 1; }
+
+      # Partial output (the collection, a draft outlook) is committed too, so the next run continues from it.
+      - name: Commit
+        if: ${{ !cancelled() }}
+        env:
+          PUSH_TOKEN: ${{ github.token }}
+        run: |
+          week="${{ steps.built.outputs.week }}"
+          bash .github/scripts/commit-outputs.sh "chore: ${week:-$(date +%F)} 週の地合いレポート（自動実行 $(date +%F)）"
+
+      - name: Save originals
+        if: ${{ always() && steps.setup.outputs.cache-key != '' }}
+        uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: |
+            companies/*/sources
+            market/**/sources
+            .cache
+            !companies/*/sources/manifest.csv
+            !market/**/sources/manifest.csv
+          key: ${{ steps.setup.outputs.cache-key }}

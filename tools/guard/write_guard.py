@@ -6,7 +6,7 @@ so it runs with any Python 3.10+ (`python -I tools/guard/write_guard.py`).
 
 Rules (paths relative to the repository; writes outside it are not checked):
   1. Script-only files (data CSVs, sources/, index.csv, tasks.json, status.md, generated
-     raw tables) are never written by hand.
+     raw tables, the favorites ledger companies/favorites.json) are never written by hand.
   2. market/**/raw/*.md: the scripts create them. Only an existing file that still has
      <!-- FILL:... --> markers may be changed, and only with Edit (not overwritten). While a
      session runs, its allowed_files stay editable after the last FILL is gone, so a summariser
@@ -48,6 +48,7 @@ SCRIPT_ONLY = [
         r"^market/sessions/[^/]+/raw/(indicators-[^/]+|policy-digest)\.md$",
         r"^companies/[^/]+/sources/",
         r"^companies/[^/]+/data/",
+        r"^companies/favorites\.json$",
         r"^market/report/[^/]+_(facts\.json|brief\.md|market-report\.html|judgment\.json)$",
         r"^market/report/backtest/",
         r"^companies/[^/]+/analysis/(five-forces|three-c|moat|swot|profitability|cash-flow|growth|safety|valuation)/"

@@ -1,0 +1,134 @@
+# Company reports of the favorites: weekdays (Mon-Fri) 0:30 JST for group A and 6:00 JST for group B.
+# The groups live in companies/favorites.json (favorites skill; never edited by hand). Each company runs
+# /company-report in its own job, one after another, and is committed as soon as it is done.
+# Credentials: see "GitHub Actions での定期実行" in tools/README.md.
+name: company-report
+
+on:
+  schedule:
+    - cron: "30 15 * * 0-4" # Sun-Thu 15:30 UTC = Mon-Fri 0:30 JST -> group A
+    - cron: "0 21 * * 0-4" # Sun-Thu 21:00 UTC = Mon-Fri 6:00 JST -> group B
+  workflow_dispatch:
+    inputs:
+      group:
+        description: お気に入りのグループ
+        type: choice
+        options: [A, B]
+        default: A
+
+# Shared with market-report.yml: one run writes to main at a time (Monday 0:30 waits for the market report).
+concurrency:
+  group: reports
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  TZ: Asia/Tokyo # every script dates its files with the local date
+  CLAUDE_CODE_VERSION: "2.1.123"
+  GROUP_A_CRON: "30 15 * * 0-4"
+
+jobs:
+  targets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      group: ${{ steps.group.outputs.group }}
+      companies: ${{ steps.list.outputs.companies }}
+      count: ${{ steps.list.outputs.count }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - id: group
+        env:
+          EVENT: ${{ github.event_name }}
+          SCHEDULE: ${{ github.event.schedule }}
+          INPUT_GROUP: ${{ inputs.group }}
+        run: |
+          if [ "$EVENT" = "workflow_dispatch" ]; then group="$INPUT_GROUP"
+          elif [ "$SCHEDULE" = "$GROUP_A_CRON" ]; then group=A
+          else group=B; fi
+          echo "group=$group" >> "$GITHUB_OUTPUT"
+      # validate fails on a hand-edited ledger (digest), over 5 companies, or a company without a built report.
+      - id: list
+        run: |
+          out="$(python3 -I tools/report/favorites.py targets --group "${{ steps.group.outputs.group }}")" || {
+            echo "$out"
+            { echo "## お気に入り台帳に問題がある"; echo; echo '```'; echo "$out"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          }
+          echo "$out"
+          companies="$(printf '%s' "$out" | python3 -I -c 'import json,sys; print(json.dumps(json.load(sys.stdin)["companies"]))')"
+          echo "companies=$companies" >> "$GITHUB_OUTPUT"
+          echo "count=$(printf '%s' "$companies" | python3 -I -c 'import json,sys; print(len(json.load(sys.stdin)))')" >> "$GITHUB_OUTPUT"
+          echo "## グループ ${{ steps.group.outputs.group }}: $companies" >> "$GITHUB_STEP_SUMMARY"
+
+  report:
+    needs: targets
+    if: ${{ needs.targets.outputs.count != '0' }}
+    runs-on: ubuntu-latest
+    environment: reports
+    timeout-minutes: 180
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      max-parallel: 1 # one company at a time: each pushes to main and reads the previous one's commits
+      matrix:
+        company: ${{ fromJSON(needs.targets.outputs.companies) }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main # the latest main, including the previous company of this run
+          persist-credentials: false
+
+      - id: setup
+        uses: ./.github/actions/setup-reports
+        with:
+          edinet-api-key: ${{ secrets.EDINET_API_KEY }}
+          fred-api-key: ${{ secrets.FRED_API_KEY }}
+          sec-user-agent: ${{ secrets.SEC_USER_AGENT }}
+          claude-code-version: ${{ env.CLAUDE_CODE_VERSION }}
+
+      - name: Run /company-report
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          COMPANY: ${{ matrix.company }}
+        run: bash .github/scripts/run-claude.sh "/company-report $COMPANY" "企業分析レポート ${COMPANY}（グループ ${{ needs.targets.outputs.group }}・$(date +%F)）"
+
+      # Claude can end without the report (a skill that stopped to ask, the same skill needed twice).
+      - name: Check the report was built
+        env:
+          COMPANY: ${{ matrix.company }}
+        run: |
+          status="$(.venv/bin/python -I tools/report/company_report.py check --company "$COMPANY" || true)"
+          next="$(printf '%s' "$status" | python3 -I -c 'import json,sys; print(json.load(sys.stdin).get("next", ""))')"
+          echo "next: $next"
+          if [ "$next" != "report_existing" ]; then
+            echo "::error::$COMPANY の今日のレポートが build されていない（check の next: $next）"
+            echo "- $COMPANY: 未完了（check の next: \`$next\`）" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      # Partial output (analyses already built) is committed too, so the next run continues from it.
+      - name: Commit
+        if: ${{ !cancelled() }}
+        env:
+          PUSH_TOKEN: ${{ github.token }}
+          COMPANY: ${{ matrix.company }}
+        run: bash .github/scripts/commit-outputs.sh "chore: ${COMPANY} の企業分析レポート（自動実行 $(date +%F)・グループ ${{ needs.targets.outputs.group }}）"
+
+      - name: Save originals
+        if: ${{ always() && steps.setup.outputs.cache-key != '' }}
+        uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: |
+            companies/*/sources
+            market/**/sources
+            .cache
+            !companies/*/sources/manifest.csv
+            !market/**/sources/manifest.csv
+          key: ${{ steps.setup.outputs.cache-key }}

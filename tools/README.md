@@ -100,6 +100,17 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 
 株価の取得は `tools/collect/stock_prices.py --company X [--years 10]`（Yahoo Finance のチャート API。非公式・キー不要。日本株は `{コード}.T`）。分割調整済みの日足を `companies/{ticker}_{name}/data/prices.csv`（`date,open,high,low,close,adj_close,volume,retrieved`）に保存する。
 
+### お気に入り企業の台帳（`tools/report/favorites.py`）
+
+スキル `favorites`（`.ai/skills/favorites.md`）から呼び出す。台帳 `companies/favorites.json` は GitHub Actions の企業分析レポート（`.github/workflows/company-report.yml`）の対象で、このスクリプトだけが書く（write_guard がブロックし、台帳の `digest` が手修正を検出する）。
+
+| コマンド | 用途 |
+|---|---|
+| `favorites.py list` | A・B グループの企業・追加日・最新レポートの日付、台帳の問題（`issues`） |
+| `favorites.py add --company X --group A\|B` | 登録。グループが5社・既にどちらかに登録・build 済みのレポート（`reports/*_company-report.json`）が無い企業は拒否 |
+| `favorites.py remove --company X` / `move --company X --group A\|B` | 削除 / グループの付け替え（ディレクトリが無くなった企業もディレクトリ名で削除できる） |
+| `favorites.py validate` / `targets --group A\|B` | 台帳の検証 / ワークフロー用の企業ディレクトリ名の配列（検証込み） |
+
 バリュエーション分析の株価だけの取り直しは `tools/collect/refresh_valuation.py --company X`（エージェントなし）。raw の株式数・EPS・BPS（株価データ 1・2章、競合 6章）と競合の銘柄コード（競合 1.2 の採用の行、無ければ社名の括弧内）を使い、自社と競合の確定終値を同じ基準日で取って、新しい日付の `raw/ir/{日付}_valuation-data.md`（1・3章）と `raw/market/{日付}_competitors.md`（6章）を書き、status.md の株価の行と overview.md の履歴を更新する。競合のコードや株価が欠けると何も書かず `fallback`（collect-peers-valuation「株価のみ」）を返す。`valuation.py check` は、足りないのが株価だけのとき `price_refresh` にこのコマンドを返す。
 
 ### 企業分析用（`tools/analysis/`）
@@ -213,12 +224,44 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 
 `.claude/settings.json` の PreToolUse hook として、Write / Edit の前に毎回実行される（標準ライブラリだけで動く。PATH 上の `python` を使う）。
 
-- スクリプト専用のファイル（`data/`・`sources/`・`index.csv`・`tasks.json`・`status.md`・生成された表）の手書きをブロック
+- スクリプト専用のファイル（`data/`・`sources/`・`index.csv`・`tasks.json`・`status.md`・生成された表・お気に入り台帳 `companies/favorites.json`）の手書きをブロック
 - `market/**/raw/*.md` は FILL 欄が残っている間だけ Edit を許可。`companies/*/raw/` の過去日付のファイルは変更禁止
 - collect-market-info の実行中（`market/sessions/*/.running`）は、tasks.json の `allowed_files` 以外への書き込みをブロック
 - `market/report/` の facts.json・brief.md・HTML は手書き禁止。outlook.md は Edit のみ（新規作成・上書き不可）で、過去の週の完成済みのものは変更禁止
 - `companies/*/analysis/five-forces/`・`three-c/`・`moat/`・`swot/`・`profitability/`・`growth/`・`cash-flow/`・`safety/`・`valuation/` の brief.md・json は手書き禁止。five-forces.md・three-c.md・moat.md・swot.md・profitability.md・growth.md・cash-flow.md・safety.md・valuation.md は Edit のみで、過去の日付の build 済み（json がある）ものは変更禁止
 - `companies/*/reports/` の company-report の HTML・json・facts.json・brief.md は手書き禁止。company-report.md は Edit のみで、過去の日付の build 済み（json がある）ものは変更禁止
+
+## GitHub Actions での定期実行
+
+| ワークフロー | 実行日時（JST） | 内容 |
+|---|---|---|
+| `.github/workflows/market-report.yml` | 毎週月曜 0:10 | `/market-report`（その週の月曜の週。材料が古ければスキルが collect-market-info を先に実行） |
+| `.github/workflows/company-report.yml` | 月〜金 0:30（A グループ）・6:00（B グループ） | お気に入り（`companies/favorites.json`）の企業ごとに `/company-report {企業}` を1社ずつ実行 |
+
+- どちらも Claude Code（バージョンはワークフローの `CLAUDE_CODE_VERSION`）を npm でインストールし、`claude -p` でヘッドレス実行する。権限は `.github/claude/ci-settings.json`（`--permission-mode dontAsk`。許可リストに無いツールは確認なしで拒否）と、`.claude/settings.json` の書き込みガード
+- 完了したら `.github/scripts/commit-outputs.sh` が `companies/`・`market/` の変更だけを main にコミットして push する。それ以外のパス（コード・設定・台帳）が変わっていたらコミットせず失敗する。途中で止まった分析もコミットされ、次の実行は鮮度が新しい分析をスキップして続きから進む
+- 日付はすべて JST（`TZ=Asia/Tokyo`）。GitHub の cron は UTC なので `日〜木 15:30 UTC` のように1日ずれて書いてある。混雑時は数分〜数十分遅れることがある
+- 2つのワークフローは `concurrency: reports` を共有し、同時には走らない（月曜 0:30 の A グループは地合いレポートの完了を待つ）。GitHub の仕様で待機できるのは1件だけなので、実行中＋待機中のところへ次の実行が来ると、待機中の実行は黙って取り消される（例: A グループが翌日 0:30 まで終わらず、待機中の B が取り消される）。Summary に実行が無い日はこれを疑う
+- main へ push できなかったとき（競合・ブランチ保護）は、出力を `auto/rescue-…` ブランチに退避して失敗にする。手でマージする
+- git 管理外の原本（`sources/`・`.cache/`）は Actions のキャッシュで実行間に引き継ぐ（7日使われなければ消えるので、その後は再取得になる）
+- 結果（完了報告・未完了の企業・コミット）は各実行の Summary に出る。会話ログは保存しない
+
+### 初回セットアップ（1回）
+
+1. ローカルで `claude setup-token` を実行し、表示された OAuth トークン（1年有効。Claude の利用にだけ使える）を控える。Pro / Max の利用枠を使うので、平日最大10社を回すなら Max を推奨（枠を使い切るとその企業は未完了になり、翌日続きから進む）
+2. GitHub のリポジトリの Settings → Environments で `reports` を作り、Deployment branches を `main` だけにする
+3. `reports` の Environment secrets に登録する: `CLAUDE_CODE_OAUTH_TOKEN`（手順 1）、`EDINET_API_KEY`・`FRED_API_KEY`・`SEC_USER_AGENT`（`.env` と同じ値）
+4. お気に入りを `favorites` スキルで登録してコミットする
+5. Actions タブから `market-report` → `company-report`（グループ A）を Run workflow で手動実行し、Summary で完了報告・拒否されたツール・コミットを確認する
+
+### 認証情報の扱い
+
+- Secret はリポジトリ共通ではなく Environment `reports` に置き、main からの実行だけが読める。トリガーは `schedule` と `workflow_dispatch` だけ（PR やコメントからは動かない）
+- `CLAUDE_CODE_OAUTH_TOKEN` は Claude を動かすステップの env にだけ渡す。API キー類は `.env`（git 管理外）に書き、Claude の Read は `.env` を拒否する
+- checkout は認証情報を残さない（`persist-credentials: false`）。push 用の `GITHUB_TOKEN` はコミットのステップにだけ渡す。ジョブの権限は `contents: write` だけ
+- Claude は Web の文章を読むため、文章に埋め込まれた指示で秘密を外へ出そうとする可能性がある。対策として `ci-settings.json` で、Read はリポジトリの `companies/`・`market/`・`.ai/`・`tools/`・`.claude/` だけ（`.env`・`/proc`・ホームは拒否）、Bash は `.venv/bin/python -I tools/{analysis,collect,report}/…` だけ（`..`・`;`・`|`・コマンド置換は拒否）、コード（`.py`・`.sh`・`.js` など）の書き込みは拒否している。それでも WebFetch や収集スクリプトの URL に載せて外へ出す経路はゼロにできない。トークンは Claude の利用にしか使えず、GitHub への push 権限は持たない
+- 権限を足すときは、初回の手動実行で拒否されたツールを確認し、必要な最小限だけを `ci-settings.json` に足す（`Bash` や `Read` を丸ごと許可しない）
+- トークンが期限切れ・失効すると Summary に「認証に失敗した」と出る。漏えいが疑われるときも含め、`claude setup-token` で再発行して Secret を更新する（発行日: 未登録。登録したらここに書く）
 
 ## 例（3798 ULSグループ）
 
