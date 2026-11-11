@@ -477,7 +477,8 @@ def test_step3_final_check_notes_but_does_not_raise():
 def test_candidates_end_to_end(repo):
     cands = cands_of(repo)
     ratings = {name: cands[key]["rating"] for key, name in X.INDICATORS}
-    assert ratings == {"PER": R.LOW, "PBR": R.LOW, "PEG": R.FAIR, "EV/EBITDA": R.LOW}
+    # the fixture's financials have no 負債合計 / 投資有価証券: the net cash ratio is 判定保留 and not scored
+    assert ratings == {"PER": R.LOW, "PBR": R.LOW, "PEG": R.FAIR, "EV/EBITDA": R.LOW, "ネットキャッシュ比率": R.PENDING}
     assert cands["verdict"] == R.LOW and cands["step3"]["average"] == pytest.approx(0.75)
     assert cands["peg"]["cases"]["standard"] == pytest.approx(8.0)  # min(EPS CAGR 8.0, plan 10.0)
     assert any(p.startswith("PER:") for p in cands["flip_prices"])

@@ -308,9 +308,11 @@ def _rule_json(rule: dict | None) -> dict | None:
 
 
 def _items_json(cands: dict) -> dict:
-    per, pbr, peg, ev = cands["per"], cands["pbr"], cands["peg"], cands["ev"]
+    per, pbr, peg, ev, ncr = cands["per"], cands["pbr"], cands["peg"], cands["ev"], cands["ncr"]
     return {
-        "per": {"rating": per["rating"], "sentence": per["sentence"], "used": per["used"],
+        "ncr": {"rating": ncr["rating"], "sentence": ncr["sentence"], "value": _round(ncr["value"]),
+                "asset_net_cash": _round(ncr["asset_net_cash"])},
+        "per": {"rating": per["rating"], "sentence": per["sentence"], "used": per["used"], "guide": per.get("guide"),
                 "per_actual": _round(per["per_actual"]), "per_forecast": _round(per["per_forecast"]),
                 "discount": per["discount"], "na": per["na"], "rule": _rule_json(per["rule"]),
                 "eps": _clean(per["step1"], ("year", "eps", "eps_used", "adjusted", "share", "gain", "loss"))},

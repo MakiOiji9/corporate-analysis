@@ -515,18 +515,46 @@ def _profitability_rows(s1: dict, s3: dict, profitability: dict | None) -> list[
              "cash": f"手順1 {s1['rating'] or '判定不能'}", "result": second}]
 
 
+# ---------- new shares (有報の発行済株式総数の推移, data/governance.json) ----------
+
+OFFERING_KINDS = ("公募増資", "第三者割当")
+
+
+def offering_of(company) -> dict | None:
+    """{within_5y, last, rows} of data/governance.json (yuho_governance.py), or None without it."""
+    path = company.path / "data" / "governance.json"
+    try:
+        g = json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+    except ValueError:
+        return None
+    if not g:
+        return None
+    rows = [i for i in g.get("issuances") or [] if i.get("kind") in OFFERING_KINDS]
+    return {"within_5y": bool(g.get("offering_within_5y")), "last": g.get("offering_last"), "rows": rows,
+            "as_of": g.get("as_of")}
+
+
+def offering_cap(verdict: str, why: str, offering: dict | None) -> tuple[str, str]:
+    """A share offering in the last five years caps the verdict at 普通: the business needed outside money (and
+    diluted the holders) even if the cash flows look good now."""
+    if not offering or not offering["within_5y"] or verdict != "良好":
+        return verdict, why
+    return "普通", f"{why}。ただし {offering['last']} 期に公募増資・第三者割当があり（5年以内）、最大でも普通とした"
+
+
 # ---------- everything ----------
 
 def candidates(company) -> dict:
     series = S.self_series(company)
     rows = cf_rows(series)
     s1, s2, s3, s4, s5 = step1(rows), step2(rows), step3(rows, series), step4(rows), step5(rows)
-    verdict, why = judge(s1, s2, s3, s4, s5)
+    offering = offering_of(company)
+    verdict, why = offering_cap(*judge(s1, s2, s3, s4, s5), offering)
     excluded, info = SR.applies(company, SR.NO_CASH_FLOW)
     if excluded:  # deposits and loans run through the operating CF: the tests say nothing about the business
         verdict, why = "判定保留", SR.note(info, "預金・貸出などの資金の出入りが営業CF に入るため、キャッシュフロー分析の対象外")
     return {"series": series, "rows": rows, "step1": s1, "step2": s2, "step3": s3, "step4": s4, "step5": s5,
-            "borderline": borderline(s2, s3, s5, rows), "verdict": verdict, "why": why,
+            "borderline": borderline(s2, s3, s5, rows), "verdict": verdict, "why": why, "offering": offering,
             "conservative": [f"{name}を判定できず → 懸念とみなした" for name in unjudged_steps(s1, s2, s3, s4)]}
 
 

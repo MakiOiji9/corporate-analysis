@@ -28,7 +28,11 @@ import json
 
 import an_common as A
 import cf_paths as CP
+import ff_inputs as FI
+import ff_metrics as FM
 import gr_paths as GP
+import mt_paths as MP
+import va_guide as G
 import pf_paths as PP
 import sf_paths as SP
 import sw_paths as WP
@@ -52,7 +56,7 @@ PRICE_MAX_AGE = 7  # days between the price's base date and the analysis
 MISMATCH = 0.10  # the script's PER / PBR against the one written in 3章
 MEASURES = ("あり", "なし", "不明")
 DISCOUNT = "割り引いて扱う"
-INDICATORS = (("per", "PER"), ("pbr", "PBR"), ("peg", "PEG"), ("ev", "EV/EBITDA"))
+INDICATORS = (("per", "PER"), ("pbr", "PBR"), ("peg", "PEG"), ("ev", "EV/EBITDA"), ("ncr", "ネットキャッシュ比率"))
 STEP2 = (("profitability", PP, "収益性"), ("growth", GP, "成長性"), ("safety", SP, "安全性"),
          ("cash_flow", CP, "キャッシュフロー"))
 UPSTREAM = STEP2 + (("swot", WP, "SWOT"),)
@@ -543,6 +547,16 @@ def flip_values(per: dict, pbr: dict) -> dict:
     return out
 
 
+def guide_inputs(company, base: dict, ncr: dict) -> dict:
+    """What va_guide.business_type reads: the moat, the largest customer (五力の買い手), the industry and size."""
+    moat = _result(MP, company)
+    spec = next(s for s in FI.SPECS if s.key == "customers")
+    buyer = FM.buyer(FI.gather(FI.Company(company.root, company.path), (spec,))["customers"])
+    return {"moat": moat[1].get("verdict") if moat else None, "customer": buyer.get("value"),
+            "no_major_customer": buyer.get("rating") == "弱" and buyer.get("value") is None,
+            "sector": SR.sector(company)["name"], "cap": (base["market_cap"] or {}).get("value"), "ncr": ncr["value"]}
+
+
 # ---------- everything ----------
 
 def _price_age(base: dict, today: str) -> int | None:
@@ -559,7 +573,11 @@ def candidates(company, found: dict, today: str, measures: str | None = None) ->
     peg = peg_step(base, per, g)
     no_ev, info = SR.applies(company, SR.NO_EV)
     ev = ev_step(base, per, SR.note(info, "借入と預金が事業そのもののため、EV/EBITDA は使わない") if no_ev else None)
-    items = {"per": per, "pbr": pbr, "peg": peg, "ev": ev}
+    ncr = G.ncr_step(_row(base, base["latest_year"]), base["market_cap"],
+                     SR.note(info, "預金・保険の負債が事業そのもののため、資産ベースのネットキャッシュは使わない") if no_ev else None)
+    guide = G.business_type(**guide_inputs(company, base, ncr))
+    per = G.apply_guide(per, guide)
+    items = {"per": per, "pbr": pbr, "peg": peg, "ev": ev, "ncr": ncr}
     upstream = others(company)
     s3 = step3(items, upstream)
     return {"base": base, **items, "step3": s3, "verdict": s3["verdict"], "why": s3["why"], "upstream": upstream,

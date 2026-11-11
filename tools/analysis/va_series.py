@@ -373,6 +373,8 @@ def self_years(company) -> dict:
             "depreciation": _value(cf, "depreciation", y), "debt": _value(sf, "debt", y), "cash": _value(sf, "cash", y),
             "lease": _value(sf, "lease", y), "nci": _value(sf, "nci", y),
             "short_investments": _value(sf, "short_investments", y),
+            "current_assets": _value(sf, "current_assets", y), "liabilities": _value(sf, "liabilities", y),
+            "investment_securities": _value(sf, "investment_securities", y),
             "equity": _value(sf, "equity", y) if y in sf["equity"] else _value(pf, "equity", y),
             "eps": eps.get(y)})
     return {"rows": rows, "splits": splits, "odd": odd, "unit": SS.unit_label(company)}

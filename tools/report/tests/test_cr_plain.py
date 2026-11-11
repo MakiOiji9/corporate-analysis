@@ -162,3 +162,20 @@ def test_stale_prices_alone_do_not_need_collection():
     import cr_materials as MT
     rows = [{"key": "prices", "stale": True, "by": MT.PREPARE}]
     assert MT.next_for(rows) is None and MT.collect_request(rows) is None
+
+
+def test_governance_block_shows_the_owner_and_the_targets():
+    facts = {"governance": {"as_of": "2026-03-31", "filed": "2026-06-17",
+                            "owner": {"ratio": 50.6, "is_owner": True,
+                                      "members": [{"name": "漆原　茂", "ratio": 45.4, "why": "役員本人"}]},
+                            "president": {"name": "横山　芳成", "title": "代表取締役社長", "age": 52},
+                            "issuances": [{"period_end": "2026-03-31", "kind": "株式分割", "change_pct": 925.1}],
+                            "offering_within_5y": False},
+             "management": {"file": "2026-11-01", "rows": [{"year": "2026-03", "kind": "期初予想", "item": "営業利益",
+                                                           "target": "3,000", "actual": "3,046", "rate": 101.5,
+                                                           "source": "s"}],
+                            "messages": [], "average": {"期初予想": 101.5}}}
+    html = CS.governance_block(facts)
+    assert "オーナー企業（創業者・親族の保有が 20% 以上）" in html and "横山" in html and "52歳" in html
+    assert "株式分割" in html and "101.5%" in html
+    assert "集めていない" in CS.governance_block({})

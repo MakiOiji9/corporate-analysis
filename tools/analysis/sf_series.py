@@ -24,7 +24,9 @@ FIELDS = ("total_assets", "equity", "equity_derived", "equity_ratio", "debt", "d
           "debt_bonds", "debt_bonds_current", "debt_cp", "cash", "cash_deposits", "current_assets",
           "current_liabilities", "cfo", "cfi", "cff", "sales", "operating_income", "net_income",
           # data/financials.csv only (the EV and net-cash items, the interest coverage)
-          "lease", "lease_current", "lease_noncurrent", "nci", "short_investments", "interest_expense")
+          "lease", "lease_current", "lease_noncurrent", "nci", "short_investments", "interest_expense",
+          # the asset-based net cash (流動資産 + 投資有価証券 × 0.7 − 負債合計)
+          "liabilities", "investment_securities")
 DEBT_PARTS = ("debt_short", "debt_current_long", "debt_long", "debt_bonds", "debt_bonds_current", "debt_cp")
 LABELS = {
     "total_assets": S.LABELS["total_assets"],
@@ -62,7 +64,8 @@ CSV_ITEMS = {"total_assets": "total_assets", "equity_ratio": "equity_ratio", "ca
              "operating_income": "operating_income", "net_income": "net_income",
              "lease_liabilities_current": "lease_current", "lease_liabilities_noncurrent": "lease_noncurrent",
              "non_controlling_interests": "nci", "short_term_investments": "short_investments",
-             "interest_expense": "interest_expense"}
+             "interest_expense": "interest_expense", "liabilities": "liabilities",
+             "investment_securities": "investment_securities"}
 # edgar.py writes StockholdersEquity (the parent's equity, without the minority interest) as net_assets
 US_CSV_ITEMS = {**CSV_ITEMS, "net_assets": "equity"}
 TDNET_ITEMS = {"TotalAssets": "total_assets", "OwnersEquity": "equity", "CapitalAdequacyRatio": "equity_ratio",

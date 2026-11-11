@@ -682,3 +682,22 @@ def test_write_guard_protects_cash_flow_files(repo, capsys):
     run(repo, "build", "--company", "7203", capsys=capsys)
     tomorrow = (dt.date.fromisoformat(DAY) + dt.timedelta(days=1)).isoformat()
     assert "完成済み分析（cash-flow）" in G.decide("Edit", rel, repo, tomorrow)
+
+
+def test_a_recent_offering_caps_the_verdict(tmp_path):
+    import json as _json
+    import cf_metrics as CM
+    from types import SimpleNamespace
+    company = SimpleNamespace(path=tmp_path)
+    assert CM.offering_of(company) is None
+    (tmp_path / "data").mkdir()
+    (tmp_path / "data" / "governance.json").write_text(_json.dumps(
+        {"as_of": "2026-03-31", "offering_within_5y": True, "offering_last": "2023-03-31",
+         "issuances": [{"period_end": "2023-03-31", "kind": "公募増資"}, {"period_end": "2020-03-31", "kind": "株式分割"}]}),
+        encoding="utf-8")
+    off = CM.offering_of(company)
+    assert off["within_5y"] and [r["kind"] for r in off["rows"]] == ["公募増資"]
+    verdict, why = CM.offering_cap("良好", "x", off)
+    assert verdict == "普通" and "2023-03-31" in why
+    assert CM.offering_cap("懸念", "x", off) == ("懸念", "x")
+    assert CM.offering_cap("良好", "x", {**off, "within_5y": False}) == ("良好", "x")

@@ -563,3 +563,12 @@ def test_guard_protects_the_safety_files(repo, capsys):
     assert G.decide("Edit", f"{base}/{DAY}_safety.json", repo, DAY)
     assert G.decide("Write", rel, repo, DAY)
     assert G.decide("Edit", rel, repo, DAY) is None
+
+
+def test_thin_equity_is_a_concern_unless_judged_on_peers_only():
+    import sf_metrics as SM
+    s1 = {"own": {"equity_ratio": 8.0}, "excluded": False}
+    verdict, why = SM.thin_equity(s1, "良好", "x")
+    assert verdict == "懸念" and "10%" in why
+    assert SM.thin_equity({**s1, "excluded": True}, "良好", "x") == ("良好", "x")
+    assert SM.thin_equity({**s1, "own": {"equity_ratio": 12.0}}, "普通", "x") == ("普通", "x")

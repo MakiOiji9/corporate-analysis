@@ -431,6 +431,19 @@ def warnings(cands: dict) -> list[str]:
     return out
 
 
+THIN_EQUITY = 10.0  # % 自己資本比率: a balance sheet this thin can fail in one bad year
+
+
+def thin_equity(s1: dict, verdict: str, why: str) -> tuple[str, str]:
+    """An equity ratio under THIN_EQUITY is 懸念 whatever the rest says (not for the industries judged on peers
+    only, such as banks)."""
+    own = s1["own"] or {}
+    ratio = own.get("equity_ratio")
+    if s1["excluded"] or ratio is None or ratio >= THIN_EQUITY or verdict == "懸念":
+        return verdict, why
+    return "懸念", f"自己資本比率 {ratio:.1f}% が {THIN_EQUITY:.0f}% 未満（財務が薄く、業績の悪化に耐える余力が小さい）。{why}"
+
+
 # ---------- everything ----------
 
 def candidates(company, found: dict) -> dict:
@@ -439,7 +452,7 @@ def candidates(company, found: dict) -> dict:
     peers = SS.peer_series(company, found)
     s1 = step1(rows, peers, sector_excluded(company), SS.unit_label(company))
     s2, s3 = step2(rows), step3(rows)
-    verdict, why = judge(s1, s2, s3)
+    verdict, why = thin_equity(s1, *judge(s1, s2, s3))
     return {"series": series, "rows": rows, "peer_names": [p["name"] for p in peers],
             "step1": s1, "step2": s2, "step3": s3, "borderline": borderline(s1, s2), "verdict": verdict,
             "why": why, "conservative": ([f"{p}が不明 → 結論が分かれ、最も悪い方を採った" for p in unknown_parts(s1, s2, s3)]

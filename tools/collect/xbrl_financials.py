@@ -123,7 +123,8 @@ STATEMENT_ITEMS = {
     "goodwill": ["GoodwillIFRS", "Goodwill"],
     "intangible_assets": ["IntangibleAssetsIFRS", "IntangibleAssets"],
     "short_term_investments": ["OtherFinancialAssetsCAIFRS", "ShortTermInvestmentSecurities", "SecuritiesCA"],
-    "investment_securities": ["InvestmentSecurities"],
+    # IFRS has no 投資有価証券 line: その他の金融資産（非流動）holds the listed shares and bonds
+    "investment_securities": ["InvestmentSecurities", "OtherFinancialAssetsNCAIFRS"],
     "equity_method_investments": ["InvestmentsAccountedForUsingEquityMethodIFRS"],
     "interest_expense": ["FinanceCostsIFRS", "InterestExpensesNOE"],  # IFRS 金融費用 (interest and other costs)
     "income_taxes": ["IncomeTaxExpenseIFRS", "IncomeTaxes"],

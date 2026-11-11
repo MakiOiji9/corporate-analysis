@@ -179,7 +179,8 @@ def step1(facts: dict) -> str:
              + f"<h3>モート（強みの持続性）</h3><p>{esc(d['moat']['detail'].get('durability'))}</p>"
              + _conservative(d["moat"]))
     body = (_stephead(facts["step1"], "STEP 1 総合") + _stepcards(facts, ("five_forces", "three_c", "moat", "swot"))
-            + X.three_c_block(d["three_c"]["detail"], d["three_c"]) + X.swot_grid(d["swot"]["detail"], d["swot"])
+            + X.three_c_block(d["three_c"]["detail"], d["three_c"]) + X.governance_block(facts)
+            + X.swot_grid(d["swot"]["detail"], d["swot"])
             + _details("詳しく見る（A の条件・業界の5つの力・モート）", inner))
     return _section("step1", "03", "STEP 1 事業と競争環境", "儲けやすい業界か、選ばれる理由があるか、その強みは続くか。", body)
 

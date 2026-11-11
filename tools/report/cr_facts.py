@@ -5,6 +5,7 @@ the writer only adds words (cr_doc.py), and the HTML (cr_render.py) is drawn fro
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import cr_extras as X
@@ -116,10 +117,11 @@ def _cash_flow(r: dict) -> dict:
 
 def _valuation(r: dict) -> dict:
     items = {name: {"rating": _get(r, key, "rating"), "sentence": _get(r, key, "sentence")}
-             for key, name in (("per", "PER"), ("pbr", "PBR"), ("peg", "PEG"), ("ev", "EV/EBITDA"))}
+             for key, name in (("per", "PER"), ("pbr", "PBR"), ("peg", "PEG"), ("ev", "EV/EBITDA"),
+                               ("ncr", "ネットキャッシュ比率")) if key in r}
     axis = _get(r, "per", "rule", "axis1") or {}
     return {"price": r.get("price"), "items": items, "sheet": r.get("sheet"), "flip_prices": r.get("flip_prices") or [],
-            "flip_values": r.get("flip_values") or {},
+            "flip_values": r.get("flip_values") or {}, "per_guide": _get(r, "per", "guide"),
             "per_actual": _get(r, "per", "per_actual"), "per_forecast": _get(r, "per", "per_forecast"),
             "pbr": _get(r, "pbr", "pbr"), "per_range": {k: axis.get(k) for k in ("low", "high", "position")},
             "cheap_reason": _get(r, "handoff", "cheap_reason"), "final_check": _get(r, "step3", "final_check"),
@@ -242,7 +244,45 @@ def build(root: Path, company: S.Company, today: str, status: dict) -> dict:
     profile = _profile(company)
     winds = WI.evaluate(root, profile, status["outlook"], _get(found["five_forces"], "detail", "industry") or "")
     return {**facts, "legends": L.evaluate(facts), "scenarios": scenarios, "winds": winds,
-            "moves": moves(root, company, profile, market, prices, winds), "phase": PH.evaluate(phase_context(facts))}
+            "moves": moves(root, company, profile, market, prices, winds), "phase": PH.evaluate(phase_context(facts)),
+            "governance": governance(company), "management": management(company)}
+
+
+GOVERNANCE_KEYS = ("as_of", "filed", "owner", "president", "issuances", "offering_within_5y", "offering_last")
+TARGET_KINDS = ("期初予想", "中期経営計画", "年度方針")
+
+
+def governance(company: S.Company) -> dict | None:
+    """The owner's stake, the president and the new shares of data/governance.json (yuho_governance.py)."""
+    path = company.path / "data" / "governance.json"
+    try:
+        g = json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+    except ValueError:
+        return None
+    return {k: g.get(k) for k in GOVERNANCE_KEYS} if g else None
+
+
+def _rate(text: str | None) -> float | None:
+    m = re.search(r"(-?\d+(?:\.\d+)?)\s*%", text or "")
+    return float(m.group(1)) if m else None
+
+
+def management(company: S.Company) -> dict | None:
+    """The targets against the results of the newest raw/ir/*_management.md (collect-ir): rows and the average
+    achievement by kind of target (言行一致)."""
+    files = sorted((company.path / "raw" / "ir").glob("*_management.md"))
+    if not files:
+        return None
+    text = files[-1].read_text(encoding="utf-8")
+    rows = [{"year": r.get("年度", ""), "kind": r.get("目標の種類", ""), "item": r.get("項目", ""),
+             "target": r.get("目標値", ""), "actual": r.get("実績", ""), "rate": _rate(r.get("達成率")),
+             "source": r.get("出典", "")}
+            for r in M.table_dicts(M.section(text, "2.")) if not M.is_blank(r.get("項目"))]
+    by_kind = {k: [r["rate"] for r in rows if r["kind"] == k and r["rate"] is not None] for k in TARGET_KINDS}
+    messages = [{"date": r.get("日付", ""), "summary": r.get("要旨（目標・方針・約束）", ""), "source": r.get("出典", "")}
+                for r in M.table_dicts(M.section(text, "3.")) if not M.is_blank(r.get("要旨（目標・方針・約束）"))]
+    return {"file": files[-1].name[:10], "rows": rows, "messages": messages,
+            "average": {k: round(sum(v) / len(v), 1) for k, v in by_kind.items() if v}}
 
 
 def moves(root: Path, company: S.Company, profile: dict, market: str, prices: dict, winds: dict) -> dict:

@@ -174,6 +174,44 @@ def swot_grid(detail: dict, analysis: dict) -> str:
             f'<p><b>強みで脅威に対抗できるか</b>: {badge(analysis.get("verdict"))} {esc(detail.get("sentence"))}</p>')
 
 
+# ---------------------------------------------------------------- management and shareholders
+
+def governance_block(facts: dict) -> str:
+    """経営と株主: the owner's stake, the president, new shares and the management's targets against results."""
+    g, m = facts.get("governance"), facts.get("management")
+    if not g and not m:
+        return ('<h3>経営と株主</h3><p class="muted">大株主・役員（有価証券報告書）と経営者の目標と実績'
+                "（決算説明会資料）を集めていない。</p>")
+    out = "<h3>経営と株主</h3>"
+    if g:
+        owner, p = g.get("owner") or {}, g.get("president") or {}
+        members = "、".join(f"{x['name']} {num(x['ratio'], '%')}（{x['why']}）" for x in owner.get("members") or [])
+        word = "オーナー企業（創業者・親族の保有が 20% 以上）" if owner.get("is_owner") else "オーナー企業ではない"
+        lines = [f"創業者・親族の保有: {num(owner.get('ratio'), '%')}。{word}" + (f"（{members}）" if members else ""),
+                 f"社長: {p.get('name') or '—'}（{p.get('title') or '—'}、{p.get('age') or '—'}歳）"]
+        if owner.get("is_owner"):
+            lines.append("オーナーの持株は経営の意思決定を速くする一方、相続や売却のときに株が市場に出て株価が動くことがある")
+        offers = [f"{i['period_end'][:7]} {i['kind']}（{num(i['change_pct'], '%')}）" for i in g.get("issuances") or []]
+        lines.append("発行済株式数の増加: " + ("、".join(offers) if offers else "なし")
+                     + ("。5年以内に公募増資・第三者割当あり（キャッシュフローの評価は最大でも普通）"
+                        if g.get("offering_within_5y") else ""))
+        out += _ul(lines) + f'<p class="source">出典: 有価証券報告書（{esc(g.get("as_of") or "—")} 期、提出 {esc(g.get("filed") or "—")}）</p>'
+    if m:
+        avg = "、".join(f"{k} {v:.1f}%" for k, v in (m.get("average") or {}).items()) or "—"
+        rows = [[esc(r["year"]), esc(r["kind"]), esc(r["item"]), esc(r["target"]), esc(r["actual"]),
+                 esc(num(r["rate"], "%"))] for r in m["rows"]]
+        out += (f"<h4>経営者の目標と実績（言行一致）</h4><p class=\"small\">達成率の平均: {esc(avg)}</p>"
+                + (table(["年度", "目標の種類", "項目", "目標", "実績", "達成率"], rows, right=frozenset({3, 4, 5}))
+                   if rows else '<p class="muted">目標と実績の表が無い</p>')
+                + _ul([f"{x['date']} {x['summary']}" for x in m.get("messages") or []])
+                + f'<p class="source">出典: 決算説明会資料・社長メッセージ（{esc(m["file"])} 収集）</p>')
+    return out
+
+
+def _ul(items: list[str]) -> str:
+    return '<ul class="plain small">' + "".join(f"<li>{esc(i)}</li>" for i in items) + "</ul>" if items else ""
+
+
 # ---------------------------------------------------------------- growth / peers / dividends
 
 def growth_block(facts: dict) -> str:

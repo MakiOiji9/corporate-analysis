@@ -330,6 +330,24 @@ def _move_lines(m: dict) -> list[str]:
     return lines + [""]
 
 
+def _governance_lines(g: dict | None, m: dict | None) -> list[str]:
+    """4.6 経営と株主 (HTML shows it in STEP 1; the long-term text may cite it)."""
+    lines = ["## 4.6 経営と株主（参考。HTML の STEP 1 に載る）", ""]
+    if g:
+        owner, p = g.get("owner") or {}, g.get("president") or {}
+        lines.append(f"- 創業者・親族の保有 {owner.get('ratio')}%（{'オーナー企業' if owner.get('is_owner') else 'オーナー企業ではない'}）。"
+                     f"社長 {p.get('name') or '—'}（{p.get('age') or '—'}歳）。有報 {g.get('as_of')} 期")
+        lines.append("- 発行済株式数の増加: " + ("、".join(f"{i['period_end'][:7]} {i['kind']}" for i in g.get("issuances") or [])
+                                         or "なし") + ("（5年以内に公募増資・第三者割当あり）" if g.get("offering_within_5y") else ""))
+    else:
+        lines.append("- 大株主・役員: 材料なし（有価証券報告書の XBRL から集めていない）")
+    if m and m.get("average"):
+        lines.append("- 経営者の目標の達成率の平均: " + "、".join(f"{k} {v:.1f}%" for k, v in m["average"].items()))
+    elif not m:
+        lines.append("- 経営者の目標と実績: 材料なし")
+    return lines + [""]
+
+
 def _phase_lines(p: dict) -> list[str]:
     """4.5 株価の局面 (6.3)."""
     if not p:
@@ -389,6 +407,7 @@ def render_brief(facts: dict, md_rel: str) -> str:
                            (facts.get("prices") or {}).get("positioning"))
     lines += _scenario_lines(facts.get("scenarios") or {}) + _wind_lines(facts.get("winds") or {})
     lines += _move_lines(facts.get("moves") or {}) + _phase_lines(facts.get("phase") or {})
+    lines += _governance_lines(facts.get("governance"), facts.get("management"))
     lines += _recent(facts) + _conditions(facts) + L.brief_lines(facts)
     lines += ["## 6. 材料不足（4.3 の材料）", ""]
     lines += [f"- {g['label']}: {g['gap']}" for g in facts["gaps"]] or ["- なし"]
