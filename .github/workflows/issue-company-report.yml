@@ -6,9 +6,11 @@
 # Credentials: see "GitHub Actions での定期実行" in tools/README.md.
 name: issue-company-report
 
+# "labeled", not "opened": an Issue created from the template gets the label at creation (a labeled event fires
+# then too), and an Issue whose label was missing or that should run again can be started by adding the label.
 on:
   issues:
-    types: [opened]
+    types: [labeled]
 
 # One run per Issue. Not the scheduled runs' "reports" group: a queued Issue would cancel a pending scheduled run.
 concurrency:
@@ -24,9 +26,12 @@ env:
 
 jobs:
   request:
+    # The template applies the label for anyone who opens the Issue, so the author must be trusted; a label added
+    # by someone else (adding labels needs triage access to the repository) is trusted as well.
     if: >-
-      contains(github.event.issue.labels.*.name, 'company-analysis') &&
-      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association)
+      github.event.label.name == 'company-analysis' &&
+      (contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association) ||
+       github.event.sender.login != github.event.issue.user.login)
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
