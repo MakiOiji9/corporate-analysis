@@ -42,6 +42,7 @@
 | curl が SSL 検証エラー（Windows） | `fetch.py`（certifi を使用）を使う |
 | Bash ツールで `$変数` が展開されない | シェル変数を使わず、スクリプトに引数で渡す |
 | 短信 iXBRL（`-ixbrl.htm`）が JPX 配信で404、IRBANK にも .htm のリンクが無い（2026-11-01 6506 安川電機） | `tdnet_facts.csv` は作れない。短信 PDF（`www2.jpx.co.jp/disc/{code}0/{開示番号}.pdf`）から raw に転記する |
+| 短信 iXBRL の URL が推測で404（2026-11-11 3798 ULS の中間短信） | 先に TDnet の一覧 `https://www.release.tdnet.info/inbs/I_list_{001..}_{YYYYMMDD}.html` で XBRL の ZIP 名（`0812{開示番号の下14桁}.zip`。先頭の `0812` は日付ではなく固定）を確かめ、ZIP を `fetch.py` で保存して `zipfile` で中身の一覧だけ見る（展開しない）。サマリーのファイル名は `XBRLData/Summary/tse-{種別}-{code}0-{番号}-ixbrl.htm` で、種別は四半期 `qcedjpsm`・中間 `scedjpsy` など書類で違う。そのファイル名で `www2.jpx.co.jp/disc/{code}0/0812{…}_tse-{種別}-…-ixbrl.htm` を `fetch.py` で取る |
 
 ## IFRS 任意適用会社（2026-11-01 6506 安川電機での実行時）
 

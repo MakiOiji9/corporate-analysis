@@ -188,7 +188,8 @@ def governance_block(facts: dict) -> str:
         members = "、".join(f"{x['name']} {num(x['ratio'], '%')}（{x['why']}）" for x in owner.get("members") or [])
         word = "オーナー企業（創業者・親族の保有が 20% 以上）" if owner.get("is_owner") else "オーナー企業ではない"
         lines = [f"創業者・親族の保有: {num(owner.get('ratio'), '%')}。{word}" + (f"（{members}）" if members else ""),
-                 f"社長: {p.get('name') or '—'}（{p.get('title') or '—'}、{p.get('age') or '—'}歳）"]
+                 f"社長（有価証券報告書の提出時点 {g.get('filed') or '—'}）: {p.get('name') or '—'}"
+                 f"（{p.get('title') or '—'}、{p.get('age') or '—'}歳）。その後の交代は適時開示で確かめる"]
         if owner.get("is_owner"):
             lines.append("オーナーの持株は経営の意思決定を速くする一方、相続や売却のときに株が市場に出て株価が動くことがある")
         offers = [f"{i['period_end'][:7]} {i['kind']}（{num(i['change_pct'], '%')}）" for i in g.get("issuances") or []]

@@ -50,6 +50,22 @@ def test_settled_period_by_unit(tmp_path, unit, until, expected):
     assert T.settled_period(company.path, unit, until) == expected
 
 
+MANIFEST = "fetched_date,doc_type,period,published_date,doc_id,url,sha256,local_path,note\n"
+
+
+def test_known_date_is_the_later_of_filing_and_fetch(tmp_path):
+    company = _company(tmp_path, FULL_YEAR + Q1 + Q2)
+    (company.path / "sources").mkdir()
+    (company.path / "sources" / "manifest.csv").write_text(
+        MANIFEST + "2026-11-12,tanshin,2027-03-H1,2026-11-10,q2,u,s,p,\n"
+        "2026-11-12,other,,,q2,u2,s2,p2,probe\n"
+        "2026-08-01,tanshin,2027-03-Q1,2026-08-12,q1,u,s,p,\n", encoding="utf-8")
+    assert T.tdnet_periods(company.path)[1:] == [("2027-03-31", 1, "2026-08-12"), ("2027-03-31", 2, "2026-11-12")]
+    # filed 11-10 but only collected 11-12: an analysis on 11-11 did not have it
+    assert T.material_triggers(company, "2026-11-11", "quarter") == [
+        "新しい決算（2027-03 期 第2四半期（中間）。分析時は 2027-03 期 第1四半期）が出た"]
+
+
 def test_quarterly_result_triggers_growth_but_not_profitability(tmp_path):
     company = _company(tmp_path, FULL_YEAR + Q1)
     assert T.material_triggers(company, "2026-06-01", "quarter") == [

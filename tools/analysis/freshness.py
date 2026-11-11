@@ -45,17 +45,36 @@ def _quarter(document: str) -> int:
 
 # ---------------------------------------------------------------- periods
 
+def _fetched_dates(company_path: Path) -> dict[str, str]:
+    """doc_id → the first day an original of it was saved (sources/manifest.csv)."""
+    path = company_path / "sources" / "manifest.csv"
+    if not path.exists():
+        return {}
+    out: dict[str, str] = {}
+    with path.open(encoding="utf-8", newline="") as f:
+        for row in csv.DictReader(f):
+            doc, day = row.get("doc_id") or "", row.get("fetched_date") or ""
+            if doc and day and (doc not in out or day < out[doc]):
+                out[doc] = day
+    return out
+
+
 def tdnet_periods(company_path: Path) -> list[tuple[str, int, str]]:
-    """(fiscal_year_end, quarter 1-4, filing date) of every 決算短信 in data/tdnet_facts.csv."""
+    """(fiscal_year_end, quarter 1-4, known date) of every 決算短信 in data/tdnet_facts.csv. The known date is the
+    later of the filing date and the day its original was first saved (manifest), so a 短信 collected after an
+    analysis counts as new even when it was filed before the analysis day."""
     path = company_path / "data" / "tdnet_facts.csv"
     if not path.exists():
         return []
+    fetched = _fetched_dates(company_path)
     seen: dict[str, tuple[str, int, str]] = {}
     with path.open(encoding="utf-8", newline="") as f:
         for row in csv.DictReader(f):
             filed = _filed(row.get("filing_date", ""))
-            if row.get("doc_id") and filed and row.get("fiscal_year_end"):
-                seen[row["doc_id"]] = (row["fiscal_year_end"], _quarter(row.get("document", "")), filed)
+            doc = row.get("doc_id")
+            if doc and filed and row.get("fiscal_year_end"):
+                known = max(filed, fetched.get(doc, filed))
+                seen[doc] = (row["fiscal_year_end"], _quarter(row.get("document", "")), known)
     return sorted(seen.values())
 
 
