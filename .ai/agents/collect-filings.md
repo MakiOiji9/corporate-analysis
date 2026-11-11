@@ -13,7 +13,7 @@ ticker, name, url, market, mode, 企業ディレクトリ, 収集日, 取得経�
 
 ## 書いてよいファイル（これ以外は書かない）
 - `raw/filings/{収集日}_{決算期}_{書類種別}.md`, `raw/ir/{収集日}_financials-historical.md`
-- `data/financials.csv`, `data/tdnet_facts.csv`（スクリプト経由のみ）
+- `data/financials.csv`, `data/tdnet_facts.csv`, `data/governance.json`（スクリプト経由のみ）
 - `fetch.py` / `edinet.py fetch` 経由の `sources/`
 - **書かない**: `status.md`, `overview.md`, `summaries/`, 他担当の raw
 
@@ -31,6 +31,7 @@ ticker, name, url, market, mode, 企業ディレクトリ, 収集日, 取得経�
 1. **年次財務**
    - EDINET 経路: `edinet.py list --code {ticker} --fy-end-month {決算月} --years 10` で過去10期の有報を探し、**全期**を `edinet.py fetch --kind csv` で取得してから `xbrl_financials.py --all --company {dir}` を1回実行する（財務諸表は各有報に2期分しか無いので、5期おきでは減価償却費・借入金・リース負債などが歯抜けになる。`--all` は sources/ の自社の有報だけを古い順に取り込み、同業の有報は飛ばす）
    - 業種: `company_profile.py --company {dir}` で `data/profile.json`（日本株は EDINET コードリストの提出者業種、米国株は SEC の SIC）を作る。分析の業種別ルール（金融・不動産など）が読む
+   - 続けて `yuho_governance.py --company {dir}` を1回実行し、`data/governance.json`（大株主上位10・役員の役職・生年月日・略歴・持株、創業者・親族の保有比率、発行済株式数の推移と増資・分割の履歴）を作る。`ok: false` なら有報の XBRL→CSV が無い理由を報告の3章に書く（大株主・役員を web から推測で補わない）
    - **日本株は `data/financials.csv` が無ければ Phase 3 は未完了**。`--all` の出力の「years」が5年未満なら、取れなかった期と理由を報告の3章に書く
    - PDF 経路: 過去の有報 PDF を `fetch.py --text` → `find_pages.py fin`（各有報に2期分）
    - どちらでも取れない年度だけ IRBANK・株探で補い、確度「二次」と明記

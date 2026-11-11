@@ -153,7 +153,9 @@ def test_materials_route_market_before_company_collection(tmp_path):
     fresh_market = [m if m["key"] != "market" else {**m, "stale": False} for m in rows]
     assert MT.next_for(fresh_market) == "collect-company-info"
     assert MT.collect_request(rows) == {"mode": "update", "agents": ["collect-ir", "collect-peers-valuation"],
-                                        "items": [by["news"]["item"], by["consensus"]["item"]]}
+                                        "items": [by["news"]["item"], by["consensus"]["item"],
+                                                  by["management"]["item"]]}
+    assert not by["governance"]["stale"]  # "c" is not a Japanese ticker: no annual report to collect
 
 
 def test_stale_prices_alone_do_not_need_collection():

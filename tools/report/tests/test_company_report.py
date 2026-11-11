@@ -121,9 +121,12 @@ NEWS = """# プレスリリース
 def _materials(company: Path, day: str) -> None:
     """The collected material the report checks for freshness (cr_materials), dated `day`."""
     for sub, name, text in (("news", f"{day}_press-releases.md", NEWS),
-                            ("ir", f"{day}_valuation-data.md", "# 株価指標\n")):
+                            ("ir", f"{day}_valuation-data.md", "# 株価指標\n"),
+                            ("ir", f"{day}_management.md", f"# 経営者\n\n## 1. 基準日\n\n{day} 決算説明会資料\n")):
         (company / "raw" / sub).mkdir(parents=True, exist_ok=True)
         (company / "raw" / sub / name).write_text(text, encoding="utf-8")
+    (company / "data").mkdir(exist_ok=True)
+    (company / "data" / "governance.json").write_text(json.dumps({"as_of": "2026-03-31"}), encoding="utf-8")
 
 
 @pytest.fixture

@@ -11,7 +11,7 @@ collect-company-info の **Phase 1** を担当する。親（オーケストレ�
 ticker, name, url, market, mode, 企業ディレクトリ, 収集日, 取得経路（EDINET キー有無・ブラウザ可否）, update の場合は前回収集日
 
 ## 書いてよいファイル（これ以外は書かない）
-- `raw/ir/{収集日}_business-overview.md`, `raw/ir/{収集日}_mid-term-plan.md`, `raw/ir/{収集日}_ir-materials-index.md`
+- `raw/ir/{収集日}_business-overview.md`, `raw/ir/{収集日}_mid-term-plan.md`, `raw/ir/{収集日}_ir-materials-index.md`, `raw/ir/{収集日}_management.md`
 - `raw/news/{収集日}_press-releases.md`
 - `fetch.py` 経由の `sources/`
 - **書かない**: `status.md`, `overview.md`, `summaries/`, `data/`, 他担当の raw
@@ -35,6 +35,7 @@ ticker, name, url, market, mode, 企業ディレクトリ, 収集日, 取得経�
 | 中期経営計画（目標値・重点施策・資本政策・株主還元方針） | `raw/ir/{収集日}_mid-term-plan.md`（mid-term-plan.md） |
 | IR資料一覧（資料名・対象期間・URL・原本の保存パス） | `raw/ir/{収集日}_ir-materials-index.md`（ir-materials-index.md） |
 | プレスリリース・重要ニュース（日付・見出し・要旨・URL） | `raw/news/{収集日}_press-releases.md`（press-releases.md） |
+| 経営者の目標と実績（過去3〜4年の期初予想・中期経営計画・年度方針の目標値と実績）、社長メッセージの要旨、経歴の補足 | `raw/ir/{収集日}_management.md`（management.md）。1章に最新の決算説明会の日付を書く（鮮度の基準日） |
 
 ## 報告
 `.ai/templates/collect-company-info/agent-report.md` の形式で返答する。次回決算発表予定日（IRカレンダー等）が分かれば5章に書く。

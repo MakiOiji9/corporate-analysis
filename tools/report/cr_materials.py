@@ -9,9 +9,12 @@ from __future__ import annotations
 
 import csv
 import datetime as dt
+import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
+
+import mdparse as M
 
 ISO_DATE = re.compile(r"\b(\d{4}-\d{2}-\d{2})\b")
 FILE_DATE = re.compile(r"^(\d{4}-\d{2}-\d{2})_")
@@ -36,7 +39,13 @@ MATERIALS = (
     Material("consensus", "アナリスト予想・株価指標", 30, "collect-peers-valuation",
              "アナリスト予想（今期・来期の予想EPS）と株価指標"),
     Material("market", "地合いレポート（指数・業種の値動き）", MARKET_MAX_DAYS, MARKET_SKILL, ""),
+    # the annual report's fiscal year end: the next report is out within about 13 months
+    Material("governance", "大株主・役員・増資の履歴（有価証券報告書）", 400, "collect-filings",
+             "大株主・役員・発行済株式数の推移（有価証券報告書の XBRL から yuho_governance.py）"),
+    Material("management", "経営者の目標と実績・発言", 120, "collect-ir",
+             "経営者の目標と実績・社長メッセージ（過去3〜4年の決算説明会資料）"),
 )
+JAPAN_TICKER = re.compile(r"^\d{3}[0-9A-Z]_")
 
 
 def _newest(directory: Path, pattern: str) -> Path | None:
@@ -92,10 +101,35 @@ def evaluate(company_path: Path, outlook: dict, today: str) -> list[dict]:
                 note = f"表の範囲が3か月に届かない（最も古い行 {oldest or '無し'}）"
         elif m.key == "consensus":
             date = _file_date(_newest(company_path / "raw" / "ir", "*_valuation-data.md"))
+        elif m.key == "governance":
+            if not JAPAN_TICKER.match(company_path.name):  # no EDINET annual report for a US company
+                out.append({**_state(m, None, today), "stale": False, "why": "米国株は対象外", "date": None})
+                continue
+            date = _governance_date(company_path)
+        elif m.key == "management":
+            date = _management_date(_newest(company_path / "raw" / "ir", "*_management.md"))
         else:
             date = outlook.get("week")
         out.append(_state(m, date, today, note))
     return out
+
+
+def _governance_date(company_path: Path) -> str | None:
+    """The fiscal year end of the annual report data/governance.json was made from."""
+    path = company_path / "data" / "governance.json"
+    try:
+        return json.loads(path.read_text(encoding="utf-8")).get("as_of") if path.exists() else None
+    except ValueError:
+        return None
+
+
+def _management_date(path: Path | None) -> str | None:
+    """The latest results briefing the file names in its chapter 1, else the collection day."""
+    if not path:
+        return None
+    first = M.section(path.read_text(encoding="utf-8"), "1.")
+    found = ISO_DATE.search(first or "")
+    return found.group(1) if found else _file_date(path)
 
 
 def next_for(materials: list[dict]) -> str | None:
