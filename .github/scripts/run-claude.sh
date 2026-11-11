@@ -34,15 +34,26 @@ except ValueError:
     data = {}
 stderr = open(err, encoding="utf-8", errors="replace").read()[-2000:]
 text = data.get("result") or ""
-failed = status != 0 or data.get("is_error") or not data
+denials = data.get("permission_denials") or []
+DENIAL_LIMIT = 10  # many denials: the run could not work (ci-settings.json lacks a rule), even if Claude exited 0
+failed = status != 0 or data.get("is_error") or not data or len(denials) >= DENIAL_LIMIT
 auth = any(k in (text + stderr).lower() for k in ("oauth", "401", "authentication", "invalid api key", "unauthorized"))
 lines = [f"## {label}", ""]
-if failed and auth:
+if len(denials) >= DENIAL_LIMIT:
+    lines += [f"**ツールの拒否が {len(denials)} 件あった。** `.github/claude/ci-settings.json` の許可に足りないものがある。", ""]
+elif failed and auth:
     lines += ["**認証に失敗した。** トークンが期限切れ（1年）か失効している。ローカルで `claude setup-token` を実行し、"
               "Environment `reports` の Secret `CLAUDE_CODE_OAUTH_TOKEN` を更新する。", ""]
 elif failed:
     lines += [f"**Claude Code が失敗した**（終了コード {status}、subtype {data.get('subtype')}）。", ""]
 lines += [text or "（完了報告なし）", ""]
+if denials:
+    lines += [f"<details><summary>拒否されたツール（{len(denials)} 件）</summary>", ""]
+    for d in denials[:30]:
+        args = d.get("tool_input") or {}
+        target = args.get("command") or args.get("file_path") or args.get("path") or args.get("pattern") or ""
+        lines.append(f"- `{d.get('tool_name')}` {str(target)[:160]}")
+    lines += ["", "</details>", ""]
 if failed and stderr.strip():
     lines += ["<details><summary>stderr</summary>", "", "```", stderr.strip(), "```", "", "</details>", ""]
 meta = {k: data.get(k) for k in ("num_turns", "duration_ms", "total_cost_usd") if data.get(k) is not None}
