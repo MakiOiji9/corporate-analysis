@@ -156,7 +156,14 @@ S100VUHZ,2024-02-29,inventories,207910,百万円,jpigp_cor:InventoriesCAIFRS,Pri
 S100Y69H,2025-02-28,inventories,206259,百万円,jpigp_cor:InventoriesCAIFRS,Prior1YearInstant
 S100Y69H,2026-02-28,inventories,210764,百万円,jpigp_cor:InventoriesCAIFRS,CurrentYearInstant
 S100FVG3,2018-02-28,investment_securities,37061,百万円,jppfs_cor:InvestmentSecurities,Prior1YearInstant
-S100FVG3,2019-02-28,investment_securities,28865,百万円,jppfs_cor:InvestmentSecurities,CurrentYearInstant
+S100IOOX,2019-02-28,investment_securities,27901,百万円,jpigp_cor:OtherFinancialAssetsNCAIFRS,Prior1YearInstant
+S100LETR,2020-02-29,investment_securities,25513,百万円,jpigp_cor:OtherFinancialAssetsNCAIFRS,Prior1YearInstant
+S100O4U1,2021-02-28,investment_securities,30949,百万円,jpigp_cor:OtherFinancialAssetsNCAIFRS,Prior1YearInstant
+S100QTSR,2022-02-28,investment_securities,36600,百万円,jpigp_cor:OtherFinancialAssetsNCAIFRS,Prior1YearInstant
+S100TJ0G,2023-02-28,investment_securities,39768,百万円,jpigp_cor:OtherFinancialAssetsNCAIFRS,Prior1YearInstant
+S100VUHZ,2024-02-29,investment_securities,43981,百万円,jpigp_cor:OtherFinancialAssetsNCAIFRS,Prior1YearInstant
+S100Y69H,2025-02-28,investment_securities,74735,百万円,jpigp_cor:OtherFinancialAssetsNCAIFRS,Prior1YearInstant
+S100Y69H,2026-02-28,investment_securities,90424,百万円,jpigp_cor:OtherFinancialAssetsNCAIFRS,CurrentYearInstant
 S100IOOX,2019-02-28,lease_liabilities_current,2227,百万円,jpcrp030000-asr_E01741-000:LeaseLiabilitiesCLIFRS,Prior1YearInstant
 S100LETR,2020-02-29,lease_liabilities_current,2272,百万円,jpigp_cor:LeaseLiabilitiesCLIFRS,Prior1YearInstant
 S100O4U1,2021-02-28,lease_liabilities_current,2451,百万円,jpigp_cor:LeaseLiabilitiesCLIFRS,Prior1YearInstant

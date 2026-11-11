@@ -1,6 +1,6 @@
 # データ鮮度・未取得項目 — 安川電機
 
-**最終更新**: 2026-11-09（mode=update。moat の指定で collect-ir の継続率・解約率・ストック型売上の比率を再確認。前回 2026-11-01 は mode=full と、同日の collect-ir・collect-market の追加確認）（2026-11-10 に株価のみ更新: refresh_valuation.py）
+**最終更新**: 2026-11-11（mode=update。企業分析レポートの指定で collect-ir（適時開示の差分・経営者の目標と実績 raw/ir/2026-11-11_management.md）と collect-filings（xbrl_financials --all の再取り込み・yuho_governance で data/governance.json）。新しい適時開示なし。有報 第110期の役員の状況では小川昌寛が代表取締役社長だが、2026-04 に取締役を退任し、現在は小笠原浩が代表取締役会長兼社長（254Q_QA.pdf p.8）。以前: 2026-11-09（mode=update。moat の指定で collect-ir の継続率・解約率・ストック型売上の比率を再確認。前回 2026-11-01 は mode=full と、同日の collect-ir・collect-market の追加確認）（2026-11-10 に株価のみ更新: refresh_valuation.py）
 > collect-company-info を実行するたびに上書きする。`mode=update` はまずこのファイルと `sources/manifest.csv` を読む。
 
 ## 1. データ鮮度
@@ -11,7 +11,7 @@
 | 四半期決算 | 2027年2月期 Q2（中間期、2026-08-31 終了、2026-10-09 公表） | 2026-11-01 | raw/ir/2026-11-01_financials-historical.md 5章（data/tdnet_facts.csv は未作成） | 次回決算発表予定日: 未告知（第3四半期は例年1月上旬〜中旬。2026-01-09、2025-01-10） |
 | 通期決算・会社予想 | 2026年2月期（予想は 2026-10-09 修正後の2027年2月期） | 2026-11-01 | raw/ir/2026-11-01_financials-historical.md, data/financials.csv | 本決算発表（例年4月上旬。2026-04-10） |
 | 有価証券報告書 | 第110期（2026年2月期、2026-05-25 提出） | 2026-11-01 | raw/filings/2026-11-01_2026-02_yuho.md | 有報提出（例年5月下旬） |
-| プレスリリース | 〜2026-10-28 | 2026-11-01 | raw/news/2026-11-01_press-releases.md | 再実行のたび（前回以降の差分） |
+| プレスリリース | 〜2026-11-11 | 2026-11-11 | raw/news/2026-11-11_press-releases.md（差分。前回 2026-11-01） | 再実行のたび（前回以降の差分） |
 | 業界・市場 | IFR 2025年実績、JARA 2025年（見込み）、中国サーボ白書 2026-09-19 | 2026-11-01 | raw/market/2026-11-01_industry-overview.md | 年1回 |
 | 競合 | ファナック・三菱電機・山洋電気の2026年3月期、2027年3月期 中間期 | 2026-11-01 | raw/market/2026-11-01_competitors.md | 年1回、または競合の本決算後 |
 | 中期経営計画 | Dash 35（2026-05-22 公表）、IR Day 2026（2026-06-01） | 2026-11-01 | raw/ir/2026-11-01_mid-term-plan.md | 中計の改定時 |
