@@ -555,6 +555,64 @@ def test_us_unit_label_and_insolvency(tmp_path):
     assert any("債務超過" in w for w in X.warnings(cands))
 
 
+US_FINANCIALS = """# 財務データ時系列 — テスト
+
+> 単位: 千米ドル（USD thousands）
+
+## 1. 損益・貸借・CF
+
+| 項目 | 2024年12月期 | 2025年12月期 |
+|---|---|---|
+| 総資産 | 1,000,000 | 2,000,000 |
+| 現金及び現金同等物 | 100,000 | 700,000 |
+"""
+US_COMPETITORS = """# 競合情報 — テスト
+
+## 10. 収益性の分解（最大5年。ROE・デュポン分解の材料）
+
+単位は百万ドル。
+
+| 会社 | 年度 | 売上高 | 当期純利益 | 総資産 | 自己資本 | ROE | 自己資本比率 | 出典・確度 |
+|---|---|---|---|---|---|---|---|---|
+| テスト社（ABCD） | 2026/06（6か月） | 300 | -400 | 11,000 | 9,000 | —（赤字） | 81.8%（算出） | 10-Q。一次 |
+
+## 11. 安全性の指標（最大5期）
+
+単位は百万ドル。総資産・自己資本・自己資本比率は 10章に同じ年度があるため「—（10章）」。
+
+| 会社 | 年度 | 総資産 | 自己資本 | 自己資本比率 | 有利子負債 | 現金及び現金同等物 | 流動資産 | 流動負債 | 出典・確度 |
+|---|---|---|---|---|---|---|---|---|---|
+| テスト社（ABCD） | 2026/06（6か月） | —（10章） | —（10章） | —（10章） | 900 | 6,700 | 9,100 | 1,500 | 10-Q。一次 |
+"""
+
+
+def test_us_own_rows_are_converted_and_filled_from_chapter_10(tmp_path):
+    company = tmp_path / "companies" / "ABCD_test"
+    for sub, name, text in (("ir", f"{COLLECTED}_financials-historical.md", US_FINANCIALS),
+                            ("market", f"{COLLECTED}_competitors.md", US_COMPETITORS)):
+        (company / "raw" / sub).mkdir(parents=True, exist_ok=True)
+        (company / "raw" / sub / name).write_text(text, encoding="utf-8")
+    target = P.Company(tmp_path, company)
+    series = SS.self_series(target, I.gather_safety(target))
+    assert series["cash"]["2026-06"].value == pytest.approx(6_700_000)  # 百万ドル -> the raw's 千米ドル
+    assert series["debt"]["2026-06"].value == pytest.approx(900_000)
+    assert series["total_assets"]["2026-06"].value == pytest.approx(11_000_000)  # from chapter 10
+    assert series["equity"]["2026-06"].value == pytest.approx(9_000_000)
+    assert series["equity_ratio"]["2026-06"].value == pytest.approx(81.8)  # '—（10章）' is not 10%
+    assert series["cash"]["2025-12"].value == pytest.approx(700_000) and series["cash"]["2025-12"].primary
+    assert "2026-06" not in series["sales"]  # only the balance-sheet values come from chapter 10
+
+
+def test_japanese_own_row_follows_the_stated_unit(tmp_path):
+    rows = "| トヨタ（7203） | 2027/03 | 20,000,000 | 9,000,000 | — | 1,000,000 | 3,000,000 | 8,000,000 | 4,000,000 | 有報（一次） |"
+    _company(tmp_path, safety=SAFETY_SECTION.format(rows=rows).replace("\n\n|", "\n\n単位: 千円。\n\n|", 1))
+    company = company_obj(tmp_path)
+    series = SS.self_series(company, I.gather_safety(company))
+    assert series["total_assets"]["2027-03"].value == pytest.approx(20_000)  # 千円 -> 百万円
+    assert series["cash"]["2027-03"].value == pytest.approx(3_000)
+    assert series["equity"]["2026-03"].value == 6000  # the raw (primary) still wins where it has the year
+
+
 def test_guard_protects_the_safety_files(repo, capsys):
     md = prepared(repo, capsys)
     rel = md.relative_to(repo).as_posix()

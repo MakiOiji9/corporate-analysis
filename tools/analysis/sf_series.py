@@ -7,7 +7,8 @@ tables for a US one (unit_label); the equity ratio in %.
 
 The reading reuses pf_series (the same tables, unit handling and primary-over-secondary rule) with the safety
 Fields: data/financials.csv and data/tdnet_facts.csv first, then the tables of the raw 有報 and 財務時系列 (the
-cash-flow sections included), then the target's own rows in competitors.md「安全性の指標」.
+cash-flow sections included), then the target's own rows in competitors.md「安全性の指標」(with its 総資産・自己資本
+from「収益性の分解」「ROE・自己資本比率」), converted from the section's stated unit to the target's unit.
 The peers: competitors.md「安全性の指標」, with the equity ratio also taken from「収益性の分解」and「ROE・自己資本比率」.
 A year with neither a 有利子負債 line nor any loan / bond line has no debt value (it is never assumed to be 0).
 """
@@ -27,7 +28,8 @@ FIELDS = ("total_assets", "equity", "equity_derived", "equity_ratio", "debt", "d
           "lease", "lease_current", "lease_noncurrent", "nci", "short_investments", "interest_expense",
           # the asset-based net cash (流動資産 + 投資有価証券 × 0.7 − 負債合計)
           "liabilities", "investment_securities")
-DEBT_PARTS = ("debt_short", "debt_current_long", "debt_long", "debt_bonds", "debt_bonds_current", "debt_cp")
+BALANCE_FIELDS = ("total_assets", "equity", "equity_derived", "equity_ratio")  # taken from the other peer tables
+DEBT_PARTS = ("debt_short","debt_current_long", "debt_long", "debt_bonds", "debt_bonds_current", "debt_cp")
 LABELS = {
     "total_assets": S.LABELS["total_assets"],
     "equity": S.LABELS["equity"],
@@ -78,7 +80,6 @@ PEER_COLUMNS = (("company", ("会社",)), ("year", ("年度", "決算期")), ("s
 PEER_SECTIONS = (("peer_safety", SAFETY, PEER_SAFETY_SECTION), ("peer_dupont", S.PROFITABILITY, "収益性の分解"),
                  ("peer_roe", S.PROFITABILITY, "ROE・自己資本比率"))
 NAME_NOTE = re.compile(r"[（(][^）)]*[）)]|株式会社|\s")
-UNIT_NOTE = re.compile(r"単位[:：]\s*([^\s（(。、,|]+)")
 MAX_PEERS = 5
 
 
@@ -119,10 +120,13 @@ def finish(series: S.Series) -> S.Series:
 
 # ---------- competitors.md tables ----------
 
-def table_rows(found: Found, fields: S.Fields, section: str) -> list[dict]:
-    """Rows of a competitors.md table with 会社 and 年度 columns: name, year and the values."""
+def table_rows(found: Found, fields: S.Fields, section: str, target: str | None = None) -> list[dict]:
+    """Rows of a competitors.md table with 会社 and 年度 columns: name, year and the values. With target (the
+    target's unit, for its own rows), the amounts are converted from the section's stated unit ('単位は百万ドル')
+    or the column's unit to it."""
     if found.status not in ("ok", "thin", "unavailable") or not found.body:
         return []
+    default = (S.unit_factor(S._prose(found.body), target) if target else None) or 1.0
     out = []
     for table in S.M.tables(found.body):
         header = table[0]
@@ -138,7 +142,7 @@ def table_rows(found: Found, fields: S.Fields, section: str) -> list[dict]:
             source = row[cols["source"]] if cols["source"] is not None and cols["source"] < len(row) else ""
             primary = not S.SECONDARY.search(source)
             parsed = [(name, year, v) for i, name in names.items() if name and i < len(row)
-                      if (v := S._parse(name, row[i], S.unit_of(header[i]) or 1.0, fields)) is not None]
+                      if (v := S._parse(name, row[i], S.column_factor(header[i], default, target), fields)) is not None]
             values = {f: S.Value(v, f"competitors「{section}」", primary) for f, _, v in S.derive_equity(parsed)
                       if f in FIELDS}
             out.append({"name": row[cols["company"]].replace("*", "").strip(), "year": year, "values": values})
@@ -157,15 +161,9 @@ def _csv_items(company) -> dict[str, str]:
 
 
 def unit_label(company) -> str:
-    """The unit of the target's amounts: 百万円 for a Japanese company (pf_series converts 千円 / 億円); a US
-    company's amounts stay in the unit of its raw tables (千米ドル, 百万ドル ...), read from the 財務時系列 header."""
-    if JAPAN_TICKER.match(company.ticker.upper()):
-        return "百万円"
-    for _, path in raw_files(company, "financials-historical"):
-        m = UNIT_NOTE.search(path.read_text(encoding="utf-8"))
-        if m:
-            return m.group(1)
-    return "raw の通貨単位"
+    """The unit of the target's amounts (pf_series.target_unit): 百万円 for a Japanese company, the unit of the
+    raw tables (千米ドル, 百万ドル ...) for a US one."""
+    return S.target_unit(company)
 
 
 def self_series(company, found: dict[str, Found] | None = None) -> S.Series:
@@ -173,10 +171,24 @@ def self_series(company, found: dict[str, Found] | None = None) -> S.Series:
     for kind, include in (("yuho", YUHO_SECTION), ("financials-historical", None)):
         for _, path in raw_files(company, kind):
             observations += S.from_raw_text(path.read_text(encoding="utf-8"), path.name, include, SAFETY)
-    if found is not None:  # the target's own row in competitors.md is a copy of its raw: it only fills gaps
-        own = [r for r in table_rows(found["peer_safety"], SAFETY, PEER_SAFETY_SECTION) if _is_self(r["name"], company)]
-        observations += [(f, r["year"], S.Value(v.value, v.source, False)) for r in own for f, v in r["values"].items()]
+    if found is not None:  # the target's own rows in competitors.md are a copy of its raw: they only fill gaps
+        observations += _own_rows(company, found)
     return finish(S.merge(observations, FIELDS))
+
+
+def _own_rows(company, found: dict[str, Found]) -> list[tuple[str, str, S.Value]]:
+    """The target's rows of「安全性の指標」, then its balance-sheet values of「収益性の分解」「ROE・自己資本比率」
+    (the 安全性の指標 table leaves 総資産・自己資本 to chapter 10), in the target's unit and as secondary values."""
+    unit = unit_label(company)
+    out = []
+    for key, fields, section in PEER_SECTIONS:
+        if key not in found:
+            continue
+        keep = FIELDS if key == "peer_safety" else BALANCE_FIELDS
+        for r in table_rows(found[key], fields, section, unit):
+            if _is_self(r["name"], company):
+                out += [(f, r["year"], S.Value(v.value, v.source, False)) for f, v in r["values"].items() if f in keep]
+    return out
 
 
 def peer_series(company, found: dict[str, Found]) -> list[dict]:

@@ -5,7 +5,8 @@ reported ROE and the extraordinary items. Amounts are in 百万円, ratios in %.
 
 The target: data/financials.csv (EDINET XBRL) and data/tdnet_facts.csv (決算短信) first, then the tables of the
 raw 有報 and 財務時系列 (both table orientations; the unit is read from the column / row label, the section
-text or the file header: 千円 / 百万円 / 億円), then the target's own rows in competitors.md「収益性の分解」.
+text or the file header: 千円 / 百万円 / 億円), then the target's own rows in competitors.md「収益性の分解」
+(converted from the section's stated unit, e.g. 百万ドル, to the target's unit, e.g. 千米ドル).
 A primary value (有報・短信・XBRL) wins over a secondary one (IRBANK などの集計サイト) for the same year.
 The peers: competitors.md「収益性の分解」(one row per company and year).
 Forecasts, quarters, the parent-only figures and segment / subsidiary tables are never read.
@@ -54,6 +55,14 @@ YUHO_SECTION = re.compile(r"主要な経営指標|財務|損益|貸借|特別")
 SECONDARY = re.compile(r"IRBANK|二次|株探|kabutan|集計サイト")
 PEER_SECTION = "収益性の分解"
 PAREN_NEGATIVE = re.compile(r"^\((\d[\d,]*(?:\.\d+)?)\)")  # US filings: '(164,402)' is -164,402
+NOTE_START = re.compile(r"[（(]")  # a bracket after the value opens a note: '78.7%（算出）', '—（10章）'
+# a currency unit in yen or dollars, for converting a competitors.md table to the target's own unit
+CURRENCY_UNIT = r"(?:兆|十億|億|百万|千|万)?米?(?:ドル|円)"
+UNIT_STATEMENT = re.compile(rf"単位(?:は|[:：])\s*({CURRENCY_UNIT})")  # '単位は百万ドル' / '単位: 千米ドル'
+UNIT_BRACKET = re.compile(rf"[（(]\s*({CURRENCY_UNIT})")  # '総資産（千円）'
+UNIT_PREFIX = {"兆": 1e12, "十億": 1e9, "億": 1e8, "百万": 1e6, "千": 1e3, "万": 1e4, "": 1.0}
+JAPAN_TICKER = re.compile(r"^\d{3}[0-9A-Z]$")
+UNIT_NOTE = re.compile(r"単位[:：]\s*([^\s（(。、,|]+)")
 
 # data/financials.csv items (with or without the 'summary.' prefix)
 CSV_ITEMS = {"net_sales": "sales", "net_income": "net_income", "total_assets": "total_assets",
@@ -121,8 +130,11 @@ def amount(cell: str, factor: float) -> float | None:
 
 
 def percent(cell: str) -> float | None:
-    """The first number of the cell: '13.21%' / '18.8%（有報）/ 17.27%（IRBANK）' -> 13.21 / 18.8."""
-    m = FIRST_NUMBER.search(cell.replace("*", ""))
+    """The first number of the cell before any note: '13.21%' / '18.8%（有報）/ 17.27%（IRBANK）' -> 13.21 / 18.8,
+    '(16)%' -> -16 (US filings). A cell whose value is a dash and whose only number sits in the note
+    ('—（10章）', '—（算出不能。2025年）') has no value."""
+    text = PAREN_NEGATIVE.sub(r"-\1", cell.replace("*", "").strip())
+    m = FIRST_NUMBER.search(NOTE_START.split(text, 1)[0])
     return _signed(m.group(0)) if m else None
 
 
@@ -160,6 +172,41 @@ def unit_of(text: str) -> float | None:
     if not m:
         return None
     return UNIT_TO_MILLION[next(g for g in m.groups() if g)]
+
+
+def _scale(unit: str) -> tuple[float, str] | None:
+    """'千米ドル' -> (1e3, 'ドル'), '百万円' -> (1e6, '円'); None for anything that is not a currency unit."""
+    m = re.fullmatch(rf"({'|'.join(p for p in UNIT_PREFIX if p)})?米?(ドル|円)", unit.strip())
+    return (UNIT_PREFIX[m.group(1) or ""], m.group(2)) if m else None
+
+
+def target_unit(company) -> str:
+    """The unit of the target's amounts: 百万円 for a Japanese company (the raw readers convert 千円 / 億円); a US
+    company's amounts stay in the unit of its raw tables (千米ドル, 百万ドル ...), read from the 財務時系列 header."""
+    if JAPAN_TICKER.match(company.ticker.upper()):
+        return "百万円"
+    for _, path in raw_files(company, "financials-historical"):
+        m = UNIT_NOTE.search(path.read_text(encoding="utf-8"))
+        if m:
+            return m.group(1)
+    return "raw の通貨単位"
+
+
+def unit_factor(text: str, target: str | None, pattern: re.Pattern = UNIT_STATEMENT) -> float | None:
+    """The multiplier from the unit stated in text ('単位は百万ドル', or with UNIT_BRACKET '総資産（千円）') to the
+    target unit ('千米ドル' -> 1,000). None when either unit is unknown or the currencies differ."""
+    m = pattern.search(text or "")
+    source = _scale(m.group(1)) if m else None
+    goal = _scale(target) if target else None
+    if not source or not goal or source[1] != goal[1]:
+        return None
+    return source[0] / goal[0]
+
+
+def column_factor(header: str, default: float, target: str | None) -> float:
+    """The factor of one table column: its own unit ('総資産（千円）'), else the table's default."""
+    own = unit_factor(header, target, UNIT_BRACKET) if target else None
+    return own or unit_of(header) or default
 
 
 # ---------- tables ----------
@@ -350,7 +397,7 @@ def self_series(company, peer_found: Found | None = None) -> Series:
         for _, path in raw_files(company, kind):
             observations += from_raw_text(path.read_text(encoding="utf-8"), path.name, include)
     if peer_found is not None:  # the target's own row in competitors.md is a copy of its raw: it only fills gaps
-        own = [r for r in peer_rows(peer_found) if _is_self(r["name"], company)]
+        own = [r for r in peer_rows(peer_found, target_unit(company)) if _is_self(r["name"], company)]
         observations += [(f, r["year"], Value(v.value, v.source, False)) for r in own for f, v in r["values"].items()]
     return with_equity(merge(observations))
 
@@ -360,11 +407,13 @@ def self_series(company, peer_found: Found | None = None) -> Series:
 PEER_COLUMNS = (("company", ("会社",)), ("year", ("年度", "決算期")), ("source", ("出典", "確度")))
 
 
-def peer_rows(found: Found) -> list[dict]:
+def peer_rows(found: Found, target: str | None = None) -> list[dict]:
     """Rows of competitors.md「収益性の分解」: name, year and the values (amounts in 百万円 unless the cell
-    says otherwise)."""
+    says otherwise). With target (the target's unit, for its own rows), the amounts are converted from the
+    section's stated unit ('単位は百万ドル') or the column's unit to it."""
     if found.status not in ("ok", "thin", "unavailable") or not found.body:
         return []
+    default = (unit_factor(_prose(found.body), target) if target else None) or 1.0
     out = []
     for table in M.tables(found.body):
         header = table[0]
@@ -380,7 +429,7 @@ def peer_rows(found: Found) -> list[dict]:
             source = row[cols["source"]] if cols["source"] is not None and cols["source"] < len(row) else ""
             primary = not SECONDARY.search(source)
             parsed = [(field, year, v) for i, field in fields.items() if field and i < len(row)
-                      if (v := _parse(field, row[i], unit_of(header[i]) or 1.0)) is not None]
+                      if (v := _parse(field, row[i], column_factor(header[i], default, target))) is not None]
             values = {f: Value(v, f"competitors「{PEER_SECTION}」", primary) for f, _, v in derive_equity(parsed)}
             out.append({"name": row[cols["company"]].replace("*", "").strip(), "year": year, "values": values})
     return out

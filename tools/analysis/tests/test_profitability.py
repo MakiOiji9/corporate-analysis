@@ -223,6 +223,40 @@ def test_percent_period_and_labels():
     assert S.period("2026年3月期（第26期）") == "2026-03"
 
 
+def test_percent_reads_the_value_before_the_note():
+    assert S.percent("—（10章）") is None and S.percent("—（算出不能。2025年）") is None
+    assert S.percent("78.7%（算出）") == 78.7 and S.percent("-24.9%（算出 -578.655÷2,326.037）") == -24.9
+    assert S.percent("(16)%") == -16  # US filings write a negative ratio in brackets
+
+
+@pytest.mark.parametrize("text, target, expected", [
+    ("単位は百万ドル。期末残高。", "千米ドル", 1000.0),
+    ("単位: 千円", "百万円", 1e-3),
+    ("単位は百万円。", "百万円", 1.0),
+    ("単位は十億ドル", "百万ドル", 1000.0),
+    ("単位は百万ドル。", "百万円", None),  # different currencies are never converted
+    ("単位は百万ドル。", "raw の通貨単位", None),
+    ("期末残高。", "千米ドル", None),
+])
+def test_unit_factor_between_stated_units(text, target, expected):
+    got = S.unit_factor(text, target)
+    assert got == (pytest.approx(expected) if expected is not None else None)
+
+
+def test_us_own_dupont_row_is_converted_to_the_raw_unit(tmp_path):
+    company = tmp_path / "companies" / "ABCD_test"
+    (company / "raw" / "ir").mkdir(parents=True)
+    (company / "raw" / "ir" / "2026-10-01_financials-historical.md").write_text(
+        "# 財務データ時系列 — テスト\n\n> 単位: 千米ドル（USD thousands）\n", encoding="utf-8")
+    body = ("単位は百万ドル。\n\n| 会社 | 年度 | 売上高 | 当期純利益 | 総資産 | 自己資本 | ROE | 自己資本比率 | 出典・確度 |\n"
+            "|---|---|---|---|---|---|---|---|---|\n"
+            "| テスト社（ABCD） | 2025/12 | 510 | 238 | 2,326.037 | -578.655 | —（算出不能） | -24.9%（算出） | 一次 |\n")
+    series = S.self_series(P.Company(tmp_path, company), S.Found(None, "ok", body=body))
+    assert series["total_assets"]["2025-12"].value == pytest.approx(2_326_037)
+    assert series["sales"]["2025-12"].value == pytest.approx(510_000)
+    assert series["equity_ratio"]["2025-12"].value == pytest.approx(-24.9) and "2025-12" not in series["roe"]
+
+
 def test_odd_cells_do_not_crash_or_vanish():
     assert S.amount(",", 1.0) is None
     assert S.amount("1,200（百万円）", 1e-3) == pytest.approx(1200)
