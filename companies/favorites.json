@@ -1,0 +1,18 @@
+{
+ "version": 1,
+ "groups": {
+  "A": [
+   {
+    "company": "6506_yaskawa",
+    "added": "2026-11-11"
+   },
+   {
+    "company": "3798_uls-group",
+    "added": "2026-11-11"
+   }
+  ],
+  "B": []
+ },
+ "updated": "2026-11-11",
+ "digest": "sha256:85958bece9fd03bd3069c51b2861f40d95dbd1f5be8af0bb7d89eb465443765e"
+}
