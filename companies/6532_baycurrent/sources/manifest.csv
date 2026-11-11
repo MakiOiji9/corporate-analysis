@@ -1,0 +1,5 @@
+fetched_date,doc_type,period,published_date,doc_id,url,sha256,local_path,note
+2026-11-11,peer-tanshin,,,2655605,https://ssl4.eir-parts.net/doc/6532/tdnet/2655605/00.pdf,1a8ebbd04e3c8a0539bbae02cf84c7f3f915b51733179883baaa6d9119da71a4,sources/2026-11-11/2655605.pdf,
+2026-11-11,edinet-csv,,,S100Y69G,https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69G?type=5,a74de60de345480456bd32c94017d59acd5a4d4d19d1d913bd998d74d621ea03,sources/2026-11-11/S100Y69G_csv.zip,EDINET API v2
+2026-11-11,edinet-pdf,,,S100Y69G,https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69G?type=2,12441f5835a1b69045cc71f3a79d990e2ea42395d1296b8fecb0608ed289c232,sources/2026-11-11/S100Y69G.pdf,EDINET API v2
+2026-11-11,peer-tanshin,,,20250402507816,https://finance-frontend-pc-dist.west.edge.storage-yahoo.jp/disclosure/20250410/20250402507816.pdf,bb0dc8ad5f8a4f84580bf30738efa4d45f0cb425f36f83f140dbcd2f41c09191,sources/2026-11-11/20250402507816.pdf,
