@@ -1,0 +1,225 @@
+{
+ "company": "CBRS_cerebras",
+ "name": "Cerebras Systems Inc.（CBRS）",
+ "date": "2026-11-11",
+ "valid_until": "2027-03-11",
+ "verdict": "判定保留",
+ "verdict_reason": "手順1を判定できない（売上高と EPS が揃った年が 4 年で 5 年に満たない）",
+ "step1": {
+  "rating": null,
+  "basis": "売上高と EPS が揃った年が 4 年で 5 年に満たない",
+  "sentence": "売上 CAGR 174.6%、営業利益 CAGR —（初年（2022-12）・最終年（2025-12）とも赤字・ゼロ）、EPS CAGR —（初年（2022-12）が赤字・ゼロで計算できない（最終年は黒字））（端点）（参考値）。4年分しかなく、5年に満たず判定できない",
+  "years": 4,
+  "first": "2022-12",
+  "last": "2025-12",
+  "eps_basis": "eps",
+  "sales_cagr": 174.6,
+  "eps_cagr": null,
+  "cagr": {
+   "sales": {
+    "value": 174.6,
+    "first": "2022-12",
+    "last": "2025-12",
+    "reason": ""
+   },
+   "operating_income": {
+    "value": null,
+    "first": "2022-12",
+    "last": "2025-12",
+    "reason": "初年（2022-12）・最終年（2025-12）とも赤字・ゼロ"
+   },
+   "eps": {
+    "value": null,
+    "first": "2022-12",
+    "last": "2025-12",
+    "reason": "初年（2022-12）が赤字・ゼロで計算できない（最終年は黒字）"
+   },
+   "net_income": {
+    "value": null,
+    "first": "2022-12",
+    "last": "2025-12",
+    "reason": "初年（2022-12）が赤字・ゼロで計算できない（最終年は黒字）"
+   }
+  }
+ },
+ "step3": {
+  "rating": null,
+  "basis": "期初予想と実績の組が無い",
+  "sentence": "会社計画の達成率は計算できない（期初予想と実績の組が無い）",
+  "average": null,
+  "rows": []
+ },
+ "step4": {
+  "quality": "問題あり",
+  "sentence": "成長の質に問題あり: 直近の営業利益が赤字",
+  "problems": [
+   "直近の営業利益が赤字"
+  ],
+  "unknown": [
+   "EPS の伸びが自社株買い頼みでない"
+  ],
+  "adjusted": null,
+  "checks": [
+   {
+    "name": "営業利益の伸び ≥ 売上の伸び（長期・直近3年）",
+    "status": "問題あり",
+    "detail": "長期: 初年（2022-12）・最終年（2025-12）とも赤字・ゼロ"
+   },
+   {
+    "name": "売上増が M&A 頼みでない",
+    "status": "問題なし",
+    "detail": "期間内の M&A なし"
+   },
+   {
+    "name": "EPS の伸びが自社株買い頼みでない",
+    "status": "不明",
+    "detail": "初年（2022-12）が赤字・ゼロで計算できない（最終年は黒字）"
+   }
+  ]
+ },
+ "step2": {
+  "sentence": "減収・減益の年 2 年（一時 2024-12 / 不明 2025-12）で構造要因なし",
+  "structural": "構造的な減収・減益の要因は見当たらない。2024年の EPS の悪化は先渡契約負債の再評価損による一時要因で、2025年は先渡契約負債の消滅益 363.3 million ドルで EPS 1.64 に回復した。2025年の営業損失の拡大はデータセンター費用と人員増によるもので、費用の増加が続くかを示す材料が無いため不明とした"
+ },
+ "rows": [
+  {
+   "year": "2022-12",
+   "sales": 24.62,
+   "operating_income": -178.82,
+   "net_income": -177.72,
+   "eps": -4.28,
+   "source": "2026-10-14_2025-12_424b4.md「1. 主要な経営指標等の推移（連結）（Summary Con」",
+   "primary": true
+  },
+  {
+   "year": "2023-12",
+   "sales": 78.74,
+   "operating_income": -133.93,
+   "net_income": -127.16,
+   "eps": -2.92,
+   "source": "2026-10-14_2025-12_424b4.md「1. 主要な経営指標等の推移（連結）（Summary Con」",
+   "primary": true
+  },
+  {
+   "year": "2024-12",
+   "sales": 290.25,
+   "operating_income": -101.44,
+   "net_income": -481.6,
+   "eps": -9.9,
+   "source": "2026-10-14_2025-12_424b4.md「1. 主要な経営指標等の推移（連結）（Summary Con」",
+   "primary": true
+  },
+  {
+   "year": "2025-12",
+   "sales": 509.99,
+   "operating_income": -145.86,
+   "net_income": 237.83,
+   "eps": 1.64,
+   "source": "2026-10-14_2025-12_424b4.md「1. 主要な経営指標等の推移（連結）（Summary Con」",
+   "primary": true
+  }
+ ],
+ "splits": [],
+ "progress": null,
+ "receivables": "売上債権（百万）: 2022-12 4、2023-12 7、2024-12 137、2025-12 50。2022-12〜2025-12 の CAGR 138.3%（同期間の売上 CAGR 174.6%）",
+ "declines": [
+  {
+   "year": "2024-12",
+   "recovery": "回復",
+   "metrics": [
+    {
+     "name": "EPS",
+     "change": null,
+     "recovery": "回復",
+     "recovered": "2025-12"
+    }
+   ],
+   "reason": "会社の説明では、2024年は先渡契約負債（Series F-1 優先株）の再評価損 401.3 million ドルを計上し、その他収支（純額）が (378.2) million ドルの費用になったことで純損益・EPS が悪化した（営業損失は (133,934)→(101,438) と改善）",
+   "class": "一時",
+   "swot": "—（構造要因ではない）"
+  },
+  {
+   "year": "2025-12",
+   "recovery": "未確認",
+   "metrics": [
+    {
+     "name": "営業利益",
+     "change": null,
+     "recovery": "未確認",
+     "recovered": null
+    }
+   ],
+   "reason": "会社の説明では、クラウド推論の容量サービスに係るデータセンター費用の増加で粗利率が 42.3%→39.0% に下がり、研究開発費 +85.1 million ドル（従業員増）・販売費 +49.7 million ドル（従業員増とクラウド推論サービスの立ち上げ・拡大のマーケティング費）が増えたため営業損失が拡大した",
+   "class": "不明",
+   "swot": "—（構造要因ではない）"
+  }
+ ],
+ "ma": [],
+ "borderline": [],
+ "consistency": [
+  {
+   "check": "市場成長性が高い ⇔ 売上成長",
+   "step1": "市場の成長性 高（3C の市場成長率 28.0%）",
+   "step2": "売上 CAGR 174.6%",
+   "result": "整合"
+  }
+ ],
+ "consistency_comment": "整合（売上が市場並み以上に伸びている）",
+ "mtp": "中期経営計画は公表されていない。直近の四半期ガイダンスに対しては、2026Q2 のコア売上が $209.9 million（ガイダンス約 $194.0 million）、コア営業利益率が (16)%（ガイダンス (30)〜(32)%）と上回ったが、通期の期初予想と実績の組は上場前のため無い",
+ "drivers": "売上の伸びは、ハードウェア（2024年12月期 211,965 → 2025年12月期 358,440 千ドル）とクラウド・その他サービス（一定期間 77,659 → 149,357 千ドル）の両方の拡大による。M&A は無く（424B4 に買収の経験が無いとの記載）、成長の質の問題は直近の営業利益が赤字であること",
+ "handoff": {
+  "report_points": "成長性は判定保留。売上 CAGR は 174.6%（2022〜2025年12月期の4年、端点・参考値）と高いが、5年分の時系列が無く手順1を判定できない。営業利益は4年とも赤字で EPS の CAGR も計算できず、成長の質は「直近の営業利益が赤字」で問題あり。2024年の EPS 悪化は先渡契約負債の再評価損による一時要因、2025年の営業損失の拡大は理由の持続性が不明",
+  "step3_hint": "会社計画が無いため実績の CAGR を基準にする",
+  "step2_checks": "利益の伸びが売上の伸びに見合い、利益率が保たれているか（収益性）、成長に伴う運転資本・設備投資が営業CF・FCF を圧迫していないか（キャッシュフロー）、成長投資の資金を借入に頼っていないか（安全性）",
+  "triggers": "減収・減益の年に構造要因が見つかれば懸念。"
+ },
+ "changes": [
+  "初回の分析"
+ ],
+ "gaps": [
+  "なし"
+ ],
+ "inputs": [
+  "companies/CBRS_cerebras/raw/filings/2026-10-14_2025-12_424b4.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_financials-historical.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_mid-term-plan.md",
+  "companies/CBRS_cerebras/raw/ir/2026-11-11_financials-historical.md"
+ ],
+ "seen": [
+  "companies/CBRS_cerebras/raw/filings/2026-10-14_2025-12_424b4.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_financials-historical.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_mid-term-plan.md",
+  "companies/CBRS_cerebras/raw/ir/2026-11-11_financials-historical.md"
+ ],
+ "input_digests": {
+  "self_pl": "374a97fa4240a2c6e2966a1c7ae7fc11b0e419ba",
+  "summary": "18a522be5a7aeba447f8cea6d6dce88c12968977",
+  "plan": "1b1c53d9deebfa9184664223390d9a7417251bb2",
+  "decline": "db4af7c3f8c6027e228f5d6f4554083caabf0be6",
+  "ma": "8ebd7bc55156846a6340ce690fbf985ba99339a6",
+  "self_return": "25e060e97d9fa8fd7a458689913a6b14f0146b22",
+  "segment": "eaddd462cab9b5a92783d0a2a4432aa69ec30f93",
+  "risks": "f30dd4a79f3733e601a8078361139a79da77aeb9",
+  "policy": "63c1d702020a4a8337842e56dc99d7aeb01ba964",
+  "targets": "40b4ffbb76af678712f889a65caadf9b599e6b02",
+  "mtp_result": "0eb04cec85415f35d1c1ba942c84d76f03cbda6d",
+  "yearly_series": "b5c84fd3171891b171997452b530b945fa3f3f6f"
+ },
+ "three_c": {
+  "date": "2026-10-14",
+  "verdict": "なし",
+  "market_growth": "高"
+ },
+ "swot": {
+  "date": "2026-11-11",
+  "verdict": "No"
+ },
+ "outlook": "market/report/2026-11-09_outlook.md",
+ "previous": null,
+ "md": "companies/CBRS_cerebras/analysis/growth/2026-11-11_growth.md",
+ "downgraded": [],
+ "conservative": [
+  "2025-12 の減収・減益の原因が不明 → 構造とみなした",
+  "成長の質の「EPS の伸びが自社株買い頼みでない」を確かめられない → 問題ありとみなした"
+ ]
+}

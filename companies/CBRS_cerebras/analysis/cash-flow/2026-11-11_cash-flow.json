@@ -1,0 +1,373 @@
+{
+ "company": "CBRS_cerebras",
+ "name": "Cerebras Systems Inc.（CBRS）",
+ "date": "2026-11-11",
+ "valid_until": "2027-05-30",
+ "verdict": "懸念",
+ "verdict_reason": "手順4（直近4年の評価が 懸念 3年、普通 1年（最も多い評価を採る。同数なら保守的な方））が懸念",
+ "conservative": [],
+ "step1": {
+  "rating": null,
+  "basis": "営業CF が取れた年が 4 年で 5 年に満たない",
+  "sentence": "営業CF が取れた年が4年で、5年に満たず判定できない",
+  "years": 4,
+  "first": "2022-12",
+  "last": "2025-12",
+  "negative_years": [
+   "2022-12",
+   "2023-12",
+   "2025-12"
+  ]
+ },
+ "step2": {
+  "rating": null,
+  "basis": "FCF（営業CF と投資CF）が取れた年が 4 年で 5 年に満たない",
+  "sentence": "FCF が取れた年が4年で、5年累計を計算できない",
+  "window": [
+   "2022-12",
+   "2023-12",
+   "2024-12",
+   "2025-12"
+  ],
+  "total": null,
+  "positive_years": null,
+  "growth": null
+ },
+ "step3": {
+  "rating": null,
+  "basis": "営業CF と当期純利益が揃った年が 4 年で 5 年に満たない",
+  "sentence": "営業CF と当期純利益が揃った年が4年で、5年平均を計算できない",
+  "window": [
+   "2022-12",
+   "2023-12",
+   "2024-12",
+   "2025-12"
+  ],
+  "ratio": null,
+  "method": null,
+  "loss": false,
+  "average": null,
+  "cumulative": null,
+  "without_oldest": null,
+  "recent_text": "—",
+  "below_text": "—",
+  "flagged": [],
+  "working_capital": [
+   {
+    "field": "sales",
+    "name": "売上高",
+    "first_year": "2022-12",
+    "last_year": "2025-12",
+    "first": 24619.0,
+    "last": 509991.0,
+    "cagr": 174.6
+   },
+   {
+    "field": "receivables",
+    "name": "売上債権",
+    "first_year": "2022-12",
+    "last_year": "2025-12",
+    "first": 3725.0,
+    "last": 50423.0,
+    "cagr": 138.3
+   },
+   {
+    "field": "inventories",
+    "name": "棚卸資産",
+    "first_year": "2022-12",
+    "last_year": "2025-12",
+    "first": 19536.0,
+    "last": 63626.0,
+    "cagr": 48.2
+   }
+  ],
+  "gap_rows": [
+   {
+    "year": "2022-12",
+    "gap": 13317.0,
+    "items": null,
+    "other": null,
+    "main": null
+   },
+   {
+    "year": "2023-12",
+    "gap": 48178.0,
+    "items": null,
+    "other": null,
+    "main": null
+   },
+   {
+    "year": "2024-12",
+    "gap": 933580.0,
+    "items": null,
+    "other": null,
+    "main": null
+   },
+   {
+    "year": "2025-12",
+    "gap": -247877.0,
+    "items": null,
+    "other": null,
+    "main": null
+   }
+  ]
+ },
+ "step4": {
+  "rating": "懸念",
+  "basis": "直近4年の評価が 懸念 3年、普通 1年（最も多い評価を採る。同数なら保守的な方）",
+  "sentence": "CF パターンは直近4年の評価が 懸念 3年、普通 1年（最も多い評価を採る。同数なら保守的な方）で懸念。直近 2025-12 は（−、−、+）本業で稼げず、借入・増資で投資している",
+  "rows": [
+   {
+    "year": "2022-12",
+    "signs": [
+     "−",
+     "+",
+     "+"
+    ],
+    "rating": "懸念",
+    "state": "本業で稼げず、資産売却と借入で凌いでいる"
+   },
+   {
+    "year": "2023-12",
+    "signs": [
+     "−",
+     "+",
+     "+"
+    ],
+    "rating": "懸念",
+    "state": "本業で稼げず、資産売却と借入で凌いでいる"
+   },
+   {
+    "year": "2024-12",
+    "signs": [
+     "+",
+     "−",
+     "+"
+    ],
+    "rating": "普通",
+    "state": "本業で稼ぎ、投資を行い、財務CF はプラス（借入・増資などで調達）（成長期の型。投資成果を要確認）"
+   },
+   {
+    "year": "2025-12",
+    "signs": [
+     "−",
+     "−",
+     "+"
+    ],
+    "rating": "懸念",
+    "state": "本業で稼げず、借入・増資で投資している"
+   }
+  ],
+  "counts": {
+   "懸念": 3,
+   "普通": 1
+  }
+ },
+ "step5": {
+  "rating": "問題なし",
+  "basis": "2022-12〜2025-12（4年）の還元額 累計 25,249、FCF 累計 -266,718、還元が FCF を上回った年 2年（還元は継続的には FCF を上回っていない）",
+  "sentence": "株主還元は2022-12〜2025-12（4年）の還元額 累計 25,249、FCF 累計 -266,718、還元が FCF を上回った年 2年（還元は継続的には FCF を上回っていない）。問題なし",
+  "total_return": 25249.0,
+  "total_fcf": -266718.0,
+  "over_years": [
+   "2022-12",
+   "2025-12"
+  ],
+  "rows": [
+   {
+    "year": "2022-12",
+    "dividends": null,
+    "buybacks": 3881.0,
+    "total": 3881.0,
+    "fcf": -27009.0,
+    "gap": 30890.0,
+    "zero_filled": [
+     "dividends"
+    ]
+   },
+   {
+    "year": "2023-12",
+    "dividends": null,
+    "buybacks": 0.0,
+    "total": 0.0,
+    "fcf": 2724.0,
+    "gap": -2724.0,
+    "zero_filled": [
+     "dividends"
+    ]
+   },
+   {
+    "year": "2024-12",
+    "dividends": null,
+    "buybacks": 0.0,
+    "total": 0.0,
+    "fcf": 435193.0,
+    "gap": -435193.0,
+    "zero_filled": [
+     "dividends"
+    ]
+   },
+   {
+    "year": "2025-12",
+    "dividends": null,
+    "buybacks": 21368.0,
+    "total": 21368.0,
+    "fcf": -677626.0,
+    "gap": 698994.0,
+    "zero_filled": [
+     "dividends"
+    ]
+   }
+  ]
+ },
+ "cf_rows": [
+  {
+   "year": "2022-12",
+   "cfo": -164402.0,
+   "cfi": 137393.0,
+   "cff": 9104.0,
+   "fcf": -27009.0,
+   "net_income": -177719.0,
+   "ratio": null,
+   "sales": 24619.0,
+   "capex": 10463.0,
+   "acquisitions": null,
+   "dividends": null,
+   "buybacks": 3881.0,
+   "primary": true,
+   "source": "2026-10-14_2025-12_424b4.md「1. 主要な経営指標等の推移（連結）（Summary Con」"
+  },
+  {
+   "year": "2023-12",
+   "cfo": -78977.0,
+   "cfi": 81701.0,
+   "cff": 5933.0,
+   "fcf": 2724.0,
+   "net_income": -127155.0,
+   "ratio": null,
+   "sales": 78744.0,
+   "capex": 6593.0,
+   "acquisitions": null,
+   "dividends": null,
+   "buybacks": 0.0,
+   "primary": true,
+   "source": "2026-10-14_2025-12_424b4.md「1. 主要な経営指標等の推移（連結）（Summary Con」"
+  },
+  {
+   "year": "2024-12",
+   "cfo": 451978.0,
+   "cfi": -16785.0,
+   "cff": 112296.0,
+   "fcf": 435193.0,
+   "net_income": -481602.0,
+   "ratio": null,
+   "sales": 290252.0,
+   "capex": 23435.0,
+   "acquisitions": null,
+   "dividends": null,
+   "buybacks": 0.0,
+   "primary": true,
+   "source": "2026-10-14_2025-12_424b4.md「1. 主要な経営指標等の推移（連結）（Summary Con」"
+  },
+  {
+   "year": "2025-12",
+   "cfo": -10050.0,
+   "cfi": -667576.0,
+   "cff": 1026560.0,
+   "fcf": -677626.0,
+   "net_income": 237827.0,
+   "ratio": -0.04,
+   "sales": 509991.0,
+   "capex": 382739.0,
+   "acquisitions": null,
+   "dividends": null,
+   "buybacks": 21368.0,
+   "primary": true,
+   "source": "2026-10-14_2025-12_424b4.md「1. 主要な経営指標等の推移（連結）（Summary Con」"
+  }
+ ],
+ "borderline": [],
+ "backgrounds": {
+  "negative_cfo": "2022-12・2023-12 は純損失（-177,719、-127,155）が続く本業の赤字の時期で営業CF もマイナスになったが、内訳の理由は不明（brief に記載なし）。2025-12 は非GAAP営業損失 (96,095)（株式報酬を除く）が続き、純利益 237,827 は営業CF を伴わず営業CF は -10,050 になった。",
+  "investment": "投資CF の流出が最も大きい 2025-12（-667,576）は、設備投資（有形固定資産の購入）が 382,739 と 2024年の 23,435 から増えたことが中心で、会社はカリフォルニア・オクラホマ・カナダのコロケーションのデータセンターを使っている。設備投資以外の流出の内訳は不明（brief に記載なし）。",
+  "quality_gap": "内訳なし（CF 計算書の行が raw に無い）。2025-12 は純利益 237,827 に対し営業CF -10,050 で、非GAAP営業損失 (96,095) のとおり本業は赤字のままのため、純利益は本業以外の項目による。2024-12 の営業CF 451,978 が純損失 -481,602 を上回った理由は不明（brief に記載なし）。"
+ },
+ "relation": [
+  {
+   "check": "収益性が良好 ⇔ 利益の質",
+   "step2": "収益性 判定保留",
+   "cash": "営業CF対純利益比率 —（手順3 判定不能）",
+   "result": "判断できない（手順3を判定できない）"
+  },
+  {
+   "check": "ROE が本業由来 ⇔ 営業CF の安定",
+   "step2": "ROE の源泉 特定できず",
+   "cash": "手順1 判定不能",
+   "result": "対象外（ROE の源泉が本業由来ではない）"
+  },
+  {
+   "check": "成長性 ⇔ 運転資本",
+   "step2": "成長性 判定保留",
+   "cash": "年平均増加率: 売上高 +174.6%、売上債権 +138.3%、棚卸資産 +48.2%",
+   "result": "整合"
+  },
+  {
+   "check": "安全性 ⇔ 還元・FCF",
+   "step2": "安全性 良好（ネットキャッシュ 5,823,913）",
+   "cash": "手順5 問題なし",
+   "result": "整合"
+  }
+ ],
+ "relation_comment": "不整合なし",
+ "handoff": {
+  "report_points": "キャッシュフローは懸念（手順4（直近4年の評価が 懸念 3年、普通 1年（最も多い評価を採る。同数なら保守的な方））が懸念）。営業CF が取れた年が4年で、5年に満たず判定できない。FCF が取れた年が4年で、5年累計を計算できない。営業CF と当期純利益が揃った年が4年で、5年平均を計算できない。",
+  "capital_policy": "配当は予定せず利益を事業に再投資する方針で、配当の実績は無い。2022〜2025年の FCF 累計は -266,718 のマイナスで、2025-12 の FCF -677,626 は財務CF 1,026,560 の調達で賄われ、その後の IPO の純手取り 6,232,511（2026年6月中間）も一般事業目的に充てるとしている。還元は普通株の買戻し（2025年 21,368）にとどまる。",
+  "step2_checks": "投資CF の支出が売上・利益の成長に表れているか（成長性）",
+  "triggers": "営業CF のマイナスが続けば手順1は懸念。"
+ },
+ "changes": [
+  "初回の分析"
+ ],
+ "gaps": [
+  "財務時系列: キャッシュ・フロー: raw に無い"
+ ],
+ "inputs": [
+  "companies/CBRS_cerebras/raw/filings/2026-10-14_2025-12_424b4.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_financials-historical.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_mid-term-plan.md",
+  "companies/CBRS_cerebras/raw/ir/2026-11-11_financials-historical.md"
+ ],
+ "seen": [
+  "companies/CBRS_cerebras/raw/filings/2026-10-14_2025-12_424b4.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_financials-historical.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_mid-term-plan.md",
+  "companies/CBRS_cerebras/raw/ir/2026-11-11_financials-historical.md"
+ ],
+ "input_digests": {
+  "cf_table": "374a97fa4240a2c6e2966a1c7ae7fc11b0e419ba",
+  "cf_section": "",
+  "self_return": "25e060e97d9fa8fd7a458689913a6b14f0146b22",
+  "summary": "18a522be5a7aeba447f8cea6d6dce88c12968977",
+  "statements": "ba7bb9af6dac3c4d0dd6705a2f90d7feb20d32af",
+  "capex": "c0e711a49e8fa943b1651b36416b9063e4430ce8",
+  "policy": "63c1d702020a4a8337842e56dc99d7aeb01ba964",
+  "targets": "40b4ffbb76af678712f889a65caadf9b599e6b02",
+  "capital": "a82e1591a075470931f8d9911c942fcde422bf5c",
+  "yearly_series": "ab60f71fcde7fb3a34738dd561114c7cb927a14e"
+ },
+ "profitability": {
+  "date": "2026-11-11",
+  "verdict": "判定保留"
+ },
+ "growth": {
+  "date": "2026-11-11",
+  "verdict": "判定保留"
+ },
+ "safety": {
+  "date": "2026-11-11",
+  "verdict": "良好"
+ },
+ "outlook": "market/report/2026-11-09_outlook.md",
+ "previous": null,
+ "md": "companies/CBRS_cerebras/analysis/cash-flow/2026-11-11_cash-flow.md"
+}

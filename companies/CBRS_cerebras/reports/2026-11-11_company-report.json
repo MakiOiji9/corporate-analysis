@@ -1,0 +1,103 @@
+{
+ "company": "CBRS_cerebras",
+ "name": "Cerebras Systems Inc.（CBRS）",
+ "date": "2026-11-11",
+ "market": "米国",
+ "horizons": {
+  "short": {
+   "verdict": "投資検討",
+   "provisional": null,
+   "why": "重み付けの点数 +0.61（+0.3 以上 投資検討、-0.2 以下 見送り。ウォッチまであと -0.31（+0.3 を下回ればウォッチ））。プラス: 株価の割安さ（STEP 3）・株価のテクニカル（トレンド・勢い・位置）／マイナスの要素なし"
+  },
+  "mid": {
+   "verdict": "ウォッチ",
+   "provisional": null,
+   "why": "重み付けの点数 +0.21（+0.3 以上 投資検討、-0.2 以下 見送り。投資検討まであと +0.09（+0.3 以上で投資検討））。プラス: 株価の割安さ（STEP 3）・株価のテクニカル（トレンド・勢い・位置）／マイナス: キャッシュフロー・強みで脅威に対抗できるか（SWOT）"
+  },
+  "long": {
+   "verdict": "見送り",
+   "provisional": null,
+   "why": "足切り: STEP 1 が C（勝てる理由がなし、または SWOT が No）（点数にかかわらず見送り）"
+  }
+ },
+ "step1": {
+  "grade": "C",
+  "pending": false,
+  "why": "勝てる理由がなし（C の条件）"
+ },
+ "step2": {
+  "grade": "B",
+  "pending": true,
+  "why": "平均点 +0.00（良好 +1・普通 0・懸念 −1。A は +0.5 以上、C は -0.25 以下）（収益性・成長性が判定保留・未実施のため確定しない）",
+  "mismatch": []
+ },
+ "step3": {
+  "verdict": "割安",
+  "note": "割安だが理由あり（キャッシュフロー）"
+ },
+ "price": {
+  "value": 93.66,
+  "date": "2026-11-10",
+  "currency": "ドル"
+ },
+ "legends": {
+  "buffett": "避ける",
+  "soros": "保留",
+  "rogers": "好む"
+ },
+ "technical": {
+  "state": "判定不能（株価の日数が足りない）",
+  "score": 0.75
+ },
+ "price_range": {
+  "source": "prices",
+  "current": 93.66,
+  "first": "2026-05-14",
+  "last": "2026-11-10",
+  "position_52w": 5.1
+ },
+ "analyses": {
+  "five_forces": {
+   "date": "2026-11-11",
+   "verdict": "低"
+  },
+  "three_c": {
+   "date": "2026-10-14",
+   "verdict": "なし"
+  },
+  "moat": {
+   "date": "2026-11-11",
+   "verdict": "なし"
+  },
+  "swot": {
+   "date": "2026-11-11",
+   "verdict": "No"
+  },
+  "profitability": {
+   "date": "2026-11-11",
+   "verdict": "判定保留"
+  },
+  "growth": {
+   "date": "2026-11-11",
+   "verdict": "判定保留"
+  },
+  "safety": {
+   "date": "2026-11-11",
+   "verdict": "良好"
+  },
+  "cash_flow": {
+   "date": "2026-11-11",
+   "verdict": "懸念"
+  },
+  "valuation": {
+   "date": "2026-11-11",
+   "verdict": "割安"
+  }
+ },
+ "outlook": "market/report/2026-11-09_outlook.md",
+ "review": "次回決算発表予定日: 2026-11-12（Q3。引け後、電話会見 2 p.m. PT。2026-10-20 のプレスリリース）",
+ "warnings": [],
+ "used_existing": [],
+ "md": "companies/CBRS_cerebras/reports/2026-11-11_company-report.md",
+ "html": "companies/CBRS_cerebras/reports/2026-11-11_company-report.html"
+}

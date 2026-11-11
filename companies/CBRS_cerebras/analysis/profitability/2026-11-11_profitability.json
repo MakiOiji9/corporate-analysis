@@ -1,0 +1,280 @@
+{
+ "company": "CBRS_cerebras",
+ "name": "Cerebras Systems Inc.（CBRS）",
+ "date": "2026-11-11",
+ "valid_until": "2027-05-30",
+ "verdict": "判定保留",
+ "verdict_reason": "手順1を判定できない（ROE が取れた年が 1 年で 3 年に満たない）",
+ "conservative": [],
+ "step1": {
+  "rating": null,
+  "basis": "ROE が取れた年が 1 年で 3 年に満たない",
+  "sentence": "ROE が取れた年が1年で、3年に満たず判定できない",
+  "years": 1,
+  "first": null,
+  "last": null,
+  "average": null,
+  "minimum": null,
+  "minimum_year": null,
+  "losses": [
+   "2026-06"
+  ],
+  "direction": null
+ },
+ "step2": {
+  "rating": "下回る",
+  "basis": "2024-12〜2026-06 の3年の差の平均 -100.4pt（±1pt 以内は同等。直近 -167.3pt）。同業が2社で3社に満たず、参考の比較",
+  "sentence": "営業利益率は-131.8%（2026-06）で同業中央値35.5%との差 -167.3pt。2024-12〜2026-06 の3年の差の平均 -100.4pt で下回る。5年の推移は改善。同業が2社で3社に満たず、参考の比較",
+  "year": "2026-06",
+  "self": -131.8,
+  "avg": 35.5,
+  "diff": -167.3,
+  "trend": "改善",
+  "rows": [
+   {
+    "year": "2022-12",
+    "self": -726.4,
+    "avg": 10.6,
+    "mean": 10.6,
+    "diff": -737.0,
+    "peers": [
+     {
+      "name": "NVIDIA（NVDA）",
+      "year": "2023-01",
+      "margin": 15.7
+     },
+     {
+      "name": "Advanced Micro Devices（AMD）",
+      "year": "2022-12",
+      "margin": 5.4
+     }
+    ]
+   },
+   {
+    "year": "2023-12",
+    "self": -170.1,
+    "avg": 27.9,
+    "mean": 27.9,
+    "diff": -198.0,
+    "peers": [
+     {
+      "name": "NVIDIA（NVDA）",
+      "year": "2024-01",
+      "margin": 54.1
+     },
+     {
+      "name": "Advanced Micro Devices（AMD）",
+      "year": "2023-12",
+      "margin": 1.8
+     }
+    ]
+   },
+   {
+    "year": "2024-12",
+    "self": -34.9,
+    "avg": 34.9,
+    "mean": 34.9,
+    "diff": -69.8,
+    "peers": [
+     {
+      "name": "NVIDIA（NVDA）",
+      "year": "2025-01",
+      "margin": 62.4
+     },
+     {
+      "name": "Advanced Micro Devices（AMD）",
+      "year": "2024-12",
+      "margin": 7.4
+     }
+    ]
+   },
+   {
+    "year": "2025-12",
+    "self": -28.6,
+    "avg": 35.5,
+    "mean": 35.5,
+    "diff": -64.1,
+    "peers": [
+     {
+      "name": "NVIDIA（NVDA）",
+      "year": "2026-01",
+      "margin": 60.4
+     },
+     {
+      "name": "Advanced Micro Devices（AMD）",
+      "year": "2025-12",
+      "margin": 10.7
+     }
+    ]
+   },
+   {
+    "year": "2026-06",
+    "self": -131.8,
+    "avg": 35.5,
+    "mean": 35.5,
+    "diff": -167.3,
+    "peers": [
+     {
+      "name": "NVIDIA（NVDA）",
+      "year": "2026-01",
+      "margin": 60.4
+     },
+     {
+      "name": "Advanced Micro Devices（AMD）",
+      "year": "2025-12",
+      "margin": 10.7
+     }
+    ]
+   }
+  ],
+  "sources": [
+   "competitors.md の自社欄"
+  ]
+ },
+ "step3": {
+  "source": "特定できず",
+  "drivers": [],
+  "basis": "売上高純利益率・総資産回転率とも同業平均を上回らない（売上高純利益率 -124.4% と同業平均 34.1%（-158.4pt、±1pt 以内は同等）、総資産回転率 0.03回 と同業平均 0.92回（比 0.04、±5% 以内は同等）、財務レバレッジ 1.27倍 と同業平均 1.28倍（比 0.99、±5% 以内は同等））",
+  "sentence": "ROE の源泉は特定できず（純利益率・回転率とも同業平均を上回らない）",
+  "latest_leverage": 1.2701613017745532,
+  "years": [
+   "2026-06"
+  ],
+  "self": {
+   "margin": -124.36789856391692,
+   "turnover": 0.03212247262439766,
+   "leverage": 1.2701613017745532,
+   "roe": -5.074300010857879
+  },
+  "peers": [
+   {
+    "name": "NVIDIA",
+    "years": [
+     "2026-01"
+    ],
+    "primary": true,
+    "margin": 55.60253406070261,
+    "turnover": 1.356377432444316,
+    "leverage": 1.345634350435297,
+    "roe": 101.4850815653791
+   },
+   {
+    "name": "AMD",
+    "years": [
+     "2025-12"
+    ],
+    "primary": true,
+    "margin": 12.514795461762754,
+    "turnover": 0.4740133559581805,
+    "leverage": 1.2122056615823567,
+    "roe": 7.1910224190698955
+   }
+  ],
+  "peer_avg": {
+   "margin": 34.058664761232684,
+   "turnover": 0.9151953942012483,
+   "leverage": 1.2789200060088268,
+   "roe": 54.3380519922245
+  }
+ },
+ "roe_rows": [
+  {
+   "year": "2026-06",
+   "roe": -5.1,
+   "basis": "計算",
+   "reported": null,
+   "reported_primary": false,
+   "computed": -5.1,
+   "net_income": -464.534,
+   "avg_equity": 9154.642,
+   "averaged": false,
+   "source": "competitors「収益性の分解」"
+  }
+ ],
+ "dupont": [
+  {
+   "year": "2026-06",
+   "sales": 373.516,
+   "net_income": -464.534,
+   "avg_assets": 11627.872,
+   "avg_equity": 9154.642,
+   "margin": -124.3679,
+   "turnover": 0.0321,
+   "leverage": 1.2702,
+   "roe": -5.0743,
+   "averaged": false,
+   "primary": false
+  }
+ ],
+ "change_years": [],
+ "one_off": [],
+ "one_off_step1": null,
+ "one_off_assessment": "特別損益は各年とも当期純利益の10%未満で、ROE の水準を左右していない",
+ "peer_gap": "同業平均と最も差があるのは売上高純利益率（-124.4% と同業平均 34.1%、-158.4pt）で、営業損失が続いていること（2026-06 の営業利益率 -131.8%）が主な背景。総資産回転率 0.03回の低さは IPO（総額 $6.4 billion、財務CF 上の純手取り 6,232,511千ドル）と Series H $1 billion などの資金調達で資産が膨らんだことが背景で、自己資本は IPO 前の各期末で赤字（償還可能転換優先株が株主資本の外）だった。",
+ "borderline": [
+  "手順3: 財務レバレッジ 1.27倍 と同業平均 1.28倍（比 0.99、±5% 以内は同等）"
+ ],
+ "consistency": [
+  {
+   "check": "モートが広い ⇔ 高い利益率",
+   "step1": "モート なし",
+   "step2": "営業利益率 下回る",
+   "result": "対象外（モート なし）"
+  },
+  {
+   "check": "勝てる理由が明確 ⇔ 収益性",
+   "step1": "勝てる理由 なし",
+   "step2": "ROE -5.1%（同業平均 54.3%）、営業利益率 下回る",
+   "result": "対象外（勝てる理由 なし）"
+  }
+ ],
+ "consistency_comment": "該当する STEP 1 の結論なし",
+ "handoff": {
+  "report_points": "収益性は判定保留（手順1を判定できない（ROE が取れた年が 1 年で 3 年に満たない））。ROE が取れた年が1年で、3年に満たず判定できない。営業利益率は-131.8%（2026-06）で同業中央値35.5%との差 -167.3pt。2024-12〜2026-06 の3年の差の平均 -100.4pt で下回る。5年の推移は改善。同業が2社で3社に満たず、参考の比較。ROE の源泉は特定できず（売上高純利益率・総資産回転率とも同業平均を上回らない（売上高純利益率 -124.4% と同業平均 34.1%（-158.4pt、±1pt 以内は同等）、総資産回転率 0.03回 と同業平均 0.92回（比 0.04、±5% 以内は同等）、財務レバレッジ 1.27倍 と同業平均 1.28倍（比 0.99、±5% 以内は同等）））。",
+  "targets": "ROE の目標は開示なし。会社が重視する指標はコア（非 GAAP）の売上・粗利率・営業利益率で、FY2026 のガイダンスはコア営業利益率 (19)〜(17)%（2026-06-23 時点の (28)〜(32)% から引き上げ）と赤字の縮小を見込み、配当は予定せず利益を事業に再投資する方針（424B4 Dividend Policy）。",
+  "step2_checks": "財務レバレッジの低さが手元資金・自己資本の厚さによるものか（安全性）、利益率の水準が売上の成長を伴っているか（成長性）、純利益が営業CF で裏付けられているか（キャッシュフロー）、同業より低い営業利益率が成長投資の費用によるものか（成長性・キャッシュフロー）",
+  "triggers": "営業利益率と同業平均との差が −1pt 以内に縮まれば手順2は同等。境界に近い比較: 手順3: 財務レバレッジ 1.27倍 と同業平均 1.28倍（比 0.99、±5% 以内は同等）。"
+ },
+ "changes": [
+  "初回の分析"
+ ],
+ "gaps": [
+  "なし"
+ ],
+ "inputs": [
+  "companies/CBRS_cerebras/raw/filings/2026-10-14_2025-12_424b4.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_financials-historical.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_mid-term-plan.md",
+  "companies/CBRS_cerebras/raw/market/2026-10-14_competitors.md"
+ ],
+ "seen": [
+  "companies/CBRS_cerebras/raw/filings/2026-10-14_2025-12_424b4.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_financials-historical.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_mid-term-plan.md",
+  "companies/CBRS_cerebras/raw/market/2026-10-14_competitors.md"
+ ],
+ "input_digests": {
+  "self_pl": "377953e6b622d745f7911900f4f72ca422ddd8ee",
+  "self_return": "25e060e97d9fa8fd7a458689913a6b14f0146b22",
+  "summary": "18a522be5a7aeba447f8cea6d6dce88c12968977",
+  "special": "ca76c709ba31648bf6240534e0a9c8c80e349d81",
+  "policy": "63c1d702020a4a8337842e56dc99d7aeb01ba964",
+  "targets": "40b4ffbb76af678712f889a65caadf9b599e6b02",
+  "capital": "a82e1591a075470931f8d9911c942fcde422bf5c",
+  "peers": "a3c0819eb4231d9dc5a30cbc46c5853585e9a39a",
+  "peer_roe": "61d1d2df66379e82b58c3697779d630bbcacf6d5",
+  "peer_dupont": "e1c6dd818ad6c1cc67dac120f5d66da1e69add7f",
+  "yearly_series": "0ee07b69ead96902b3785d4b22f77bc1f5c77560"
+ },
+ "moat": {
+  "date": "2026-11-11",
+  "verdict": "なし"
+ },
+ "three_c": {
+  "date": "2026-10-14",
+  "verdict": "なし"
+ },
+ "outlook": "market/report/2026-11-09_outlook.md",
+ "previous": null,
+ "md": "companies/CBRS_cerebras/analysis/profitability/2026-11-11_profitability.md"
+}

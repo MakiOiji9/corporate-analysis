@@ -1,0 +1,275 @@
+{
+ "company": "CBRS_cerebras",
+ "name": "Cerebras Systems Inc.（CBRS）",
+ "date": "2026-11-11",
+ "valid_until": "2026-11-18",
+ "verdict": "割安",
+ "verdict_reason": "1 指標の平均点 +1.00（+0.5 以上で割安、−0.5 以下で割高）。PBRだけで判定（ほかの指標は材料不足・評価対象外。材料不足のため1指標で判定）で割安。ただし割安だが理由あり（STEP 2 でキャッシュフローが懸念、SWOT の結論が No。手順3）",
+ "conservative": [
+  "点数になった指標が PBR だけ（材料不足のため1指標で判定）"
+ ],
+ "price": {
+  "value": 93.66,
+  "date": "2026-11-10",
+  "currency": "ドル"
+ },
+ "ncr": {
+  "rating": "判定保留",
+  "sentence": "判定保留（投資有価証券・負債合計が無く計算できない。0 とはみなさない）",
+  "value": null,
+  "asset_net_cash": null
+ },
+ "per": {
+  "rating": "評価対象外",
+  "sentence": "評価対象外（直近期（2025-12）が営業赤字（営業利益 -145,862）で、純利益が本業の稼ぐ力を表さない。PER が機能しない）",
+  "used": "—",
+  "guide": {
+   "type": "下請け型（目安の条件を満たさない）",
+   "guide": null,
+   "basis": "主要な販売先1社が売上の 62.0%。ネットキャッシュ比率が 1倍未満（または不明）で、下請け型の目安の前提を満たさない",
+   "zone": null
+  },
+  "per_actual": 57.1098,
+  "per_forecast": null,
+  "discount": false,
+  "na": "直近期（2025-12）が営業赤字（営業利益 -145,862）で、純利益が本業の稼ぐ力を表さない",
+  "rule": {
+   "rating": "割安",
+   "basis": "同業比較だけで判定（片軸。もう一方は過去レンジが0期分しかない（3期以上で判定））",
+   "single_axis": true,
+   "axis1": {
+    "zone": null,
+    "position": null,
+    "low": null,
+    "high": null,
+    "basis": "過去レンジが0期分しかない（3期以上で判定）"
+   },
+   "axis2": {
+    "zone": "割安",
+    "raw_zone": "割安",
+    "median": 114.4431,
+    "diff": -0.501,
+    "count": 2,
+    "explained": false,
+    "basis": "同業 2 社の中央値 114.4倍に対して -50%（割安圏）"
+   }
+  },
+  "eps": {
+   "year": "2025-12",
+   "eps": 1.64,
+   "eps_used": 1.64,
+   "adjusted": false,
+   "share": 0.0,
+   "gain": null,
+   "loss": null
+  }
+ },
+ "pbr": {
+  "rating": "割安",
+  "sentence": "PBR 2.43倍: 手順2を計算できないため手順1で判定。同業比較だけで判定（片軸。もう一方は過去レンジが0期分しかない（3期以上で判定））",
+  "pbr": 2.4302,
+  "before_trap": "割安",
+  "rule": {
+   "rating": "割安",
+   "basis": "同業比較だけで判定（片軸。もう一方は過去レンジが0期分しかない（3期以上で判定））",
+   "single_axis": true,
+   "axis1": {
+    "zone": null,
+    "position": null,
+    "low": null,
+    "high": null,
+    "basis": "過去レンジが0期分しかない（3期以上で判定）"
+   },
+   "axis2": {
+    "zone": "割安",
+    "raw_zone": "割安",
+    "median": 15.0665,
+    "diff": -0.8387,
+    "count": 2,
+    "explained": false,
+    "basis": "同業 2 社の中央値 15.1倍に対して -84%（割安圏）"
+   }
+  },
+  "fair": {
+   "fair": null,
+   "roe": null,
+   "roe_basis": "株価データ 3章の予想ROE",
+   "average_per": null,
+   "average_basis": "過去5年の PER が3期分無い",
+   "diff": null,
+   "rating": null
+  },
+  "trap": {
+   "applies": false,
+   "roe": null,
+   "measures": null,
+   "raised": false
+  },
+  "measures": null
+ },
+ "peg": {
+  "rating": "評価対象外",
+  "sentence": "評価対象外（3-1 で PER が評価対象外）",
+  "na": "3-1 で PER が評価対象外",
+  "margin": false,
+  "candidates": [],
+  "cases": {
+   "standard": null,
+   "pessimistic": null,
+   "optimistic": null
+  },
+  "peg": {
+   "standard": null,
+   "pessimistic": null,
+   "optimistic": null
+  }
+ },
+ "ev": {
+  "rating": "評価対象外",
+  "sentence": "評価対象外（EBITDA -111,408 がプラスでない）",
+  "value": null,
+  "rule": null,
+  "year": "2025-12",
+  "debt": 0.0,
+  "cash": 701706.0,
+  "operating_income": -145862.0,
+  "depreciation": 34454.0,
+  "ebitda": -111408.0,
+  "ev": 21465194.9827,
+  "net_cash": 701706.0,
+  "market_cap": 22166900.9827,
+  "history": [],
+  "divergence": null,
+  "sensitivity": null
+ },
+ "step3": {
+  "ratings": {
+   "PER": "評価対象外",
+   "PBR": "割安",
+   "PEG": "評価対象外",
+   "EV/EBITDA": "評価対象外",
+   "ネットキャッシュ比率": "判定保留"
+  },
+  "scores": {
+   "PBR": 1
+  },
+  "average": 1.0,
+  "raw_verdict": "割安",
+  "final_check": {
+   "concerns": [
+    "キャッシュフロー"
+   ],
+   "swot_no": true,
+   "not_done": [],
+   "raised": false,
+   "noted": true,
+   "applies": true
+  }
+ },
+ "sheet": "PER 評価対象外／PBR 割安／PEG 評価対象外（悲観ケース：—）／EV/EBITDA 評価対象外／STEP 3 割安（平均点：+1.00）",
+ "flip_prices": [],
+ "flip_values": {},
+ "borderline": [],
+ "handoff": {
+  "report_points": "STEP 3 は割安（1 指標の平均点 +1.00（+0.5 以上で割安、−0.5 以下で割高）。PBRだけで判定（ほかの指標は材料不足・評価対象外。材料不足のため1指標で判定）で割安。ただし割安だが理由あり（STEP 2 でキャッシュフローが懸念、SWOT の結論が No。手順3））。指標ごとの判定は PER 評価対象外・PBR 割安・PEG 評価対象外・EV/EBITDA 評価対象外・ネットキャッシュ比率 判定保留（根拠は1〜5章）。",
+  "final_checks": "PBR の水準が ROE（収益性分析）と見合っているか、PEG に使った成長率が成長性分析の会社計画の信頼性と合っているか、割安の理由が STEP 2 の懸念・SWOT の脅威で説明できるか",
+  "special_bg": "該当なし（EPS を調整していない）",
+  "measures": "該当なし（判定に影響しない）",
+  "divergence_bg": "該当なし（食い違いなし）",
+  "cheap_reason": "PBR 2.43倍が同業より低いのは、営業赤字（2025-12 の営業利益 -145,862）が続きキャッシュフローが懸念（直近4年のうち3年が本業で稼げないパターン）であることと、SWOT の最大の脅威（T3）として RPO の大部分を占める OpenAI との MRA が納入の遅れ・サービス水準の未達で解除されうることによる。PBR は過去レンジが無く同業比較だけの片軸で、ほかの4指標は評価対象外・判定保留のため、割安は PBR 1指標だけの判定である。"
+ },
+ "changes": [
+  "初回の分析"
+ ],
+ "gaps": [
+  "警告: 株式数: 期末後のコーポレートアクション: 下記の注記を参照。時価総額・EV は 236,674,151株で計算した（上限は自己株式を含む 237,564,041株。PER・PBR は1株指標なので影響しない。4章に上限での EV/EBITDA の判定を記入）"
+ ],
+ "peers": [
+  {
+   "name": "NVIDIA",
+   "per_actual": 34.4673,
+   "per_forecast": null,
+   "pbr": 17.7779,
+   "ev_ebitda_calc": null,
+   "cagr": 100.0451,
+   "roe": 76.3
+  },
+  {
+   "name": "AMD",
+   "per_actual": 194.4189,
+   "per_forecast": null,
+   "pbr": 12.3552,
+   "ev_ebitda_calc": null,
+   "cagr": 13.6436,
+   "roe": 6.9
+  }
+ ],
+ "inputs": [
+  "companies/CBRS_cerebras/raw/filings/2026-10-14_2025-12_424b4.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_mid-term-plan.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_valuation-data.md",
+  "companies/CBRS_cerebras/raw/ir/2026-11-11_valuation-data.md",
+  "companies/CBRS_cerebras/raw/market/2026-10-14_competitors.md",
+  "companies/CBRS_cerebras/raw/market/2026-11-11_competitors.md"
+ ],
+ "seen": [
+  "companies/CBRS_cerebras/raw/filings/2026-10-14_2025-12_424b4.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_financials-historical.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_mid-term-plan.md",
+  "companies/CBRS_cerebras/raw/ir/2026-10-14_valuation-data.md",
+  "companies/CBRS_cerebras/raw/ir/2026-11-11_financials-historical.md",
+  "companies/CBRS_cerebras/raw/ir/2026-11-11_valuation-data.md",
+  "companies/CBRS_cerebras/raw/market/2026-10-14_competitors.md",
+  "companies/CBRS_cerebras/raw/market/2026-11-11_competitors.md"
+ ],
+ "input_digests": {
+  "price": "f6cf4af67059961fda5cfe5208a9a7a33e119bec",
+  "per_share": "4b164da07306320e3ac197db4627c67aa6f37cd0",
+  "current": "54703db2f09ce943ca6382ac8f49e27972f728a0",
+  "history": "79cf6ed032199aefca28db546388169aad741ed3",
+  "analyst": "9a69366aef10d961901eec1bfc98c9e2c80ff8b8",
+  "peer_valuation": "32381ab024b5238bc01e84f4a2b47063f20036fc",
+  "peer_cagr": "eb89da39e45e92ed7c7f9aec9f5c6dfd65073273",
+  "peer_roe": "61d1d2df66379e82b58c3697779d630bbcacf6d5",
+  "peer_dupont": "e1c6dd818ad6c1cc67dac120f5d66da1e69add7f",
+  "peer_safety": "4c4fe6969caef5d67419cb840c4776b6235b13e8",
+  "peer_ebitda": "0f751e8f5fb6245149d95b0fd48cd9fcb1759d4d",
+  "special": "ca76c709ba31648bf6240534e0a9c8c80e349d81",
+  "policy": "63c1d702020a4a8337842e56dc99d7aeb01ba964",
+  "capital": "a82e1591a075470931f8d9911c942fcde422bf5c",
+  "numbers": "db0bc02aad43f4778d3df0166feedddd067588b7"
+ },
+ "growth": {
+  "date": "2026-11-11"
+ },
+ "upstream": {
+  "profitability": {
+   "date": "2026-11-11",
+   "verdict": "判定保留",
+   "reason": "手順1を判定できない（ROE が取れた年が 1 年で 3 年に満たない）"
+  },
+  "growth": {
+   "date": "2026-11-11",
+   "verdict": "判定保留",
+   "reason": "手順1を判定できない（売上高と EPS が揃った年が 4 年で 5 年に満たない）"
+  },
+  "safety": {
+   "date": "2026-11-11",
+   "verdict": "良好",
+   "reason": "3指標とも目安または同業平均をクリアし、悪化傾向なし"
+  },
+  "cash_flow": {
+   "date": "2026-11-11",
+   "verdict": "懸念",
+   "reason": "手順4（直近4年の評価が 懸念 3年、普通 1年（最も多い評価を採る。同数なら保守的な方））が懸念"
+  },
+  "swot": {
+   "date": "2026-11-11",
+   "verdict": "No",
+   "reason": "最大の強みである RPO の大部分は OpenAI との MRA に由来し、最大の脅威である解除条項はその RPO そのものを減らすため、強みが脅威の影響を直接受ける。会社はデータセンター容量 600MW 超の契約と製造能力の2026年に10倍超の拡大を進めているが、納入の遅れ・サービス水準を満たせるかを示す運営の実績の数値は無い。迷った: 容量の確保と 2026Q2 のクラウド・その他サービス +281% を実行の兆しとみれば条件付きだが、強みと脅威が同じ契約に依存するため不利な方の No を採った。"
+  }
+ },
+ "outlook": "market/report/2026-11-09_outlook.md",
+ "previous": null,
+ "md": "companies/CBRS_cerebras/analysis/valuation/2026-11-11_valuation.md"
+}
