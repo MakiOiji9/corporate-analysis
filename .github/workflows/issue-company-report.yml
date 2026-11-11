@@ -1,0 +1,195 @@
+# Initial analysis of a company requested by an Issue (.github/ISSUE_TEMPLATE/company-analysis.yml):
+# collect-company-info (mode=full, only for a company not in companies/ yet) -> /company-report -> commit to main ->
+# comment on the Issue and close it. On failure the Issue gets a comment and stays open (Re-run failed jobs retries).
+# Only issues opened by the owner or a collaborator run; the body is never handed to Claude as is
+# (tools/report/issue_request.py extracts and validates the four fields).
+# Credentials: see "GitHub Actions での定期実行" in tools/README.md.
+name: issue-company-report
+
+on:
+  issues:
+    types: [opened]
+
+# One run per Issue. Not the scheduled runs' "reports" group: a queued Issue would cancel a pending scheduled run.
+concurrency:
+  group: issue-report-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  TZ: Asia/Tokyo # every script dates its files with the local date
+  CLAUDE_CODE_VERSION: "2.1.123"
+
+jobs:
+  request:
+    if: >-
+      contains(github.event.issue.labels.*.name, 'company-analysis') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    outputs:
+      ok: ${{ steps.parse.outputs.ok }}
+      ticker: ${{ steps.parse.outputs.ticker }}
+      name: ${{ steps.parse.outputs.name }}
+      url: ${{ steps.parse.outputs.url }}
+      market: ${{ steps.parse.outputs.market }}
+      existing: ${{ steps.parse.outputs.existing }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+
+      - id: parse
+        env:
+          BODY: ${{ github.event.issue.body }}
+        run: |
+          printf '%s' "$BODY" > "$RUNNER_TEMP/issue-body.md"
+          status=0
+          python3 -I tools/report/issue_request.py parse --body-file "$RUNNER_TEMP/issue-body.md" \
+            > "$RUNNER_TEMP/request.json" || status=$?
+          cat "$RUNNER_TEMP/request.json"
+          python3 -I - "$RUNNER_TEMP/request.json" >> "$GITHUB_OUTPUT" <<'PY'
+          import json, sys
+          data = json.load(open(sys.argv[1], encoding="utf-8"))
+          print(f"ok={'true' if data.get('ok') else 'false'}")
+          for key in ("ticker", "name", "url", "market", "existing"):
+              print(f"{key}={data.get(key) or ''}")
+          PY
+          echo "exit status: $status"
+
+      - name: Reject an invalid request
+        if: ${{ steps.parse.outputs.ok != 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          python3 -I - "$RUNNER_TEMP/request.json" > "$RUNNER_TEMP/comment.md" <<'PY'
+          import json, sys
+          data = json.load(open(sys.argv[1], encoding="utf-8"))
+          print("## 依頼の内容を読み取れなかった\n")
+          print("\n".join(f"- {e}" for e in data.get("errors", [])))
+          print("\nテンプレート「企業の初期分析」で新しい Issue を起票し直してください（この Issue は閉じます）。")
+          PY
+          gh issue comment "$ISSUE" --body-file "$RUNNER_TEMP/comment.md"
+          gh issue close "$ISSUE" --reason "not planned"
+
+      - name: Acknowledge
+        if: ${{ steps.parse.outputs.ok == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          ISSUE: ${{ github.event.issue.number }}
+          TICKER: ${{ steps.parse.outputs.ticker }}
+          EXISTING: ${{ steps.parse.outputs.existing }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -n "$EXISTING" ]; then plan="既存の企業（companies/${EXISTING}）なので収集を飛ばしてレポートを作る"
+          else plan="初回の情報収集（collect-company-info mode=full）からレポートまで作る"; fi
+          printf '%s\n' "分析を開始した: ${TICKER}（${plan}）。" "" "- 実行ログ: ${RUN_URL}" > "$RUNNER_TEMP/comment.md"
+          gh issue comment "$ISSUE" --body-file "$RUNNER_TEMP/comment.md"
+
+  analyze:
+    needs: request
+    if: ${{ needs.request.outputs.ok == 'true' }}
+    runs-on: ubuntu-latest
+    environment: reports
+    timeout-minutes: 300
+    permissions:
+      contents: write
+      issues: write
+    env:
+      TICKER: ${{ needs.request.outputs.ticker }}
+      NAME: ${{ needs.request.outputs.name }}
+      URL: ${{ needs.request.outputs.url }}
+      MARKET: ${{ needs.request.outputs.market }}
+      EXISTING: ${{ needs.request.outputs.existing }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+
+      - id: setup
+        uses: ./.github/actions/setup-reports
+        with:
+          edinet-api-key: ${{ secrets.EDINET_API_KEY }}
+          fred-api-key: ${{ secrets.FRED_API_KEY }}
+          sec-user-agent: ${{ secrets.SEC_USER_AGENT }}
+          claude-code-version: ${{ env.CLAUDE_CODE_VERSION }}
+
+      # The values were validated by issue_request.py (no spaces, quotes or $), so they are safe as arguments.
+      - name: Run /collect-company-info (first time only)
+        if: ${{ needs.request.outputs.existing == '' }}
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          bash .github/scripts/run-claude.sh "/collect-company-info $TICKER $NAME $URL $MARKET mode=full" \
+            "情報収集 ${TICKER}_${NAME}" "$RUNNER_TEMP/collect.json"
+
+      - name: Run /company-report
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          bash .github/scripts/run-claude.sh "/company-report $TICKER" "企業分析レポート $TICKER" "$RUNNER_TEMP/report.json"
+
+      - name: Check the report was built
+        id: built
+        run: |
+          status="$(.venv/bin/python -I tools/report/company_report.py check --company "$TICKER" || true)"
+          next="$(printf '%s' "$status" | python3 -I -c 'import json,sys; print(json.load(sys.stdin).get("next", ""))')"
+          echo "next: $next"
+          if [ "$next" != "report_existing" ]; then
+            echo "::error::$TICKER の今日のレポートが build されていない（check の next: $next）"
+            exit 1
+          fi
+
+      # Partial output (collection, analyses already built) is committed too, so a re-run continues from it.
+      - name: Commit
+        id: commit
+        if: ${{ !cancelled() }}
+        env:
+          PUSH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          dir="$(basename "$(ls -d companies/"${TICKER}"_* 2>/dev/null | head -1)")"
+          bash .github/scripts/commit-outputs.sh "chore: ${dir:-$TICKER} の初期分析と企業分析レポート（Issue #${ISSUE}・自動実行 $(date +%F)）"
+
+      - name: Save originals
+        if: ${{ always() && steps.setup.outputs.cache-key != '' }}
+        uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: |
+            companies/*/sources
+            market/**/sources
+            .cache
+            !companies/*/sources/manifest.csv
+            !market/**/sources/manifest.csv
+          key: ${{ steps.setup.outputs.cache-key }}
+
+      # Closes the Issue only when the report is built and on main; otherwise comments and leaves it open.
+      - name: Report to the Issue
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          ISSUE: ${{ github.event.issue.number }}
+          OUTCOME: ${{ steps.built.outcome == 'success' && steps.commit.outcome == 'success' && 'success' || 'failure' }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          status=0
+          python3 -I .github/scripts/issue_comment.py --outcome "$OUTCOME" --ticker "$TICKER" \
+            --repo "$GH_REPO" --run-url "$RUN_URL" \
+            --result "$RUNNER_TEMP/collect.json" "$RUNNER_TEMP/report.json" > "$RUNNER_TEMP/comment.md" || status=$?
+          gh issue comment "$ISSUE" --body-file "$RUNNER_TEMP/comment.md"
+          if [ "$status" -eq 0 ]; then
+            gh issue close "$ISSUE" --reason completed
+          else
+            echo "::warning::レポートが完成していないため Issue #$ISSUE は開いたまま"
+          fi

@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Run one Claude Code command headless and put its completion report into the job summary.
-# Usage: run-claude.sh "<prompt, e.g. /market-report>" "<label for the summary>"
+# Usage: run-claude.sh "<prompt, e.g. /market-report>" "<label for the summary>" [<result json path>]
 #
+# The result JSON ({"result": <completion report>, ...}) is kept at the third argument (default
+# $RUNNER_TEMP/claude-result.json) so a later step can quote the report, e.g. in an Issue comment.
 # Needs CLAUDE_CODE_OAUTH_TOKEN (from `claude setup-token`) in the environment of this step only.
 # The conversation itself is not kept: only the final report goes to the summary, because artifacts are not
 # masked the way logs are.
@@ -9,7 +11,7 @@ set -euo pipefail
 
 prompt="$1"
 label="$2"
-out="${RUNNER_TEMP:-/tmp}/claude-result.json"
+out="${3:-${RUNNER_TEMP:-/tmp}/claude-result.json}"
 err="${RUNNER_TEMP:-/tmp}/claude-stderr.txt"
 
 if [ -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then

@@ -237,6 +237,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 |---|---|---|
 | `.github/workflows/market-report.yml` | 毎週月曜 0:10 | `/market-report`（その週の月曜の週。材料が古ければスキルが collect-market-info を先に実行） |
 | `.github/workflows/company-report.yml` | 月〜金 0:30（A グループ）・6:00（B グループ） | お気に入り（`companies/favorites.json`）の企業ごとに `/company-report {企業}` を1社ずつ実行 |
+| `.github/workflows/issue-company-report.yml` | Issue「企業の初期分析」の起票時 | 指定された企業を `/collect-company-info … mode=full`（`companies/` に無い企業だけ）→ `/company-report` で分析してコミットし、Issue に結果をコメントして閉じる |
 
 - どちらも Claude Code（バージョンはワークフローの `CLAUDE_CODE_VERSION`）を npm でインストールし、`claude -p` でヘッドレス実行する。権限は `.github/claude/ci-settings.json`（`--permission-mode dontAsk`。許可リストに無いツールは確認なしで拒否）と、`.claude/settings.json` の書き込みガード
 - 完了したら `.github/scripts/commit-outputs.sh` が `companies/`・`market/` の変更だけを main にコミットして push する。それ以外のパス（コード・設定・台帳）が変わっていたらコミットせず失敗する。途中で止まった分析もコミットされ、次の実行は鮮度が新しい分析をスキップして続きから進む
@@ -246,12 +247,21 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 - git 管理外の原本（`sources/`・`.cache/`）は Actions のキャッシュで実行間に引き継ぐ（7日使われなければ消えるので、その後は再取得になる）
 - 結果（完了報告・未完了の企業・コミット）は各実行の Summary に出る。会話ログは保存しない
 
+### Issue からの初期分析
+
+1. Issues → New issue → テンプレート「企業の初期分析」で、銘柄コード・企業名（英語。ディレクトリ名になる）・ホームページ URL・市場を書いて起票する
+2. 起票者がリポジトリのオーナー・コラボレーターで、ラベル `company-analysis` が付いているときだけ動く（公開リポジトリで第三者に実行させないため）
+3. 本文は `tools/report/issue_request.py` が4項目だけを取り出して形式を検証する（Claude には検証済みの値だけを渡す）。読み取れなければエラーをコメントして閉じる（not planned）。新しい Issue で起票し直す
+4. 成功すると3期間の判定とレポートへのリンクをコメントして閉じる。失敗したときはコメントして**開いたまま**にする。途中までの収集・分析はコミット済みなので、その実行の **Re-run failed jobs** で続きから進み、成功したら閉じる
+5. 1社あたり数十分〜数時間（上限5時間）。Issue ごとに別に動くので、定期実行と同時に走ることがある（main への push が競合したら `auto/rescue-…` ブランチに退避）
+6. 定期実行に入れるときは、レポートができてから `/favorites` で登録する
+
 ### 初回セットアップ（1回）
 
 1. ローカルで `claude setup-token` を実行し、表示された OAuth トークン（1年有効。Claude の利用にだけ使える）を控える。Pro / Max の利用枠を使うので、平日最大10社を回すなら Max を推奨（枠を使い切るとその企業は未完了になり、翌日続きから進む）
 2. GitHub のリポジトリの Settings → Environments で `reports` を作り、Deployment branches を `main` だけにする
 3. `reports` の Environment secrets に登録する: `CLAUDE_CODE_OAUTH_TOKEN`（手順 1）、`EDINET_API_KEY`・`FRED_API_KEY`・`SEC_USER_AGENT`（`.env` と同じ値）
-4. お気に入りを `favorites` スキルで登録してコミットする
+4. お気に入りを `favorites` スキルで登録してコミットする。Issue からの初期分析を使うなら、Issues → Labels でラベル `company-analysis` を作る（無いとテンプレートのラベルが付かず、ワークフローが動かない）
 5. Actions タブから `market-report` → `company-report`（グループ A）を Run workflow で手動実行し、Summary で完了報告・拒否されたツール・コミットを確認する
 
 ### 認証情報の扱い
