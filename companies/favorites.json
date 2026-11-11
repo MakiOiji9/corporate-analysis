@@ -5,14 +5,15 @@
    {
     "company": "6506_yaskawa",
     "added": "2026-11-11"
-   },
+   }
+  ],
+  "B": [
    {
     "company": "3798_uls-group",
     "added": "2026-11-11"
    }
-  ],
-  "B": []
+  ]
  },
  "updated": "2026-11-11",
- "digest": "sha256:85958bece9fd03bd3069c51b2861f40d95dbd1f5be8af0bb7d89eb465443765e"
+ "digest": "sha256:4b5a727a7f34272a9d51a22f10248beab9a5194b8ff83eaa2df8d71213cfc7ba"
 }
