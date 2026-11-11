@@ -1,0 +1,246 @@
+{
+ "session": "market/sessions/2026-11-11_weekly",
+ "collected": "2026-11-11",
+ "markets": [
+  "japan",
+  "us"
+ ],
+ "mode": "update",
+ "tasks": [
+  {
+   "type": "summarize-doc",
+   "docs": [
+    {
+     "market": "japan",
+     "title": "日本銀行 金融政策決定会合 公表文（2026-10-30）",
+     "doc_key": "boj-statement-2026-10-30",
+     "output": "market/policy/japan/raw/2026-11-11_boj-statement-2026-10-30.md",
+     "inputs": [
+      "market/policy/japan/sources/2026-11-11/k261030a.pdf.excerpt.txt",
+      "market/policy/japan/raw/2026-10-11_boj-statement-2026-09-18.md"
+     ],
+     "template": ".ai/templates/collect-market-info/raw/monetary-doc.md"
+    },
+    {
+     "market": "japan",
+     "title": "日本銀行 経済・物価情勢の展望（基本的見解）（2026-10-01）",
+     "doc_key": "boj-outlook-2026-10-30",
+     "output": "market/policy/japan/raw/2026-11-11_boj-outlook-2026-10-30.md",
+     "inputs": [
+      "market/policy/japan/sources/2026-11-11/gor2610a.pdf.excerpt.txt",
+      "market/policy/japan/raw/2026-10-11_boj-outlook-2026-07-01.md"
+     ],
+     "template": ".ai/templates/collect-market-info/raw/monetary-doc.md"
+    },
+    {
+     "market": "japan",
+     "title": "金融政策決定会合における主な意見（10月29、30日開催分）",
+     "doc_key": "boj-opinions-2026-11-10",
+     "output": "market/policy/japan/raw/2026-11-11_boj-opinions-2026-11-10.md",
+     "inputs": [
+      "market/policy/japan/sources/2026-11-11/opi261030.pdf.excerpt.txt",
+      "market/policy/japan/raw/2026-10-11_boj-opinions-2026-10-01.md"
+     ],
+     "template": ".ai/templates/collect-market-info/raw/monetary-doc.md"
+    }
+   ],
+   "allowed_files": [
+    "market/policy/japan/raw/2026-11-11_boj-statement-2026-10-30.md",
+    "market/policy/japan/raw/2026-11-11_boj-outlook-2026-10-30.md",
+    "market/policy/japan/raw/2026-11-11_boj-opinions-2026-11-10.md"
+   ],
+   "id": "T01"
+  },
+  {
+   "type": "summarize-doc",
+   "docs": [
+    {
+     "market": "japan",
+     "title": "金融政策決定会合議事要旨（9月17、18日開催分）",
+     "doc_key": "boj-minutes-2026-11-05",
+     "output": "market/policy/japan/raw/2026-11-11_boj-minutes-2026-11-05.md",
+     "inputs": [
+      "market/policy/japan/sources/2026-11-11/g260918.pdf.excerpt.txt",
+      "market/policy/japan/raw/2026-10-11_boj-minutes-2026-09-28.md"
+     ],
+     "template": ".ai/templates/collect-market-info/raw/monetary-doc.md"
+    }
+   ],
+   "allowed_files": [
+    "market/policy/japan/raw/2026-11-11_boj-minutes-2026-11-05.md"
+   ],
+   "id": "T02"
+  },
+  {
+   "type": "search-calendar",
+   "market": "japan",
+   "title": "政治・イベント日程（日本）",
+   "output": "market/sessions/2026-11-11_weekly/raw/calendar-japan.md",
+   "inputs": [],
+   "max_searches": 12,
+   "template": ".ai/templates/collect-market-info/raw/calendar.md",
+   "allowed_files": [
+    "market/sessions/2026-11-11_weekly/raw/calendar-japan.md"
+   ],
+   "id": "T03"
+  },
+  {
+   "type": "search-calendar",
+   "market": "us",
+   "title": "政治・イベント日程（米国）",
+   "output": "market/sessions/2026-11-11_weekly/raw/calendar-us.md",
+   "inputs": [],
+   "max_searches": 12,
+   "template": ".ai/templates/collect-market-info/raw/calendar.md",
+   "allowed_files": [
+    "market/sessions/2026-11-11_weekly/raw/calendar-us.md"
+   ],
+   "id": "T04"
+  }
+ ],
+ "new_docs": [
+  {
+   "doc_key": "boj-statement-2026-10-30",
+   "watch_key": "boj-statement",
+   "layer": "C",
+   "title": "日本銀行 金融政策決定会合 公表文（2026-10-30）",
+   "published": "2026-10-30",
+   "url": "https://www.boj.or.jp/mopo/mpmdeci/mpr_2026/k261030a.pdf",
+   "page_url": "",
+   "raw_path": "market/policy/japan/raw/2026-11-11_boj-statement-2026-10-30.md",
+   "collected": "2026-11-11",
+   "status": "pending",
+   "market": "japan"
+  },
+  {
+   "doc_key": "boj-outlook-2026-10-30",
+   "watch_key": "boj-outlook",
+   "layer": "C",
+   "title": "日本銀行 経済・物価情勢の展望（基本的見解）（2026-10-01）",
+   "published": "2026-10-30",
+   "url": "https://www.boj.or.jp/mopo/outlook/gor2610a.pdf",
+   "page_url": "",
+   "raw_path": "market/policy/japan/raw/2026-11-11_boj-outlook-2026-10-30.md",
+   "collected": "2026-11-11",
+   "status": "pending",
+   "market": "japan"
+  },
+  {
+   "doc_key": "boj-opinions-2026-11-10",
+   "watch_key": "boj-opinions",
+   "layer": "C",
+   "title": "金融政策決定会合における主な意見（10月29、30日開催分）",
+   "published": "2026-11-10",
+   "url": "http://www.boj.or.jp/mopo/mpmsche_minu/opinion_2026/opi261030.pdf",
+   "page_url": "",
+   "raw_path": "market/policy/japan/raw/2026-11-11_boj-opinions-2026-11-10.md",
+   "collected": "2026-11-11",
+   "status": "pending",
+   "market": "japan"
+  },
+  {
+   "doc_key": "boj-minutes-2026-11-05",
+   "watch_key": "boj-minutes",
+   "layer": "C",
+   "title": "金融政策決定会合議事要旨（9月17、18日開催分）",
+   "published": "2026-11-05",
+   "url": "http://www.boj.or.jp/mopo/mpmsche_minu/minu_2026/g260918.pdf",
+   "page_url": "",
+   "raw_path": "market/policy/japan/raw/2026-11-11_boj-minutes-2026-11-05.md",
+   "collected": "2026-11-11",
+   "status": "pending",
+   "market": "japan"
+  },
+  {
+   "doc_key": "presidential-actions-2026-11-10",
+   "watch_key": "presidential-actions",
+   "layer": "A",
+   "title": "Nominations and Withdrawals Sent to the Senate",
+   "published": "2026-11-10",
+   "url": "https://www.whitehouse.gov/presidential-actions/2026/11/nominations-and-withdrawals-sent-to-the-senate-b6a4/",
+   "page_url": "",
+   "raw_path": "market/policy/us/raw/2026-11-11_presidential-actions.md",
+   "collected": "2026-11-11",
+   "status": "listed",
+   "market": "us"
+  },
+  {
+   "doc_key": "presidential-actions-2026-11-10-2",
+   "watch_key": "presidential-actions",
+   "layer": "A",
+   "title": "VETERANS DAY, 2026",
+   "published": "2026-11-10",
+   "url": "https://www.whitehouse.gov/presidential-actions/2026/11/veterans-day-2026/",
+   "page_url": "",
+   "raw_path": "market/policy/us/raw/2026-11-11_presidential-actions.md",
+   "collected": "2026-11-11",
+   "status": "listed",
+   "market": "us"
+  },
+  {
+   "doc_key": "presidential-actions-2026-11-10-3",
+   "watch_key": "presidential-actions",
+   "layer": "A",
+   "title": "Presidential Determination Concerning Wildfire Suppression Activities in the United States",
+   "published": "2026-11-10",
+   "url": "https://www.whitehouse.gov/presidential-actions/2026/11/presidential-determination-concerning-wildfire-suppression-activities-in-the-united-states/",
+   "page_url": "",
+   "raw_path": "market/policy/us/raw/2026-11-11_presidential-actions.md",
+   "collected": "2026-11-11",
+   "status": "listed",
+   "market": "us"
+  },
+  {
+   "doc_key": "presidential-actions-2026-11-09",
+   "watch_key": "presidential-actions",
+   "layer": "A",
+   "title": "Nominations and Withdrawals Sent to the Senate",
+   "published": "2026-11-09",
+   "url": "https://www.whitehouse.gov/presidential-actions/2026/11/nominations-and-withdrawals-sent-to-the-senate-ba2b/",
+   "page_url": "",
+   "raw_path": "market/policy/us/raw/2026-11-11_presidential-actions.md",
+   "collected": "2026-11-11",
+   "status": "listed",
+   "market": "us"
+  },
+  {
+   "doc_key": "presidential-actions-2026-11-05",
+   "watch_key": "presidential-actions",
+   "layer": "A",
+   "title": "ESTABLISHMENT OF THE OVAL OFFICE NATIONAL MONUMENT",
+   "published": "2026-11-05",
+   "url": "https://www.whitehouse.gov/presidential-actions/2026/11/establishment-of-the-oval-office-national-monument/",
+   "page_url": "",
+   "raw_path": "market/policy/us/raw/2026-11-11_presidential-actions.md",
+   "collected": "2026-11-11",
+   "status": "listed",
+   "market": "us"
+  },
+  {
+   "doc_key": "presidential-actions-2026-11-03",
+   "watch_key": "presidential-actions",
+   "layer": "A",
+   "title": "ANTI-COMMUNISM WEEK, 2026",
+   "published": "2026-11-03",
+   "url": "https://www.whitehouse.gov/presidential-actions/2026/11/anti-communism-week-2026/",
+   "page_url": "",
+   "raw_path": "market/policy/us/raw/2026-11-11_presidential-actions.md",
+   "collected": "2026-11-11",
+   "status": "listed",
+   "market": "us"
+  },
+  {
+   "doc_key": "presidential-actions-2026-11-03-2",
+   "watch_key": "presidential-actions",
+   "layer": "A",
+   "title": "THE AMERICAN DECLARATION OF FREEDOM IN SPACE",
+   "published": "2026-11-03",
+   "url": "https://www.whitehouse.gov/presidential-actions/2026/11/the-american-declaration-of-freedom-in-space/",
+   "page_url": "",
+   "raw_path": "market/policy/us/raw/2026-11-11_presidential-actions.md",
+   "collected": "2026-11-11",
+   "status": "listed",
+   "market": "us"
+  }
+ ]
+}
