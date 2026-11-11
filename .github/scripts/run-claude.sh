@@ -29,6 +29,7 @@ claude -p "$prompt" \
 # The one JSON object of --output-format json: {"type":"result","is_error":..,"result":"..",...}
 python3 -I - "$out" "$err" "$label" "$status" <<'PY'
 import json, os, sys
+sys.stdout.reconfigure(encoding="utf-8")  # the report can hold characters the console code page lacks
 out, err, label, status = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4])
 try:
     data = json.loads(open(out, encoding="utf-8").read() or "{}")
@@ -40,8 +41,12 @@ denials = data.get("permission_denials") or []
 DENIAL_LIMIT = 10  # many denials: the run could not work (ci-settings.json lacks a rule), even if Claude exited 0
 failed = status != 0 or data.get("is_error") or not data or len(denials) >= DENIAL_LIMIT
 auth = any(k in (text + stderr).lower() for k in ("oauth", "401", "authentication", "invalid api key", "unauthorized"))
+usage = any(k in (text + stderr).lower() for k in ("out of extra usage", "usage limit", "limit reached", "rate limit"))
 lines = [f"## {label}", ""]
-if len(denials) >= DENIAL_LIMIT:
+if failed and usage:
+    lines += ["**Claude の利用枠を使い切って止まった。** 下の完了報告にあるリセット時刻の後に、この実行の Re-run failed jobs で"
+              "続きから進める（途中までの収集・分析はコミット済み）。定期実行の企業数を減らすか、プランの枠を見直す。", ""]
+elif len(denials) >= DENIAL_LIMIT:
     lines += [f"**ツールの拒否が {len(denials)} 件あった。** `.github/claude/ci-settings.json` の許可に足りないものがある。", ""]
 elif failed and auth:
     lines += ["**認証に失敗した。** トークンが期限切れ（1年）か失効している。ローカルで `claude setup-token` を実行し、"

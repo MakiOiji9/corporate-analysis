@@ -18,6 +18,7 @@
       "Bash(.venv/bin/python -I tools/collect/*)",
       "Bash(.venv/bin/python -I tools/report/*)",
       "Bash(ls *)",
+      "Bash(mkdir -p *)",
       "Bash(git status)",
       "Bash(git status *)",
       "Bash(git diff *)",
