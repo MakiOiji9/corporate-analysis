@@ -21,10 +21,13 @@ from validate import check_fill, check_structure, check_tables
 HORIZONS = (("short", "短期（〜3ヶ月）"), ("mid", "中期（6ヶ月〜1年）"), ("long", "長期（3年以上）"))
 TEXT_KEYS = (("about", "2."), ("short", "3.1"), ("mid", "3.2"), ("long", "3.3"),
              ("thesis", "4.1"), ("break", "4.2"), ("watch", "4.3"),
-             ("buffett", "5.1"), ("soros", "5.2"), ("rogers", "5.3"), ("technical", "6.1"))
+             ("buffett", "5.1"), ("soros", "5.2"), ("rogers", "5.3"), ("technical", "6.1"), ("moves", "6.2"),
+             ("phase", "6.3"), ("winds", "6.4"))
 LIST_KEYS = ("break", "watch")
 LEGEND_LIMIT = 200
+PHASE_HEAD = "株価の局面: "
 LIMITS = {"about": 200, "short": 300, "mid": 300, "long": 350, "thesis": 200, "technical": 250,
+          "moves": 300, "phase": 200, "winds": 150,
           **{key: LEGEND_LIMIT for key in L.KEYS}}
 SUMMARY_TITLE, SUMMARY_LINES, SUMMARY_LIMIT = "3行まとめ", 3, 60
 LIST_RANGE = (2, 4)
@@ -298,6 +301,45 @@ def _scenario_lines(s: dict) -> list[str]:
     return lines + [""]
 
 
+def _pct_or_dash(v: float | None) -> str:
+    return "—" if v is None else f"{v:+.1f}%"
+
+
+def _move_lines(m: dict) -> list[str]:
+    """4.4 今の株価の動き (6.2 is written from these lines only)."""
+    if not m.get("ok"):
+        return []
+    lines = ["## 4.4 今の株価の動き（6.2 の材料。HTML に表で載る）", "",
+             f"- 騰落率（{m['end']} まで。{m['index_name']}・業種 {m.get('sector_name') or '—'} と比べる）:"]
+    lines += [f"  - {r['label']}: 株価 {_pct_or_dash(r['stock'])}、{m['index_name']} {_pct_or_dash(r['index'])}"
+              f"（差 {_pct_or_dash(r['vs_index'])}）、業種 {_pct_or_dash(r['sector'])}（差 {_pct_or_dash(r['vs_sector'])}）"
+              for r in m["returns"]]
+    s = m.get("split")
+    if s:
+        lines.append(f"- 地合いの分と会社固有の分（{s['span']}、β {s['beta']:.2f}）: 株価 {_pct_or_dash(s['stock'])} のうち、"
+                     f"市場の動きで説明できる分 {_pct_or_dash(s['market'])}、会社固有の分 {_pct_or_dash(s['own'])}")
+    for d in m.get("big_days") or []:
+        news = "、".join(f"{n['date']} {n['kind']}「{n['title']}」" + (f"（{n['summary']}）" if n["summary"] else "")
+                        for n in d["news"]) or "前後2営業日に開示なし"
+        lines.append(f"- 大きく動いた日 {d['date']}: {_pct_or_dash(d['change'])}（出来高 {d['volume_ratio'] or '—'}倍、"
+                     f"{m['index_name']} {_pct_or_dash(d['index_change'])}）。開示: {news}")
+    if not m.get("big_days"):
+        lines.append("- 大きく動いた日: 直近120営業日になし（ふだんの値幅の2倍以上かつ出来高1.5倍以上）")
+    lines += [f"- テクニカルの合意: {'／'.join(m.get('consensus') or []) or '—'}"]
+    lines += [f"- 注意: {n}" for n in m.get("notes") or []]
+    return lines + [""]
+
+
+def _phase_lines(p: dict) -> list[str]:
+    """4.5 株価の局面 (6.3)."""
+    if not p:
+        return []
+    marks = {True: "○", False: "×", None: "不明"}
+    return (["## 4.5 株価の局面（6.3 の材料。参考の見方で点数に入らない）", "",
+             f"- 局面: {p['phase']}。結論: {p['verdict']}"]
+            + [f"  - {c['item']}: {c['value']} → {marks[c['ok']]}" for c in p["checks"]] + [""])
+
+
 def _wind_lines(w: dict) -> list[str]:
     """4.3 業界の追い風・向かい風 (the HTML draws the table)."""
     if not w:
@@ -346,6 +388,7 @@ def render_brief(facts: dict, md_rel: str) -> str:
     lines += T.brief_lines(technicals(facts), facts["horizons"]["long"]["verdict"],
                            (facts.get("prices") or {}).get("positioning"))
     lines += _scenario_lines(facts.get("scenarios") or {}) + _wind_lines(facts.get("winds") or {})
+    lines += _move_lines(facts.get("moves") or {}) + _phase_lines(facts.get("phase") or {})
     lines += _recent(facts) + _conditions(facts) + L.brief_lines(facts)
     lines += ["## 6. 材料不足（4.3 の材料）", ""]
     lines += [f"- {g['label']}: {g['gap']}" for g in facts["gaps"]] or ["- なし"]
@@ -399,6 +442,8 @@ def auto_fills(facts: dict) -> dict[str, str | None]:
     out = {}
     for key, lines in (("break", _break_lines(facts)), ("watch", _watch_lines(facts))):
         out[key] = "\n".join(f"- {line}" for line in lines) if len(lines) >= LIST_RANGE[0] else None
+    winds = facts.get("winds") or {}
+    out["winds"] = None if winds.get("ok") else f"材料なし（{winds.get('why') or '地合いレポートが無い'}）。"
     return out
 
 
@@ -415,6 +460,8 @@ def render_skeleton(template: str, facts: dict, brief_rel: str) -> str:
         "horizon_rows": horizon_rows(facts), "legend_rows": L.rows(facts), "review": facts["review"],
         "technical_rows": T.table_rows(technicals(facts)),
         **{f"{key}_verdict": verdict_label(facts["horizons"][key]) for key, _ in HORIZONS},
+        "phase_verdict": (facts.get("phase") or {}).get("verdict") or "—",
+        "winds_verdict": (facts.get("winds") or {}).get("verdict") or "材料なし",
     }
     return Template(template).safe_substitute(values)
 
@@ -433,6 +480,18 @@ def parse(text: str) -> dict:
         body = _body(_section(text, number))
         out[key] = M.bullets(body) if key in LIST_KEYS else body
     return out
+
+
+def _check_phase_and_winds(parsed: dict, facts: dict) -> list[str]:
+    """6.3 starts with the script's phase verdict; 6.4 states the script's tailwind word."""
+    issues = []
+    phase = (facts.get("phase") or {}).get("verdict")
+    if phase and not M.is_blank(parsed["phase"]) and not parsed["phase"].startswith(PHASE_HEAD + phase.split("（")[0]):
+        issues.append(f"6.3 は「{PHASE_HEAD}{phase}。」で書き始める（結論はスクリプトの判定）")
+    wind = (facts.get("winds") or {}).get("verdict")
+    if wind and not M.is_blank(parsed["winds"]) and wind not in parsed["winds"]:
+        issues.append(f"6.4 に業界の追い風・向かい風の結論（{wind}）が無い")
+    return issues
 
 
 def validate(text: str, template: str, facts: dict) -> tuple[list[str], list[str]]:
@@ -467,6 +526,7 @@ def validate(text: str, template: str, facts: dict) -> tuple[list[str], list[str
                 issues.append(f"{label}の説明に{side}（{'・'.join(factors)} のどれか）が無い（根拠の数値と一緒に書く）")
     issues += L.validate(parsed, _section(text, "5."), facts)
     issues += T.validate(parsed["technical"], _section(text, "6."), technicals(facts))
+    issues += _check_phase_and_winds(parsed, facts)
     issues += O._check_words(_body(text))
     warnings = [f"{names[k]} が {len(parsed[k])} 字（目安 {n} 字以内）" for k, n in LIMITS.items() if len(parsed[k]) > n]
     warnings += [f"3行まとめの{i}行目が {len(s)} 字（目安 {SUMMARY_LIMIT} 字以内）"

@@ -13,8 +13,12 @@ import cr_judge as J
 import cr_legends as L
 import cr_plain as P
 import cr_positioning as POS
+import cr_moves as MV
+import cr_phase as PH
 import cr_scenarios as SC
 import cr_winds as WI
+import news_table as NT
+import sector_map as SM
 import cr_prices as CP
 import cr_status as S
 import mdparse as M
@@ -235,9 +239,40 @@ def build(root: Path, company: S.Company, today: str, status: dict) -> dict:
                "trend": (prices.get("long_trend") or {}).get("verdict")}
     scenarios = SC.build(prices.get("technicals") or {},
                          _get(found["valuation"], "detail", "flip_values") or {}, context)
-    winds = WI.evaluate(root, _profile(company), status["outlook"],
-                        _get(found["five_forces"], "detail", "industry") or "")
-    return {**facts, "legends": L.evaluate(facts), "scenarios": scenarios, "winds": winds}
+    profile = _profile(company)
+    winds = WI.evaluate(root, profile, status["outlook"], _get(found["five_forces"], "detail", "industry") or "")
+    return {**facts, "legends": L.evaluate(facts), "scenarios": scenarios, "winds": winds,
+            "moves": moves(root, company, profile, market, prices, winds), "phase": PH.evaluate(phase_context(facts))}
+
+
+def moves(root: Path, company: S.Company, profile: dict, market: str, prices: dict, winds: dict) -> dict:
+    """The price move against the market and the sector, the big days and their disclosures (cr_moves)."""
+    if prices.get("source") != "prices":
+        return {"ok": False, "notes": ["日々の株価が無い"]}
+    key = MARKETS[market]
+    index_id, index_name = MV.INDEX[key]
+    sector_id = SM.sector_id(profile)
+    series = MV.load_series(root, key, {index_id} | ({sector_id} if sector_id else set()))
+    return MV.evaluate(CP.load(company.path / "data" / "prices.csv"), series.get(index_id) or [],
+                       series.get(sector_id) if sector_id else None, NT.load(company.path / "raw" / "news"),
+                       prices.get("technicals") or {}, index_name, SM.NAMES.get(sector_id) if sector_id else None)
+
+
+def phase_context(facts: dict) -> dict:
+    """What cr_phase.evaluate reads, from the facts already built."""
+    p = facts["prices"]
+    w52 = next((w for w in p.get("ranges") or [] if w["label"] == "52週"), {})
+    trend = p.get("long_trend") or {}
+    t = p.get("technicals") or {}
+    ma26 = next((a["gap"] for a in p.get("averages") or [] if a["label"] == "26週"), None)
+    a = facts["analyses"]
+    return {"from_high": w52.get("from_high"), "from_low": w52.get("from_low"), "pos52": w52.get("position"),
+            "trend": trend.get("verdict"), "tech_state": t.get("state"),
+            "rsi": (t.get("momentum") or {}).get("rsi"), "ma26_gap": ma26,
+            "step1": facts["step1"]["grade"], "step2": facts["step2"]["grade"], "flags": facts["step2"].get("flags"),
+            "step3": facts["step3"]["verdict"], "per_position": _get(a["valuation"], "detail", "per_range", "position"),
+            "price_rate": (trend.get("windows") or {}).get(trend.get("basis"), {}).get("annual"),
+            "eps_rate": _get(a["growth"], "detail", "cagr", "eps")}
 
 
 def _profile(company: S.Company) -> dict:

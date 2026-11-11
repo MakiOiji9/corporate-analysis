@@ -26,6 +26,15 @@ TOPIX17 = {
     "JP_SEC_1633": ("不動産業",),
 }
 JP33 = {name: sid for sid, names in TOPIX17.items() for name in names}
+# the market report's names of the sector series (tools/collect/market/catalog/*.json)
+NAMES = {"JP_SEC_1617": "食品", "JP_SEC_1618": "エネルギー資源", "JP_SEC_1619": "建設・資材", "JP_SEC_1620": "素材・化学",
+         "JP_SEC_1621": "医薬品", "JP_SEC_1622": "自動車・輸送機", "JP_SEC_1623": "鉄鋼・非鉄", "JP_SEC_1624": "機械",
+         "JP_SEC_1625": "電機・精密", "JP_SEC_1626": "情報通信・サービスその他", "JP_SEC_1627": "電力・ガス",
+         "JP_SEC_1628": "運輸・物流", "JP_SEC_1629": "商社・卸売", "JP_SEC_1630": "小売", "JP_SEC_1631": "銀行",
+         "JP_SEC_1632": "金融（除く銀行）", "JP_SEC_1633": "不動産", "US_SEC_XLB": "素材", "US_SEC_XLC": "コミュニケーション",
+         "US_SEC_XLE": "エネルギー", "US_SEC_XLF": "金融", "US_SEC_XLI": "資本財", "US_SEC_XLK": "情報技術",
+         "US_SEC_XLP": "生活必需品", "US_SEC_XLRE": "不動産", "US_SEC_XLU": "公益", "US_SEC_XLV": "ヘルスケア",
+         "US_SEC_XLY": "一般消費財"}
 
 # (first SIC, last SIC, sector ETF): the first matching range wins, so narrow ranges come before wide ones
 SIC_RANGES = (

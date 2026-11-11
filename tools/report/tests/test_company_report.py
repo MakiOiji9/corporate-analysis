@@ -183,6 +183,10 @@ def _fill(text: str, horizons: dict) -> str:
         if key == "technical":
             state = re.search(r"^\| 状態 \| (.+?)（", text, re.M)
             return f"今の状態は{state.group(1) if state else T.NO_DATA}。RSI と移動平均で決まった。"
+        if key == "phase":  # the skeleton's instruction carries the script's verdict
+            return f"株価の局面: {re.search(r'「株価の局面: (.+?)。」', m.group(0)).group(1)}。52週の位置で決まった。"
+        if key == "winds":
+            return f"{re.search(r'の結論（(.+?)）', m.group(0)).group(1)}。地合いレポートから。"
         return FILLED.get(key, "投資の理由は実績で選ばれること。")
     return FILL_ANY.sub(repl, text)
 
@@ -258,8 +262,9 @@ def test_prepare_fill_build_flow(repo, capsys):
     assert (out["step1"], out["step2"], out["step3"]) == ("A", "A", "割安")
     assert out["horizons"] == {"short": "投資検討", "mid": "投資検討", "long": "投資検討"}
     # 4.2 comes from the brief's candidates; 4.3 stays with the writer when there are too few gaps for 2 lines
+    # 6.4 is written by the script when there is no market report sector (the fixture has no profile)
     assert set(out["fill_keys"]) == {"summary", "about", "short", "mid", "long", "thesis", "watch",
-                                     "buffett", "soros", "rogers", "technical"}
+                                     "buffett", "soros", "rogers", "technical", "moves", "phase"}
     assert out["technical"]["state"] and out["technical"]["score"] is not None
     assert set(out["legends"]) == set(L.KEYS)
     assert all(v in (L.PREFER, L.HOLD, L.AVOID) for v in out["legends"].values())

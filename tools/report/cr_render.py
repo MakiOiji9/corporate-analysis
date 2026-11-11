@@ -30,7 +30,7 @@ PERIODS = {"short": "短期", "mid": "中期", "long": "長期"}
 OK_HTML = {True: '<span class="ok-yes">○ 満たす</span>', False: '<span class="ok-no">× 満たさない</span>',
            None: '<span class="ok-unk">不明</span>'}
 TOC = (("conclusion", "結論"), ("reasons", "期間ごとの良い点・悪い点"), ("step1", "STEP 1 事業"),
-       ("step2", "STEP 2 財務"), ("step3", "STEP 3 株価"), ("price", "株価のレンジ"), ("technical", "売買の目安"),
+       ("step2", "STEP 2 財務"), ("step3", "STEP 3 株価"), ("price", "株価のレンジ"), ("moves", "株価の動き"), ("technical", "売買の目安"),
        ("thesis", "投資の理由"), ("legends", "投資の神の視点"), ("gaps", "材料不足"), ("glossary", "用語集"))
 SMALL_CHART_WIDTH = 380
 TECH_LEAD = ("日々の株価から計算した今のチャートの状態と、注目する価格の水準。水準は「ここを下回ったら」「ここに近づいたら」と"
@@ -346,11 +346,64 @@ def price_section(facts: dict) -> str:
     per = facts["analyses"]["valuation"]["detail"].get("per_range") or {}
     per_line = (f"PER（株価が利益の何倍か）の過去5期のレンジは {C.fmt(per.get('low'))}〜{C.fmt(per.get('high'))}倍で、"
                 f"今はその中の位置 {per.get('position')}%" if per.get("low") is not None else "")
-    body = (f"<h3>今の株価の位置</h3>{tracks}{_long_trend(trend)}{_winds(facts.get('winds') or {})}"
+    body = (f"<h3>今の株価の位置</h3>{tracks}{_long_trend(trend)}"
             f"<h3>株価の推移</h3>{chart}"
             f'<p class="small">移動平均: {esc(ma or "—")}</p>'
             + (f'<p class="small">{esc(per_line)}</p>' if per_line else "") + _price_tables(p))
     return _section("price", "06", "株価の過去レンジ", lead, body)
+
+
+# ---------------------------------------------------------------- moves (今の株価の動き)
+
+MOVES_LEAD = ("今の株価の動きを、市場全体・業種と比べ、大きく動いた日の開示と、チャートの指標と合わせて見る。"
+              "動いた理由として挙げるのは日付の合う開示だけで、推測はしない。")
+PHASE_CLASS = {"下落局面": "v-pass", "上昇局面": "v-consider", "どちらでもない": "v-watch"}
+
+
+def _pct_cell(v: float | None) -> str:
+    return "—" if v is None else f"{C.fmt(v, 1, True)}%"
+
+
+def _move_tables(m: dict) -> str:
+    rows = [[esc(r["label"]), _pct_cell(r["stock"]), _pct_cell(r["index"]), _pct_cell(r["vs_index"]),
+             _pct_cell(r["sector"]), _pct_cell(r["vs_sector"])] for r in m["returns"]]
+    out = table(["期間", "株価", esc(m["index_name"]), "市場との差", esc(f"業種（{m.get('sector_name') or '—'}）"),
+                 "業種との差"], rows, right=frozenset({1, 2, 3, 4, 5}))
+    s = m.get("split")
+    if s:
+        out += (f'<p><b>地合いの分と会社固有の分（{esc(s["span"])}）</b>: 株価 {_pct_cell(s["stock"])} のうち、'
+                f'市場の動きで説明できる分 {_pct_cell(s["market"])}（β {s["beta"]:.2f} × 市場）、'
+                f'会社固有の分 {_pct_cell(s["own"])}</p>')
+    days = [[esc(d["date"]), _pct_cell(d["change"]), esc(f"{d['volume_ratio']}倍" if d["volume_ratio"] else "—"),
+             _pct_cell(d["index_change"]),
+             "<br>".join(f'{esc(n["date"])} {esc(n["kind"])}「{esc(n["title"])}」' for n in d["news"])
+             or '<span class="muted">前後2営業日に開示なし</span>'] for d in m.get("big_days") or []]
+    out += ("<h3>大きく動いた日と開示</h3>" + (table(["日付", "株価", "出来高（ふだんの何倍）", "市場", "前後2営業日の開示"],
+                                                 days, right=frozenset({1, 2, 3}), nowrap=frozenset({0}))
+                                           if days else '<p class="muted">直近120営業日になし</p>')
+            + '<p class="small muted">大きく動いた日＝ふだんの1日の値幅（ATR）の2倍以上動き、出来高がふだんの1.5倍以上の日。</p>')
+    out += "<h3>チャートの指標がそろって示していること</h3>" + _list(m.get("consensus") or [])
+    return out + "".join(f'<p class="small muted">{esc(n)}</p>' for n in m.get("notes") or [])
+
+
+def _phase_card(p: dict, prose: str) -> str:
+    if not p:
+        return ""
+    checks = table(["確かめたこと", "値", "結果"], [[esc(c["item"]), esc(c["value"]), OK_HTML[c["ok"]]]
+                                                   for c in p["checks"]], nowrap=frozenset({2}))
+    return (f'<h3>株価の局面の見方（参考）</h3><p><span class="badge {PHASE_CLASS.get(p["phase"], "")}">'
+            f'{esc(p["phase"])}</span> <b>{esc(p["verdict"])}</b></p>{prose}{checks}'
+            '<p class="small muted">下落局面では「優良企業が割安になったか」、上昇局面では「業績が伴っているか、期待が先行して'
+            "いないか」を見る参考の視点。判定の点数には入らず、売買の推奨でもない。</p>")
+
+
+def moves_section(facts: dict, parsed: dict) -> str:
+    m = facts.get("moves") or {}
+    body = _paragraphs(parsed.get("moves") or "")
+    body += _move_tables(m) if m.get("ok") else f'<p class="muted">{esc("。".join(m.get("notes") or ["材料なし"]))}</p>'
+    body += _phase_card(facts.get("phase") or {}, _paragraphs(parsed.get("phase") or ""))
+    body += _winds(facts.get("winds") or {}) + _paragraphs(parsed.get("winds") or "")
+    return _section("moves", "07", "今の株価の動き", MOVES_LEAD, body)
 
 
 # ---------------------------------------------------------------- technical
@@ -425,7 +478,7 @@ def _scenarios(s: dict) -> str:
 def technical_section(facts: dict, parsed: dict) -> str:
     t = D.technicals(facts)
     if not t.get("ok") or t["state"] == T.NO_DATA:
-        return _section("technical", "07", "売買の目安（テクニカルの参考）", TECH_LEAD,
+        return _section("technical", "08", "売買の目安（テクニカルの参考）", TECH_LEAD,
                         f'<p class="muted">{esc(T.NO_DATA)}</p>{_paragraphs(parsed.get("technical") or "")}')
     lv = t["levels"]
     stop = lv.get("stop")
@@ -443,7 +496,7 @@ def technical_section(facts: dict, parsed: dict) -> str:
             + (f'<p class="small"><b>長期の判定との関係</b>: {esc(note)}</p>' if note else "")
             + _scenarios(facts.get("scenarios") or {})
             + table(["見たもの", "値"], [[esc(a), esc(b)] for a, b in rows]) + _tech_charts(t))
-    return _section("technical", "07", "売買の目安（テクニカルの参考）", TECH_LEAD, body)
+    return _section("technical", "08", "売買の目安（テクニカルの参考）", TECH_LEAD, body)
 
 
 # ---------------------------------------------------------------- thesis / gaps / glossary
@@ -453,7 +506,7 @@ def thesis(facts: dict, parsed: dict) -> str:
             f'</div><div class="panel"><h3>判断が崩れる条件</h3>{_list(parsed["break"])}</div></div>'
             f'<h3>次に確かめること</h3>{_list(parsed["watch"])}'
             f'<p class="small"><b>次回の見直し</b>: {esc(facts["review"])}</p>')
-    return _section("thesis", "08", "投資の理由と判断が崩れる条件", "", body)
+    return _section("thesis", "09", "投資の理由と判断が崩れる条件", "", body)
 
 
 def _legend_card(v: dict, prose: str) -> str:
@@ -472,7 +525,7 @@ def legends(facts: dict, parsed: dict) -> str:
     if not found:
         return ""
     cards = "".join(_legend_card(v, _paragraphs(parsed.get(k) or "")) for k, v in found.items())
-    return _section("legends", "09", "投資の神の視点（参考）", LEGEND_LEAD, f'<div class="steps">{cards}</div>')
+    return _section("legends", "10", "投資の神の視点（参考）", LEGEND_LEAD, f'<div class="steps">{cards}</div>')
 
 
 def _link(facts: dict, md: str | None) -> str:
@@ -498,19 +551,19 @@ def gaps(facts: dict) -> str:
     body = (_list([f"{g['label']}: {g['gap']}" for g in facts["gaps"]]) + stale_html + material_html
             + "<h3>このレポートが使った分析</h3>"
             + table(["STEP", "分析", "分析日", "結論", "ファイル"], rows, nowrap=frozenset({2})))
-    return _section("gaps", "10", "材料不足と使った分析", "判定に影響しうる、まだ確かめられていない点。", body)
+    return _section("gaps", "11", "材料不足と使った分析", "判定に影響しうる、まだ確かめられていない点。", body)
 
 
 def glossary(text: str) -> str:
     terms = G.terms_in(text)
     body = (f'<dl class="gloss">{"".join(f"<dt>{esc(t)}</dt><dd>{esc(d)}</dd>" for t, d in terms)}</dl>' if terms
             else '<p class="muted">なし</p>')
-    return _section("glossary", "11", "用語集", "このレポートに出てくる言葉の意味。", body)
+    return _section("glossary", "12", "用語集", "このレポートに出てくる言葉の意味。", body)
 
 
 def render(template: str, facts: dict, parsed: dict, md_text: str) -> str:
     main = X.annotate(conclusion(facts, parsed) + reasons(facts, parsed) + step1(facts) + step2(facts) + step3(facts)
-                      + price_section(facts) + technical_section(facts, parsed) + thesis(facts, parsed)
+                      + price_section(facts) + moves_section(facts, parsed) + technical_section(facts, parsed) + thesis(facts, parsed)
                       + legends(facts, parsed) + gaps(facts))
     body = (masthead(facts) + "<main>" + main
             + glossary(md_text + D.render_brief(facts, "").split(D.WRITING_RULES)[0])
