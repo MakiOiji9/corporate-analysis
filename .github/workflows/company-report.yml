@@ -119,7 +119,8 @@ jobs:
         env:
           PUSH_TOKEN: ${{ github.token }}
           COMPANY: ${{ matrix.company }}
-        run: bash .github/scripts/commit-outputs.sh "chore: ${COMPANY} の企業分析レポート（自動実行 $(date +%F)・グループ ${{ needs.targets.outputs.group }}）"
+        run: |
+          bash .github/scripts/commit-outputs.sh "chore: ${COMPANY} の企業分析レポート（自動実行 $(date +%F)・グループ ${{ needs.targets.outputs.group }}）"
 
       - name: Save originals
         if: ${{ always() && steps.setup.outputs.cache-key != '' }}
