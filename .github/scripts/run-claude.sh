@@ -5,6 +5,8 @@
 # The result JSON ({"result": <completion report>, ...}) is kept at the third argument (default
 # $RUNNER_TEMP/claude-result.json) so a later step can quote the report, e.g. in an Issue comment.
 # Needs CLAUDE_CODE_OAUTH_TOKEN (from `claude setup-token`) in the environment of this step only.
+# With AUTOSAVE_BRANCH (and PUSH_TOKEN) set, autosave.sh commits & pushes to that branch every few minutes while
+# Claude runs. Claude itself is started without PUSH_TOKEN / GH_TOKEN / GITHUB_TOKEN in its environment.
 # The conversation itself is not kept: only the final report goes to the summary, because artifacts are not
 # masked the way logs are.
 set -euo pipefail
@@ -19,12 +21,23 @@ if [ -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then
   exit 1
 fi
 
+saver=""
+if [ -n "${AUTOSAVE_BRANCH:-}" ]; then
+  bash "$(dirname "$0")/autosave.sh" "chore: ${label}" &
+  saver=$!
+fi
+
 status=0
-claude -p "$prompt" \
+env -u PUSH_TOKEN -u GH_TOKEN -u GITHUB_TOKEN claude -p "$prompt" \
   --settings .github/claude/ci-settings.json \
   --setting-sources project \
   --permission-mode dontAsk \
   --output-format json >"$out" 2>"$err" || status=$?
+
+if [ -n "$saver" ]; then
+  kill -TERM "$saver" 2>/dev/null || true
+  wait "$saver" 2>/dev/null || true
+fi
 
 # The one JSON object of --output-format json: {"type":"result","is_error":..,"result":"..",...}
 python3 -I - "$out" "$err" "$label" "$status" <<'PY'

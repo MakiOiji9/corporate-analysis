@@ -14,6 +14,7 @@ ticker, name, url, market, mode, 企業ディレクトリ, 収集日, update の
 - `raw/market/{収集日}_industry-overview.md`
 - `fetch.py` 経由の `sources/`（業界統計の PDF などを保存する場合）
 - **書かない**: `status.md`, `overview.md`, `summaries/`, 他担当の raw
+- **保存と再開**: raw は書き上げたファイルから順に保存する（最後にまとめない）。始める前に、自分の書く raw が今日の日付で既にあれば読み、書き終わっている章は飛ばして残りだけを書く（前回の実行が途中で止まった続き）
 
 ## 手順
 1. **主力事業を自分で特定する**（collect-filings を待たない）。セグメント情報で営業利益構成比が最大のもの、単一セグメントなら全社。

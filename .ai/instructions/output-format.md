@@ -35,7 +35,7 @@ companies/{ticker}_{name}/
 │   ├── filings/                 # 有価証券報告書(EDINET) / 10-K(SEC EDGAR)
 │   ├── news/                    # ニュース・プレスリリース
 │   └── market/                  # 業界・市場データ・競合情報
-├── summaries/                   # raw/ から作成した要約（評価・判定は含めない）
+├── summaries/                   # business.md: raw/ から作成した主力事業の定義（評価・判定は含めない）
 │   ├── business.md              # 事業・市場・競合の要約
 │   ├── financials.md            # 財務主要項目の時系列・同業比較
 │   └── valuation.md             # 株価指標の現在値・過去レンジ・同業比較

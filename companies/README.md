@@ -22,7 +22,7 @@
 │   ├── filings/         # 有価証券報告書(EDINET) / 10-K(SEC EDGAR)
 │   ├── news/            # ニュース・プレスリリース
 │   └── market/          # 業界・市場データ・競合情報
-├── summaries/           # raw/ の要約（business / financials / valuation）
+├── summaries/           # business.md: 主力事業の定義（five-forces・three-c が読む）
 ├── sessions/            # 日付付き分析セッション
 │   └── YYYY-MM-DD_{topic}/
 │       └── judgment-sheet.md

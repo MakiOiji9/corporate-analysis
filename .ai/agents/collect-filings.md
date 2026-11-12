@@ -16,6 +16,7 @@ ticker, name, url, market, mode, 企業ディレクトリ, 収集日, 取得経�
 - `data/financials.csv`, `data/tdnet_facts.csv`, `data/governance.json`（スクリプト経由のみ）
 - `fetch.py` / `edinet.py fetch` 経由の `sources/`
 - **書かない**: `status.md`, `overview.md`, `summaries/`, 他担当の raw
+- **保存と再開**: raw は書き上げたファイルから順に保存する（最後にまとめない。有報の raw を先に書き上げてから財務時系列に進む）。始める前に、自分の書く raw が今日の日付で既にあれば読み、書き終わっている章は飛ばして残りだけを書く（前回の実行が途中で止まった続き）
 
 ## Phase 2: 公式開示書類（最新の有報 / 10-K）
 - EDINET 経路: `edinet.py list --code {ticker} --fy-end-month {決算月} --years 1` → `edinet.py fetch --doc-id {docID} --company {dir} --kind csv`（数値用）と `--kind pdf`（定性情報用）
@@ -37,7 +38,7 @@ ticker, name, url, market, mode, 企業ディレクトリ, 収集日, 取得経�
    - どちらでも取れない年度だけ IRBANK・株探で補い、確度「二次」と明記
 2. **会社計画と実績**: 各期の本決算短信の「次期予想」が期初予想。iXBRL（.htm）を `fetch.py` → `tdnet_summary.py --company {dir}`。期中修正は「業績予想の修正」開示から。古い年度は短信 PDF・株探記事で補い確度を明記
 3. **四半期の時系列（直近8四半期）**: 日本株は直近8四半期分の四半期（中間）短信の iXBRL をそれぞれ `fetch.py` → `tdnet_summary.py --company {dir}` で取り込む（`tdnet_facts.csv` に積み上がり、前年同期との比較・業績の流れが読める）。米国株は `edgar.py quarters --ticker {ticker} --company {dir}` で `data/quarterly.csv`（10-Q の3か月の売上高・営業利益・純利益・EPS）を作る。最新の四半期（中間）短信は必ず取り込む。iXBRL が取れず短信 PDF から転記するときは、雛形の5章の表（項目を行に、当期の四半期累計と前年同期を列に）で書き、期中の業績予想の修正は4章に1行ずつ書く（成長性分析が今期の進捗をここから読む）
-4. `render_tables.py financials / forecasts / quarterly` の出力を raw に貼る
+4. **財務時系列の raw はスクリプトが作る**: 1〜3 の後に `raw_financials.py --company {dir}` を1回実行する。`raw/ir/{収集日}_financials-historical.md` の 1章（financials）・4章（forecasts）・5章（quarterly）・8章（安全性の行）が data/*.csv から記入され、残りは `<!-- FILL:... -->` になる。**表を貼り直したり書き写したりせず**、FILL の部分（2・3・6・7章、出典・原本、有利子負債が「—」の年、短信 iXBRL が無いときの 4・5章）だけを Edit で書き、書いた FILL のコメントは消す。`exists: true`（同じ日のファイルが既にある）ならそのファイルの FILL の残りだけを書く
 
 | 区分 | 項目 |
 |---|---|
@@ -66,7 +67,7 @@ ticker, name, url, market, mode, 企業ディレクトリ, 収集日, 取得経�
 2. 年次: 最新の 10-K（無ければ 424B4、無ければ S-1）を `fetch.py {url} --company {dir} --type 10k|424b4|s-1 --period YYYY-MM --published YYYY-MM-DD --doc-id {accession} --text`
    - 本文は全部読まない。`find_pages.py toc` で見出しを出し、`find_pages.py find` で Item 1（Business）・1A（Risk Factors）・7（MD&A）・8（Financial Statements）、目論見書なら Prospectus Summary・Business・Risk Factors・Capitalization・Lock-Up・Principal Stockholders・Use of Proceeds の該当部分だけ読む
 3. 四半期: 最新の 10-Q を同じ要領で保存し、損益・貸借・CF・主要顧客・RPO・発行済株式数（表紙）・後発事象を読む
-4. 財務の時系列: `edgar.py facts --ticker {ticker} --company {dir}` → `render_tables.py financials {dir}` の表を `financials-historical.md` に貼る。companyfacts に無い年（S-1 にだけ載る古い年度など）だけ本文から転記し、出典を書く
+4. 財務の時系列: `edgar.py facts --ticker {ticker} --company {dir}` → `raw_financials.py --company {dir}`（日本株と同じく 1・8章を記入済みの raw を作る。表は書き写さない）。companyfacts に無い年（S-1 にだけ載る古い年度など）だけ 2章に本文から転記し、出典を書く
 5. 会社計画: 決算発表（8-K Ex.99.1）のガイダンスを `financials-historical.md` 4章に書く。非 GAAP は会社の定義を併記する
 6. 他社の決算期（1月決算など）を書くときは会社の FY 名と期末日を併記する（スキルの保存ルール）
 

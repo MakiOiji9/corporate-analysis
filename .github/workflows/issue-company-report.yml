@@ -1,9 +1,13 @@
-# Initial analysis of a company requested by an Issue (.github/ISSUE_TEMPLATE/company-analysis.yml):
-# collect-company-info (mode=full, only for a company not in companies/ yet) -> /company-report -> commit to main ->
-# comment on the Issue and close it. On failure the Issue gets a comment and stays open (Re-run failed jobs retries).
+# Initial analysis of a company requested by an Issue (.github/ISSUE_TEMPLATE/company-analysis.yml).
+# Each Issue gets a work branch (analysis/issue-{n}) and a draft PR. The collection runs one agent per Claude run
+# (tools/collect/collect_progress.py decides what is left), and every run is committed and pushed to the branch,
+# with an autosave every few minutes in between, so a run stopped by the usage limit continues where it stopped.
+# Then /company-report; when the report is built the PR is marked ready, squash-merged into main (it closes the
+# Issue) and the verdicts are commented. On failure the PR stays a draft and the Issue stays open: Re-run failed
+# jobs, or adding the label again, continues from the branch.
 # Only issues opened by the owner or a collaborator run; the body is never handed to Claude as is
 # (tools/report/issue_request.py extracts and validates the four fields).
-# Credentials: see "GitHub Actions での定期実行" in tools/README.md.
+# Credentials and settings: see "GitHub Actions での定期実行" in tools/README.md.
 name: issue-company-report
 
 # "labeled", not "opened": an Issue created from the template gets the label at creation (a labeled event fires
@@ -23,6 +27,7 @@ permissions:
 env:
   TZ: Asia/Tokyo # every script dates its files with the local date
   CLAUDE_CODE_VERSION: "2.1.123"
+  BRANCH: analysis/issue-${{ github.event.issue.number }}
 
 jobs:
   request:
@@ -35,15 +40,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
-      contents: read
+      contents: write
       issues: write
+      pull-requests: write
     outputs:
       ok: ${{ steps.parse.outputs.ok }}
       ticker: ${{ steps.parse.outputs.ticker }}
       name: ${{ steps.parse.outputs.name }}
       url: ${{ steps.parse.outputs.url }}
       market: ${{ steps.parse.outputs.market }}
-      existing: ${{ steps.parse.outputs.existing }}
+      dir: ${{ steps.parse.outputs.dir }}
+      pr: ${{ steps.pr.outputs.pr }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -63,7 +70,7 @@ jobs:
           import json, sys
           data = json.load(open(sys.argv[1], encoding="utf-8"))
           print(f"ok={'true' if data.get('ok') else 'false'}")
-          for key in ("ticker", "name", "url", "market", "existing"):
+          for key in ("ticker", "name", "url", "market", "dir"):
               print(f"{key}={data.get(key) or ''}")
           PY
           echo "exit status: $status"
@@ -85,19 +92,49 @@ jobs:
           gh issue comment "$ISSUE" --body-file "$RUNNER_TEMP/comment.md"
           gh issue close "$ISSUE" --reason "not planned"
 
+      # The work branch starts from main with an empty commit (a PR needs a difference); a branch that already
+      # exists (a re-run, the label added again) is kept with what it has.
+      - name: Work branch and draft PR
+        id: pr
+        if: ${{ steps.parse.outputs.ok == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          ISSUE: ${{ github.event.issue.number }}
+          DIR: ${{ steps.parse.outputs.dir }}
+        run: |
+          remote="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          if git ls-remote --exit-code --heads "$remote" "$BRANCH" > /dev/null; then
+            echo "既存の作業ブランチ $BRANCH を使う"
+          else
+            git -c user.name="github-actions[bot]" \
+                -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+                commit --quiet --allow-empty -m "chore: ${DIR} の初期分析を開始（Issue #${ISSUE}）"
+            git push --quiet "$remote" "HEAD:refs/heads/${BRANCH}"
+          fi
+          pr="$(gh pr list --head "$BRANCH" --state open --json url --jq '.[0].url // ""')"
+          if [ -z "$pr" ]; then
+            printf '%s\n' "Closes #${ISSUE}" "" \
+              "Issue #${ISSUE} の企業（\`companies/${DIR}\`）の初期分析。GitHub Actions（issue-company-report）が情報収集を担当ごとに進めてこのブランチにコミットし、企業分析レポートまでできたら Ready にして main にスカッシュマージする。" \
+              "" "途中で止まったときは Issue のラベル \`company-analysis\` を付け直すと、済んだ部分を飛ばして続きから進む。" \
+              > "$RUNNER_TEMP/pr-body.md"
+            pr="$(gh pr create --draft --base main --head "$BRANCH" --title "[企業分析] ${DIR}" --body-file "$RUNNER_TEMP/pr-body.md")"
+          fi
+          echo "pr=$pr" >> "$GITHUB_OUTPUT"
+
       - name: Acknowledge
         if: ${{ steps.parse.outputs.ok == 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           ISSUE: ${{ github.event.issue.number }}
-          TICKER: ${{ steps.parse.outputs.ticker }}
-          EXISTING: ${{ steps.parse.outputs.existing }}
+          DIR: ${{ steps.parse.outputs.dir }}
+          PR: ${{ steps.pr.outputs.pr }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          if [ -n "$EXISTING" ]; then plan="既存の企業（companies/${EXISTING}）なので収集を飛ばしてレポートを作る"
-          else plan="初回の情報収集（collect-company-info mode=full）からレポートまで作る"; fi
-          printf '%s\n' "分析を開始した: ${TICKER}（${plan}）。" "" "- 実行ログ: ${RUN_URL}" > "$RUNNER_TEMP/comment.md"
+          printf '%s\n' "分析を開始した: \`companies/${DIR}\`（作業ブランチ \`${BRANCH}\`、ドラフト PR: ${PR}）。" "" \
+            "- 情報収集は担当ごとに進め、終わるたびにブランチへコミットする（済んだ担当は飛ばす）" \
+            "- 実行ログ: ${RUN_URL}" > "$RUNNER_TEMP/comment.md"
           gh issue comment "$ISSUE" --body-file "$RUNNER_TEMP/comment.md"
 
   analyze:
@@ -109,17 +146,37 @@ jobs:
     permissions:
       contents: write
       issues: write
+      pull-requests: write
     env:
       TICKER: ${{ needs.request.outputs.ticker }}
-      NAME: ${{ needs.request.outputs.name }}
       URL: ${{ needs.request.outputs.url }}
       MARKET: ${{ needs.request.outputs.market }}
-      EXISTING: ${{ needs.request.outputs.existing }}
+      DIR: ${{ needs.request.outputs.dir }}
+      PR: ${{ needs.request.outputs.pr }}
+      ISSUE: ${{ github.event.issue.number }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          ref: main
+          ref: ${{ env.BRANCH }} # what earlier runs collected
+          fetch-depth: 0
           persist-credentials: false
+
+      # Scheduled runs keep updating main (market reports, other companies): take them in first so the branch
+      # analyses the latest material and the final merge has nothing to resolve.
+      - name: Take in main
+        env:
+          PUSH_TOKEN: ${{ github.token }}
+        run: |
+          remote="https://x-access-token:${PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --quiet "$remote" main
+          if git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              merge --quiet --no-edit FETCH_HEAD; then
+            git push --quiet "$remote" "HEAD:refs/heads/${BRANCH}"
+          else
+            git merge --abort || true
+            echo "::warning::main を作業ブランチに取り込めなかった（競合）。ブランチのまま進める"
+          fi
 
       - id: setup
         uses: ./.github/actions/setup-reports
@@ -129,42 +186,76 @@ jobs:
           sec-user-agent: ${{ secrets.SEC_USER_AGENT }}
           claude-code-version: ${{ env.CLAUDE_CODE_VERSION }}
 
+      # One Claude run per pending agent (then the aggregation), each committed and pushed to the branch.
       # The values were validated by issue_request.py (no spaces, quotes or $), so they are safe as arguments.
-      - name: Run /collect-company-info (first time only)
-        if: ${{ needs.request.outputs.existing == '' }}
+      - name: Collect (resumes where it stopped)
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          PUSH_TOKEN: ${{ github.token }}
+          AUTOSAVE_BRANCH: ${{ env.BRANCH }}
         run: |
-          bash .github/scripts/run-claude.sh "/collect-company-info $TICKER $NAME $URL $MARKET mode=full" \
-            "情報収集 ${TICKER}_${NAME}" "$RUNNER_TEMP/collect.json"
+          name="${DIR#*_}"
+          prev=""
+          for round in 1 2 3 4 5 6; do
+            next="$(python3 -I tools/collect/collect_progress.py --company "$DIR" \
+              | python3 -I -c 'import json,sys; print(json.load(sys.stdin)["next"])')"
+            echo "collect_progress: next=$next"
+            if [ "$next" = "done" ]; then
+              echo "- 情報収集: 済み" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            if [ "$next" = "$prev" ]; then
+              echo "::error::${next} を実行したが、まだ未了（書く raw が揃っていない）"
+              exit 1
+            fi
+            if [ "$next" = "aggregate" ]; then step="集約のみ"; else step="担当=${next}"; fi
+            status=0
+            bash .github/scripts/run-claude.sh "/collect-company-info $TICKER $name $URL $MARKET mode=full $step" \
+              "情報収集 ${DIR}（${next}）" "$RUNNER_TEMP/collect-${next}.json" || status=$?
+            BRANCH="$BRANCH" bash .github/scripts/commit-outputs.sh "chore: ${DIR} の情報収集（${next}・Issue #${ISSUE}）"
+            [ "$status" -eq 0 ] || exit "$status"
+            prev="$next"
+          done
+          echo "::error::情報収集が規定の回数で終わらなかった"
+          exit 1
 
       - name: Run /company-report
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          PUSH_TOKEN: ${{ github.token }}
+          AUTOSAVE_BRANCH: ${{ env.BRANCH }}
         run: |
-          bash .github/scripts/run-claude.sh "/company-report $TICKER" "企業分析レポート $TICKER" "$RUNNER_TEMP/report.json"
+          bash .github/scripts/run-claude.sh "/company-report $TICKER" "企業分析レポート $DIR" "$RUNNER_TEMP/report.json"
 
       - name: Check the report was built
         id: built
         run: |
-          status="$(.venv/bin/python -I tools/report/company_report.py check --company "$TICKER" || true)"
+          status="$(.venv/bin/python -I tools/report/company_report.py check --company "$DIR" || true)"
           next="$(printf '%s' "$status" | python3 -I -c 'import json,sys; print(json.load(sys.stdin).get("next", ""))')"
           echo "next: $next"
           if [ "$next" != "report_existing" ]; then
-            echo "::error::$TICKER の今日のレポートが build されていない（check の next: $next）"
+            echo "::error::$DIR の今日のレポートが build されていない（check の next: $next）"
             exit 1
           fi
 
-      # Partial output (collection, analyses already built) is committed too, so a re-run continues from it.
+      # Whatever was done is kept on the branch, also when a step above failed.
       - name: Commit
         id: commit
         if: ${{ !cancelled() }}
         env:
           PUSH_TOKEN: ${{ github.token }}
-          ISSUE: ${{ github.event.issue.number }}
         run: |
-          dir="$(basename "$(ls -d companies/"${TICKER}"_* 2>/dev/null | head -1)")"
-          bash .github/scripts/commit-outputs.sh "chore: ${dir:-$TICKER} の初期分析と企業分析レポート（Issue #${ISSUE}・自動実行 $(date +%F)）"
+          BRANCH="$BRANCH" bash .github/scripts/commit-outputs.sh "chore: ${DIR} の企業分析レポート（Issue #${ISSUE}・自動実行 $(date +%F)）"
+
+      - name: Merge the PR
+        id: merge
+        if: ${{ steps.built.outcome == 'success' && steps.commit.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr ready "$PR" -R "$GITHUB_REPOSITORY"
+          gh pr merge "$PR" -R "$GITHUB_REPOSITORY" --squash --delete-branch \
+            --subject "chore: ${DIR} の初期分析と企業分析レポート（Issue #${ISSUE}）"
 
       - name: Save originals
         if: ${{ always() && steps.setup.outputs.cache-key != '' }}
@@ -178,23 +269,24 @@ jobs:
             !market/**/sources/manifest.csv
           key: ${{ steps.setup.outputs.cache-key }}
 
-      # Closes the Issue only when the report is built and on main; otherwise comments and leaves it open.
+      # Closes the Issue only when the report is built and merged into main; otherwise comments and leaves it open.
       - name: Report to the Issue
         if: ${{ always() }}
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          ISSUE: ${{ github.event.issue.number }}
           OUTCOME: ${{ steps.built.outcome == 'success' && steps.commit.outcome == 'success' && 'success' || 'failure' }}
+          MERGED: ${{ steps.merge.outcome == 'success' && 'yes' || 'no' }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           status=0
+          results=("$RUNNER_TEMP"/collect-*.json "$RUNNER_TEMP/report.json")
           python3 -I .github/scripts/issue_comment.py --outcome "$OUTCOME" --ticker "$TICKER" \
-            --repo "$GH_REPO" --run-url "$RUN_URL" \
-            --result "$RUNNER_TEMP/collect.json" "$RUNNER_TEMP/report.json" > "$RUNNER_TEMP/comment.md" || status=$?
+            --repo "$GH_REPO" --run-url "$RUN_URL" --pr-url "$PR" --merged "$MERGED" \
+            --result "${results[@]}" > "$RUNNER_TEMP/comment.md" || status=$?
           gh issue comment "$ISSUE" --body-file "$RUNNER_TEMP/comment.md"
           if [ "$status" -eq 0 ]; then
-            gh issue close "$ISSUE" --reason completed
+            gh issue close "$ISSUE" --reason completed || true # usually closed already by the merge (Closes #n)
           else
-            echo "::warning::レポートが完成していないため Issue #$ISSUE は開いたまま"
+            echo "::warning::レポートが main にマージされていないため Issue #$ISSUE は開いたまま"
           fi

@@ -13,7 +13,8 @@ ticker, name, url, market, mode, 企業ディレクトリ, 収集日, update の
 ## 書いてよいファイル（これ以外は書かない）
 - `raw/market/{収集日}_competitors.md`, `raw/ir/{収集日}_valuation-data.md`
 - `fetch.py` 経由の `sources/`（競合の短信など）
-- **書かない**: `status.md`, `overview.md`, `summaries/`, `data/`（`tdnet_summary.py` を競合に使う場合は `--company` を付けず標準出力だけ使う）, 他担当の raw
+- **書かない**: `status.md`, `overview.md`, `summaries/`, `data/`（`stock_prices.py` が書く `data/prices.csv` は除く。`tdnet_summary.py` を競合に使う場合は `--company` を付けず標準出力だけ使う）, 他担当の raw
+- **保存と再開**: raw は書き上げたファイルから順に保存する（最後にまとめない）。始める前に、自分の書く raw が今日の日付で既にあれば読み、書き終わっている章は飛ばして残りだけを書く（前回の実行が途中で止まった続き）
 - mode=update の差分ファイルは、今回の範囲の章だけを書く。範囲外の章は見出しごと書かない（「変更なし」と書かない。前回の値を再掲しない。collect-company-info.md の保存ルール）。例外: 競合を選び直したときの competitors.md は全章を書く（5-1 の5）
 
 ## Phase 5: 競合
@@ -96,7 +97,7 @@ ticker, name, url, market, mode, 企業ディレクトリ, 収集日, update の
 |---|
 | 現在株価（取得日時を明記）、時価総額、発行済株式数（自己株式を除く） |
 | EPS（実績・会社予想）、BPS |
-| PER・PBR の過去5〜10年の推移（年次の最高・最低・平均）と有報の期末PER（EV/EBITDA の過去推移はスクリプトが算出するので探さない） |
+| 日々の株価: `stock_prices.py --company {dir}` を1回実行して `data/prices.csv` を作る。PER・PBR・EV/EBITDA の年次の最高・最低・平均はバリュエーション分析のスクリプト（`va_series.py`）がこの株価と EPS・BPS から計算するので、IRBANK などで探さない。4章は有報の期末PER（「主要な経営指標等の推移」の株価収益率）の列だけを書く（高・低・平均の列は空欄でよい）。`stock_prices.py` が失敗したときだけ、従来どおり年次の高・低・平均を探して 4章に書く |
 | アナリスト予想（コンセンサス）: 今期・来期の予想 EPS と売上高、カバーするアナリスト数、そこから計算した EPS 成長率。次の順に WebSearch / WebFetch で公開ページを探し、最初に見つかったものを書く: 日本株は 株探（kabutan.jp の「業績」）・みんかぶ（minkabu.jp の「アナリスト予想」）・IFIS（ifis.co.jp の「コンセンサス」）・会社四季報オンライン、米国株は Nasdaq（nasdaq.com の Earnings / Analyst Research）・MarketWatch（Analyst Estimates）・Zacks。出典 URL・取得日・アナリスト数を必ず書き、確度は「二次」。ログインや有料の画面にしか無いときは取らず「取得不可（理由）」と書く（数値を推測で補わない）。会社予想とは別の列にする |
 
 - **需給（信用残・空売り）**: `raw/market/{収集日}_positioning.md` に、直近8週の週次の表を1つ書く（企業分析レポートのテクニカルの章が読む。点数には入らない）。日本株は `| 日付 | 信用買い残 | 信用売り残 | 信用倍率 | 出典 |`（株数。株探の「信用残」・日証金など公開ページ）、米国株は `| 日付 | 空売り残高 | 浮動株比率 | 日数 | 出典 |`（Nasdaq の Short Interest・MarketWatch など）。日付は `YYYY-MM-DD`（その週の基準日）、確度は「二次」。取れなければ表を作らず報告に「取得不可（理由）」と書く（数値を推測で補わない）

@@ -50,6 +50,8 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 | `tdnet_summary.py` | 決算短信 iXBRL から実績・予想・配当・株式数を抽出 | `data/tdnet_facts.csv` |
 | `edgar.py` | SEC EDGAR の提出書類一覧（`list`）、companyfacts から年次財務を抽出（`facts`）、四半期（3か月）の売上高・利益を抽出（`quarters`）。米国株。要 `SEC_USER_AGENT` | 標準出力、`data/financials.csv`、`data/quarterly.csv` |
 | `render_tables.py` | data の CSV から Markdown 表を出力 | 標準出力 |
+| `raw_financials.py` | data の CSV から財務時系列の raw を作る（1・4・5・8章は記入済み、残りは FILL。collect-filings が FILL だけを書く） | `raw/ir/{日付}_financials-historical.md` |
+| `collect_progress.py` | 初回収集の進み具合（担当ごとの済み／未了と `next`）。途中で止まった収集を続きから再開するのに使う | 1行の JSON |
 | `sources_admin.py` | manifest の誤登録行を除去（`remove`。原本は `sources/_removed/` へ移動） | `sources/manifest.csv` |
 
 ### 地合い用（`tools/collect/market/`）
@@ -237,7 +239,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 |---|---|---|
 | `.github/workflows/market-report.yml` | 毎週月曜 0:10 | `/market-report`（その週の月曜の週。材料が古ければスキルが collect-market-info を先に実行） |
 | `.github/workflows/company-report.yml` | 月〜金 0:30（A グループ）・6:00（B グループ） | お気に入り（`companies/favorites.json`）の企業ごとに `/company-report {企業}` を1社ずつ実行 |
-| `.github/workflows/issue-company-report.yml` | Issue「企業の初期分析」の起票時 | 指定された企業を `/collect-company-info … mode=full`（`companies/` に無い企業だけ）→ `/company-report` で分析してコミットし、Issue に結果をコメントして閉じる |
+| `.github/workflows/issue-company-report.yml` | Issue「企業の初期分析」にラベル `company-analysis` が付いたとき | Issue ごとの作業ブランチとドラフト PR で、`/collect-company-info … mode=full 担当=…`（未了の担当だけ、1担当ずつコミット）→ `/company-report` を進め、完了したら PR を main にマージして Issue に結果をコメント |
 
 - どちらも Claude Code（バージョンはワークフローの `CLAUDE_CODE_VERSION`）を npm でインストールし、`claude -p` でヘッドレス実行する。権限は `.github/claude/ci-settings.json`（`--permission-mode dontAsk`。許可リストに無いツールは確認なしで拒否）と、`.claude/settings.json` の書き込みガード
 - 完了したら `.github/scripts/commit-outputs.sh` が `companies/`・`market/` の変更だけを main にコミットして push する。それ以外のパス（コード・設定・台帳）が変わっていたらコミットせず失敗する。途中で止まった分析もコミットされ、次の実行は鮮度が新しい分析をスキップして続きから進む
@@ -252,16 +254,18 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 1. Issues → New issue → テンプレート「企業の初期分析」で、銘柄コード・企業名（英語。ディレクトリ名になる）・ホームページ URL・市場を書いて起票する
 2. ラベル `company-analysis` が付いたときに動く（テンプレートで起票すると自動で付く）。起票者がオーナー・コラボレーターでないときは、オーナーかコラボレーターがラベルを付けたときだけ動く（公開リポジトリで第三者に実行させないため）。ラベルが付かずに起票された Issue や、やり直したい Issue は、ラベルを付ける（付け直す）と動く
 3. 本文は `tools/report/issue_request.py` が4項目だけを取り出して形式を検証する（Claude には検証済みの値だけを渡す）。読み取れなければエラーをコメントして閉じる（not planned）。新しい Issue で起票し直す
-4. 成功すると3期間の判定とレポートへのリンクをコメントして閉じる。失敗したときはコメントして**開いたまま**にする。途中までの収集・分析はコミット済みなので、その実行の **Re-run failed jobs** で続きから進み、成功したら閉じる
-5. 1社あたり数十分〜数時間（上限5時間）。Issue ごとに別に動くので、定期実行と同時に走ることがある（main への push が競合したら `auto/rescue-…` ブランチに退避）
-6. 定期実行に入れるときは、レポートができてから `/favorites` で登録する
+4. Issue ごとに作業ブランチ `analysis/issue-{番号}` とドラフト PR（`Closes #{番号}`）を作り、作業はすべてこのブランチで進める。始めるたびに main を取り込む
+5. 情報収集は担当（collect-ir・collect-filings・collect-market・collect-peers-valuation）ごとに別の Claude 実行で進め、1担当終わるたびにブランチへコミット＆push する。Claude の実行中も5分ごとに途中保存する（`.github/scripts/autosave.sh`）。どこまで済んだかは `tools/collect/collect_progress.py` が raw の有無で判定し、済んだ担当は飛ばす
+6. 成功すると PR を Ready にして main にスカッシュマージし（Issue は自動で閉じる）、3期間の判定とレポートへのリンクをコメントする。失敗したとき（利用枠の上限など）はコメントして PR はドラフト・Issue は**開いたまま**にする。その実行の **Re-run failed jobs**、またはラベルの付け直しで、ブランチの続きから進む
+7. 1社あたり数十分〜数時間（1回の上限5時間。枠切れなら何回かに分けて進む）。Issue ごとに別に動くので、定期実行と同時に走ることがある
+8. 定期実行に入れるときは、レポートができてから `/favorites` で登録する
 
 ### 初回セットアップ（1回）
 
 1. ローカルで `claude setup-token` を実行し、表示された OAuth トークン（1年有効。Claude の利用にだけ使える）を控える。Pro / Max の利用枠を使うので、平日最大10社を回すなら Max を推奨（枠を使い切るとその企業は未完了になり、翌日続きから進む）
 2. GitHub のリポジトリの Settings → Environments で `reports` を作り、Deployment branches を `main` だけにする
 3. `reports` の Environment secrets に登録する: `CLAUDE_CODE_OAUTH_TOKEN`（手順 1）、`EDINET_API_KEY`・`FRED_API_KEY`・`SEC_USER_AGENT`（`.env` と同じ値）
-4. お気に入りを `favorites` スキルで登録してコミットする。Issue からの初期分析を使うなら、Issues → Labels でラベル `company-analysis` を作る（無いとテンプレートのラベルが付かず、ワークフローが動かない）
+4. お気に入りを `favorites` スキルで登録してコミットする。Issue からの初期分析を使うなら、Issues → Labels でラベル `company-analysis` を作る（無いとテンプレートのラベルが付かず、ワークフローが動かない）。あわせて Settings → Actions → General の「Allow GitHub Actions to create and approve pull requests」を ON にする（作業ブランチのドラフト PR を GITHUB_TOKEN で作るため）
 5. Actions タブから `market-report` → `company-report`（グループ A）を Run workflow で手動実行し、Summary で完了報告・拒否されたツール・コミットを確認する
 
 ### 認証情報の扱い

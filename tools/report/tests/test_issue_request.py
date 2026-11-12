@@ -25,7 +25,7 @@ def _body(**kwargs) -> str:
 def test_valid_japan_request(tmp_path):
     out = IR.parse(_body(), tmp_path)
     assert out == {"ok": True, "ticker": "1234", "name": "example", "url": "https://www.example.co.jp/ir/",
-                   "market": "japan", "existing": None}
+                   "market": "japan", "dir": "1234_example"}
 
 
 def test_us_ticker_is_upper_cased_and_crlf_is_accepted(tmp_path):
@@ -57,9 +57,9 @@ def test_invalid_values_are_rejected(tmp_path, kwargs, word):
     assert not out["ok"] and any(word in e for e in out["errors"])
 
 
-def test_existing_company_is_found(tmp_path):
-    (tmp_path / "companies" / "1234_example").mkdir(parents=True)
-    assert IR.parse(_body(), tmp_path)["existing"] == "1234_example"
+def test_existing_directory_of_the_ticker_is_used(tmp_path):
+    (tmp_path / "companies" / "1234_other-name").mkdir(parents=True)
+    assert IR.parse(_body(), tmp_path)["dir"] == "1234_other-name"
 
 
 def test_cli_reads_body_file(tmp_path, capsys):

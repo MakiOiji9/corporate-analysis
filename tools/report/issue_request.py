@@ -7,7 +7,8 @@ The body comes from .github/ISSUE_TEMPLATE/company-analysis.yml: one "### {label
 its value ("_No response_" when left empty). Only the four fields that collect-company-info needs without asking
 (ticker, name, url, market) are taken, and each is checked against a strict pattern, because the values become
 arguments of a Claude Code command in .github/workflows/issue-company-report.yml. The rest of the body is ignored.
-existing: the companies/ directory whose ticker matches (the workflow then skips the first collection).
+dir: the companies/ directory to work in: the existing one whose ticker matches, else "{ticker}_{name}". Whether
+the collection is needed is not decided here (tools/collect/collect_progress.py looks at what is collected).
 stdout is one JSON line. Exit 1 when not ok.
 """
 from __future__ import annotations
@@ -78,7 +79,8 @@ def parse(body: str, root: Path) -> dict:
     errors = validate(fields)
     if errors:
         return {"ok": False, "errors": errors}
-    return {"ok": True, **fields, "existing": existing_dir(root, fields["ticker"])}
+    return {"ok": True, **fields,
+            "dir": existing_dir(root, fields["ticker"]) or f"{fields['ticker']}_{fields['name']}"}
 
 
 def main(argv: list[str] | None = None, root: Path = A.REPO_ROOT) -> int:
