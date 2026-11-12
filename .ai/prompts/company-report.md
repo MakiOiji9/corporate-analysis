@@ -77,7 +77,7 @@ $PY -I tools/report/company_report.py check --company {company} [--redo] [--use-
 
 - 実行の順は check が決める（five-forces → three-c → moat → swot → profitability → growth → safety → cash-flow → valuation）。上流を作り直すと下流が `triggered` になるので、**1つ実行するたびに check をやり直す**。複数のスキルをまとめて実行しない（STEP 1 の4つ。STEP 2・3 の5つは手順 1.5 の run が依存の順に進める）
 - 鮮度が新しい（`fresh`）分析は実行しない（スキップ）。分析スキルの `redo` は使わない
-- **同じスキルは1回の実行につき1回まで**。実行し終えたのに check でまだ同じスキルが `next` に出たら、もう一度は実行せず、そのスキルの `reason` を添えて止まり、ユーザーに報告する（材料の取り直し・作り直しはユーザーの判断）
+- **同じ分析スキルは1回の実行につき1回まで**。実行し終えたのに check でまだ同じ分析スキルが `next` に出たら、もう一度は実行せず、そのスキルの `reason` を添えて止まり、ユーザーに報告する（材料の取り直し・作り直しはユーザーの判断）。材料の収集（`collect-company-info` / 材料による `market-report`）はこの決まりで止まらず、次の行の `--use-stale` で進む
 - 分析スキルが止まった（ユーザーへの確認待ち・エラー）ときは、このコマンドも止めて状況を報告する
 - check と prepare を1つのコマンドにつなげない（check の `next` を見てから次へ進む）。prepare も鮮度を確かめ、新しくない分析があれば `ok: false` で拒否する
 - 材料の収集（`collect-company-info` / 材料による `market-report`）も1回の実行で1回まで。実行したのにまだ同じ `next` が出たら、check・run・prepare に **`--use-stale`** を付けて進み（レポートに「古い材料」と基準日が出る）、完了報告の「警告」行に古い材料と `why` を書く

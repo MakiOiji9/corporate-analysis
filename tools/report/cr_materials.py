@@ -19,6 +19,9 @@ import mdparse as M
 ISO_DATE = re.compile(r"\b(\d{4}-\d{2}-\d{2})\b")
 FILE_DATE = re.compile(r"^(\d{4}-\d{2}-\d{2})_")
 NEWS_SPAN_DAYS = 80  # the disclosure table must reach about three months back from its collection day
+# briefings come about every six months: once collect-ir has looked within this many days and found no newer one,
+# collecting again cannot make the material newer, so it is not stale
+MANAGEMENT_RECHECK_DAYS = 7
 MARKET_MAX_DAYS = 7
 COLLECT_SKILL, MARKET_SKILL, PREPARE = "collect-company-info", "market-report", "prepare"
 
@@ -107,7 +110,14 @@ def evaluate(company_path: Path, outlook: dict, today: str) -> list[dict]:
                 continue
             date = _governance_date(company_path)
         elif m.key == "management":
-            date = _management_date(_newest(company_path / "raw" / "ir", "*_management.md"))
+            newest = _newest(company_path / "raw" / "ir", "*_management.md")
+            date = _management_date(newest)
+            row = _state(m, date, today)
+            checked = _file_date(newest)
+            if row["stale"] and date and _age(checked, today) <= MANAGEMENT_RECHECK_DAYS:
+                row = {**row, "stale": False, "why": f"{checked} の収集で新しい説明会資料なしを確認"}
+            out.append(row)
+            continue
         else:
             date = outlook.get("week")
         out.append(_state(m, date, today, note))

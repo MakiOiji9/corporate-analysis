@@ -158,6 +158,30 @@ def test_materials_route_market_before_company_collection(tmp_path):
     assert not by["governance"]["stale"]  # "c" is not a Japanese ticker: no annual report to collect
 
 
+def _management(company, day: str, briefing: str) -> None:
+    (company / "raw" / "ir").mkdir(parents=True, exist_ok=True)
+    (company / "raw" / "ir" / f"{day}_management.md").write_text(
+        f"# 経営者\n\n## 1. 基準日\n\n最新の決算説明会: {briefing}\n", encoding="utf-8")
+
+
+def test_management_with_an_old_briefing_is_fresh_when_just_rechecked(tmp_path):
+    # the next briefing is not out yet: collecting again cannot make it newer, so a recent check is enough
+    import cr_materials as MT
+    company = tmp_path / "c"
+    _management(company, "2026-11-10", "2026-05-20")
+    row = {m["key"]: m for m in MT.evaluate(company, {}, "2026-11-12")}["management"]
+    assert not row["stale"] and row["date"] == "2026-05-20"
+    assert "2026-11-10" in row["why"] and "新しい説明会資料なし" in row["why"]
+
+
+def test_management_with_an_old_briefing_is_stale_when_the_check_is_old(tmp_path):
+    import cr_materials as MT
+    company = tmp_path / "c"
+    _management(company, "2026-11-01", "2026-05-20")
+    row = {m["key"]: m for m in MT.evaluate(company, {}, "2026-11-12")}["management"]
+    assert row["stale"] and row["why"] == "176日前（上限 120日）"
+
+
 def test_stale_prices_alone_do_not_need_collection():
     import cr_materials as MT
     rows = [{"key": "prices", "stale": True, "by": MT.PREPARE}]
