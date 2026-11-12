@@ -1,7 +1,5 @@
 fetched_date,doc_type,period,published_date,doc_id,url,sha256,local_path,note
 2026-11-11,peer-tanshin,,,2655605,https://ssl4.eir-parts.net/doc/6532/tdnet/2655605/00.pdf,1a8ebbd04e3c8a0539bbae02cf84c7f3f915b51733179883baaa6d9119da71a4,sources/2026-11-11/2655605.pdf,
-2026-11-11,edinet-csv,,,S100Y69G,https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69G?type=5,a74de60de345480456bd32c94017d59acd5a4d4d19d1d913bd998d74d621ea03,sources/2026-11-11/S100Y69G_csv.zip,EDINET API v2
-2026-11-11,edinet-pdf,,,S100Y69G,https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69G?type=2,12441f5835a1b69045cc71f3a79d990e2ea42395d1296b8fecb0608ed289c232,sources/2026-11-11/S100Y69G.pdf,EDINET API v2
 2026-11-11,peer-tanshin,,,20250402507816,https://finance-frontend-pc-dist.west.edge.storage-yahoo.jp/disclosure/20250410/20250402507816.pdf,bb0dc8ad5f8a4f84580bf30738efa4d45f0cb425f36f83f140dbcd2f41c09191,sources/2026-11-11/20250402507816.pdf,
 2026-11-12,plan,2024-02,2024-04-12,153714,https://ssl4.eir-parts.net/doc/6532/ir_material_for_fiscal_ym1/153714/00.pdf,9ecb4785ed3c979fc773da77880730eeb34989f6edb307ba3985d496296059c5,sources/2026-11-12/153714.pdf,
 2026-11-12,presentation,2026-02,2025-07-15,182665,https://ssl4.eir-parts.net/doc/6532/ir_material_for_fiscal_ym7/182665/00.pdf,c0f8231208a784b7df389dc4e7a8c71320a694f3cdf02c93739ec9d197c0b478,sources/2026-11-12/182665.pdf,
@@ -12,3 +10,14 @@ fetched_date,doc_type,period,published_date,doc_id,url,sha256,local_path,note
 2026-11-12,disclosure,2027-02,2026-10-15,20261009548458,https://finance-frontend-pc-dist.west.edge.storage-yahoo.jp/disclosure/20261015/20261009548458.pdf,bdcfe88aa7be47ca7d2389271039240a66eea535034ccde9ecca592eec399afd,sources/2026-11-12/20261009548458.pdf,
 2026-11-12,presentation,2026-02,2026-04-14,20260408500168,https://finance-frontend-pc-dist.west.edge.storage-yahoo.jp/disclosure/20260414/20260408500168.pdf,445577952ef5cb7602d0592d73703f56689c6cbc275653550ccd2186bb60ff5e,sources/2026-11-12/20260408500168.pdf,
 2026-11-12,disclosure,,2026-10-15,20261015551603,https://finance-frontend-pc-dist.west.edge.storage-yahoo.jp/disclosure/20261015/20261015551603.pdf,13f3e5fa1a7872ad13c67e42f050f0eaeb887fd15020a5f4d913f2a66fc49fd0,sources/2026-11-12/20261015551603.pdf,
+2026-11-12,edinet-csv,,,S100Y69G,https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69G?type=5,a74de60de345480456bd32c94017d59acd5a4d4d19d1d913bd998d74d621ea03,sources/2026-11-12/S100Y69G_csv.zip,EDINET API v2
+2026-11-12,edinet-csv,,,S100VTPA,https://api.edinet-fsa.go.jp/api/v2/documents/S100VTPA?type=5,3f63ddda3d042b6c2788bc0e85199eb0d53fb06081095b6eaea1f465264ae2dc,sources/2026-11-12/S100VTPA_csv.zip,EDINET API v2
+2026-11-12,edinet-csv,,,S100TI4B,https://api.edinet-fsa.go.jp/api/v2/documents/S100TI4B?type=5,28c479902f4dc886c3307bd8bb1150a35d9501616cada0851409580b6830d89f,sources/2026-11-12/S100TI4B_csv.zip,EDINET API v2
+2026-11-12,edinet-csv,,,S100Q8UT,https://api.edinet-fsa.go.jp/api/v2/documents/S100Q8UT?type=5,9849c0a58060ffbba0db143bf2aa07dedfa050efb49b818df2512231de06dbf4,sources/2026-11-12/S100Q8UT_csv.zip,EDINET API v2
+2026-11-12,edinet-csv,,,S100NXKY,https://api.edinet-fsa.go.jp/api/v2/documents/S100NXKY?type=5,96ab812e43c69a69b53bb23dacca645f3427c44c0972ad1454d105c98bec456d,sources/2026-11-12/S100NXKY_csv.zip,EDINET API v2
+2026-11-12,edinet-csv,,,S100LE04,https://api.edinet-fsa.go.jp/api/v2/documents/S100LE04?type=5,e1958b4013fec3d0416217c33ead0c57674daafe361e9334ae7fe5353aa27704,sources/2026-11-12/S100LE04_csv.zip,EDINET API v2
+2026-11-12,edinet-csv,,,S100IOF2,https://api.edinet-fsa.go.jp/api/v2/documents/S100IOF2?type=5,d49f44e9f35e3152574fa7a756532c863b7376c6b3f8a79e34d7ddaf83d0a95f,sources/2026-11-12/S100IOF2_csv.zip,EDINET API v2
+2026-11-12,edinet-csv,,,S100FUUL,https://api.edinet-fsa.go.jp/api/v2/documents/S100FUUL?type=5,b4e1b65a5715eb92f80dcc27861189559cae73c9edd254e6d5b179ed31b11c43,sources/2026-11-12/S100FUUL_csv.zip,EDINET API v2
+2026-11-12,edinet-csv,,,S100D1X1,https://api.edinet-fsa.go.jp/api/v2/documents/S100D1X1?type=5,b8bc8bf3e01de0b1ffc4ce0c1741e810974a36c81f30913095969d20ec1b4059,sources/2026-11-12/S100D1X1_csv.zip,EDINET API v2
+2026-11-12,edinet-csv,,,S100AC3L,https://api.edinet-fsa.go.jp/api/v2/documents/S100AC3L?type=5,a12180d8c5117476abdcdd3841907693e25bd5577b0a113891e69eea1bcc0071,sources/2026-11-12/S100AC3L_csv.zip,EDINET API v2
+2026-11-12,edinet-pdf,,,S100Y69G,https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69G?type=2,12441f5835a1b69045cc71f3a79d990e2ea42395d1296b8fecb0608ed289c232,sources/2026-11-12/S100Y69G.pdf,EDINET API v2
