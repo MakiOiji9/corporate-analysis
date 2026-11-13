@@ -78,6 +78,8 @@ def horizon_block(label: str, span: str, h: dict, prose: str, matrix: dict | Non
     good = "".join(_point(r) for r in h["good"]) or '<li class="muted">なし</li>'
     bad = "".join(_point(r) for r in h["bad"]) or '<li class="muted">なし</li>'
     knock = f'<p class="notice"><b>足切り</b>: {esc("、".join(h["knockout"]))}</p>' if h.get("knockout") else ""
+    knock += (f'<p class="notice"><b>注意</b>: {esc("、".join(h["cautions"]))}（判定は止めないが、確かめる）</p>'
+              if h.get("cautions") else "")
     unknown = (f'<p class="small muted">材料が無く点数から外した要素: {esc("・".join(h["unknown"]))}</p>'
                if h.get("unknown") else "")
     rows = table(["要素", "重み", "点数", "寄与", "値", "情報源"],
@@ -86,6 +88,8 @@ def horizon_block(label: str, span: str, h: dict, prose: str, matrix: dict | Non
                    esc(r["source"])] for r in h["rows"]], right=frozenset({1, 2, 3}))
     ref = (f'<p class="small"><b>参考: フレームワークの判定マトリクス</b> {badge(matrix["verdict"])} '
            f'{esc(matrix["why"])}</p>' if matrix else "")
+    if matrix and matrix.get("disagree"):
+        ref += f'<p class="small muted">{esc(matrix["disagree"])}</p>'
     score = "—" if h["score"] is None else f'{h["score"]:+.2f}'
     return (f'<div class="horizon {VERDICT_CLASS.get(h["verdict"], "")}"><div class="h-head"><h3>{esc(label)}'
             f'<span class="muted small">（{esc(span)}）</span></h3>{badge(h["verdict"])}'

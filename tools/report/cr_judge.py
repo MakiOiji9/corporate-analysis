@@ -5,11 +5,15 @@ unit-tested:
   step1()          STEP 1 A/B/C from 1-1〜1-4 (L230-239). 勝てる理由・SWOT が判定保留なら確定しない（暫定 B）.
   step2()          STEP 2 A/B/C by score: 良好 +1・普通 0・懸念 −1 の平均. A ≥ +0.5 with no mismatch; C ≤ −0.25,
                    two or more 懸念, or a serious red flag (red_flags()); otherwise B.
-  horizon_score()  短期・中期・長期: each factor scored +1 / 0 / −1 and averaged with the horizon's WEIGHTS
-                   (+0.3 以上 投資検討, −0.2 以下 見送り, otherwise ウォッチ). A factor without material is left out
-                   and the weights are re-normalised; a 判定保留 analysis counts as 0.
-  knockouts()      serious red flags pass every horizon; STEP 1 C passes the long horizon only.
-  matrix_reference()  the framework's decision matrix (STEP 1 × 2 × 3), shown next to the long horizon.
+  cash_burn()      the cash-flow red flags read from the raw rows when the analysis could not judge its steps 1・2
+                   (too few years): operating CF negative in most years, cumulative FCF negative.
+  horizon_score()  短期・中期・長期: each factor scored −1..+1 in half steps (cr_factors) and averaged with the
+                   horizon's WEIGHTS (+0.25 以上 投資検討, −0.25 以下 見送り, otherwise ウォッチ). A factor without
+                   material is left out and the weights are re-normalised; a 判定保留 analysis counts as 0.
+  knockouts()      only serious red flags pass a horizon. STEP 1 C is weighed through its analyses' scores and
+                   named in the long horizon's reason, not a knockout.
+  matrix_reference()  the framework's decision matrix (STEP 1 × 2 × 3), shown next to the long horizon;
+  matrix_note()       says why the long horizon's verdict differs from it.
   sensitivity()    which single factor moving one step would change a horizon's verdict, and the distance to
                    the thresholds.
 Every horizon carries its factor rows {key, label, weight, score, contribution, value, reason, source}; the
@@ -17,10 +21,13 @@ report shows the positive contributions as 良い点 and the negative ones as �
 """
 from __future__ import annotations
 
+import math
+
 PENDING = "判定保留"
 CONSIDER, WATCH, PASS = "投資検討", "ウォッチ", "見送り"
 LEVELS = (CONSIDER, WATCH, PASS)  # best first
-UP, DOWN = 0.3, -0.2  # horizon score thresholds
+UP, DOWN = 0.25, -0.25  # horizon score thresholds (symmetric)
+BURN_MIN_YEARS = 2  # cash_burn() needs at least this many years to call it a pattern
 STEP2_A, STEP2_C = 0.5, -0.25
 MATRIX = {  # (row, STEP 3) -> verdict, with the framework's note
     ("A", "割安"): (CONSIDER, ""), ("A", "妥当"): (CONSIDER, "分割購入など"), ("A", "割高"): (WATCH, "下落を待つ"),
@@ -96,14 +103,33 @@ def mismatches(moat: str | None, win: str | None, profitability: str | None, mar
     return found
 
 
-def red_flags(cf_steps: list[dict], safety: str | None, safety_trend: str | None) -> list[str]:
-    """Serious red flags: they pass every horizon and make STEP 2 C. cf_steps are the cash-flow 手順1〜2."""
+def cash_burn(rows: list[dict], cf_steps: list[dict]) -> list[str]:
+    """The red flags of the cash-flow steps 1・2 read from the raw rows, for the steps the analysis left
+    unjudged (fewer years than it needs). A judged step decides by its own rating instead (red_flags())."""
+    unjudged = [not (step or {}).get("rating") for step in (list(cf_steps[:2]) + [None, None])[:2]]
+    out = []
+    cfo = [r["cfo"] for r in rows if r.get("cfo") is not None]
+    negative = sum(1 for v in cfo if v < 0)
+    if unjudged[0] and len(cfo) >= BURN_MIN_YEARS and negative * 2 > len(cfo):
+        out.append(f"営業CF がマイナスの年が多い（{negative}/{len(cfo)}年。年数が短く分析では判定できなかった）")
+    fcf = [r["fcf"] for r in rows if r.get("fcf") is not None]
+    if unjudged[1] and len(fcf) >= BURN_MIN_YEARS and sum(fcf) < 0:
+        out.append(f"FCF の累計がマイナス（{len(fcf)}年。年数が短く分析では判定できなかった）")
+    return out
+
+
+def red_flags(cf_steps: list[dict], safety: str | None, safety_trend: str | None,
+              burn: list[str] | tuple = ()) -> list[str]:
+    """Serious red flags: they pass every horizon and make STEP 2 C. cf_steps are the cash-flow 手順1〜2;
+    burn (cash_burn()) counts only when the balance sheet is not 良好 (otherwise it is a caution)."""
     flags = []
     labels = ("営業CF がマイナスの年が続く（キャッシュフローの「営業CF の安定性」が懸念）",
               "FCF の累計がマイナス（キャッシュフローの「FCF の創出力」が懸念）")
     for label, step in zip(labels, cf_steps[:2]):
         if (step or {}).get("rating") == "懸念":
             flags.append(label)
+    if safety != "良好":
+        flags.extend(burn)
     if safety == "懸念" and safety_trend == "悪化傾向":
         flags.append("安全性が懸念で、しかも悪化傾向")
     return flags
@@ -159,22 +185,29 @@ def _weighted(weights: dict[str, int], factors: dict[str, dict]) -> tuple[float 
     return round(score, 3), rows
 
 
-def knockouts(horizon: str, flags: list[str], step1_grade: str | None) -> list[str]:
-    out = list(flags)
-    if horizon == "long" and step1_grade == "C":
-        out.append("STEP 1 が C（勝てる理由がなし、または SWOT が No）")
-    return out
+STEP1_C_NOTE = "STEP 1 が C（勝てる理由がなし、または SWOT が No）。事業の強みは点数で減点済みだが、確かめてから判断する"
+
+
+def knockouts(horizon: str, flags: list[str], step1_grade: str | None = None) -> list[str]:
+    """Only serious red flags stop a horizon. step1_grade is kept for the callers; STEP 1 C is weighed instead."""
+    return list(flags)
+
+
+def _notes(horizon: str, step1_grade: str | None, cautions: list[str] | tuple) -> str:
+    notes = list(cautions) + ([STEP1_C_NOTE] if horizon == "long" and step1_grade == "C" else [])
+    return "。注意: " + "、".join(notes) if notes else ""
 
 
 def horizon_score(horizon: str, factors: dict[str, dict], flags: list[str] | tuple = (),
-                  step1_grade: str | None = None) -> dict:
-    """The verdict of one horizon. factors: key -> {score (+1..−1 or None), value, reason, source, pending}."""
+                  step1_grade: str | None = None, cautions: list[str] | tuple = ()) -> dict:
+    """The verdict of one horizon. factors: key -> {score (+1..−1 or None), value, reason, source, pending}.
+    cautions are shown in the reason without stopping the horizon (e.g. cash burn with a strong balance sheet)."""
     score, rows = _weighted(WEIGHTS[horizon], factors)
     good = sorted((r for r in rows if (r["contribution"] or 0) > 0), key=lambda r: -r["contribution"])
     bad = sorted((r for r in rows if (r["contribution"] or 0) < 0), key=lambda r: r["contribution"])
     stops = knockouts(horizon, list(flags), step1_grade)
     base = {"score": score, "rows": rows, "good": good, "bad": bad, "knockout": stops, "provisional": None,
-            "unknown": [r["label"] for r in rows if r["score"] is None]}
+            "cautions": list(cautions), "unknown": [r["label"] for r in rows if r["score"] is None]}
     if stops:
         return {**base, "verdict": PASS, "why": f"足切り: {'、'.join(stops)}（点数にかかわらず見送り）"}
     if score is None:
@@ -182,8 +215,8 @@ def horizon_score(horizon: str, factors: dict[str, dict], flags: list[str] | tup
     plus = f"プラス: {'・'.join(r['label'] for r in good[:2])}" if good else "プラスの要素なし"
     minus = f"マイナス: {'・'.join(r['label'] for r in bad[:2])}" if bad else "マイナスの要素なし"
     near = nearest(score)
-    why = (f"重み付けの点数 {score:+.2f}（+{UP} 以上 投資検討、{DOWN} 以下 見送り。{near['text']}）。"
-           f"{plus}／{minus}")
+    why = (f"重み付けの点数 {score:+.2f}（{UP:+.2f} 以上 投資検討、{DOWN:+.2f} 以下 見送り。{near['text']}）。"
+           f"{plus}／{minus}{_notes(horizon, step1_grade, cautions)}")
     return {**base, "verdict": _verdict_for(score), "why": why}
 
 
@@ -193,15 +226,23 @@ def nearest(score: float | None) -> dict | None:
     if score is None:
         return None
     if score <= DOWN:
-        to, gap, rule = WATCH, DOWN - score, f"{DOWN:+.1f} を超えれば{WATCH}"  # must rise above DOWN
+        to, gap, rule = WATCH, DOWN - score, f"{DOWN:+.2f} を超えれば{WATCH}"  # must rise above DOWN
     elif score >= UP:
-        to, gap, rule = WATCH, -(score - UP), f"{UP:+.1f} を下回れば{WATCH}"  # 投資検討 until it falls below UP
+        to, gap, rule = WATCH, -(score - UP), f"{UP:+.2f} を下回れば{WATCH}"  # 投資検討 until it falls below UP
     else:
         up, down = UP - score, score - DOWN
-        to, gap, rule = ((CONSIDER, up, f"{UP:+.1f} 以上で{CONSIDER}") if up <= down
-                         else (PASS, -down, f"{DOWN:+.1f} 以下で{PASS}"))
+        to, gap, rule = ((CONSIDER, up, f"{UP:+.2f} 以上で{CONSIDER}") if up <= down
+                         else (PASS, -down, f"{DOWN:+.2f} 以下で{PASS}"))
     gap = round(gap, 3) + 0.0  # + 0.0 turns −0.0 into 0.0
     return {"to": to, "gap": gap, "text": f"{to}まであと {gap:+.2f}（{rule}）"}
+
+
+def _next_word(score: float, step: int) -> float:
+    """One step of a factor: a whole score moves a whole word; a half or fractional score moves to the next
+    whole word in that direction (−0.5 up is 0, not +0.5)."""
+    if float(score).is_integer():
+        return max(-1.0, min(1.0, score + step))
+    return float(math.ceil(score) if step > 0 else math.floor(score))
 
 
 def sensitivity(horizon: str, factors: dict[str, dict], flags: list[str] | tuple = (),
@@ -219,13 +260,13 @@ def sensitivity(horizon: str, factors: dict[str, dict], flags: list[str] | tuple
         if key not in WEIGHTS[horizon] or f.get("score") is None:
             continue
         for step, word in ((1, "1段良くなれば"), (-1, "1段悪くなれば")):
-            moved = max(-1.0, min(1.0, f["score"] + step))
+            moved = _next_word(f["score"], step)
             if moved == f["score"]:
                 continue
             other = horizon_score(horizon, {**factors, key: {**f, "score": moved}}, flags, step1_grade)
             if other["verdict"] != current["verdict"]:
                 out["movers"].append({"key": key, "label": FACTOR_LABELS[key], "direction": word,
-                                      "verdict": other["verdict"], "score": other["score"]})
+                                      "verdict": other["verdict"], "score": other["score"], "to": moved})
     return out
 
 
@@ -246,6 +287,10 @@ def mover_text(mover: dict, rows: list[dict]) -> str:
     text = NUMERIC_MOVES.get((mover["key"], step))
     ladder = LADDERS.get(mover["key"])
     row = next((r for r in rows if r["key"] == mover["key"]), None)
+    score, to = (row or {}).get("score"), mover.get("to")
+    if text is None and ladder and score is not None and to is not None and not float(score).is_integer() \
+            and not (mover["key"] == "valuation" and abs(to) == 1):
+        text = f"{mover['label']}が「{ladder[int(to) + 1]}」になれば（今は {score:+.1f} 点）"
     if text is None and ladder and row and row["score"] is not None:
         now = max(-1, min(1, round(row["score"])))
         if -1 <= now + step <= 1:
@@ -268,3 +313,15 @@ def matrix_reference(s1: dict, s2: dict, s3: str | None) -> dict:
     pending = "（判定保留を含む暫定）" if s1["pending"] or s2["pending"] else ""
     return {"verdict": verdict, "note": note,
             "why": f"STEP 1・2 が{'とも A' if row == 'A' else ' B を含む'}、STEP 3 が{s3}（判定マトリクス）{pending}"}
+
+
+def matrix_note(matrix: dict, long: dict) -> str:
+    """Why the long horizon's verdict differs from the matrix: the matrix reads three grades, the long horizon
+    weighs every factor (the report's verdict is the long horizon's)."""
+    if (not matrix.get("verdict") or matrix["verdict"] == long.get("verdict") or long.get("score") is None
+            or long.get("knockout")):  # a knockout already says why the long horizon is 見送り
+        return ""
+    return (f"判定マトリクスは{matrix['verdict']}だが、長期の判定は{long['verdict']}（重み付けの点数 "
+            f"{long['score']:+.2f}）。マトリクスは STEP 1・2・3 の3つの総合だけを見るが、長期の判定は各分析の"
+            "良い点・悪い点を重みで足し合わせるため、片方の総合が低くても他の強みで補われることがある。"
+            "レポートの判定は長期の判定を使う")

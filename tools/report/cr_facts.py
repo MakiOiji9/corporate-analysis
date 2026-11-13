@@ -126,6 +126,7 @@ def _valuation(r: dict) -> dict:
             "pbr": _get(r, "pbr", "pbr"), "per_range": {k: axis.get(k) for k in ("low", "high", "position")},
             "cheap_reason": _get(r, "handoff", "cheap_reason"), "final_check": _get(r, "step3", "final_check"),
             "average": _get(r, "step3", "average"), "scored": len(_get(r, "step3", "scores") or {}) or None,
+            "scores": _get(r, "step3", "scores"),
             "raw_verdict": _get(r, "step3", "raw_verdict"),
             "ev_ebitda": _get(r, "ev", "value"), "eps_used": _get(r, "per", "eps", "eps_used"),
             "peers": [{k: p.get(k) for k in ("name", "per_actual", "per_forecast", "pbr", "ev_ebitda_calc", "cagr", "roe")}
@@ -135,6 +136,19 @@ def _valuation(r: dict) -> dict:
 DETAILS = {"five_forces": _five_forces, "three_c": _three_c, "moat": _moat, "swot": _swot,
            "profitability": _profitability, "growth": _growth, "safety": _safety, "cash_flow": _cash_flow,
            "valuation": _valuation}
+
+
+def _ratings(r: dict, *paths: tuple[str, str]) -> list:
+    return [_get(r, *path) for path in paths]
+
+
+SUBS = {  # the STEP 2 analyses' step ratings, which move a verdict half a step (cr_factors.half_step)
+    "profitability": lambda r: _ratings(r, ("step1", "rating"), ("step2", "rating"), ("step3", "source")),
+    "growth": lambda r: _ratings(r, ("step1", "rating"), ("step3", "rating"), ("step4", "quality")),
+    "safety": lambda r: [i.get("rating") for i in _get(r, "step1", "items") or []]
+    + _ratings(r, ("step2", "rating"), ("step3", "rating")),
+    "cash_flow": lambda r: _ratings(r, *((k, "rating") for k in ("step1", "step2", "step3", "step4", "step5"))),
+}
 
 
 def analysis(step: S.Step, company: S.Company) -> dict:
@@ -149,7 +163,8 @@ def analysis(step: S.Step, company: S.Company) -> dict:
     words = P.plain_tree({"reason": r.get("verdict_reason") or "", "points": _get(r, "handoff", "report_points") or "",
                           "gaps": gaps, "conservative": r.get("conservative") or [],
                           "detail": DETAILS[step.key](r)}, step.key)
-    return {**base, "date": date, "verdict": r.get(step.verdict_key), "md": r.get("md"), **words}
+    subs = SUBS[step.key](r) if step.key in SUBS else []
+    return {**base, "date": date, "verdict": r.get(step.verdict_key), "md": r.get("md"), "subs": subs, **words}
 
 
 # ---------------------------------------------------------------- outlook / review
@@ -183,20 +198,23 @@ def judgements(found: dict[str, dict], prices: dict, outlook: dict) -> dict:
     margin_diff = _get(found["profitability"], "detail", "margin", "diff")
     s1 = J.step1(v["five_forces"], v["three_c"], v["moat"], v["swot"])
     mismatch = J.mismatches(v["moat"], v["three_c"], v["profitability"], margin_diff)
-    flags = J.red_flags(_get(found["cash_flow"], "detail", "steps") or [], v["safety"],
-                        _get(found["safety"], "detail", "trend"))
+    cf_steps = _get(found["cash_flow"], "detail", "steps") or []
+    burn = J.cash_burn(_get(found["cash_flow"], "detail", "rows") or [], cf_steps) if v["cash_flow"] else []
+    flags = J.red_flags(cf_steps, v["safety"], _get(found["safety"], "detail", "trend"), burn)
+    cautions = [b for b in burn if b not in flags]
     s2 = J.step2({"収益性": v["profitability"], "成長性": v["growth"], "安全性": v["safety"],
                   "キャッシュフロー": v["cash_flow"]}, mismatch, flags)
     s3 = F.step3_verdict(found["valuation"])
-    factors = F.build(found, prices, outlook)
-    horizons = {h: {**J.horizon_score(h, factors[h], flags, s1["grade"]),
+    factors = F.build(found, prices, outlook, burn)
+    horizons = {h: {**J.horizon_score(h, factors[h], flags, s1["grade"], cautions),
                     "sensitivity": J.sensitivity(h, factors[h], flags, s1["grade"])} for h in factors}
     final_check = _get(found["valuation"], "detail", "final_check") or {}
     note = "割安だが理由あり（" + "・".join(final_check.get("concerns") or []) + "）" \
         if s3 == "割安" and final_check.get("concerns") else ""
-    return {"step1": s1, "step2": {**s2, "mismatch": mismatch, "flags": flags},
+    matrix = J.matrix_reference(s1, s2, s3)
+    return {"step1": s1, "step2": {**s2, "mismatch": mismatch, "flags": flags, "cautions": cautions},
             "step3": {"verdict": s3, "note": note}, "horizons": horizons,
-            "matrix": J.matrix_reference(s1, s2, s3)}
+            "matrix": {**matrix, "disagree": J.matrix_note(matrix, horizons["long"])}}
 
 
 def gaps(found: dict[str, dict]) -> list[dict]:

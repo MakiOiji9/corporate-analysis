@@ -118,7 +118,8 @@ def _horizons(facts: dict) -> list[str]:
         lines += _horizon_lines(facts, key, label)
     m = facts.get("matrix") or {}
     lines += ["### 長期の参考: フレームワークの判定マトリクス", "",
-              f"- {m.get('verdict', '—')}{'（' + m['note'] + '）' if m.get('note') else ''}。{m.get('why', '')}", ""]
+              f"- {m.get('verdict', '—')}{'（' + m['note'] + '）' if m.get('note') else ''}。{m.get('why', '')}"]
+    lines += [f"- {m['disagree']}", ""] if m.get("disagree") else [""]
     return lines
 
 
