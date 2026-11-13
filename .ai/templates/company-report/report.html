@@ -275,6 +275,16 @@ ol.kbf li.top { font-weight: 700; }
   line-height: 1.2; }
 .kpi .n { font-size: 11px; color: var(--ink-3); }
 .fair-text { font-size: var(--step-0); margin: 0 0 8px; }
+.action { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; gap: 14px; align-items: center;
+  margin: 0 0 16px; padding: 12px 16px; border-radius: var(--radius); background: var(--surface-2);
+  border: 1px solid var(--rule); }
+.action .k { display: block; font-size: 11px; color: var(--ink-3); }
+.action b { font-family: var(--font-serif); font-size: var(--step-1); }
+.action a { font-size: var(--step--1); color: var(--accent); white-space: nowrap; }
+.action .rv { display: block; font-size: var(--step--1); color: var(--ink-2); line-height: 1.5; }
+.legend-act { background: var(--surface-2); border-left: 3px solid var(--accent); padding: 6px 10px; margin: 6px 0;
+  font-size: var(--step--1); }
+@media (max-width: 760px) { .action { grid-template-columns: 1fr; } }
 p.howto { font-size: var(--step--1); color: var(--ink-2); margin: 6px 0 2px; padding-left: 10px;
   border-left: 3px solid var(--rule); }
 svg.chart .rng { fill: var(--c0); fill-opacity: .28; stroke: var(--c0); stroke-width: 1.2; }

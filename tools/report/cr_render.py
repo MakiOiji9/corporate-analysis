@@ -19,6 +19,7 @@ import cr_glossary as G
 import cr_judge as J
 import cr_legends as L
 import cr_sections as X
+import cr_strategy as ST
 import slides
 from cr_html import OK_HTML, PERIODS, SPANS, VERDICT_CLASS, badge, esc, figure
 from cr_html import bullet_list as _list
@@ -112,7 +113,8 @@ def conclusion(facts: dict, parsed: dict) -> str:
               + '<h3>今の株価の位置</h3>' + DB.fair_value(facts))
     return _section("conclusion", "01", "ひと目でわかる結論",
                     "3つの期間それぞれで、今この会社に投資してよいかを判定した。詳しい理由は下の章で確かめられる。",
-                    cards + summary + glance + about + _details("判定の読み方（判定の言葉・期間ごとの重み）", reading))
+                    cards + ST.action_card(facts) + summary + glance + about
+                    + _details("判定の読み方（判定の言葉・期間ごとの重み）", reading))
 
 
 def reasons(facts: dict, parsed: dict) -> str:
@@ -281,20 +283,21 @@ def step3(facts: dict) -> str:
 def thesis(facts: dict, parsed: dict) -> str:
     body = (f'<div class="cols"><div class="panel"><h3>投資の理由（または見送りの理由）</h3>{_paragraphs(parsed["thesis"])}'
             f'</div><div class="panel"><h3>判断が崩れる条件</h3>{_list(parsed["break"])}</div></div>'
-            f'<h3>次に確かめること</h3>{_list(parsed["watch"])}'
-            f'<p class="small"><b>次回の見直し</b>: {esc(facts["review"])}</p>' + CP.scenarios(facts))
+            + ST.html(facts, []) + f'<h3>次に確かめること</h3>{_list(parsed["watch"])}'
+            + _details("チャートから見た買いの候補の価格（損切り・利益確定・リスクリワード）", CP.scenarios(facts)))
     return _section("thesis", "03", "投資判断と行動計画",
                     "結論を踏まえて、何を根拠に、どんな条件で判断を変えるか。価格は条件の目安で、予想や推奨ではない。", body)
 
 
-def _legend_card(v: dict, prose: str) -> str:
+def _legend_card(v: dict, prose: str, action: str = "") -> str:
     checks = table(["項目", "値", "結果", "情報源"],
                    [[esc(f"{c['id']} {c['item']}"), esc(c["value"]), OK_HTML[c["ok"]], esc(c["source"])]
                     for c in v["checks"]], nowrap=frozenset({2}))
     notes = "".join(f'<p class="small muted">{esc(n)}</p>' for n in v["notes"])
+    act = f'<p class="legend-act"><b>この考え方なら</b>: {esc(action)}</p>' if action else ""
     return (f'<div class="stepcard"><div class="label">{esc(v["name"])}（{esc(v["horizon"])}の見方）</div>'
             f'<div class="res"><span class="badge {L.VERDICT_CLASS.get(v["verdict"], "")}">{esc(v["verdict"])}</span></div>'
-            f'<p class="small muted">{esc(v["philosophy"])}</p><p>{esc(v["why"])}</p>{prose}{notes}'
+            f'{act}<p class="small muted">{esc(v["philosophy"])}</p><p>{esc(v["why"])}</p>{prose}{notes}'
             f'{_details("確かめた項目", checks)}</div>')
 
 
@@ -302,8 +305,10 @@ def legends(facts: dict, parsed: dict) -> str:
     found = facts.get("legends") or {}
     if not found:
         return ""
-    cards = "".join(_legend_card(v, _paragraphs(parsed.get(k) or "")) for k, v in found.items())
-    return _section("legends", "08", "投資の神の視点（参考）", LEGEND_LEAD, f'<div class="steps">{cards}</div>')
+    actions = ST.legend_actions(facts)["actions"]
+    cards = "".join(_legend_card(v, _paragraphs(parsed.get(k) or ""), actions.get(k, "")) for k, v in found.items())
+    return _section("legends", "08", "投資の神の視点（参考）", LEGEND_LEAD,
+                    ST.legend_summary(facts) + f'<div class="steps">{cards}</div>')
 
 
 def _link(facts: dict, md: str | None) -> str:
