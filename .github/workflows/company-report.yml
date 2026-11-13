@@ -126,6 +126,18 @@ jobs:
         run: |
           bash .github/scripts/commit-outputs.sh "chore: ${COMPANY} の企業分析レポート（自動実行 $(date +%F)・グループ ${{ needs.targets.outputs.group }}）"
 
+      # Only after the report was built and committed. Optional: skipped when the Slack secrets are not set,
+      # and a Slack failure leaves a warning without failing the job.
+      - name: Post to Slack
+        continue-on-error: true
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+          COMPANY: ${{ matrix.company }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python3 -I .github/scripts/slack_post.py --company "$COMPANY" --repo "$GITHUB_REPOSITORY" --run-url "$RUN_URL"
+
       - name: Save originals
         if: ${{ always() && steps.setup.outputs.cache-key != '' }}
         uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3

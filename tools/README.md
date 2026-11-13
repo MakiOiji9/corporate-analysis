@@ -265,6 +265,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 1. ローカルで `claude setup-token` を実行し、表示された OAuth トークン（1年有効。Claude の利用にだけ使える）を控える。Pro / Max の利用枠を使うので、平日最大10社を回すなら Max を推奨（枠を使い切るとその企業は未完了になり、翌日続きから進む）
 2. GitHub のリポジトリの Settings → Environments で `reports` を作り、Deployment branches を `main` だけにする
 3. `reports` の Environment secrets に登録する: `CLAUDE_CODE_OAUTH_TOKEN`（手順 1）、`EDINET_API_KEY`・`FRED_API_KEY`・`SEC_USER_AGENT`（`.env` と同じ値）
+   - 任意: 企業分析レポートの HTML を Slack に投稿するなら、Slack App（Bot Token Scopes に `files:write`）をワークスペースにインストールし、Bot User OAuth Token（`xoxb-…`）を `SLACK_BOT_TOKEN`、投稿先チャンネルの ID（`C…`。チャンネル詳細の最下部）を `SLACK_CHANNEL_ID` に登録して、そのチャンネルに App を招待する（`/invite @App名`）。`company-report.yml` がレポートの build・コミットの後に `.github/scripts/slack_post.py` で HTML を添付し、3期間の判定・STEP 1〜3・株価を添える。未登録なら投稿しない。投稿に失敗しても警告だけでジョブは失敗にしない
 4. お気に入りを `favorites` スキルで登録してコミットする。Issue からの初期分析を使うなら、Issues → Labels でラベル `company-analysis` を作る（無いとテンプレートのラベルが付かず、ワークフローが動かない）。あわせて Settings → Actions → General の「Allow GitHub Actions to create and approve pull requests」を ON にする（作業ブランチのドラフト PR を GITHUB_TOKEN で作るため）
 5. Actions タブから `market-report` → `company-report`（グループ A）を Run workflow で手動実行し、Summary で完了報告・拒否されたツール・コミットを確認する
 
@@ -272,6 +273,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 
 - Secret はリポジトリ共通ではなく Environment `reports` に置き、main からの実行だけが読める。トリガーは `schedule` と `workflow_dispatch` だけ（PR やコメントからは動かない）
 - `CLAUDE_CODE_OAUTH_TOKEN` は Claude を動かすステップの env にだけ渡す。API キー類は `.env`（git 管理外）に書き、Claude の Read は `.env` を拒否する
+- `SLACK_BOT_TOKEN` は Claude の実行がすべて終わった後の Slack 投稿ステップにだけ渡す（Claude からは見えない）
 - checkout は認証情報を残さない（`persist-credentials: false`）。push 用の `GITHUB_TOKEN` はコミットのステップにだけ渡す。ジョブの権限は `contents: write` だけ
 - Claude は Web の文章を読むため、文章に埋め込まれた指示で秘密を外へ出そうとする可能性がある。対策として `ci-settings.json` で、Read はリポジトリの `companies/`・`market/`・`.ai/`・`tools/`・`.claude/` だけ（`.env`・`/proc`・ホームは拒否）、Bash は `.venv/bin/python -I tools/{analysis,collect,report}/…` だけ（`..`・`;`・`|`・コマンド置換は拒否）、コード（`.py`・`.sh`・`.js` など）の書き込みは拒否している。それでも WebFetch や収集スクリプトの URL に載せて外へ出す経路はゼロにできない。トークンは Claude の利用にしか使えず、GitHub への push 権限は持たない
 - 権限を足すときは、初回の手動実行で拒否されたツールを確認し、必要な最小限だけを `ci-settings.json` に足す（`Bash` や `Read` を丸ごと許可しない）
