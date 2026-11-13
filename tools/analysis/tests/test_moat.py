@@ -221,7 +221,8 @@ def moat_rows(**ratings: str) -> str:
     for key, name in zip(MOAT_KEYS, D.MOAT_TYPES):
         rating = ratings.get(key, "該当なし")
         if rating in D.HITS:
-            cells = (f"仕組み {name}", f"数値 {name}", "brief.md 2.", "一次")
+            trace = "継続率 92%（解約率 8%）" if name == D.SWITCHING else f"数値 {name}"
+            cells = (f"仕組み {name}", trace, "brief.md 2.", "一次")
         elif rating == "弱":
             cells = (f"仕組み {name}", "—", "brief.md 2.", "—")
         else:
@@ -237,6 +238,7 @@ ANSWERS = {
     "reach-reason": "新領域で同じ仕組みが効くかは未確認",
     "strengths": "スイッチングコスト", "threats": "EV 化", "step2-checks": "ROIC が資本コストを上回り続けるか",
     "triggers": "ROIC が2年続けて資本コストを下回れば なし", "changes": "- 初回の分析", "gaps": "- なし",
+    "counter": "継続率は高いが、EV 化で設置済みの機械が置き換わればスイッチングコストは効かなくなる",
 }
 RISK = "| EV 化 | {category} | {timing} | ブランド | 業界概要 | brief.md 7. |"
 NO_RISK = "| なし | — | — | — | 業界概要・有報のリスクを確認 | — |"
@@ -301,13 +303,19 @@ def _spreads(values: list[float]) -> list[dict]:
     ([6.0] * 10, "強い"),
     ([3.0] * 10, "弱い"),  # above every year, but the median spread is under 5pt
     ([6.0] * 6, "弱い"),  # too few years for 強い
-    ([6.0] * 7 + [-1.0] * 3, "なし"),  # the last 3 years at or below the cost of capital
+    ([6.0] * 7 + [-1.0] * 3, "弱い"),  # a cycle trough in the last 3 years caps it, the full cycle still earned it
     ([-1.0] * 6 + [6.0] * 4, "なし"),  # above in fewer than half of the years
+    ([1.0, -2.0] * 5, "なし"),  # half the years above but the full-cycle median is not above the cost of capital
     ([6.0] * 4, None),
     ([-1.0] * 4, "なし"),  # a short history can still show no excess return
 ])
 def test_rate_returns(spreads, rating):
     assert R.rate_returns(_spreads(spreads), 7.0)["rating"] == rating
+
+
+def test_a_recent_trough_is_noted_and_the_width_follows_the_full_cycle():
+    result = R.rate_returns(_spreads([12.0] * 7 + [-1.0] * 3), 7.0)
+    assert "景気の谷" in result["basis"] and result["width"] == "大" and result["recent_spread"] == -1.0
 
 
 def test_operating_losses_mean_no_excess_return_without_roic():
@@ -335,7 +343,19 @@ def test_width(recent, word):
 
 
 def _gross(values: dict[int, float]) -> dict[str, float]:
-    return {f"{y}-03": v for y, v in values.items()}
+    return {f"{y}-12": v for y, v in values.items()}  # December year ends: the label's year is the calendar year
+
+
+@pytest.mark.parametrize("label, year", [("2021-02", 2020), ("2021-06", 2020), ("2021-07", 2021), ("2021-12", 2021),
+                                         ("2021", 2021)])
+def test_fiscal_years_map_to_the_calendar_year_they_mostly_cover(label, year):
+    assert R.calendar_year(label) == year
+
+
+def test_the_cost_inflation_window_follows_the_calendar_not_the_label():
+    # a February year end: 2021-02 is the year to Feb 2021 (mostly 2020, the COVID low), 2022-02 covers 2021
+    margins = {"2020-02": 33.0, "2021-02": 29.9, "2022-02": 33.0, "2023-02": 34.0, "2024-02": 34.5}
+    assert R._inflation_change(margins) == pytest.approx(1.5)  # 2022-02 (2021) → 2024-02 (2023)
 
 
 @pytest.mark.parametrize("margins, peer, rating", [
@@ -408,18 +428,20 @@ def _peer(values: dict) -> list[dict]:
 
 @pytest.mark.parametrize("values, rating, years", [
     ({f"{y}-03": 10.0 for y in range(2020, 2027)}, "強い", 7),
-    ({f"{y}-03": 10.0 for y in range(2021, 2027)}, "弱い", 6),
-    ({"2025-03": 10.0, "2026-03": 4.0}, "なし", 0),
-    ({"2024-03": 10.0, "2025-03": 2.0, "2026-03": 10.0}, "弱い", 1),
+    ({f"{y}-03": 10.0 for y in range(2021, 2027)}, "弱い", 6),  # every year above, but fewer than 7 to compare
+    ({"2025-03": 10.0, "2026-03": 4.0}, "弱い", 1),               # half the years above
+    ({"2024-03": 2.0, "2025-03": 2.0, "2026-03": 10.0}, "なし", 1),
 ])
 def test_margin_candidate(values, rating, years):
     cand = X.margin_candidate(X.comparison_rows(values, _peer(values)))
     assert (cand["rating"], cand["years_above"]) == (rating, years)
 
 
-def test_missing_year_ends_the_run():
-    values = {"2012-03": 10.0, **{f"{y}-03": 10.0 for y in range(2020, 2027)}}
-    assert X.consecutive_above(X.comparison_rows(values, _peer(values))) == (7, "2026-03")
+def test_one_cyclical_year_below_does_not_cancel_nine_years_above():
+    values = {**{f"{y}-03": 10.0 for y in range(2017, 2026)}, "2026-03": 4.0}
+    cand = X.margin_candidate(X.comparison_rows(values, _peer(values)))
+    assert (cand["rating"], cand["years_above"], cand["compared_years"]) == ("強い", 9, 10)
+    assert "10 年中 9 年" in cand["basis"]
 
 
 def test_no_peers_means_no_candidate():
@@ -816,3 +838,33 @@ def test_build_fills_swot_candidates_changes_and_gaps_from_the_rows(repo, capsys
     text = md.read_text(encoding="utf-8")
     assert "| SWOT の強み（S）候補 | 規制・特許・許認可（中。" in text and "／スイッチングコスト（強。" in text
     assert "（5〜10年。影響するモート:" in text and "## 10. 前回からの変更点\n\n- 初回の分析" in text
+
+
+# ---------- version 3: switching-cost evidence, counter-argument, confidence, rebuild of older results ----------
+
+def test_switching_cost_needs_a_number_of_the_installed_base_or_retention():
+    weak = {"type": D.SWITCHING, "rating": "強", "mechanism": "乗り換えに手間", "trace": "顧客が多い",
+            "source": "brief.md 2.", "confidence": "一次"}
+    assert any("導入基盤" in i for i in D._check_moat(weak))
+    assert D._check_moat({**weak, "trace": "保守サービスの売上比率 35%"}) == []
+
+
+def test_build_requires_a_counter_argument(repo, capsys):
+    md = prepared(repo, capsys)
+    fill(md, counter="なし")
+    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 1 and any("反論" in i for i in out["issues"])
+
+
+def test_result_records_confidence_and_older_versions_are_rebuilt(repo, capsys):
+    md = prepared(repo, capsys)
+    fill(md)
+    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 0, out
+    path = repo / out["json"]
+    result = json.loads(path.read_text(encoding="utf-8"))
+    assert result["version"] == D.VERSION and result["confidence"]["level"] in ("高", "中", "低")
+    assert result["counter"].startswith("継続率は高いが")
+    path.write_text(json.dumps({**result, "version": 2}, ensure_ascii=False), encoding="utf-8")
+    _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["result"] == "triggered" and "版 2 → 3" in out["reason"]

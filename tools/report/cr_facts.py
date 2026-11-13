@@ -175,7 +175,10 @@ def analysis(step: S.Step, company: S.Company) -> dict:
                           "gaps": gaps, "conservative": r.get("conservative") or [],
                           "detail": DETAILS[step.key](r)}, step.key)
     subs = SUBS[step.key](r) if step.key in SUBS else []
-    return {**base, "date": date, "verdict": r.get(step.verdict_key), "md": r.get("md"), "subs": subs, **words}
+    quality = r.get("confidence") if isinstance(r.get("confidence"), dict) else {}
+    return {**base, "date": date, "verdict": r.get(step.verdict_key), "md": r.get("md"), "subs": subs,
+            "confidence": quality.get("level"), "confidence_why": quality.get("why"),
+            "counter": P.plain(r.get("counter") or ""), **words}
 
 
 # ---------------------------------------------------------------- outlook / review

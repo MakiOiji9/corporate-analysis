@@ -33,6 +33,7 @@ sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "marke
 import an_brief as AB  # noqa: E402
 import an_common as A  # noqa: E402
 import an_fill as F  # noqa: E402
+import an_quality as Q  # noqa: E402
 import ff_paths as FP  # noqa: E402
 import mdparse as M  # noqa: E402
 import mt_brief as B  # noqa: E402
@@ -81,6 +82,9 @@ def evaluate(company: P.Company, today: str) -> dict:
                            "json": company.rel(company.file(date, P.JSON_SUFFIX)),
                            "verdict": result.get("verdict"), "valid_until": P.valid_until(date)}
         state["newer_raw"] = T.triggers(company, date, "annual", [("3C", TP)])
+        old_rules = Q.outdated(result, D.VERSION)
+        if old_rules:
+            state["newer_raw"] = state["newer_raw"] + [old_rules]
     if draft and (not latest or draft[0] >= latest[0]):
         state.update(result="draft", reason=f"作成途中の {company.rel(draft[1])} がある（続きから書く）")
     elif not latest:
@@ -303,6 +307,8 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: d
         "durability": parsed["durability"], "backing": judged["backing"], "backing_reason": judged["backing_why"],
         "effective_moats": judged["effective"], "corrected": judged["corrected"], "near_risks": judged["near_risks"],
         "verdict": judged["verdict"], "verdict_reason": judged["why"], "conservative": judged["conservative"],
+        "conservative_verdict": judged["verdict"],  # the moat rules read no unknown on the unfavourable side
+        "confidence": D.quality(parsed), "counter": parsed["counter"],
         "triggers": parsed["triggers"],
         "handoff": {"strengths": parsed["strengths"], "threats": parsed["threats"],
                     "step2_checks": parsed["step2_checks"]},

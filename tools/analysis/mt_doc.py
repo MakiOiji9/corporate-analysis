@@ -12,12 +12,16 @@
     なし: no 強/中 source
     広い: 超過収益 強い, one 強 or two 強/中 sources, depth 深い/中程度, no factor within 5 years, trend not 縮小
     狭い: otherwise
+  A スイッチングコスト rated 強/中 needs a number of the installed base, the service share or the retention rate in
+  its trace. The writer adds a counter-argument (9章); quality() records 高/中/低 confidence with the verdict.
 """
 from __future__ import annotations
 
+import re
 from string import Template
 
 import an_fill as F
+import an_quality as Q
 import mdparse as M
 from ff_doc import (CHANGED_FROM_PREVIOUS, CONFIDENCE, LOW_CONFIDENCE, TIE_BREAK, _check_words, candidate_cell,
                     replace_section)
@@ -25,7 +29,11 @@ from mt_metrics import cost_table_rows, margin_table_rows
 from mt_returns import gross_note, gross_table_rows, roic_note, roic_table_rows
 from validate import check_fill, check_structure, check_tables
 
-VERSION = 2  # 2026-11: ROIC gate, six sources rated 強/中/弱; results of version 1 used 該当/該当なし/不明
+VERSION = 3  # 3 (2026-11): full-cycle ROIC, peer margin by share of years, calendar inflation window, counter-argument
+#              2: ROIC gate, six sources rated 強/中/弱; 1 used 該当/該当なし/不明
+SWITCHING = "スイッチングコスト"
+SWITCHING_EVIDENCE = re.compile(r"導入|設置|稼働|保守|サービス|アフター|継続|解約|更新|リピート|置き換え")
+COUNTER_LABEL = "反論（この結論が間違っているとしたら）"
 MOAT_TYPES = ("ブランド", "規制・特許・許認可", "スイッチングコスト", "ネットワーク効果", "コスト優位", "効率的規模")
 INTANGIBLE = ("ブランド", "規制・特許・許認可")
 MOAT_RATINGS = ("強", "中", "弱", "該当なし", "不明")
@@ -126,6 +134,7 @@ def parse(text: str) -> dict:
         "risks": risks, "durability": durability, "axes": _axes(text),
         "strengths": handoff.get("SWOT の強み（S）候補", ""), "threats": handoff.get("SWOT の脅威（T）候補", ""),
         "step2_checks": handoff.get("STEP 2 で確かめること", ""), "triggers": handoff.get("評価が変わる条件", ""),
+        "counter": handoff.get(COUNTER_LABEL, ""),
         "changes": M.bullets(M.section(text, "10.")), "gaps": M.bullets(M.section(text, "11.")),
     }
 
@@ -140,7 +149,8 @@ def _changes(p: dict, previous: tuple[str, dict] | None) -> str:
         return "- 初回の分析"
     old = previous[1]
     if old.get("version") != VERSION:
-        return "- 判定の基準を改めた（超過収益の入口・6種の源泉・強/中/弱）ため、前回の判定とは比べない"
+        return ("- 判定の基準を改めた（景気の一巡で見る超過収益・同業比較は上回った年の割合・暦年の原価高の局面）ため、"
+                "前回の判定とは比べない")
     old_moats = {m.get("type"): m.get("rating") for m in old.get("moats") or []}
     pairs = [(m["type"], old_moats.get(m["type"]), m["rating"]) for m in p["moats"]]
     pairs.append(("シェアの推移", (old.get("share") or {}).get("trend"), p["share"]["trend"]))
@@ -188,6 +198,9 @@ def _check_moat(m: dict) -> list[str]:
         issues.append(f"{where}: 「{m['rating']}」なのに情報源が空（根拠が書けないなら「不明」にする）")
     if not _confidence_ok(m["confidence"], may_be_blank=not hit):
         issues.append(f"{where}: 根拠の確度は {'/'.join(CONFIDENCE)} の1語: 「{m['confidence']}」")
+    if hit and m["type"] == SWITCHING and not (SWITCHING_EVIDENCE.search(m["trace"]) and re.search(r"\d", m["trace"])):
+        issues.append(f"{where}: 「{m['rating']}」にするには、導入基盤（設置台数・導入社数）・保守やサービスの売上比率・"
+                      "継続率（解約率）のいずれかの数値を数値の痕跡に書く（無ければ「弱」以下）")
     return issues
 
 
@@ -252,6 +265,9 @@ def validate(text: str, template: str) -> list[str]:
     p = parse(text)
     issues = [f"{label}が空" for label, value in _required_cells(p) if M.is_blank(value)]
     issues += _check_moats(p["moats"]) + _check_share(p["share"]) + _check_risks(p["risks"]) + _check_axes(p["axes"])
+    counter = Q.counter_issue(p["counter"])
+    if counter:
+        issues.append(f"9. {counter}")
     if not p["changes"]:
         issues.append("10. 前回からの変更点に箇条書きが無い")
     if not p["gaps"]:
@@ -352,6 +368,15 @@ def conclusion_section(judged: dict, returns: dict, share_trend: str) -> str:
 
 def apply_conclusion(text: str, judged: dict, returns: dict, share_trend: str) -> str:
     return replace_section(text, "8.", conclusion_section(judged, returns, share_trend))
+
+
+def quality(parsed: dict) -> dict:
+    """高/中/低 from the six sources and the share trend (an_quality.confidence)."""
+    share = parsed["share"]
+    items = [{"confidence": m["confidence"], "source": m["source"], "rating": m["rating"]}
+             for m in parsed["moats"] if m["rating"] != "該当なし"]
+    items.append({"confidence": share["confidence"], "source": share["source"], "rating": share["trend"]})
+    return Q.confidence(items)
 
 
 def flags(parsed: dict) -> dict:

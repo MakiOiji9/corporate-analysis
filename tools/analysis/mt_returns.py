@@ -8,17 +8,20 @@
   (自己資本・有利子負債・現金・売上高; no lease), so their excess cash is deducted too.
   The cost of capital is fixed per market (HURDLE); the spread is ROIC minus it.
 
-  超過収益 (the gate of the moat analysis), over the newest WINDOW years with a ROIC:
+  超過収益 (the gate of the moat analysis), over the newest WINDOW years with a ROIC — a full business cycle, so a
+  cyclical company is not judged at its trough:
     不明: fewer than MIN_YEARS years (but なし when the last 3 years are all at or below the cost of capital, or all
           operating losses: no excess return needs no long history to be shown)
-    なし: ROIC above the cost of capital in fewer than half of the years, or the mean spread of the last 3 years <= 0
-    強い: STRONG_YEARS+ years, above in 80%+ of them, and the median spread >= STRONG_SPREAD
-    弱い: otherwise
-  堀の幅 from the mean spread of the last 3 years; the trend of the spread (拡大/安定/縮小) compares the last 5 years
-  with the years before them.
+    なし: ROIC above the cost of capital in fewer than half of the years, or the full-cycle median spread <= 0
+    強い: STRONG_YEARS+ years, above in 80%+ of them, the median spread >= STRONG_SPREAD and the last 3 years above
+    弱い: otherwise. A last-3-year mean at or below 0 caps it at 弱い and is noted as a possible cycle trough (the
+          trend of the spread tells a lasting decline: 縮小)
+  堀の幅 from the full-cycle median spread; the trend of the spread (拡大/安定/縮小) compares the last 5 years with
+  the years before them.
 
   価格決定力 from the gross margin: its range over the years, its change through the cost inflation of 2021-2023
-  (fiscal years ending in INFLATION) and the peers' gross margin (100 − 売上原価率 of competitors.md「コスト構造」).
+  (the fiscal years that mostly cover those calendar years: calendar_year) and the peers' gross margin
+  (100 − 売上原価率 of competitors.md「コスト構造」).
 
 The peers' ROIC: operating margin from competitors.md「売上高・営業利益」 × sales, equity and debt from「収益性の分解」
 and「安全性の指標」, so that the amounts of one peer stay in one unit.
@@ -50,8 +53,9 @@ WIDTH = ((10.0, "大"), (3.0, "中"))  # mean spread of the last 3 years: >= 10 
 MATCH_MONTHS = 6
 GROSS_STABLE_PT = 5.0
 GROSS_UNSTABLE_PT = 10.0
-INFLATION = ("2021", "2023")
+INFLATION = (2021, 2023)  # calendar years of the cost inflation
 INFLATION_DROP_PT = 2.0
+HALF_YEAR_MONTH = 7  # a fiscal year ending in July or later mostly covers its own calendar year
 
 
 def market(company) -> str:
@@ -134,8 +138,11 @@ def peer_roic(company, found: dict, tax: float) -> list[dict]:
             match = _nearest(actual, year)
             if match is None or capital.get(year, 0) <= 0:
                 continue
+            # the same capital as the target's: the average of the opening and closing values when both are known
+            prior = next((c for y, c in capital.items() if _months_apart(y, year) == 12 and c > 0), None)
+            invested = (capital[year] + prior) / 2 if prior is not None else capital[year]
             operating = sales.value * match["margin"] / 100
-            rows.append({"year": year, "roic": round(_nopat(operating, tax) / capital[year] * 100, 1)})
+            rows.append({"year": year, "roic": round(_nopat(operating, tax) / invested * 100, 1)})
         if rows:
             out.append({"name": peer["name"], "rows": rows})
     return out
@@ -195,20 +202,26 @@ def rate_returns(rows: list[dict], hurdle: float, operating: list[float] = ()) -
     spreads = [r["spread"] for r in rows]
     above = sum(1 for s in spreads if s > 0)
     median, recent = _median(spreads), _mean(spreads[-RECENT_YEARS:])
-    if above * 2 < n or recent <= 0:
+    spread_trend = trend(spreads)
+    if above * 2 < n or median <= 0:
         rating = "なし"
-    elif n >= STRONG_YEARS and above >= math.ceil(STRONG_SHARE * n) and median >= STRONG_SPREAD:
+    elif (n >= STRONG_YEARS and above >= math.ceil(STRONG_SHARE * n) and median >= STRONG_SPREAD
+          and recent > 0):
         rating = "強い"
     else:
         rating = "弱い"
     border = [r["year"] for r in rows if abs(r["spread"]) < BORDER_PT]
     basis = (f"{rows[0]['year']}〜{rows[-1]['year']} の {n} 年中 {above} 年で ROIC が資本コスト {hurdle:.0f}% を上回る"
-             f"（差の中央値 {median:+.1f}pt、直近{RECENT_YEARS}年平均 {recent:+.1f}pt）。目安: {STRONG_YEARS}年以上・8割以上の年で"
-             f"上回り中央値 +{STRONG_SPREAD:.0f}pt 以上 強い / 上回った年が半分未満か直近{RECENT_YEARS}年平均が0以下 なし / ほか 弱い")
+             f"（景気の一巡を通した差の中央値 {median:+.1f}pt、直近{RECENT_YEARS}年平均 {recent:+.1f}pt）。目安: "
+             f"{STRONG_YEARS}年以上・8割以上の年で上回り中央値 +{STRONG_SPREAD:.0f}pt 以上 強い / 上回った年が半分未満か"
+             "中央値が0以下 なし / ほか 弱い")
+    if recent <= 0 and rating != "なし":
+        basis += (f"。直近{RECENT_YEARS}年は資本コスト以下（景気の谷の可能性。差の傾向は{spread_trend}"
+                  f"{'で、低下が続いているなら堀が細っている' if spread_trend == '縮小' else ''}）。そのため「強い」にはしない")
     if border:
         basis += f"。差が ±{BORDER_PT:.0f}pt 以内の境界の年: {', '.join(border)}"
     return dict(base, rating=rating, above=above, median_spread=median, recent_spread=recent, border_years=border,
-                width=width(recent), trend=trend(spreads), basis=basis)
+                width=width(median), trend=spread_trend, basis=basis)
 
 
 def economic_profit(rows: list[dict]) -> dict:
@@ -231,9 +244,21 @@ def returns(company, found: dict) -> dict:
 
 # ---------- 価格決定力 ----------
 
+def calendar_year(label: str) -> int:
+    """The calendar year a fiscal year mostly covers: one ending in July or later its own year, an earlier end the
+    year before ('2021-02' is March 2020 to February 2021)."""
+    year = int(label[:4])
+    month = int(label[5:7]) if len(label) >= 7 and label[5:7].isdigit() else 12
+    return year if month >= HALF_YEAR_MONTH else year - 1
+
+
+def _in_inflation(label: str) -> bool:
+    return INFLATION[0] <= calendar_year(label) <= INFLATION[1]
+
+
 def _inflation_change(margins: dict[str, float]) -> float | None:
-    start = next((v for y, v in margins.items() if y.startswith(INFLATION[0])), None)
-    end = next((v for y, v in margins.items() if y.startswith(INFLATION[1])), None)
+    start = next((v for y, v in margins.items() if calendar_year(y) == INFLATION[0]), None)
+    end = next((v for y, v in margins.items() if calendar_year(y) == INFLATION[1]), None)
     return round(end - start, 1) if start is not None and end is not None else None
 
 
@@ -263,8 +288,8 @@ def rate_pricing(margins: dict[str, float], peer: float | None) -> dict:
     else:
         rating = "普通"
     parts = [f"{years[0]}〜{years[-1]} の粗利率は {min(values):.1f}〜{max(values):.1f}%（振れ幅 {spread:.1f}pt）",
-             (f"原価高の局面（{INFLATION[0]}→{INFLATION[1]} 年度）の変化 {change:+.1f}pt" if change is not None
-              else f"原価高の局面（{INFLATION[0]}・{INFLATION[1]} 年度）の粗利率がそろわない"),
+             (f"原価高の局面（{INFLATION[0]}→{INFLATION[1]} 年を主に含む決算期）の変化 {change:+.1f}pt"
+              if change is not None else f"原価高の局面（{INFLATION[0]}・{INFLATION[1]} 年を主に含む決算期）の粗利率がそろわない"),
              f"直近 {values[-1]:.1f}%、同業の中央値 {peer:.1f}%" if peer is not None else "同業の粗利率なし"]
     basis = ("。".join(parts) + f"。目安: 原価高の局面で {INFLATION_DROP_PT:.0f}pt 以上低下か振れ幅 {GROSS_UNSTABLE_PT:.0f}pt 超"
              f" 弱い / 低下せず振れ幅 {GROSS_STABLE_PT:.0f}pt 以内で同業以上 強い / ほか 普通")
@@ -317,7 +342,7 @@ def gross_table_rows(pr: dict) -> str:
     out = []
     for i, year in enumerate(years):
         diff = f"{pr['rows'][year] - pr['rows'][years[i - 1]]:+.1f}pt" if i else "—"
-        out.append(f"| {year} | {_p(pr['rows'][year])} | {diff} | {'原価高の局面' if year[:4] in INFLATION else '—'} |")
+        out.append(f"| {year} | {_p(pr['rows'][year])} | {diff} | {'原価高の局面' if _in_inflation(year) else '—'} |")
     return "\n".join(out)
 
 

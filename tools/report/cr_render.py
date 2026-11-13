@@ -133,6 +133,9 @@ def _stepcards(facts: dict, keys: tuple[str, ...]) -> str:
     for key in keys:
         a = facts["analyses"][key]
         flag = '<span class="cons">材料不足のため慎重に判定</span>' if a.get("conservative") else ""
+        if a.get("confidence"):
+            flag += (f'<span class="conf conf-{esc(a["confidence"])}" title="{esc(a.get("confidence_why") or "")}">'
+                     f'確信度 {esc(a["confidence"])}</span>')
         cards += (f'<div class="stepcard"><div class="label">{esc(a["step"])} {esc(a["label"])}'
                   f'（{esc(a["date"] or "未実施")}）</div><div class="res">{esc(a["verdict"] or "—")}{flag}</div>'
                   f'<p>{esc(a["reason"])}</p></div>')
@@ -152,7 +155,7 @@ def step1(facts: dict) -> str:
                                           for f in ff.get("factors") or []])
     inner = (_conditions(facts["step1"]["rows"]) + f"<h3>業界の5つの力（{esc(ff.get('industry'))}）</h3>" + forces
              + f"<h3>モート（強みの持続性）</h3><p>{esc(d['moat']['detail'].get('durability'))}</p>"
-             + _moat_sources(d["moat"]["detail"]) + _conservative(d["moat"]))
+             + _moat_sources(d["moat"]["detail"]) + _conservative(d["moat"]) + _counters(d))
     body = (_stephead(facts["step1"], "STEP 1 総合") + _stepcards(facts, ("five_forces", "three_c", "moat", "swot"))
             + _roic_chart(d["moat"]["detail"]) + X.swot_grid(d["swot"]["detail"], d["swot"])
             + _details("勝てる理由（3C）を詳しく見る", X.three_c_block(d["three_c"]["detail"], d["three_c"]))
@@ -186,6 +189,13 @@ def _moat_sources(moat: dict) -> str:
                     if axes.get(k))
     head = f'<p class="small">堀の{esc(axis)}。傾向: {esc(moat.get("trend") or "—")}</p>' if axis else ""
     return "<h4>強みの源泉（6種類）</h4>" + head + table(["源泉", "種類", "強さ", "仕組みと根拠"], rows)
+
+
+def _counters(d: dict) -> str:
+    """Each STEP 1 analysis' counter-argument (「この結論が間違っているとしたら」), when it was written."""
+    items = [f"{d[k]['label']}: {d[k]['counter']}" for k in ("five_forces", "three_c", "moat", "swot")
+             if d[k].get("counter")]
+    return "<h3>反論（この結論が間違っているとしたら）</h3>" + _list(items) if items else ""
 
 
 def _conservative(a: dict) -> str:
