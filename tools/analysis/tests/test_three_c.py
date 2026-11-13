@@ -13,6 +13,7 @@ sys.path[:0] = [str(ANALYSIS), str(REPO / "tools" / "report"), str(REPO / "tools
 
 import ff_inputs as F  # noqa: E402
 import ff_metrics as FM  # noqa: E402
+import ff_doc as FD  # noqa: E402
 import tc_doc as D  # noqa: E402
 import tc_inputs as I  # noqa: E402
 import tc_metrics as X  # noqa: E402
@@ -146,7 +147,8 @@ def _five_forces(root: Path, date: str = FF_DAY, attractiveness: str = "中") ->
     directory = root / "companies" / "7203_toyota" / "analysis" / "five-forces"
     directory.mkdir(parents=True, exist_ok=True)
     (directory / f"{date}_five-forces.md").write_text("# ファイブフォース\n\n完成\n", encoding="utf-8")
-    result = {"attractiveness": attractiveness, "total": 5, "industry": "自動車業界", "valid_until": "2027-10-05",
+    result = {"version": FD.VERSION, "attractiveness": attractiveness, "total": 5, "industry": "自動車業界",
+              "valid_until": "2027-10-05",
               "factors": [{"key": "rivalry", "name": "業界内の競争", "rating": "中", "reason": "拮抗"}]}
     (directory / f"{date}_five-forces.json").write_text(json.dumps(result, ensure_ascii=False), encoding="utf-8")
 

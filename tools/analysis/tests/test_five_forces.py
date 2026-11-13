@@ -108,6 +108,8 @@ OUTLOOK = """# 地合い判断
 ANSWERS = {
     "industry": "自動車業界（単一セグメント）", "industry-source": "brief.md 1.",
     "changes": "- 初回の分析", "gaps": "- なし",
+    "counter": "上位3社の集中度は高いが、EV の新規参入が増えれば業界内の競争は強まる",
+    "segment-rows": "| なし | — | — | — | — | — | — | 有報のセグメント情報を確認（単一セグメント） |",
 }
 ALL_MID = {"entry": "中", "substitutes": "中", "buyers": "中", "suppliers": "中", "rivalry": "中"}
 
@@ -369,7 +371,7 @@ def test_check_unknown_company(repo, capsys):
 
 def test_full_cycle_then_fresh_triggered_expired(repo, capsys):
     code, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
-    assert code == 0 and out["fill"] == 34 and out["candidates"]["buyers"] == "中"
+    assert code == 0 and out["fill"] == 36 and out["candidates"]["buyers"] == "中"  # + counter, segment rows
     md = repo / out["md"]
     code, out = run(repo, "build", "--company", "7203", capsys=capsys)
     assert code == 1 and any("FILL" in i for i in out["issues"])
@@ -644,14 +646,59 @@ def test_result_made_before_new_rows_still_parses():
 
 # ---------- scoring ----------
 
-@pytest.mark.parametrize("ratings, total, level, downgraded", [
-    (["弱", "弱", "弱", "中", "強"], 7, "高", False),
-    (["弱", "弱", "弱", "不明", "不明"], 8, "中", True),
-    (["中", "中", "中", "中", "不明"], 5, "中", False),
-    (["中", "中", "不明", "不明", "強"], 4, "低", True),
-    (["強", "強", "中", "中", "中"], 3, "低", False),
+def _parsed(ratings: list[str], industry: str = "自動車業界（単一セグメント）", segments: list | None = None) -> dict:
+    return {"factors": [{"name": n, "rating": r, "reason": ""} for (_, _, n), r in zip(D.FACTORS, ratings)],
+            "industry": industry, "segments": segments or []}
+
+
+@pytest.mark.parametrize("ratings, total, level, conservative, span", [
+    (["弱", "弱", "弱", "中", "強"], 7, "高", "高", (7, 7)),
+    (["弱", "弱", "弱", "不明", "不明"], 8, "高", "中", (6, 10)),  # base by points; 2 unknowns lower only the conservative
+    (["中", "中", "中", "中", "不明"], 5, "中", "中", (4, 6)),
+    (["中", "中", "不明", "不明", "強"], 4, "中", "低", (2, 6)),
+    (["強", "強", "中", "中", "中"], 3, "低", "低", (3, 3)),
 ])
-def test_score(ratings, total, level, downgraded):
-    parsed = {"factors": [{"name": n, "rating": r, "reason": ""} for (_, _, n), r in zip(D.FACTORS, ratings)]}
-    scored = D.score(parsed)
-    assert (scored["total"], scored["attractiveness"], scored["downgraded"]) == (total, level, downgraded)
+def test_score(ratings, total, level, conservative, span):
+    scored = D.score(_parsed(ratings))
+    assert (scored["total"], scored["attractiveness"], scored["conservative_attractiveness"]) == (total, level, conservative)
+    assert (scored["low"], scored["high"]) == span and scored["downgraded"] == (level != conservative)
+
+
+def test_segments_with_a_quarter_of_the_profit_are_weighed_in():
+    robots = {"name": "ロボット", "share": 41.0, "ratings": ["弱", "弱", "中", "中", "中"], "basis": "有報 p.20"}
+    scored = D.score(_parsed(["中", "中", "中", "中", "強"], "モーションコントロール（営業利益構成比 49%）", [robots]))
+    # main 4 points × 49 + robots 7 points × 41, over 90 = 5.4 → 中
+    assert scored["weighted_total"] == pytest.approx(5.4) and scored["attractiveness"] == "中"
+    assert "ロボット" in D.scores_section(scored)
+
+
+def test_segment_rows_are_parsed_and_checked():
+    text = ("### 2.6 他の主要セグメント（営業利益の25%以上）\n\n| セグメント | 営業利益の構成比 | 新規参入 | 代替品 | 買い手 | "
+            "売り手 | 業界内の競争 | 根拠（出典） |\n|---|---|---|---|---|---|---|---|\n"
+            "| ロボット | 41% | 弱 | 弱 | 中 | 中 | すごい | 有報 p.20 |\n")
+    rows = D.parse_segments(text)
+    assert rows[0]["name"] == "ロボット" and rows[0]["share"] == 41.0
+    assert any("業界内の競争" in i for i in D.check_segments(rows, "モーションコントロール（営業利益構成比 49%）"))
+    assert any("構成比" in i for i in D.check_segments(rows[:1] and [dict(rows[0], ratings=["中"] * 5)], "単一"))
+    assert D.parse_segments(text.replace("| ロボット | 41% | 弱 | 弱 | 中 | 中 | すごい |", "| なし | — | — | — | — | — | — |")) == []
+
+
+def test_build_requires_a_counter_argument_and_records_version(repo, capsys):
+    code, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    md = repo / out["md"]
+    text = md.read_text(encoding="utf-8")
+    fill(md, ALL_MID)
+    md.write_text(md.read_text(encoding="utf-8").replace(ANSWERS["counter"], "なし"), encoding="utf-8")
+    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 1 and any("反論" in i for i in out["issues"])
+    md.write_text(text, encoding="utf-8")
+    fill(md, ALL_MID)
+    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 0, out
+    path = repo / out["json"]
+    result = json.loads(path.read_text(encoding="utf-8"))
+    assert result["version"] == D.VERSION and result["confidence"]["level"] in ("高", "中", "低")
+    assert result["conservative_attractiveness"] == "中" and result["counter"]
+    path.write_text(json.dumps({**result, "version": 1}, ensure_ascii=False), encoding="utf-8")
+    _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["result"] == "triggered" and f"版 1 → {D.VERSION}" in out["reason"]

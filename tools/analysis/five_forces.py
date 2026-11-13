@@ -32,6 +32,7 @@ sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "marke
 import an_brief as AB  # noqa: E402
 import an_common as A  # noqa: E402
 import an_fill as F  # noqa: E402
+import an_quality as Q  # noqa: E402
 import ff_brief as B  # noqa: E402
 import ff_doc as D  # noqa: E402
 import ff_inputs as I  # noqa: E402
@@ -69,6 +70,9 @@ def evaluate(company: P.Company, today: str) -> dict:
                            "attractiveness": result.get("attractiveness"), "total": result.get("total"),
                            "valid_until": P.valid_until(date)}
         state["newer_raw"] = T.triggers(company, date, "annual")  # new 有報 period, industry data, mid-term plan
+        old_rules = Q.outdated(result, D.VERSION)
+        if old_rules:
+            state["newer_raw"] = state["newer_raw"] + [old_rules]
     if draft and (not latest or draft[0] >= latest[0]):
         state.update(result="draft", reason=f"作成途中の {company.rel(draft[1])} がある（続きから書く）")
     elif not latest:
@@ -221,8 +225,13 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, scored: 
         "valid_until": P.valid_until(date), "industry": parsed["industry"],
         "industry_source": parsed["industry_source"],
         "factors": [{k: f[k] for k in keep} for f in scored["factors"]],
+        "version": D.VERSION, "confidence": D.quality(parsed), "counter": parsed["counter"],
         "total": scored["total"], "attractiveness": scored["attractiveness"],
         "attractiveness_by_points": scored["attractiveness_by_points"],
+        "conservative_attractiveness": scored["conservative_attractiveness"],
+        "conservative_verdict": scored["conservative_attractiveness"],
+        "weighted_total": scored["weighted_total"], "low": scored["low"], "high": scored["high"],
+        "segments": scored["segments"],
         "unknown_count": scored["unknown_count"], "downgraded": scored["downgraded"],
         "swot_threats": scored["swot_threats"], "changes": parsed["changes"], "gaps": parsed["gaps"],
         "inputs": sorted({company.rel(f.path) for f in found.values() if f.path is not None}),
