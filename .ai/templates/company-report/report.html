@@ -260,6 +260,36 @@ ol.kbf li.top { font-weight: 700; }
 .imp-lo { background: var(--surface-2); color: var(--ink-2); } .imp-unk { background: var(--pending-bg); color: var(--pending); }
 .self-row { font-weight: 700; } .median-row { color: var(--ink-3); font-style: italic; }
 
+/* ---------- dashboard: the nine analyses, key figures, price band ---------- */
+.strip { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 6px; margin: 4px 0 14px; }
+.strip .cell { display: flex; flex-direction: column; gap: 2px; padding: 8px 8px 9px; border-radius: 8px; min-width: 0;
+  background: var(--tone-bg); border-top: 4px solid var(--tone); color: var(--ink); text-decoration: none;
+  transition: transform .15s ease, box-shadow .15s ease; }
+.strip .cell:hover, .strip .cell:focus-visible { transform: translateY(-2px); box-shadow: var(--shadow); outline: none; }
+.strip .cell .k { font-size: 11px; color: var(--ink-2); line-height: 1.3; }
+.strip .cell .v { font-family: var(--font-serif); font-weight: 700; color: var(--tone); font-size: var(--step-0); }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 0 0 18px; }
+.kpi { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 10px 14px; }
+.kpi .k { font-size: 11px; color: var(--ink-3); }
+.kpi .v { font-family: var(--font-serif); font-size: var(--step-2); font-weight: 700; font-variant-numeric: tabular-nums;
+  line-height: 1.2; }
+.kpi .n { font-size: 11px; color: var(--ink-3); }
+.fair-text { font-size: var(--step-0); margin: 0 0 8px; }
+p.howto { font-size: var(--step--1); color: var(--ink-2); margin: 6px 0 2px; padding-left: 10px;
+  border-left: 3px solid var(--rule); }
+svg.chart .rng { fill: var(--c0); fill-opacity: .28; stroke: var(--c0); stroke-width: 1.2; }
+svg.chart .rng.alt { fill: var(--ink-3); fill-opacity: .14; stroke: var(--ink-3); stroke-dasharray: 3 3; }
+svg.chart .rng:hover { fill-opacity: .45; }
+svg.chart .mid { stroke: var(--c0); stroke-width: 3; }
+svg.chart .now { stroke: var(--pass); stroke-width: 2; }
+svg.chart .now-l { fill: var(--pass); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+svg.chart .rlabel { fill: var(--ink-2); font-size: 12px; }
+.sub { margin-top: 26px; }
+.sub:first-of-type { margin-top: 8px; }
+h3.subhead { font-family: var(--font-serif); font-size: var(--step-1); border-left: 4px solid var(--accent);
+  padding-left: 10px; margin: 0 0 8px; }
+@media (max-width: 900px) { .strip { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
 /* ---------- tooltips ---------- */
 .term { border-bottom: 1px dotted var(--ink-3); cursor: help; position: relative; }
 .term:hover::after, .term:focus::after { content: attr(data-tip); position: absolute; left: 0; top: calc(100% + 6px);

@@ -67,9 +67,15 @@ def _three_c(r: dict) -> dict:
 
 
 def _moat(r: dict) -> dict:
+    returns = r.get("returns") or {}
     return {"durability": r.get("durability"), "effective": r.get("effective_moats") or [],
-            "moats": [{"type": m.get("type"), "rating": m.get("rating")} for m in r.get("moats") or []],
-            "risks": r.get("risks") or []}
+            "moats": [{"type": m.get("type"), "group": m.get("group"), "rating": m.get("rating"),
+                       "mechanism": m.get("mechanism")} for m in r.get("moats") or []],
+            "risks": r.get("risks") or [], "trend": r.get("trend"),
+            "axes": {k: (v or {}).get("rating") for k, v in (r.get("axes") or {}).items()},
+            "returns": {"hurdle": returns.get("hurdle"), "rating": returns.get("rating"), "basis": returns.get("basis"),
+                        "rows": [{k: x.get(k) for k in ("year", "roic", "spread", "peer_median")}
+                                 for x in returns.get("rows") or []]}}
 
 
 def _swot(r: dict) -> dict:
@@ -85,7 +91,9 @@ def _profitability(r: dict) -> dict:
             "margin": {k: _get(r, "step2", k) for k in ("year", "self", "avg", "diff", "trend")},
             "peer_margins": [{"name": p.get("name"), "margin": p.get("margin")} for p in last.get("peers") or []],
             "source": _get(r, "step3", "source"),
-            "roe_rows": [{"year": x.get("year"), "roe": x.get("roe")} for x in r.get("roe_rows") or []]}
+            "roe_rows": [{"year": x.get("year"), "roe": x.get("roe")} for x in r.get("roe_rows") or []],
+            "dupont": [{k: x.get(k) for k in ("year", "margin", "turnover", "leverage", "roe")}
+                       for x in r.get("dupont") or []]}
 
 
 def _growth(r: dict) -> dict:
@@ -104,7 +112,8 @@ def _safety(r: dict) -> dict:
     return {"items": [{k: i.get(k) for k in ("name", "value", "peer_avg", "rating", "target")}
                       for i in s1.get("items") or []],
             "net_cash": s1.get("net_cash"), "debt_free": s1.get("debt_free"), "trend": _get(r, "step2", "rating"),
-            "peers": [{"name": p.get("name"), "equity_ratio": p.get("equity_ratio")} for p in s1.get("peers") or []]}
+            "peers": [{"name": p.get("name"), "equity_ratio": p.get("equity_ratio")} for p in s1.get("peers") or []],
+            "rows": [{k: x.get(k) for k in ("year", "equity_ratio", "net_cash", "debt")} for x in r.get("rows") or []]}
 
 
 def _cash_flow(r: dict) -> dict:
@@ -127,6 +136,8 @@ def _valuation(r: dict) -> dict:
             "cheap_reason": _get(r, "handoff", "cheap_reason"), "final_check": _get(r, "step3", "final_check"),
             "average": _get(r, "step3", "average"), "scored": len(_get(r, "step3", "scores") or {}) or None,
             "scores": _get(r, "step3", "scores"),
+            "peg_standard": _get(r, "peg", "peg", "standard"),
+            "peg_cases": _get(r, "peg", "cases"), "pbr_fair": _get(r, "pbr", "fair"),
             "raw_verdict": _get(r, "step3", "raw_verdict"),
             "ev_ebitda": _get(r, "ev", "value"), "eps_used": _get(r, "per", "eps", "eps_used"),
             "peers": [{k: p.get(k) for k in ("name", "per_actual", "per_forecast", "pbr", "ev_ebitda_calc", "cagr", "roe")}

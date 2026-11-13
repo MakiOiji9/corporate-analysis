@@ -284,6 +284,10 @@ def test_prepare_fill_build_flow(repo, capsys):
     assert "<dt>FCF</dt>" in html  # FCF is in the report now (the investors' view, B6), so it is in the glossary
     assert 'id="legends"' in html and "ウォーレン・バフェット" in html
     assert 'id="technical"' in html and "押し目の目安" in html and 'class="hl sup"' in html and "<dt>RSI</dt>" in html
+    # the new layout: the nine analyses at a glance first, the strategy chapter before the STEP chapters, the
+    # price chapters merged into one
+    assert html.count('class="cell ') == 9 and 'id="market"' in html
+    assert html.index('id="thesis"') < html.index('id="step1"') < html.index('id="market"')
     assert "## 4.1 テクニカル" in (company / "reports" / f"{TODAY}_company-report_brief.md").read_text(encoding="utf-8")
     assert "## 投資の神の視点" in (company / "reports" / f"{TODAY}_company-report_brief.md").read_text(encoding="utf-8")
     result = json.loads((company / "reports" / f"{TODAY}_company-report.json").read_text(encoding="utf-8"))
