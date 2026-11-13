@@ -96,8 +96,12 @@ jobs:
       - name: Run /company-report
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          PUSH_TOKEN: ${{ github.token }}
           COMPANY: ${{ matrix.company }}
-        run: bash .github/scripts/run-claude.sh "/company-report $COMPANY" "企業分析レポート ${COMPANY}（グループ ${{ needs.targets.outputs.group }}・$(date +%F)）"
+        # Repeats /company-report until the report is built (a headless run tends to stop after one analysis),
+        # committing to main after each run.
+        run: |
+          bash .github/scripts/run-company-report.sh "$COMPANY" "企業分析レポート ${COMPANY}（グループ ${{ needs.targets.outputs.group }}・$(date +%F)）"
 
       # Claude can end without the report (a skill that stopped to ask, the same skill needed twice).
       - name: Check the report was built

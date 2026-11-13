@@ -224,8 +224,10 @@ jobs:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           PUSH_TOKEN: ${{ github.token }}
           AUTOSAVE_BRANCH: ${{ env.BRANCH }}
+        # Repeats /company-report until the report is built (a headless run tends to stop after one analysis),
+        # committing to the branch after each run.
         run: |
-          bash .github/scripts/run-claude.sh "/company-report $TICKER" "企業分析レポート $DIR" "$RUNNER_TEMP/report.json"
+          bash .github/scripts/run-company-report.sh "$DIR" "企業分析レポート $DIR" "$RUNNER_TEMP/report.json"
 
       - name: Check the report was built
         id: built
