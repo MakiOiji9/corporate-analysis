@@ -341,7 +341,7 @@ def test_step5_rules():
     (("良好", "良好", "良好", "良好"), "注意", False, "普通"),
     (("良好", "普通", "良好", "良好"), "問題なし", False, "普通"),
     (("良好", "良好", None, "良好"), "問題なし", True, "普通"),  # 純損失
-    (("良好", "良好", None, "良好"), "問題なし", False, "懸念"),  # 材料不足: an unjudged step is read as 懸念
+    (("良好", "良好", None, "良好"), "問題なし", False, "普通"),  # 材料不足: an unjudged step caps at 普通
     ((None, "良好", "良好", "良好"), "問題なし", False, "判定保留"),
     ((None, "良好", "良好", "懸念"), "問題なし", False, "懸念"),
     (("良好", "良好", "懸念", "良好"), "問題なし", False, "懸念")])
@@ -385,12 +385,16 @@ def test_cash_gap_rows_and_main_cause():
     assert last["main"] == "売上債権の増減"
 
 
-def test_step3_takes_the_lower_of_average_and_cumulative():
+def test_step3_judges_on_the_cumulative_ratio():
     # a tiny net income in one year lifts the plain average (1000x) but not the cumulative ratio
     s3 = X.step3(_rows([1000, 300, 300, 300, 300], ni=[1, 500, 500, 500, 500]), {"sales": {}, "receivables": {},
                                                                                 "inventories": {}})
     assert s3["average"] > 100 and s3["cumulative"] == pytest.approx(1.10, abs=0.01)
-    assert s3["ratio"] == s3["cumulative"] and s3["rating"] == "良好" and "低い方" in s3["method"]
+    assert s3["ratio"] == s3["cumulative"] and s3["rating"] == "良好" and "累計" in s3["method"]
+    # the average is lower here (0.88) but the cash actually earned over five years is 1.3x the profit
+    s3 = X.step3(_rows([4000, 300, 300, 300, 300], ni=[2000, 500, 500, 500, 500]), {"sales": {}, "receivables": {},
+                                                                                  "inventories": {}})
+    assert s3["average"] == pytest.approx(0.88) and s3["ratio"] == pytest.approx(1.3) and s3["rating"] == "良好"
     s3 = X.step3(_rows([600, 700, 800, 1000, 1000], ni=[1000] * 5), {"sales": {}, "receivables": {},
                                                                       "inventories": {}})
     assert s3["below_text"] == "2017-03 0.60倍、2018-03 0.70倍"

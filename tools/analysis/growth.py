@@ -8,7 +8,7 @@ Usage:
 
 --company takes '3798', '3798_uls-group' or part of the directory name.
 list:    companies under companies/ with the state of their growth result (for choosing one).
-check:   is the latest result still valid (180 days, the sections and the yearly numbers it used unchanged, no
+check:   is the latest result still valid (120 days, the sections and the yearly numbers it used unchanged, no
          newer 3C / SWOT result)? Which required inputs are missing (the own series needs 5 years of sales and
          EPS; the plan, the M&A section and the company's explanation of the decline years)? -> "next".
          STEP 1 is not required: 3C / SWOT results are only referred to when they exist.

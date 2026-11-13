@@ -648,3 +648,12 @@ def test_build_writes_sentence_summary_changes_and_gaps_from_the_picks(repo, cap
     assert "S1（継続率が高い）により、T1（参入が続く）に対して条件付きで耐えられる。理由：採用が進めば耐えられる" in text
     assert "最大の強みはS1（継続率が高い）、最大の脅威はT1（参入が続く）。SWOT の結論は条件付き" in text
     assert "## 8. 前回からの変更点\n\n- 初回の分析" in text
+
+
+def test_conclusion_cell_separates_the_reason_from_the_sentence():
+    pick = {"id": "S1", "fact": "f", "impact": "大"}
+    judged = {"verdict": "No", "why": "規則に従い No を採った", "top_strength": pick, "top_threat": {**pick, "id": "T1"}}
+    row = D.conclusion_section(judged, "S1により、T1に対して耐えられない。").splitlines()[-1]
+    assert "No を採った。まとめ: S1により" in row
+    judged = {**judged, "why": "数値の対策が無い。"}
+    assert "無い。まとめ: S1" in D.conclusion_section(judged, "S1により…").splitlines()[-1]

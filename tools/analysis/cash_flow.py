@@ -8,7 +8,7 @@ Usage:
 
 --company takes '3798', '3798_uls-group' or part of the directory name.
 list:    companies under companies/ with the state of their cash-flow result (for choosing one).
-check:   is the latest result still valid (180 days, the sections and the yearly numbers it used unchanged, no
+check:   is the latest result still valid (200 days, the sections and the yearly numbers it used unchanged, no
          newer profitability result)? Which required inputs are missing (the own series needs 5 years of
          operating CF; the shareholder returns)? -> "next". No peers and no STEP 1 are needed: a profitability
          result is only used for 7章 when it exists.

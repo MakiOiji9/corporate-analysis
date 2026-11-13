@@ -485,12 +485,12 @@ DECLINE_2023 = [{"year": "2023-03"}]
 @pytest.mark.parametrize("s1, s4, classes, verdict", [
     (GOOD_S1, CLEAN_S4, {"2023-03": "一時"}, "良好"),
     (GOOD_S1, CLEAN_S4, {"2023-03": "構造"}, "懸念"),
-    (GOOD_S1, CLEAN_S4, {"2023-03": "不明"}, "懸念"),       # an unknown cause is read as 構造
+    (GOOD_S1, CLEAN_S4, {"2023-03": "不明"}, "普通"),       # an unknown cause caps at 普通 (not read as 構造)
     ({"rating": "停滞・縮小", "basis": "b"}, CLEAN_S4, {"2023-03": "一時"}, "懸念"),
     ({"rating": None, "basis": "b"}, CLEAN_S4, {"2023-03": "一時"}, "判定保留"),
     ({"rating": None, "basis": "b"}, CLEAN_S4, {"2023-03": "構造"}, "懸念"),
-    (GOOD_S1, {**CLEAN_S4, "problems": ["p"]}, {"2023-03": "不明"}, "懸念"),
-    (GOOD_S1, {**CLEAN_S4, "unknown": ["M&A"]}, {"2023-03": "一時"}, "普通"),  # unchecked quality: 問題あり
+    (GOOD_S1, {**CLEAN_S4, "problems": ["p"]}, {"2023-03": "不明"}, "普通"),
+    (GOOD_S1, {**CLEAN_S4, "unknown": ["M&A"]}, {"2023-03": "一時"}, "良好"),  # unchecked quality is noted only
     (GOOD_S1, {"adjusted": {"rating": "停滞・縮小", "basis": "b"}, "problems": ["p"], "unknown": []}, {}, "懸念"),
 ])
 def test_judge(s1, s4, classes, verdict):
@@ -595,7 +595,7 @@ def test_full_cycle_then_fresh_and_triggered(repo, capsys):
     assert out["result"] == "triggered" and out["next"] == "prepare"
 
 
-@pytest.mark.parametrize("cls, verdict", [("構造", "懸念"), ("不明", "懸念")])
+@pytest.mark.parametrize("cls, verdict", [("構造", "懸念"), ("不明", "普通")])
 def test_class_decides_the_verdict(repo, capsys, cls, verdict):
     fill(prepared(repo, capsys), cls)
     _, out = run(repo, "build", "--company", "7203", capsys=capsys)
@@ -640,16 +640,15 @@ def test_recent_margin_decline_is_a_quality_problem():
     assert check["status"] == "問題あり" and "直近3年" in check["problem"] and len(check["gaps"]) == 2
 
 
-@pytest.mark.parametrize("op_last, verdict, moved", [(149.0, "普通", True), (160.0, "良好", False)])
-def test_close_margin_comparison_moves_good_to_fair(op_last, verdict, moved):
+@pytest.mark.parametrize("op_last, near", [(149.0, True), (160.0, False)])
+def test_close_margin_comparison_is_noted_not_moved(op_last, near):
     sales = [100, 110, 121, 133, 146]
     rows = _rows(sales, [100, 110, 121, 135, 150], op=[100, 110, 121, 133.5, op_last])
     s1 = X.step1(rows)
     s4 = X.step4(s1, rows, [], "ok")
-    got, why, reasons = X.decide(s1, [], s4, {})
-    assert got == verdict and bool(reasons) == moved
-    if moved:
-        assert "保守的に 良好 から1段階下げた" in why
+    got, why, downgraded = X.decide(s1, [], s4, {})
+    assert got == "良好" and downgraded == []
+    assert ("境界に近い" in why) == near
 
 
 def test_close_to_zero_growth_moves_fair_to_concern():

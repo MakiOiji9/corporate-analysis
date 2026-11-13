@@ -8,7 +8,7 @@ Usage:
 
 --company takes '3798', '3798_uls-group' or part of the directory name.
 list:    companies under companies/ with the state of their 3C and five-forces results (for choosing one).
-check:   is the latest 3C result still valid (180 days, no newer yuho / business-overview / industry /
+check:   is the latest 3C result still valid (365 days, no newer yuho / business-overview / industry /
          competitors raw, no newer five-forces result)? Is the five-forces result usable (STEP 1-1 comes
          first)? Which required inputs are missing? How old is the outlook (header only)? -> "next".
 prepare: analysis/three-c/{date}_brief.md (what the writer reads) and the {date}_three-c.md skeleton

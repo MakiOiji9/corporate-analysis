@@ -84,8 +84,6 @@ def _numbers_lines(cands: dict) -> list[str]:
     lines.append(f"- 純利益 CAGR（参考）: {fmt_cagr(s1['net_income'])}")
     lines.append(f"- 今期の進捗（md の 3章。STEP 3 の示唆に使う）: {F.progress_text(cands['progress'])}")
     lines.append(f"- {cands['receivables']}（7章の「STEP 2 の他の分析で確かめること」に使う）")
-    if cands["downgraded"]:
-        lines.append("- 境界に近いため候補を保守的に1段階下げた理由: " + "、".join(cands["downgraded"]))
     if cands["borderline"]:
         lines.append("- 境界に近い比較（材料の誤差で判定が1段階動きうる。7章の「評価が変わる条件」に使う）: "
                      + "。".join(cands["borderline"]))

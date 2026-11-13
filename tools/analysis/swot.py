@@ -8,7 +8,7 @@ Usage:
 
 --company takes '3798', '3798_uls-group' or part of the directory name.
 list:    companies under companies/ with the state of their SWOT and moat results (for choosing one).
-check:   is the latest SWOT result still valid (180 days, no changed yuho / mid-term-plan / business-overview /
+check:   is the latest SWOT result still valid (365 days, no changed yuho / mid-term-plan / business-overview /
          industry section, no newer five-forces / 3C / moat result)? Is the moat result usable (STEP 1-3 comes
          first; it runs 3C and five-forces itself)? Is the market outlook fresh? Which inputs are missing? -> "next".
 prepare: analysis/swot/{date}_brief.md (what the writer reads) and the {date}_swot.md skeleton

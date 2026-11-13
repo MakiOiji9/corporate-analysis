@@ -363,11 +363,15 @@ def _pick_cell(pick: dict) -> str:
 def conclusion_section(judged: dict, sentence: str) -> str:
     if judged["verdict"] == PENDING:  # the writer's sentence states an answer the rules did not adopt
         sentence = f"（書き手の暫定の見方: {sentence}）" if not M.is_blank(sentence) else ""
+    why = cell(judged["why"]).rstrip()
+    if why and not why.endswith(("。", "）")):
+        why += "。"
+    summary = f"まとめ: {cell(sentence)}" if not M.is_blank(sentence) else ""
     return "\n".join([
         "| 項目 | 内容 |", "|---|---|",
         f"| 最大の強み | {_pick_cell(judged['top_strength'])} |",
         f"| 最大の脅威 | {_pick_cell(judged['top_threat'])} |",
-        f"| SWOT の結論 | **{judged['verdict']}**: {cell(judged['why'])} {cell(sentence)} |"])
+        f"| SWOT の結論 | **{judged['verdict']}**: {why}{summary} |"])
 
 
 def apply_conclusion(text: str, judged: dict, sentence: str) -> str:

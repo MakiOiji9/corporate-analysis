@@ -8,7 +8,7 @@ Usage:
 
 --company takes '3798', '3798_uls-group' or part of the directory name.
 list:    companies under companies/ with the state of their moat and 3C results (for choosing one).
-check:   is the latest moat result still valid (180 days, no newer yuho / financials-historical /
+check:   is the latest moat result still valid (365 days, no newer yuho / financials-historical /
          business-overview / industry / competitors raw, no newer 3C result)? Is the 3C result usable (STEP 1-2
          comes first; its verdict does not stop the analysis)? Which required inputs are missing? -> "next".
 prepare: analysis/moat/{date}_brief.md (what the writer reads) and the {date}_moat.md skeleton

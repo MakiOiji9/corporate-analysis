@@ -307,13 +307,21 @@ def test_combine_single_axis_and_none():
     ({"a": R.LOW, "b": R.FAIR}, R.LOW),  # +0.5
     ({"a": R.HIGH, "b": R.FAIR}, R.HIGH),  # -0.5
     ({"a": R.LOW, "b": R.FAIR, "c": R.FAIR}, R.FAIR),  # +0.33
-    ({"a": R.LOW, "b": R.NA, "c": R.PENDING}, R.LOW),  # one scored: judged on it (材料不足のため1指標)
+    ({"a": R.LOW, "b": R.NA, "c": R.PENDING}, R.PENDING),  # one scored: not enough to call it 割安
     ({"a": R.NA, "b": R.PENDING}, R.PENDING),  # nothing scored
 ])
 def test_score(ratings, verdict):
     result = R.score(ratings)
     assert result["verdict"] == verdict
     assert result["single"] == (len(result["scores"]) == 1)
+
+
+def test_score_leaves_the_one_sided_net_cash_ratio_out_of_the_average():
+    result = R.score({"PER": R.FAIR, "PBR": R.FAIR, R.ONE_SIDED: R.LOW})
+    assert result["scores"][R.ONE_SIDED] == 1 and result["average"] == 0 and result["verdict"] == R.FAIR
+    assert "参考" in result["basis"]
+    alone = R.score({"PBR": R.LOW, R.ONE_SIDED: R.LOW})  # PBR is the only two-sided indicator
+    assert alone["verdict"] == R.PENDING and alone["single"]
 
 
 # ---------- va_series ----------

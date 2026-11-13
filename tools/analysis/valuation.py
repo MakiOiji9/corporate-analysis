@@ -343,7 +343,7 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: d
     return {
         "company": company.dirname, "name": company.display_name(), "date": date,
         "valid_until": P.valid_until(date), "verdict": cands["verdict"], "verdict_reason": cands["why"],
-        "conservative": ([f"点数になった指標が {next(iter(s3['scores']))} だけ（材料不足のため1指標で判定）"]
+        "conservative": ([f"点数になった指標が{R.MIN_SCORED}つ未満（材料不足のため STEP 3 は判定保留）"]
                          if s3.get("single") else []),
         "price": {"value": base["price"]["price"], "date": base["price"]["date"], "currency": base["price"]["currency"]},
         **_items_json(cands),
