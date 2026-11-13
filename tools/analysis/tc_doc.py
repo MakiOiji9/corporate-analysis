@@ -9,12 +9,18 @@ Conclusion follows 企業分析フレームワーク.md 1-2 手順4, decided her
   なし: 勝てる理由が「なし」
   明確: 最重要KBF で自社が ○ かつ比較した競合が全員 △/×（○・？ が無い）、かつ 競合との比較が 優位
   あいまい: それ以外（競合との比較が 不明 の場合も 明確 にしない）
+That is the conservative verdict (conservative_verdict). The verdict itself (the base) reads a ？ as unknown, not as
+△: when the top KBF cannot be compared, the KBF score weighted by importance (kbf_scores; ○ +1・△ 0・× −1, ？ left
+out, weight n for the top of n factors down to 1) decides 明確 when the target beats every compared peer on two or
+more factors and the competitor comparison is 優位. A 明確 a rule cannot reach (no share figures, so the comparison
+stays 同等) is said so. The writer adds a counter-argument (6章); quality() records 高/中/低 confidence.
 """
 from __future__ import annotations
 
 import re
 from string import Template
 
+import an_quality as Q
 import mdparse as M
 from ff_doc import (CHANGED_FROM_PREVIOUS, CONFIDENCE, DIFFERS_FROM_CANDIDATE, LOW_CONFIDENCE, TIE_BREAK,
                     _check_words, candidate_cell, replace_section)
@@ -31,6 +37,10 @@ KBF_COUNT = (2, 5)
 NO_REASON = "なし"
 UNKNOWN_MARK = "？"
 PENDING = "判定保留"
+VERSION = 2  # 2 (2026-11): base and conservative verdicts (KBF score), counter-argument, confidence
+COUNTER_LABEL = "反論（この結論が間違っているとしたら）"
+MARK_SCORE = {"○": 1, "△": 0, "×": -1}
+MIN_SCORED_KBF = 2
 
 
 # ---------- skeleton ----------
@@ -108,7 +118,7 @@ def parse(text: str) -> dict:
         "kbf_rows": kbf_rows, "company_conclusion": company_conclusion,
         "win_reason": win.get("勝てる理由", ""), "triggers": win.get("評価が変わる条件", ""),
         "strengths": handoff.get("SWOT の強み（S）候補", ""), "weaknesses": handoff.get("SWOT の弱み（W）候補", ""),
-        "moat_checks": handoff.get("モート分析で確かめること", ""),
+        "moat_checks": handoff.get("モート分析で確かめること", ""), "counter": handoff.get(COUNTER_LABEL, ""),
         "changes": M.bullets(M.section(text, "7.")), "gaps": M.bullets(M.section(text, "8.")),
     }
 
@@ -173,6 +183,9 @@ def validate(text: str, template: str, peer_count: int) -> list[str]:
     issues += _check_rating("2.2 判定", p["competitor"]["rating"], COMPETITOR_RATINGS, p["competitor"]["reason"],
                             p["competitor"]["confidence"])
     issues += _check_kbf(p, peer_count)
+    counter = Q.counter_issue(p["counter"])
+    if counter:
+        issues.append(f"6. {counter}")
     if not p["changes"]:
         issues.append("7. 前回からの変更点に箇条書きが無い")
     if not p["gaps"]:
@@ -209,7 +222,69 @@ def not_comparable(self_mark: str, peers: list[str]) -> bool:
     return self_mark == UNKNOWN_MARK or not peers or all(m == UNKNOWN_MARK for m in peers)
 
 
-def judge(parsed: dict, peer_count: int) -> dict:
+def kbf_scores(rows: list[dict], peer_count: int) -> dict:
+    """{self, peers, scored}: each company's mean mark (○ +1・△ 0・× −1) weighted by the KBF's importance (n for the
+    top of n factors down to 1), ？ left out; None when a company has no known mark. scored: factors the target has."""
+    n = len(rows)
+
+    def score(marks: list[str]) -> float | None:
+        pairs = [(n - i, MARK_SCORE[m]) for i, m in enumerate(marks) if m in MARK_SCORE]
+        return sum(w * s for w, s in pairs) / sum(w for w, _ in pairs) if pairs else None
+
+    own = [r["self"] for r in rows]
+    peers = [score([r["peers"][j] if j < len(r["peers"]) else UNUSED for r in rows]) for j in range(peer_count)]
+    return {"self": score(own), "peers": peers, "scored": sum(1 for m in own if m in MARK_SCORE)}
+
+
+def _head_to_head(rows: list[dict], j: int) -> tuple[float, float, int] | None:
+    """(target, peer j, factors) over the factors both have a known mark for, weighted by importance."""
+    n = len(rows)
+    pairs = [(n - i, MARK_SCORE[r["self"]], MARK_SCORE[r["peers"][j]]) for i, r in enumerate(rows)
+             if r["self"] in MARK_SCORE and j < len(r["peers"]) and r["peers"][j] in MARK_SCORE]
+    if not pairs:
+        return None
+    total = sum(w for w, _, _ in pairs)
+    return sum(w * s for w, s, _ in pairs) / total, sum(w * p for w, _, p in pairs) / total, len(pairs)
+
+
+def _base_win(parsed: dict, peer_count: int, comp: str) -> str | None:
+    """The base reading of an uncomparable top KBF: 明確 when the target beats every peer on the factors both are
+    known for (MIN_SCORED_KBF or more), weighted by importance, and the competitor comparison is 優位."""
+    if comp != "優位":
+        return None
+    duels = [_head_to_head(parsed["kbf_rows"], j) for j in range(peer_count)]
+    if not duels or any(d is None or d[2] < MIN_SCORED_KBF or d[0] <= d[1] for d in duels):
+        return None
+    shown = "、".join(f"{PEER_LABELS[j]} 自社 {d[0]:+.2f} 対 {d[1]:+.2f}（{d[2]}項目）" for j, d in enumerate(duels))
+    return ("最重要KBF は比べる材料が無いが、両社とも分かる KBF で重要度の重みを付けた点数が全ての競合を上回り"
+            f"（{shown}）、競合との比較も「優位」")
+
+
+def judge(parsed: dict, peer_count: int, share_missing: bool = False) -> dict:
+    """verdict (the base: ？ is unknown) and conservative_verdict (？ read as △)."""
+    out = _conservative_judge(parsed, peer_count)
+    out["conservative_verdict"] = out["verdict"]
+    top = parsed["kbf_rows"][0] if parsed["kbf_rows"] else {"self": UNKNOWN_MARK, "peers": []}
+    comp = parsed["competitor"]["rating"]
+    if out["verdict"] == "あいまい" and not_comparable(top["self"], top["peers"][:peer_count]):
+        base = _base_win(parsed, peer_count, comp)
+        if base:
+            out.update(verdict="明確", why=f"{base}（保守的に ？ を △ とみなすと「あいまい」）")
+    if out["verdict"] == "あいまい" and comp == "同等" and share_missing:
+        out["why"] += "（シェアの数値が無く、競合との比較は規則上「優位」に届かないため明確にはならない。証拠から否定されたのではない）"
+    return out
+
+
+def quality(parsed: dict) -> dict:
+    """高/中/低 from the growth and competitor ratings and the target's KBF marks (an_quality.confidence)."""
+    comp, customer = parsed["competitor"], parsed["customer"]
+    items = [{"confidence": customer["confidence"], "source": customer["source"], "rating": parsed["growth"]["rating"]},
+             {"confidence": comp["confidence"], "source": comp["source"], "rating": comp["rating"]}]
+    items += [{"confidence": comp["confidence"], "source": r["basis"], "rating": r["self"]} for r in parsed["kbf_rows"]]
+    return Q.confidence(items)
+
+
+def _conservative_judge(parsed: dict, peer_count: int) -> dict:
     top = parsed["kbf_rows"][0] if parsed["kbf_rows"] else {"kbf": "", "self": UNKNOWN_MARK, "peers": []}
     peers = top["peers"][:peer_count]
     top_win = top["self"] == "○" and bool(peers) and all(m in ("△", "×") for m in peers)

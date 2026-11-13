@@ -16,6 +16,7 @@ import moat as MT  # noqa: E402
 import mt_doc as D  # noqa: E402
 import mt_inputs as I  # noqa: E402
 import mt_metrics as X  # noqa: E402
+import tc_doc as TD  # noqa: E402
 import mt_paths as P  # noqa: E402
 import mt_returns as R  # noqa: E402
 import sf_series as SS  # noqa: E402
@@ -187,7 +188,7 @@ def _three_c(root: Path, date: str = TC_DAY, verdict: str = "明確") -> None:
     directory = root / "companies" / "7203_toyota" / "analysis" / "three-c"
     directory.mkdir(parents=True, exist_ok=True)
     (directory / f"{date}_three-c.md").write_text("# 3C\n\n完成\n", encoding="utf-8")
-    result = {"verdict": verdict, "verdict_reason": "理由", "win_reason": "品質で優れる",
+    result = {"version": TD.VERSION, "verdict": verdict, "verdict_reason": "理由", "win_reason": "品質で優れる",
               "valid_until": "2099-01-01", "inputs": [],
               "handoff": {"strengths": "品質", "weaknesses": "なし", "moat_checks": "利益率の10年推移"}}
     (directory / f"{date}_three-c.json").write_text(json.dumps(result, ensure_ascii=False), encoding="utf-8")

@@ -32,6 +32,7 @@ sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "marke
 import an_brief as AB  # noqa: E402
 import an_common as A  # noqa: E402
 import an_fill as F  # noqa: E402
+import an_quality as Q  # noqa: E402
 import ff_paths as FP  # noqa: E402
 import freshness as T  # noqa: E402
 import five_forces as FF  # noqa: E402
@@ -74,6 +75,9 @@ def evaluate(company: P.Company, today: str) -> dict:
                            "json": company.rel(company.file(date, P.JSON_SUFFIX)),
                            "verdict": result.get("verdict"), "valid_until": P.valid_until(date)}
         state["newer_raw"] = T.triggers(company, date, "annual", [("ファイブフォース", FP)])
+        old_rules = Q.outdated(result, D.VERSION)
+        if old_rules:
+            state["newer_raw"] = state["newer_raw"] + [old_rules]
     if draft and (not latest or draft[0] >= latest[0]):
         state.update(result="draft", reason=f"作成途中の {company.rel(draft[1])} がある（続きから書く）")
     elif not latest:
@@ -248,8 +252,11 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: d
                  "peers": {peers[i]: m for i, m in enumerate(r["peers"]) if i < len(peers)}, "basis": r["basis"]}
                 for r in parsed["kbf_rows"]]
     return {
-        "company": company.dirname, "name": company.display_name(), "date": date,
+        "version": D.VERSION, "company": company.dirname, "name": company.display_name(), "date": date,
         "valid_until": P.valid_until(date),
+        "confidence": D.quality(parsed), "counter": parsed["counter"],
+        "conservative_verdict": judged["conservative_verdict"],
+        "kbf_scores": D.kbf_scores(parsed["kbf_rows"], len(peers)),
         "customer": parsed["customer"], "kbf": parsed["customer"]["kbf"],
         "growth": dict(parsed["growth"], candidate=cands["growth"]["rating"]),
         "competitor": dict(parsed["competitor"], candidate=cands["competitor"]["rating"],
@@ -290,7 +297,7 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     issues = D.check_reference(parsed, cands, P.latest_result(company, before=date))
     if issues:
         return emit({"ok": False, "md": company.rel(md_path), "issues": issues})
-    judged = D.judge(parsed, peer_count)
+    judged = D.judge(parsed, peer_count, share_missing=cands["competitor"].get("share_position") is None)
     atomic_write_text(md_path, D.apply_conclusion(text, judged, parsed["competitor"]["rating"], cands["competitor"]))
     result = result_json(company, date, text, parsed, cands, judged)
     json_path = company.file(date, P.JSON_SUFFIX)

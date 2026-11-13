@@ -13,6 +13,7 @@ sys.path[:0] = [str(ANALYSIS), str(REPO / "tools" / "report"), str(REPO / "tools
                 str(REPO / "tools" / "collect"), str(REPO / "tools" / "guard")]
 
 import mt_doc as MD  # noqa: E402
+import tc_doc as TD  # noqa: E402
 import sw_doc as D  # noqa: E402
 import sw_metrics as X  # noqa: E402
 import sw_paths as P  # noqa: E402
@@ -131,7 +132,7 @@ def _company(root: Path, mtp: str = MTP, collected: str = COLLECTED) -> Path:
 
 def _result(root: Path, kind: str, date: str, result: dict) -> None:
     """An upstream result built under the current rules (an older version would ask for its rebuild first)."""
-    versions = {"moat": MD.VERSION}
+    versions = {"moat": MD.VERSION, "three-c": TD.VERSION}
     if kind in versions:
         result = {"version": versions[kind], **result}
     directory = root / "companies" / COMPANY_DIR / "analysis" / kind
