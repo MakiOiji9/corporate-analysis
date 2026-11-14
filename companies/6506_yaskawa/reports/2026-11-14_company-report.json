@@ -1,29 +1,29 @@
 {
  "company": "6506_yaskawa",
  "name": "安川電機（6506）",
- "date": "2026-11-11",
+ "date": "2026-11-14",
  "market": "日本",
  "horizons": {
   "short": {
    "verdict": "見送り",
    "provisional": null,
-   "why": "重み付けの点数 -0.31（+0.3 以上 投資検討、-0.2 以下 見送り。ウォッチまであと +0.11（-0.2 を超えればウォッチ））。プラス: 安全性・株価の割安さ（STEP 3）／マイナス: 地合い・直近の決算の進捗"
+   "why": "重み付けの点数 -0.26（+0.25 以上 投資検討、-0.25 以下 見送り。ウォッチまであと +0.01（-0.25 を超えればウォッチ））。プラス: 安全性・株価の割安さ（STEP 3）／マイナス: 地合い・直近の決算の進捗"
   },
   "mid": {
    "verdict": "ウォッチ",
    "provisional": null,
-   "why": "重み付けの点数 -0.01（+0.3 以上 投資検討、-0.2 以下 見送り。見送りまであと -0.19（-0.2 以下で見送り））。プラス: 収益性・安全性／マイナス: 直近の決算の進捗・強みで脅威に対抗できるか（SWOT）"
+   "why": "重み付けの点数 +0.04（+0.25 以上 投資検討、-0.25 以下 見送り。投資検討まであと +0.21（+0.25 以上で投資検討））。プラス: 収益性・株価の割安さ（STEP 3）／マイナス: 直近の決算の進捗・成長性"
   },
   "long": {
-   "verdict": "見送り",
+   "verdict": "ウォッチ",
    "provisional": null,
-   "why": "足切り: STEP 1 が C（勝てる理由がなし、または SWOT が No）（点数にかかわらず見送り）"
+   "why": "重み付けの点数 +0.09（+0.25 以上 投資検討、-0.25 以下 見送り。投資検討まであと +0.16（+0.25 以上で投資検討））。プラス: 収益性・地合い／マイナス: 強みの持続性（モート）・成長性"
   }
  },
  "step1": {
-  "grade": "C",
+  "grade": "B",
   "pending": false,
-  "why": "SWOT が No（C の条件）"
+  "why": "A の条件を満たさない: 勝てる理由が明確、モートが広い、SWOT が Yes"
  },
  "step2": {
   "grade": "A",
@@ -47,38 +47,38 @@
  },
  "technical": {
   "state": "もみ合い（方向感なし）",
-  "score": 0.0
+  "score": 0.167
  },
  "price_range": {
   "source": "prices",
-  "current": 3773.0,
+  "current": 3791.0,
   "first": "2016-10-24",
-  "last": "2026-11-10",
-  "position_52w": 9.2
+  "last": "2026-11-13",
+  "position_52w": 9.6
  },
  "analyses": {
   "five_forces": {
-   "date": "2026-11-10",
+   "date": "2026-11-14",
    "verdict": "中"
   },
   "three_c": {
-   "date": "2026-11-01",
+   "date": "2026-11-14",
    "verdict": "あいまい"
   },
   "moat": {
-   "date": "2026-11-10",
+   "date": "2026-11-14",
    "verdict": "なし"
   },
   "swot": {
-   "date": "2026-11-01",
-   "verdict": "No"
+   "date": "2026-11-14",
+   "verdict": "条件付き"
   },
   "profitability": {
    "date": "2026-11-10",
    "verdict": "良好"
   },
   "growth": {
-   "date": "2026-11-10",
+   "date": "2026-11-14",
    "verdict": "普通"
   },
   "safety": {
@@ -90,7 +90,7 @@
    "verdict": "普通"
   },
   "valuation": {
-   "date": "2026-11-11",
+   "date": "2026-11-14",
    "verdict": "妥当"
   }
  },
@@ -98,6 +98,6 @@
  "review": "次回決算発表予定日: 未告知（第3四半期は例年1月上旬〜中旬。2026-01-09、2025-01-10）",
  "warnings": [],
  "used_existing": [],
- "md": "companies/6506_yaskawa/reports/2026-11-11_company-report.md",
- "html": "companies/6506_yaskawa/reports/2026-11-11_company-report.html"
+ "md": "companies/6506_yaskawa/reports/2026-11-14_company-report.md",
+ "html": "companies/6506_yaskawa/reports/2026-11-14_company-report.html"
 }
