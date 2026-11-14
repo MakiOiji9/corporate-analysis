@@ -13,6 +13,13 @@
               measure is written, otherwise No
     Yes:      no threat rated 大 or 中
     otherwise the writer's answer (Yes / 条件付き / No); 条件付き needs the company's measure.
+That is the conservative verdict (conservative_verdict, and the answer the writer has to write). The verdict itself
+(the base) reads an unknown impact as unknown: no 大 strength while some strength is 不明, or no 大/中 threat while
+some threat is 不明, gives 条件付き (neither No nor Yes is shown).
+An impact of 大/中 is the effect on the operating profit (an amount or a share of it, with how likely it is), not the
+size of the sales it touches. The top strength is structural: a cyclical or one-off fact (a record quarter of orders,
+a surge) is refused unless it is shown to last (years in a row). The writer adds a counter-argument (7章); quality()
+records 高/中/低 confidence.
 """
 from __future__ import annotations
 
@@ -20,6 +27,7 @@ import re
 from string import Template
 
 import an_fill as F
+import an_quality as Q
 import mdparse as M
 from ff_doc import CHANGED_FROM_PREVIOUS, CONFIDENCE, LOW_CONFIDENCE, TIE_BREAK, _check_words, replace_section
 from sw_metrics import scale_note, scale_rows
@@ -37,6 +45,11 @@ NONE = "なし"
 ROW_COLUMNS = 8
 DETAIL_LIMIT = 120  # characters of an upstream reason shown in 1.1
 DIGIT = re.compile(r"[0-9０-９]")
+VERSION = 2  # 2 (2026-11): impact on profit, structural top strength, base and conservative verdicts, counter
+COUNTER_LABEL = "反論（この結論が間違っているとしたら）"
+PROFIT = re.compile(r"利益")
+CYCLICAL = re.compile(r"受注|過去最高|最高益|急増|急回復|特需|一時|四半期|Q[1-4]")
+PERSISTENT = re.compile(r"\d+\s*(年|期)連続|\d+\s*年(間|以上)|長期|構造|継続して")
 
 
 # ---------- 必ず記載する項目 ----------
@@ -108,7 +121,7 @@ def parse(text: str) -> dict:
         "answer": answer.get("判定", "").strip(), "answer_reason": answer.get("理由", ""),
         "measure": answer.get("必要な対策", ""), "sentence": answer.get("結論の文", ""),
         "step2_checks": handoff.get("STEP 2 で確かめること", ""), "summary": handoff.get("企業分析レポートでの要約", ""),
-        "triggers": handoff.get("評価が変わる条件", ""),
+        "triggers": handoff.get("評価が変わる条件", ""), "counter": handoff.get(COUNTER_LABEL, ""),
         "changes": M.bullets(M.section(text, "8.")), "gaps": M.bullets(M.section(text, "9.")),
     }
 
@@ -145,6 +158,9 @@ def _check_row(quadrant: str, row: dict, seen: set[str]) -> list[str]:
     elif row["impact"] in (LARGE, MEDIUM) and not DIGIT.search(row["impact_reason"]):
         issues.append(f"{where}: 影響度「{row['impact']}」の理由に、影響する金額か比率（数値）と3章の目安を書く。"
                       "書けなければ「不明」にする")
+    elif row["impact"] in (LARGE, MEDIUM) and not PROFIT.search(row["impact_reason"]):
+        issues.append(f"{where}: 影響度「{row['impact']}」の理由は、関わる売上の規模ではなく営業利益への影響（金額か利益に"
+                      "占める割合と、起こりやすさ）で書く")
     return issues
 
 
@@ -198,6 +214,10 @@ def _check_pick(parsed: dict, quadrant: str, key: str, label: str) -> list[str]:
         return issues + [f"4. {label}: {QUADRANT_NAME[quadrant]}の表に無い番号「{pick}」（番号1つか「なし」）"]
     if pick not in allowed:
         issues.append(f"4. {label}: {pick} は{rule}ではない（選べるのは {', '.join(allowed) or 'なし'}）")
+    row = _find(parsed, quadrant, pick)
+    if quadrant == "S" and row and CYCLICAL.search(row["fact"]) and not PERSISTENT.search(row["fact"] + row["basis"]):
+        issues.append(f"4. {label}: {pick} は景気循環・一時的な事実（受注の急増・四半期の最高など）に見える。"
+                      "構造的な強みを選ぶか、何年も続いていることを事実・根拠に書く")
     return issues
 
 
@@ -316,6 +336,9 @@ def validate(text: str, template: str, items: list[dict]) -> list[str]:
     issues += check_required(p, items)
     issues += _check_pick(p, "S", "top_strength", "最大の強み") + _check_pick(p, "T", "top_threat", "最大の脅威")
     issues += _check_answer(p)
+    counter = Q.counter_issue(p["counter"])
+    if counter:
+        issues.append(f"7. {counter}")
     if not p["changes"]:
         issues.append("8. 前回からの変更点に箇条書きが無い")
     if not p["gaps"]:
@@ -352,8 +375,29 @@ def judge(parsed: dict) -> dict:
         verdict = forced
     else:
         verdict, why = parsed["answer"], parsed["answer_reason"]
-    return {"verdict": verdict, "why": why, "top_strength": strength, "top_threat": threat,
+    base, base_why = base_answer(parsed, verdict) if not pending else (verdict, why)
+    return {"verdict": base, "why": base_why if base != verdict else why, "conservative_verdict": verdict,
+            "top_strength": strength, "top_threat": threat,
             "conservative": [] if pending else conservative_notes(parsed)}
+
+
+def base_answer(parsed: dict, conservative: str) -> tuple[str, str]:
+    """The base reading: an unknown impact is unknown (not 小 for a strength, not 大 for a threat), so it neither
+    proves No nor allows Yes."""
+    unknown_s = [r["id"] for r in items_of(parsed, "S") if r["impact"] == UNKNOWN]
+    if parsed["top_strength"] == NONE and unknown_s and conservative == "No":
+        return "条件付き", (f"影響度が不明の強み（{'・'.join(unknown_s)}）があり、対抗できる強みが無いとは言えない"
+                          f"（保守的に「小」とみなすと {conservative}）")
+    if parsed["top_threat"] == NONE and _unknown_threat_only(parsed) and conservative == "No":
+        unknown_t = [r["id"] for r in items_of(parsed, "T") if r["impact"] == UNKNOWN]
+        return "条件付き", (f"影響度が不明の脅威（{'・'.join(unknown_t)}）があり Yes とは言えないが、大きいとも示されていない"
+                          f"（保守的に「大」とみなすと {conservative}）")
+    return conservative, ""
+
+
+def quality(parsed: dict) -> dict:
+    rows = [r for q, _, _ in QUADRANTS for r in items_of(parsed, q)]
+    return Q.confidence([{"confidence": r["confidence"], "source": r["source"], "rating": r["impact"]} for r in rows])
 
 
 def _pick_cell(pick: dict) -> str:

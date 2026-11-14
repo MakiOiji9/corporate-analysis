@@ -31,6 +31,7 @@ sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "marke
 import an_brief as AB  # noqa: E402
 import an_common as A  # noqa: E402
 import an_fill as F  # noqa: E402
+import an_quality as Q  # noqa: E402
 import ff_paths as FP  # noqa: E402
 import mdparse as M  # noqa: E402
 import moat as MT  # noqa: E402
@@ -80,6 +81,18 @@ def _upstream_summary(ups: dict) -> dict:
             for k, v in ups.items()}
 
 
+def missing_upstream(company: P.Company, result: dict) -> list[str]:
+    """The upstream results this SWOT was built on that no longer exist (pruned or moved aside): its references
+    point at nothing, so it is rebuilt on the current ones."""
+    out = []
+    for kind, ref in (result.get("upstream") or {}).items():
+        if kind in UPSTREAM and ref and ref.get("date"):
+            path = company.root / _upstream_file(company, kind, ref["date"])
+            if not path.exists():
+                out.append(f"参照した上流の結果が無い（{kind} {ref['date']}）。今の結果で作り直す")
+    return out
+
+
 def moat_state(company: P.Company, today: str) -> dict:
     state = MT.evaluate(MP.Company(company.root, company.path), today)
     return {"result": state["result"], "reason": state["reason"], "latest": state["latest"]}
@@ -99,6 +112,10 @@ def evaluate(company: P.Company, today: str) -> dict:
                            "verdict": result.get("verdict"), "valid_until": P.valid_until(date)}
         state["newer_raw"] = T.triggers(company, date, "annual",
                                         [("ファイブフォース", FP), ("3C", TP), ("モート", MP)])
+        state["newer_raw"] = state["newer_raw"] + missing_upstream(company, result)
+        old_rules = Q.outdated(result, D.VERSION)
+        if old_rules:
+            state["newer_raw"] = state["newer_raw"] + [old_rules]
     if draft and (not latest or draft[0] >= latest[0]):
         state.update(result="draft", reason=f"作成途中の {company.rel(draft[1])} がある（続きから書く）")
     elif not latest:
@@ -292,8 +309,10 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, judged: 
     found = I.gather_swot(company)
     previous = P.latest_result(company, before=date)
     return {
-        "company": company.dirname, "name": company.display_name(), "date": date,
+        "version": D.VERSION, "company": company.dirname, "name": company.display_name(), "date": date,
         "valid_until": P.valid_until(date),
+        "confidence": D.quality(parsed), "counter": parsed["counter"],
+        "conservative_verdict": judged["conservative_verdict"],
         "quadrants": {q: D.items_of(parsed, q) for q, _, _ in D.QUADRANTS},
         "required": items, "scale": X.scale(company),
         "top_strength": judged["top_strength"], "top_threat": judged["top_threat"],
