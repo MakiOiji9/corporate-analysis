@@ -1,12 +1,15 @@
-"""Post today's company report (the single HTML) to Slack (.github/workflows/company-report.yml).
+"""Post a report file to Slack (.github/workflows/company-report.yml and slack-post.yml).
 
-Usage: SLACK_BOT_TOKEN=xoxb-... SLACK_CHANNEL_ID=C0123 slack_post.py --company DIR --repo OWNER/REPO [--run-url URL]
+Usage: SLACK_BOT_TOKEN=xoxb-... SLACK_CHANNEL_ID=C0123 slack_post.py <command> --repo OWNER/REPO [--run-url URL]
+  company --company DIR             today's companies/{dir}/reports/{today}_company-report.html (company-report.yml)
+  file --path PATH [--message TEXT] any file under companies/ or market/ (slack-post.yml)
 
-Uploads companies/{dir}/reports/{today}_company-report.html with a comment holding the three horizon verdicts,
-STEP 1-3 and the price, read from the report's JSON. Uses the Slack upload flow files.getUploadURLExternal ->
-upload -> files.completeUploadExternal (files.upload is retired); the bot needs the files:write scope and must be
-a member of the channel. Without SLACK_BOT_TOKEN / SLACK_CHANNEL_ID it does nothing (exit 0): the notification is
-optional. Exit 1 when the report is missing or Slack refuses. Standard library only.
+A company report HTML is posted with a comment holding the three horizon verdicts, STEP 1-3 and the price, read
+from the JSON next to it; any other file with its name and a link to it on main. Uses the Slack upload flow
+files.getUploadURLExternal -> upload -> files.completeUploadExternal (files.upload is retired); the bot needs the
+files:write scope and must be a member of the channel. company does nothing without SLACK_BOT_TOKEN /
+SLACK_CHANNEL_ID (exit 0: the notification of a scheduled run is optional); file fails without them. Exit 1 when the
+file is missing or refused, or Slack refuses. Standard library only.
 """
 from __future__ import annotations
 
@@ -17,13 +20,17 @@ import os
 import sys
 import urllib.parse
 import urllib.request
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Callable
 
 ROOT = Path(__file__).resolve().parents[2]
 API = "https://slack.com/api"
 HORIZONS = (("short", "短期"), ("mid", "中期"), ("long", "長期"))
 TIMEOUT = 60
+ALLOWED_TOPS = ("companies", "market")  # the outputs of the reports; nothing else of the repository is posted
+MAX_BYTES = 50 * 1024 * 1024
+MAX_MESSAGE = 2000
+REPORT_SUFFIX = "_company-report.html"
 
 # (url, body, headers) -> parsed JSON (or {} for the raw upload); swapped out by the tests.
 Sender = Callable[[str, bytes, dict], dict]
@@ -33,16 +40,41 @@ class SlackError(RuntimeError):
     pass
 
 
-def todays_report(company: str, today: dt.date, root: Path = ROOT) -> tuple[dict, Path]:
-    path = root / "companies" / company / "reports" / f"{today.isoformat()}_company-report.json"
+def _read_report(path: Path) -> dict:
     try:
-        report = json.loads(path.read_text(encoding="utf-8"))
+        return json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as e:
-        raise SlackError(f"今日のレポートの JSON が読めない: {path.name}（{e}）") from e
+        raise SlackError(f"レポートの JSON が読めない: {path.name}（{e}）") from e
+
+
+def todays_report(company: str, today: dt.date, root: Path = ROOT) -> tuple[dict, Path]:
+    report = _read_report(root / "companies" / company / "reports" / f"{today.isoformat()}_company-report.json")
     html = root / report.get("html", "")
     if not report.get("html") or not html.is_file():
         raise SlackError(f"レポートの HTML が無い: {report.get('html') or '（JSON に html が無い）'}")
     return report, html
+
+
+def resolve_target(path: str, root: Path = ROOT) -> Path:
+    """A file of the repository under companies/ or market/ (no absolute path, .., or link leading outside)."""
+    rel = PurePosixPath(path.strip().replace("\\", "/"))
+    if not rel.parts or rel.is_absolute() or ".." in rel.parts or rel.parts[0] not in ALLOWED_TOPS:
+        raise SlackError(f"投稿できるのは {'/・'.join(ALLOWED_TOPS)}/ 配下のファイルだけ: {path}")
+    target = (root / rel).resolve()
+    if not target.is_relative_to(root.resolve()) or not target.is_file():
+        raise SlackError(f"ファイルが無い: {rel}")
+    if target.stat().st_size > MAX_BYTES:
+        raise SlackError(f"ファイルが大きすぎる（{MAX_BYTES // 1024 // 1024}MB まで）: {rel}")
+    return target
+
+
+def _links(repo: str, md: str | None, run_url: str | None, md_label: str = "文章（md）") -> str | None:
+    links = []
+    if md:
+        links.append(f"<https://github.com/{repo}/blob/main/{md}|{md_label}>")
+    if run_url:
+        links.append(f"<{run_url}|実行ログ>")
+    return " / ".join(links) or None
 
 
 def comment(report: dict, repo: str, run_url: str | None) -> str:
@@ -58,15 +90,23 @@ def comment(report: dict, repo: str, run_url: str | None) -> str:
     price = report.get("price") or {}
     if price.get("value") is not None:
         lines.append(f"株価 {price['value']:,.0f}{price.get('currency', '')}（{price.get('date', '')}）")
-    links = []
-    if report.get("md"):
-        links.append(f"<https://github.com/{repo}/blob/main/{report['md']}|文章（md）>")
-    if run_url:
-        links.append(f"<{run_url}|実行ログ>")
-    if links:
-        lines.append(" / ".join(links))
+    lines.append(_links(repo, report.get("md"), run_url))
     lines.append("添付の HTML はダウンロードしてブラウザで開く")
-    return "\n".join(lines)
+    return "\n".join(line for line in lines if line)
+
+
+def file_comment(target: Path, repo: str, run_url: str | None, message: str | None, root: Path = ROOT) -> str:
+    """The company report comment when target is one (its JSON is next to it), otherwise the file name and link."""
+    rel = target.relative_to(root.resolve()).as_posix()
+    head = [message.strip()[:MAX_MESSAGE]] if message and message.strip() else []
+    if target.name.endswith(REPORT_SUFFIX):
+        json_path = target.with_name(target.name[: -len(".html")] + ".json")
+        if json_path.is_file():
+            return "\n".join(head + [comment(_read_report(json_path), repo, run_url)])
+    lines = head + [f"*{target.name}*", _links(repo, rel, run_url, "GitHub で見る")]
+    if target.suffix.lower() == ".html":
+        lines.append("添付の HTML はダウンロードしてブラウザで開く")
+    return "\n".join(line for line in lines if line)
 
 
 def _send(url: str, body: bytes, headers: dict) -> dict:
@@ -85,38 +125,58 @@ def _api(send: Sender, token: str, method: str, body: bytes, content_type: str) 
     return out
 
 
-def upload(html: Path, text: str, token: str, channel: str, send: Sender = _send) -> str:
-    data = html.read_bytes()
-    form = urllib.parse.urlencode({"filename": html.name, "length": len(data)}).encode("ascii")
+def upload(path: Path, text: str, token: str, channel: str, send: Sender = _send) -> str:
+    data = path.read_bytes()
+    form = urllib.parse.urlencode({"filename": path.name, "length": len(data)}).encode("ascii")
     ticket = _api(send, token, "files.getUploadURLExternal", form, "application/x-www-form-urlencoded")
     if not str(ticket.get("upload_url", "")).startswith("https://"):
         raise SlackError("files.getUploadURLExternal が https の upload_url を返さなかった")
     send(ticket["upload_url"], data, {"Content-Type": "application/octet-stream"})
-    done = {"files": [{"id": ticket["file_id"], "title": html.name}], "channel_id": channel,
+    done = {"files": [{"id": ticket["file_id"], "title": path.name}], "channel_id": channel,
             "initial_comment": text}
     _api(send, token, "files.completeUploadExternal", json.dumps(done, ensure_ascii=False).encode("utf-8"),
          "application/json; charset=utf-8")
     return ticket["file_id"]
 
 
+def _parser() -> argparse.ArgumentParser:
+    common = argparse.ArgumentParser(add_help=False)
+    common.add_argument("--repo", required=True)
+    common.add_argument("--run-url")
+    p = argparse.ArgumentParser(description="Post a report file to Slack")
+    sub = p.add_subparsers(dest="command", required=True)
+    company = sub.add_parser("company", parents=[common], help="today's company report")
+    company.add_argument("--company", required=True)
+    file = sub.add_parser("file", parents=[common], help="a file under companies/ or market/")
+    file.add_argument("--path", required=True)
+    file.add_argument("--message")
+    return p
+
+
 def main(argv: list[str] | None = None, send: Sender = _send, today: dt.date | None = None,
          root: Path = ROOT) -> int:
-    p = argparse.ArgumentParser(description="Post today's company report HTML to Slack")
-    p.add_argument("--company", required=True)
-    p.add_argument("--repo", required=True)
-    p.add_argument("--run-url")
-    args = p.parse_args(argv)
+    args = _parser().parse_args(argv)
+    label = args.company if args.command == "company" else args.path
     token, channel = os.environ.get("SLACK_BOT_TOKEN", ""), os.environ.get("SLACK_CHANNEL_ID", "")
     if not token or not channel:
-        print("SLACK_BOT_TOKEN / SLACK_CHANNEL_ID が未設定。Slack には投稿しない")
-        return 0
-    try:
-        report, html = todays_report(args.company, today or dt.date.today(), root)
-        file_id = upload(html, comment(report, args.repo, args.run_url), token, channel, send)
-    except (SlackError, OSError, ValueError, KeyError) as e:
-        print(f"::warning::{args.company}: Slack に投稿できなかった: {e}")
+        if args.command == "company":
+            print("SLACK_BOT_TOKEN / SLACK_CHANNEL_ID が未設定。Slack には投稿しない")
+            return 0
+        print("::error::SLACK_BOT_TOKEN / SLACK_CHANNEL_ID が未設定")
         return 1
-    print(f"Slack に投稿した: {html.name}（file {file_id}）")
+    level = "warning" if args.command == "company" else "error"
+    try:
+        if args.command == "company":
+            report, target = todays_report(args.company, today or dt.date.today(), root)
+            text = comment(report, args.repo, args.run_url)
+        else:
+            target = resolve_target(args.path, root)
+            text = file_comment(target, args.repo, args.run_url, args.message, root)
+        file_id = upload(target, text, token, channel, send)
+    except (SlackError, OSError, ValueError, KeyError) as e:
+        print(f"::{level}::{label}: Slack に投稿できなかった: {e}")
+        return 1
+    print(f"Slack に投稿した: {target.name}（file {file_id}）")
     return 0
 
 

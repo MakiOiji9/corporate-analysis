@@ -3,6 +3,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(REPO / ".github" / "scripts")]
 
@@ -81,7 +83,7 @@ def test_main_skips_without_credentials(tmp_path, monkeypatch, capsys):
     monkeypatch.delenv("SLACK_BOT_TOKEN", raising=False)
     monkeypatch.delenv("SLACK_CHANNEL_ID", raising=False)
     fake = FakeSlack()
-    assert SP.main(["--company", "1234_example", "--repo", "o/r"], fake, TODAY, _repo(tmp_path)) == 0
+    assert SP.main(["company", "--company", "1234_example", "--repo", "o/r"], fake, TODAY, _repo(tmp_path)) == 0
     assert fake.calls == [] and "投稿しない" in capsys.readouterr().out
 
 
@@ -89,7 +91,7 @@ def test_main_posts(tmp_path, monkeypatch):
     monkeypatch.setenv("SLACK_BOT_TOKEN", "xoxb-t")
     monkeypatch.setenv("SLACK_CHANNEL_ID", "C1")
     fake = FakeSlack()
-    assert SP.main(["--company", "1234_example", "--repo", "o/r"], fake, TODAY, _repo(tmp_path)) == 0
+    assert SP.main(["company", "--company", "1234_example", "--repo", "o/r"], fake, TODAY, _repo(tmp_path)) == 0
     assert len(fake.calls) == 3
 
 
@@ -97,7 +99,7 @@ def test_main_fails_when_slack_refuses(tmp_path, monkeypatch, capsys):
     monkeypatch.setenv("SLACK_BOT_TOKEN", "xoxb-t")
     monkeypatch.setenv("SLACK_CHANNEL_ID", "C1")
     fake = FakeSlack(complete_ok=False)
-    assert SP.main(["--company", "1234_example", "--repo", "o/r"], fake, TODAY, _repo(tmp_path)) == 1
+    assert SP.main(["company", "--company", "1234_example", "--repo", "o/r"], fake, TODAY, _repo(tmp_path)) == 1
     assert "not_in_channel" in capsys.readouterr().out
 
 
@@ -106,5 +108,82 @@ def test_main_fails_without_todays_report(tmp_path, monkeypatch, capsys):
     monkeypatch.setenv("SLACK_CHANNEL_ID", "C1")
     fake = FakeSlack()
     root = _repo(tmp_path, html=False)
-    assert SP.main(["--company", "1234_example", "--repo", "o/r"], fake, TODAY, root) == 1
+    assert SP.main(["company", "--company", "1234_example", "--repo", "o/r"], fake, TODAY, root) == 1
     assert fake.calls == [] and "HTML が無い" in capsys.readouterr().out
+
+
+def _env(monkeypatch):
+    monkeypatch.setenv("SLACK_BOT_TOKEN", "xoxb-t")
+    monkeypatch.setenv("SLACK_CHANNEL_ID", "C1")
+
+
+def _market(root, name="2026-11-09_market-report.html"):
+    report = root / "market" / "report"
+    report.mkdir(parents=True)
+    (report / name).write_text("<html>地合い</html>", encoding="utf-8")
+    return f"market/report/{name}"
+
+
+def test_file_posts_a_market_report_with_its_link_and_message(tmp_path, monkeypatch):
+    _env(monkeypatch)
+    rel = _market(tmp_path)
+    fake = FakeSlack()
+
+    code = SP.main(["file", "--path", rel, "--message", "今週の地合い", "--repo", "o/r"], fake, TODAY, tmp_path)
+
+    assert code == 0
+    done = json.loads(fake.calls[2][1].decode("utf-8"))
+    assert done["files"][0]["title"] == "2026-11-09_market-report.html"
+    assert done["initial_comment"].splitlines()[:2] == ["今週の地合い", "*2026-11-09_market-report.html*"]
+    assert f"<https://github.com/o/r/blob/main/{rel}|GitHub で見る>" in done["initial_comment"]
+
+
+def test_file_uses_the_company_report_comment_for_a_company_report(tmp_path, monkeypatch):
+    _env(monkeypatch)
+    root = _repo(tmp_path)
+    fake = FakeSlack()
+
+    code = SP.main(["file", "--path", REPORT["html"], "--repo", "o/r"], fake, TODAY, root)
+
+    assert code == 0
+    text = json.loads(fake.calls[2][1].decode("utf-8"))["initial_comment"]
+    assert text.startswith("*企業分析レポート — サンプル（1234）*") and "STEP 1 B" in text
+
+
+def test_file_accepts_windows_separators(tmp_path):
+    rel = _market(tmp_path)
+    assert SP.resolve_target(rel.replace("/", "\\"), tmp_path).name == "2026-11-09_market-report.html"
+
+
+@pytest.mark.parametrize("path", ["tools/README.md", ".env", "/etc/passwd", "market/../.env",
+                                  "market/report/none.html", "", "market"])
+def test_file_refuses_paths_outside_the_outputs(tmp_path, monkeypatch, capsys, path):
+    _env(monkeypatch)
+    _market(tmp_path)
+    (tmp_path / ".env").write_text("SECRET=1", encoding="utf-8")
+    (tmp_path / "tools").mkdir()
+    (tmp_path / "tools" / "README.md").write_text("x", encoding="utf-8")
+    fake = FakeSlack()
+
+    assert SP.main(["file", "--path", path, "--repo", "o/r"], fake, TODAY, tmp_path) == 1
+    assert fake.calls == [] and "::error::" in capsys.readouterr().out
+
+
+def test_file_refuses_a_link_leading_outside(tmp_path):
+    outside = tmp_path / "secret.txt"
+    outside.write_text("x", encoding="utf-8")
+    (tmp_path / "repo" / "market").mkdir(parents=True)
+    try:
+        (tmp_path / "repo" / "market" / "link.txt").symlink_to(outside)
+    except OSError:
+        pytest.skip("symlinks are not available")
+    with pytest.raises(SP.SlackError):
+        SP.resolve_target("market/link.txt", tmp_path / "repo")
+
+
+def test_file_fails_without_credentials(tmp_path, monkeypatch, capsys):
+    monkeypatch.delenv("SLACK_BOT_TOKEN", raising=False)
+    monkeypatch.delenv("SLACK_CHANNEL_ID", raising=False)
+    rel = _market(tmp_path)
+    assert SP.main(["file", "--path", rel, "--repo", "o/r"], FakeSlack(), TODAY, tmp_path) == 1
+    assert "::error::" in capsys.readouterr().out

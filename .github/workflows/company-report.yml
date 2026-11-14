@@ -136,7 +136,7 @@ jobs:
           COMPANY: ${{ matrix.company }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          python3 -I .github/scripts/slack_post.py --company "$COMPANY" --repo "$GITHUB_REPOSITORY" --run-url "$RUN_URL"
+          python3 -I .github/scripts/slack_post.py company --company "$COMPANY" --repo "$GITHUB_REPOSITORY" --run-url "$RUN_URL"
 
       - name: Save originals
         if: ${{ always() && steps.setup.outputs.cache-key != '' }}
