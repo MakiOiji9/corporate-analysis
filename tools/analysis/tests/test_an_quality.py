@@ -17,7 +17,7 @@ def _item(conf: str | None, source: str = YUHO, rating: str = "強") -> dict:
 
 @pytest.mark.parametrize("source, dated", [
     (YUHO, True), ("決算説明会資料 p.8", True), ("日経新聞 2025年3月", True), ("検索要約", False), ("", False),
-    ("industry-overview.md の節「市場規模」", False),
+    ("industry-overview.md の節「市場規模」", False), ("有価証券報告書p.12", True), ("決算短信p8", True),
 ])
 def test_dated_sources(source, dated):
     assert Q.dated(source) is dated

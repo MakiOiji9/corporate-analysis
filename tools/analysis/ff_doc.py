@@ -217,13 +217,19 @@ def _level(points: float) -> str:
     return next(level for floor, level in LEVELS if points >= floor)
 
 
-def _weighted(total: int, industry: str, segments: list[dict]) -> float:
-    """The main segment's points and the other segments' points, weighed by their operating-profit shares."""
+def _points(ratings: list[str], unknown_points: int = 1) -> int:
+    return sum(unknown_points if r == "不明" else POINTS.get(r, 1) for r in ratings)
+
+
+def _weighted(main: list[str], industry: str, segments: list[dict], unknown_points: int = 1) -> float:
+    """The main segment's points and the other segments' points, weighed by their operating-profit shares (a 不明
+    counts unknown_points: 1 for the score, 0 and 2 for its range)."""
+    total = _points(main, unknown_points)
     share = main_share(industry)
     rated = [s for s in segments if s.get("share")]
     if not rated or not share:
         return float(total)
-    parts = [(share, total)] + [(s["share"], sum(POINTS.get(r, 1) for r in s["ratings"])) for s in rated]
+    parts = [(share, total)] + [(s["share"], _points(s["ratings"], unknown_points)) for s in rated]
     return round(sum(w * p for w, p in parts) / sum(w for w, _ in parts), 1)
 
 
@@ -232,12 +238,13 @@ def score(parsed: dict) -> dict:
     total = sum(f["points"] for f in factors)
     segments = parsed.get("segments") or []
     unknown = sum(1 for f in factors if f["rating"] == "不明") + sum(r == "不明" for s in segments for r in s["ratings"])
-    main_unknown = sum(1 for f in factors if f["rating"] == "不明")
-    weighted = _weighted(total, parsed.get("industry", ""), segments)
+    main, industry = [f["rating"] for f in factors], parsed.get("industry", "")
+    weighted = _weighted(main, industry, segments)
     base = _level(weighted)
     conservative = DOWNGRADE[base] if unknown >= UNKNOWN_DOWNGRADE else base
+    low, high = _weighted(main, industry, segments, 0), _weighted(main, industry, segments, 2)
     return {"factors": factors, "total": total, "weighted_total": weighted, "segments": segments,
-            "low": total - main_unknown, "high": total + main_unknown,
+            "low": int(low) if low.is_integer() else low, "high": int(high) if high.is_integer() else high,
             "attractiveness_by_points": base, "attractiveness": base, "conservative_attractiveness": conservative,
             "unknown_count": unknown, "downgraded": conservative != base,
             "swot_threats": [f["name"] for f in factors if f["rating"] == "強"]}
@@ -266,7 +273,9 @@ def scores_section(scored: dict) -> str:
     if scored["downgraded"]:
         note += (f"。保守的な判定: 不明 {scored['unknown_count']} 件のため1段階下げて"
                  f"「{scored['conservative_attractiveness']}」")
-    rows.append(f"| **合計 / 業界の魅力度** | **{scored['attractiveness']}** | {scored['total']}/10 | {note} |")
+    points = (f"{scored['weighted_total']:.1f}/10（主力 {scored['total']}/10）" if scored["segments"]
+              else f"{scored['total']}/10")
+    rows.append(f"| **合計 / 業界の魅力度** | **{scored['attractiveness']}** | {points} | {note} |")
     return "\n".join(rows)
 
 

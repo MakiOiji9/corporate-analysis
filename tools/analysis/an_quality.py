@@ -15,7 +15,7 @@ import re
 
 PRIMARY, SECONDARY, REFERENCE = "一次", "二次", "参考"
 UNKNOWN_RATINGS = ("不明", "？", "判定保留")
-DATE = re.compile(r"(19|20)\d{2}\s*[-年/.]|FY\s?\d{2,4}|\bp\.?\s?\d+|\d+\s*ページ")
+DATE = re.compile(r"(?<!\d)(19|20)\d{2}\s*[-年/.]|FY\s?\d{2,4}|(?<![A-Za-z])p\.?\s?\d+|\d+\s*ページ")
 HIGH_UNKNOWN, HIGH_PRIMARY, HIGH_REFERENCE = 0.1, 0.5, 0.2
 LOW_UNKNOWN, LOW_REFERENCE = 0.3, 0.5
 COUNTER_MIN = 10  # characters of a real counter-argument
