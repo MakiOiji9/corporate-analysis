@@ -47,9 +47,9 @@ DETAIL_LIMIT = 120  # characters of an upstream reason shown in 1.1
 DIGIT = re.compile(r"[0-9０-９]")
 VERSION = 2  # 2 (2026-11): impact on profit, structural top strength, base and conservative verdicts, counter
 COUNTER_LABEL = "反論（この結論が間違っているとしたら）"
-PROFIT = re.compile(r"利益")
-CYCLICAL = re.compile(r"受注|過去最高|最高益|急増|急回復|特需|一時|四半期|Q[1-4]")
-PERSISTENT = re.compile(r"\d+\s*(年|期)連続|\d+\s*年(間|以上)|長期|構造|継続して")
+PROFIT = re.compile(r"営業利益|経常利益|純利益|利益の\s*[0-9０-９約]|利益に占め|利益が\s*[0-9０-９約]")
+CYCLICAL = re.compile(r"過去最高|最高益|急増|急回復|急拡大|特需|一時的")
+PERSISTENT = re.compile(r"\d+\s*(年|期)連続|\d+\s*年(間|以上)続|長年|継続して")
 
 
 # ---------- 必ず記載する項目 ----------
@@ -215,7 +215,8 @@ def _check_pick(parsed: dict, quadrant: str, key: str, label: str) -> list[str]:
     if pick not in allowed:
         issues.append(f"4. {label}: {pick} は{rule}ではない（選べるのは {', '.join(allowed) or 'なし'}）")
     row = _find(parsed, quadrant, pick)
-    if quadrant == "S" and row and CYCLICAL.search(row["fact"]) and not PERSISTENT.search(row["fact"] + row["basis"]):
+    told = (row["fact"] + " " + row["basis"]) if row else ""
+    if quadrant == "S" and row and CYCLICAL.search(told) and not PERSISTENT.search(told):
         issues.append(f"4. {label}: {pick} は景気循環・一時的な事実（受注の急増・四半期の最高など）に見える。"
                       "構造的な強みを選ぶか、何年も続いていることを事実・根拠に書く")
     return issues
@@ -296,8 +297,10 @@ def build_fills(text: str, found: dict | None = None, previous: tuple[str, dict]
     reason = _first_sentence(forced_why or p["answer_reason"]) or "—"
     s_text = NONE if strength["id"] == NONE else f"{strength['id']}（{cell(_first_sentence(strength['fact']), FACT_LIMIT)}）"
     t_text = NONE if threat["id"] == NONE else f"{threat['id']}（{cell(_first_sentence(threat['fact']), FACT_LIMIT)}）"
-    out = {"summary": f"最大の強みは{s_text}、最大の脅威は{t_text}。"
-                      f"SWOT の結論は{answer or PENDING}（{reason}）。",
+    base, _ = base_answer(p, answer) if answer and not pending_reasons(p) else (answer, "")
+    both = (f"SWOT の結論は{base}（影響度が不明の項目を不明のまま読んだ基本の判定。不利に読むと{answer}: {reason}）。"
+            if base != answer else f"SWOT の結論は{answer or PENDING}（{reason}）。")
+    out = {"summary": f"最大の強みは{s_text}、最大の脅威は{t_text}。{both}",
            "changes": _changes(p, previous), "gaps": _gaps(p, found or {}, list(warnings))}
     if answer:
         out["sentence"] = f"{s_text}により、{t_text}に対して{PHRASE[answer]}。理由：{reason}"
@@ -385,13 +388,14 @@ def base_answer(parsed: dict, conservative: str) -> tuple[str, str]:
     """The base reading: an unknown impact is unknown (not 小 for a strength, not 大 for a threat), so it neither
     proves No nor allows Yes."""
     unknown_s = [r["id"] for r in items_of(parsed, "S") if r["impact"] == UNKNOWN]
+    no_measure = "。会社の対策の開示は無く、条件は影響度の確認" if M.is_blank(parsed["measure"]) else ""
     if parsed["top_strength"] == NONE and unknown_s and conservative == "No":
         return "条件付き", (f"影響度が不明の強み（{'・'.join(unknown_s)}）があり、対抗できる強みが無いとは言えない"
-                          f"（保守的に「小」とみなすと {conservative}）")
+                          f"（保守的に「小」とみなすと {conservative}）{no_measure}")
     if parsed["top_threat"] == NONE and _unknown_threat_only(parsed) and conservative == "No":
         unknown_t = [r["id"] for r in items_of(parsed, "T") if r["impact"] == UNKNOWN]
         return "条件付き", (f"影響度が不明の脅威（{'・'.join(unknown_t)}）があり Yes とは言えないが、大きいとも示されていない"
-                          f"（保守的に「大」とみなすと {conservative}）")
+                          f"（保守的に「大」とみなすと {conservative}）{no_measure}")
     return conservative, ""
 
 
@@ -411,11 +415,15 @@ def conclusion_section(judged: dict, sentence: str) -> str:
     if why and not why.endswith(("。", "）")):
         why += "。"
     summary = f"まとめ: {cell(sentence)}" if not M.is_blank(sentence) else ""
-    return "\n".join([
-        "| 項目 | 内容 |", "|---|---|",
-        f"| 最大の強み | {_pick_cell(judged['top_strength'])} |",
-        f"| 最大の脅威 | {_pick_cell(judged['top_threat'])} |",
-        f"| SWOT の結論 | **{judged['verdict']}**: {why}{summary} |"])
+    conservative = judged.get("conservative_verdict") or judged["verdict"]
+    rows = ["| 項目 | 内容 |", "|---|---|",
+            f"| 最大の強み | {_pick_cell(judged['top_strength'])} |",
+            f"| 最大の脅威 | {_pick_cell(judged['top_threat'])} |"]
+    if conservative != judged["verdict"]:  # the base reading; the writer's 5章 states the conservative one
+        rows += [f"| SWOT の結論（基本の判定） | **{judged['verdict']}**: {why} |",
+                 f"| 保守的な判定（5章の判定） | {conservative}: 影響度が不明の項目を不利に読んだ場合。{summary} |"]
+        return "\n".join(rows)
+    return "\n".join(rows + [f"| SWOT の結論 | **{judged['verdict']}**: {why}{summary} |"])
 
 
 def apply_conclusion(text: str, judged: dict, sentence: str) -> str:

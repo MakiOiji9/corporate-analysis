@@ -382,6 +382,9 @@ def test_conservative_verdict_is_kept_beside_the_base(repo, capsys):
     code, out = build(repo, capsys)
     result = json.loads((repo / out["json"]).read_text(encoding="utf-8"))
     assert result["verdict"] == "条件付き" and result["conservative_verdict"] == "No"
+    text = (repo / out["md"]).read_text(encoding="utf-8")  # the md says both, so 5章 (No) and 6章 agree
+    assert "| SWOT の結論（基本の判定） | **条件付き**" in text and "| 保守的な判定（5章の判定） | No" in text
+    assert "対策の開示は無く" in result["verdict_reason"]
 
 
 @pytest.mark.parametrize("kwargs, message", [
