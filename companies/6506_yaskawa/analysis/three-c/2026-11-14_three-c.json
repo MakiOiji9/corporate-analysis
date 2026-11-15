@@ -36,7 +36,65 @@
   "seen": "世界のサーボモーター市場 2025年 145.7億米ドル→2030年 193.3億米ドル（CAGR 5.82%、調査会社名は未確認）、世界のインバータ 2025年 197億米ドル→2032年 238億米ドル（CAGR 2.8%、QYResearch 系）。中国の汎用サーボ 2025年 229.6億元（+8.0%）、2026〜2028年 +3.0〜4.0%（天下工場産研）",
   "source": "2026-11-01_industry-overview.md「1. 市場規模と成長率」",
   "confidence": "参考",
-  "conclusion": "顧客は装置メーカーと製造業の工場で、最も重視するのは品質（精度・信頼性）。市場の成長性は高（根拠：世界のサーボ 5.82%・インバータ 2.8% の平均 4.3%）"
+  "conclusion": "顧客は装置メーカーと製造業の工場で、最も重視するのは品質（精度・信頼性）。市場の成長性は高（根拠：世界のサーボ 5.82%・インバータ 2.8% の平均 4.3%）",
+  "evidence": [
+   {
+    "raw": "2026-11-01_industry-overview.md",
+    "section": "1",
+    "status": "未検証",
+    "reason": "検索要約",
+    "doc_id": "w2",
+    "title": "IFR World Robotics 2025・会長レポート（報道転載）",
+    "url": "https://ifr.org/ifr-press-releases/news/global-robot-demand-in-factories-doubles-over-10-years",
+    "published": null,
+    "period": null,
+    "confidence": "検索要約",
+    "pages": null,
+    "local_path": null
+   },
+   {
+    "raw": "2026-11-01_industry-overview.md",
+    "section": "1",
+    "status": "未検証",
+    "reason": "検索要約",
+    "doc_id": "w3",
+    "title": "日本ロボット工業会 事業報告 2025",
+    "url": "https://jara.jp/about/img/release/jigyo_hokoku/jara_jigyo_hokoku_2025.pdf",
+    "published": null,
+    "period": null,
+    "confidence": "検索要約",
+    "pages": null,
+    "local_path": null
+   },
+   {
+    "raw": "2026-11-01_industry-overview.md",
+    "section": "1",
+    "status": "未検証",
+    "reason": "原本なし",
+    "doc_id": "w1",
+    "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+    "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+    "published": "2026-09-19",
+    "period": null,
+    "confidence": "二次",
+    "pages": null,
+    "local_path": null
+   },
+   {
+    "raw": "2026-11-01_industry-overview.md",
+    "section": "1",
+    "status": "未検証",
+    "reason": "検索要約",
+    "doc_id": "w5",
+    "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+    "url": null,
+    "published": null,
+    "period": null,
+    "confidence": "検索要約",
+    "pages": null,
+    "local_path": null
+   }
+  ]
  },
  "kbf": [
   "品質（精度・信頼性）",
@@ -56,7 +114,149 @@
   "confidence": "一次",
   "conclusion": "競合と比べて同等。根拠：営業利益率 8.7% vs 競合の中央値 10.1%（シェアの数値なし）",
   "candidate": "同等",
-  "candidate_fixed": false
+  "candidate_fixed": false,
+  "evidence": [
+   {
+    "raw": "2026-11-01_competitors.md",
+    "section": "2",
+    "status": "検証済み",
+    "reason": null,
+    "doc_id": "S100Y69H",
+    "title": "安川電機 有価証券報告書 第110期",
+    "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2",
+    "published": null,
+    "period": "2026-02",
+    "confidence": "一次",
+    "pages": "2",
+    "local_path": "sources/2026-11-01/S100Y69H.pdf"
+   },
+   {
+    "raw": "2026-11-01_competitors.md",
+    "section": "2",
+    "status": "未検証",
+    "reason": "ページなし",
+    "doc_id": "S100O4U1",
+    "title": "安川電機 有価証券報告書 第106期（EDINET。前期比較の IFRS 再表示）",
+    "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100O4U1?type=2",
+    "published": null,
+    "period": "2022-02",
+    "confidence": "一次",
+    "pages": null,
+    "local_path": "sources/2026-11-01/S100O4U1.pdf"
+   },
+   {
+    "raw": "2026-11-01_competitors.md",
+    "section": "2",
+    "status": "検証済み",
+    "reason": null,
+    "doc_id": "140120261009548685",
+    "title": "安川電機 2027年2月期 中間期 決算短信",
+    "url": "https://www2.jpx.co.jp/disc/65060/140120261009548685.pdf",
+    "published": "2026-10-09",
+    "period": "2026-08",
+    "confidence": "一次",
+    "pages": "1",
+    "local_path": "sources/2026-11-01/140120261009548685.pdf"
+   },
+   {
+    "raw": "2026-11-01_competitors.md",
+    "section": "2",
+    "status": "未検証",
+    "reason": "ページなし",
+    "doc_id": "S100YG3Q",
+    "title": "ファナック 有価証券報告書 第57期",
+    "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YG3Q?type=2",
+    "published": null,
+    "period": "2026-03",
+    "confidence": "一次",
+    "pages": null,
+    "local_path": "sources/2026-11-01/S100YG3Q.pdf"
+   },
+   {
+    "raw": "2026-11-01_competitors.md",
+    "section": "2",
+    "status": "検証済み",
+    "reason": null,
+    "doc_id": "140120261021553848",
+    "title": "ファナック 2027年3月期 中間期 決算短信",
+    "url": "https://www2.jpx.co.jp/disc/69540/140120261021553848.pdf",
+    "published": null,
+    "period": "2026-09",
+    "confidence": "一次",
+    "pages": "1",
+    "local_path": "sources/2026-11-01/140120261021553848.pdf"
+   },
+   {
+    "raw": "2026-11-01_competitors.md",
+    "section": "2",
+    "status": "未検証",
+    "reason": "ページなし",
+    "doc_id": "S100YD3V",
+    "title": "三菱電機 有価証券報告書 第155期",
+    "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YD3V?type=2",
+    "published": null,
+    "period": "2026-03",
+    "confidence": "一次",
+    "pages": null,
+    "local_path": "sources/2026-11-01/S100YD3V.pdf"
+   },
+   {
+    "raw": "2026-11-01_competitors.md",
+    "section": "2",
+    "status": "未検証",
+    "reason": "ページなし",
+    "doc_id": "S100YCEQ",
+    "title": "山洋電気 有価証券報告書 第124期",
+    "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YCEQ?type=2",
+    "published": null,
+    "period": "2026-03",
+    "confidence": "一次",
+    "pages": null,
+    "local_path": "sources/2026-11-01/S100YCEQ.pdf"
+   },
+   {
+    "raw": "2026-11-01_competitors.md",
+    "section": "2",
+    "status": "検証済み",
+    "reason": null,
+    "doc_id": "140120261028557469",
+    "title": "山洋電気 2027年3月期 中間期 決算短信",
+    "url": "https://www2.jpx.co.jp/disc/65160/140120261028557469.pdf",
+    "published": null,
+    "period": "2026-09",
+    "confidence": "一次",
+    "pages": "1",
+    "local_path": "sources/2026-11-01/140120261028557469.pdf"
+   },
+   {
+    "raw": "2026-11-01_competitors.md",
+    "section": "2",
+    "status": "未検証",
+    "reason": "原本なし",
+    "doc_id": "w1",
+    "title": "IRBANK 決算まとめ",
+    "url": "https://irbank.net/6506/results",
+    "published": null,
+    "period": null,
+    "confidence": "二次",
+    "pages": null,
+    "local_path": null
+   },
+   {
+    "raw": "2026-11-01_competitors.md",
+    "section": "4",
+    "status": "未検証",
+    "reason": "検索要約",
+    "doc_id": "w3",
+    "title": "Web 検索の要約（weblio・lilys.ai・dri.co.jp ほか）",
+    "url": null,
+    "published": null,
+    "period": null,
+    "confidence": "検索要約",
+    "pages": null,
+    "local_path": null
+   }
+  ]
  },
  "comparison": [
   {
@@ -109,7 +309,8 @@
     "三菱電機（3月期。2022年3月期以降は IFRS を EDINET で確認。それ以前は IRBANK 表示のまま）": "？",
     "山洋電気（3月期。2022年3月期以降は IFRS を EDINET で確認）": "？"
    },
-   "basis": "精度・故障率・顧客評価を各社で比べた材料が無い。受賞は安川電機（MPX1310 が2025年“超”モノづくり部品大賞、MOTOMAN NEXT-NHC12 が第68回十大新製品賞）とファナック（ロボショット SC シリーズが十大新製品賞 本賞）にあるが、品質の比較ではない（有報 第110期 p42-43、ファナック有報 第57期 p16-17）"
+   "basis": "精度・故障率・顧客評価を各社で比べた材料が無い。受賞は安川電機（MPX1310 が2025年“超”モノづくり部品大賞、MOTOMAN NEXT-NHC12 が第68回十大新製品賞）とファナック（ロボショット SC シリーズが十大新製品賞 本賞）にあるが、品質の比較ではない（有報 第110期 p42-43、ファナック有報 第57期 p16-17）",
+   "evidence": []
   },
   {
    "kbf": "導入サポート",
@@ -119,7 +320,65 @@
     "三菱電機（3月期。2022年3月期以降は IFRS を EDINET で確認。それ以前は IRBANK 表示のまま）": "？",
     "山洋電気（3月期。2022年3月期以降は IFRS を EDINET で確認）": "？"
    },
-   "basis": "各社のサポート体制・顧客満足度の比較材料なし。顧客数・継続率は4社とも開示なし（2026-11-01_competitors.md「8. 顧客・人員の KPI」）"
+   "basis": "各社のサポート体制・顧客満足度の比較材料なし。顧客数・継続率は4社とも開示なし（2026-11-01_competitors.md「8. 顧客・人員の KPI」）",
+   "evidence": [
+    {
+     "raw": "2026-11-01_competitors.md",
+     "section": "8",
+     "status": "検証済み",
+     "reason": null,
+     "doc_id": "S100Y69H",
+     "title": "安川電機 有価証券報告書 第110期",
+     "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2",
+     "published": null,
+     "period": "2026-02",
+     "confidence": "一次",
+     "pages": "9,42-43,108",
+     "local_path": "sources/2026-11-01/S100Y69H.pdf"
+    },
+    {
+     "raw": "2026-11-01_competitors.md",
+     "section": "8",
+     "status": "検証済み",
+     "reason": null,
+     "doc_id": "S100YG3Q",
+     "title": "ファナック 有価証券報告書 第57期",
+     "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YG3Q?type=2",
+     "published": null,
+     "period": "2026-03",
+     "confidence": "一次",
+     "pages": "2,16-17,48",
+     "local_path": "sources/2026-11-01/S100YG3Q.pdf"
+    },
+    {
+     "raw": "2026-11-01_competitors.md",
+     "section": "8",
+     "status": "検証済み",
+     "reason": null,
+     "doc_id": "S100YD3V",
+     "title": "三菱電機 有価証券報告書 第155期",
+     "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YD3V?type=2",
+     "published": null,
+     "period": "2026-03",
+     "confidence": "一次",
+     "pages": "2,44",
+     "local_path": "sources/2026-11-01/S100YD3V.pdf"
+    },
+    {
+     "raw": "2026-11-01_competitors.md",
+     "section": "8",
+     "status": "検証済み",
+     "reason": null,
+     "doc_id": "S100YCEQ",
+     "title": "山洋電気 有価証券報告書 第124期",
+     "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YCEQ?type=2",
+     "published": null,
+     "period": "2026-03",
+     "confidence": "一次",
+     "pages": "7,15",
+     "local_path": "sources/2026-11-01/S100YCEQ.pdf"
+    }
+   ]
   },
   {
    "kbf": "価格",
@@ -129,7 +388,37 @@
     "三菱電機（3月期。2022年3月期以降は IFRS を EDINET で確認。それ以前は IRBANK 表示のまま）": "？",
     "山洋電気（3月期。2022年3月期以降は IFRS を EDINET で確認）": "？"
    },
-   "basis": "4社の単価・価格の開示なし。中国の国産サーボの値下げ（2025年、Sine -18.3% など）は比較した競合ではない（2026-11-01_industry-overview.md「3.」）"
+   "basis": "4社の単価・価格の開示なし。中国の国産サーボの値下げ（2025年、Sine -18.3% など）は比較した競合ではない（2026-11-01_industry-overview.md「3.」）",
+   "evidence": [
+    {
+     "raw": "2026-11-01_industry-overview.md",
+     "section": "3",
+     "status": "未検証",
+     "reason": "原本なし",
+     "doc_id": "w1",
+     "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+     "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+     "published": "2026-09-19",
+     "period": null,
+     "confidence": "二次",
+     "pages": null,
+     "local_path": null
+    },
+    {
+     "raw": "2026-11-01_industry-overview.md",
+     "section": "3",
+     "status": "未検証",
+     "reason": "検索要約",
+     "doc_id": "w5",
+     "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": "検索要約",
+     "pages": null,
+     "local_path": null
+    }
+   ]
   }
  ],
  "company_conclusion": "最重要 KBF の品質（精度・信頼性）で、自社が競合より優れることを示す比較材料（精度・故障率・顧客評価・シェア）が無く ○ にできない。受賞はあるが品質の比較ではない",
@@ -186,7 +475,9 @@
   "peers": "33cb27f8268fe3edc3290250b7e9e5d0ab02f84a",
   "peer_share": "91933ae25825623a5174647abc1f1f67da812369",
   "peer_kpi": "abe7904b4213d2931446bdfebe21975f0b7090d3",
-  "peer_claims": "881f50b04ff1b577e1e96144029fd6ec3cf4edaa"
+  "peer_claims": "881f50b04ff1b577e1e96144029fd6ec3cf4edaa",
+  "patents": "",
+  "peer_patents": ""
  },
  "five_forces": {
   "date": "2026-11-14",
@@ -198,5 +489,328 @@
   "date": "2026-11-01",
   "verdict": "あいまい"
  },
- "md": "companies/6506_yaskawa/analysis/three-c/2026-11-14_three-c.md"
+ "md": "companies/6506_yaskawa/analysis/three-c/2026-11-14_three-c.md",
+ "evidence": {
+  "claims": [
+   {
+    "claim": "1. 顧客",
+    "source": "2026-11-01_industry-overview.md「1. 市場規模と成長率」",
+    "evidence": [
+     {
+      "raw": "2026-11-01_industry-overview.md",
+      "section": "1",
+      "status": "未検証",
+      "reason": "検索要約",
+      "doc_id": "w2",
+      "title": "IFR World Robotics 2025・会長レポート（報道転載）",
+      "url": "https://ifr.org/ifr-press-releases/news/global-robot-demand-in-factories-doubles-over-10-years",
+      "published": null,
+      "period": null,
+      "confidence": "検索要約",
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "raw": "2026-11-01_industry-overview.md",
+      "section": "1",
+      "status": "未検証",
+      "reason": "検索要約",
+      "doc_id": "w3",
+      "title": "日本ロボット工業会 事業報告 2025",
+      "url": "https://jara.jp/about/img/release/jigyo_hokoku/jara_jigyo_hokoku_2025.pdf",
+      "published": null,
+      "period": null,
+      "confidence": "検索要約",
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "raw": "2026-11-01_industry-overview.md",
+      "section": "1",
+      "status": "未検証",
+      "reason": "原本なし",
+      "doc_id": "w1",
+      "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+      "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+      "published": "2026-09-19",
+      "period": null,
+      "confidence": "二次",
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "raw": "2026-11-01_industry-overview.md",
+      "section": "1",
+      "status": "未検証",
+      "reason": "検索要約",
+      "doc_id": "w5",
+      "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": "検索要約",
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "2.2 競合との比較",
+    "source": "2026-11-01_competitors.md「2. 売上高・営業利益・営業利益率」「4. 市場シェア」",
+    "evidence": [
+     {
+      "raw": "2026-11-01_competitors.md",
+      "section": "2",
+      "status": "検証済み",
+      "reason": null,
+      "doc_id": "S100Y69H",
+      "title": "安川電機 有価証券報告書 第110期",
+      "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2",
+      "published": null,
+      "period": "2026-02",
+      "confidence": "一次",
+      "pages": "2",
+      "local_path": "sources/2026-11-01/S100Y69H.pdf"
+     },
+     {
+      "raw": "2026-11-01_competitors.md",
+      "section": "2",
+      "status": "未検証",
+      "reason": "ページなし",
+      "doc_id": "S100O4U1",
+      "title": "安川電機 有価証券報告書 第106期（EDINET。前期比較の IFRS 再表示）",
+      "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100O4U1?type=2",
+      "published": null,
+      "period": "2022-02",
+      "confidence": "一次",
+      "pages": null,
+      "local_path": "sources/2026-11-01/S100O4U1.pdf"
+     },
+     {
+      "raw": "2026-11-01_competitors.md",
+      "section": "2",
+      "status": "検証済み",
+      "reason": null,
+      "doc_id": "140120261009548685",
+      "title": "安川電機 2027年2月期 中間期 決算短信",
+      "url": "https://www2.jpx.co.jp/disc/65060/140120261009548685.pdf",
+      "published": "2026-10-09",
+      "period": "2026-08",
+      "confidence": "一次",
+      "pages": "1",
+      "local_path": "sources/2026-11-01/140120261009548685.pdf"
+     },
+     {
+      "raw": "2026-11-01_competitors.md",
+      "section": "2",
+      "status": "未検証",
+      "reason": "ページなし",
+      "doc_id": "S100YG3Q",
+      "title": "ファナック 有価証券報告書 第57期",
+      "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YG3Q?type=2",
+      "published": null,
+      "period": "2026-03",
+      "confidence": "一次",
+      "pages": null,
+      "local_path": "sources/2026-11-01/S100YG3Q.pdf"
+     },
+     {
+      "raw": "2026-11-01_competitors.md",
+      "section": "2",
+      "status": "検証済み",
+      "reason": null,
+      "doc_id": "140120261021553848",
+      "title": "ファナック 2027年3月期 中間期 決算短信",
+      "url": "https://www2.jpx.co.jp/disc/69540/140120261021553848.pdf",
+      "published": null,
+      "period": "2026-09",
+      "confidence": "一次",
+      "pages": "1",
+      "local_path": "sources/2026-11-01/140120261021553848.pdf"
+     },
+     {
+      "raw": "2026-11-01_competitors.md",
+      "section": "2",
+      "status": "未検証",
+      "reason": "ページなし",
+      "doc_id": "S100YD3V",
+      "title": "三菱電機 有価証券報告書 第155期",
+      "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YD3V?type=2",
+      "published": null,
+      "period": "2026-03",
+      "confidence": "一次",
+      "pages": null,
+      "local_path": "sources/2026-11-01/S100YD3V.pdf"
+     },
+     {
+      "raw": "2026-11-01_competitors.md",
+      "section": "2",
+      "status": "未検証",
+      "reason": "ページなし",
+      "doc_id": "S100YCEQ",
+      "title": "山洋電気 有価証券報告書 第124期",
+      "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YCEQ?type=2",
+      "published": null,
+      "period": "2026-03",
+      "confidence": "一次",
+      "pages": null,
+      "local_path": "sources/2026-11-01/S100YCEQ.pdf"
+     },
+     {
+      "raw": "2026-11-01_competitors.md",
+      "section": "2",
+      "status": "検証済み",
+      "reason": null,
+      "doc_id": "140120261028557469",
+      "title": "山洋電気 2027年3月期 中間期 決算短信",
+      "url": "https://www2.jpx.co.jp/disc/65160/140120261028557469.pdf",
+      "published": null,
+      "period": "2026-09",
+      "confidence": "一次",
+      "pages": "1",
+      "local_path": "sources/2026-11-01/140120261028557469.pdf"
+     },
+     {
+      "raw": "2026-11-01_competitors.md",
+      "section": "2",
+      "status": "未検証",
+      "reason": "原本なし",
+      "doc_id": "w1",
+      "title": "IRBANK 決算まとめ",
+      "url": "https://irbank.net/6506/results",
+      "published": null,
+      "period": null,
+      "confidence": "二次",
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "raw": "2026-11-01_competitors.md",
+      "section": "4",
+      "status": "未検証",
+      "reason": "検索要約",
+      "doc_id": "w3",
+      "title": "Web 検索の要約（weblio・lilys.ai・dri.co.jp ほか）",
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": "検索要約",
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "3. KBF 品質（精度・信頼性）",
+    "source": "精度・故障率・顧客評価を各社で比べた材料が無い。受賞は安川電機（MPX1310 が2025年“超”モノづくり部品大賞、MOTOMAN NEXT-NHC12 が第68回十大新製品賞）とファナック（ロボショット SC シリーズが十大新製品賞 本賞）にあるが、品質の比較ではない（有報 第110期 p42-43、ファナック有報 第57期 p16-17）",
+    "evidence": []
+   },
+   {
+    "claim": "3. KBF 導入サポート",
+    "source": "各社のサポート体制・顧客満足度の比較材料なし。顧客数・継続率は4社とも開示なし（2026-11-01_competitors.md「8. 顧客・人員の KPI」）",
+    "evidence": [
+     {
+      "raw": "2026-11-01_competitors.md",
+      "section": "8",
+      "status": "検証済み",
+      "reason": null,
+      "doc_id": "S100Y69H",
+      "title": "安川電機 有価証券報告書 第110期",
+      "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2",
+      "published": null,
+      "period": "2026-02",
+      "confidence": "一次",
+      "pages": "9,42-43,108",
+      "local_path": "sources/2026-11-01/S100Y69H.pdf"
+     },
+     {
+      "raw": "2026-11-01_competitors.md",
+      "section": "8",
+      "status": "検証済み",
+      "reason": null,
+      "doc_id": "S100YG3Q",
+      "title": "ファナック 有価証券報告書 第57期",
+      "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YG3Q?type=2",
+      "published": null,
+      "period": "2026-03",
+      "confidence": "一次",
+      "pages": "2,16-17,48",
+      "local_path": "sources/2026-11-01/S100YG3Q.pdf"
+     },
+     {
+      "raw": "2026-11-01_competitors.md",
+      "section": "8",
+      "status": "検証済み",
+      "reason": null,
+      "doc_id": "S100YD3V",
+      "title": "三菱電機 有価証券報告書 第155期",
+      "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YD3V?type=2",
+      "published": null,
+      "period": "2026-03",
+      "confidence": "一次",
+      "pages": "2,44",
+      "local_path": "sources/2026-11-01/S100YD3V.pdf"
+     },
+     {
+      "raw": "2026-11-01_competitors.md",
+      "section": "8",
+      "status": "検証済み",
+      "reason": null,
+      "doc_id": "S100YCEQ",
+      "title": "山洋電気 有価証券報告書 第124期",
+      "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YCEQ?type=2",
+      "published": null,
+      "period": "2026-03",
+      "confidence": "一次",
+      "pages": "7,15",
+      "local_path": "sources/2026-11-01/S100YCEQ.pdf"
+     }
+    ]
+   },
+   {
+    "claim": "3. KBF 価格",
+    "source": "4社の単価・価格の開示なし。中国の国産サーボの値下げ（2025年、Sine -18.3% など）は比較した競合ではない（2026-11-01_industry-overview.md「3.」）",
+    "evidence": [
+     {
+      "raw": "2026-11-01_industry-overview.md",
+      "section": "3",
+      "status": "未検証",
+      "reason": "原本なし",
+      "doc_id": "w1",
+      "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+      "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+      "published": "2026-09-19",
+      "period": null,
+      "confidence": "二次",
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "raw": "2026-11-01_industry-overview.md",
+      "section": "3",
+      "status": "未検証",
+      "reason": "検索要約",
+      "doc_id": "w5",
+      "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": "検索要約",
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   }
+  ],
+  "summary": {
+   "verified": 8,
+   "unverified": 12,
+   "missing": 0,
+   "reasons": {
+    "検索要約": 5,
+    "原本なし": 3,
+    "ページなし": 4
+   }
+  }
+ }
 }

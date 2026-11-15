@@ -624,6 +624,21 @@ def test_build_reports_all_gaps_tie_breaks_and_low_confidence(repo, capsys):
     assert factor["tie_break"] and factor["confidence"] == "一次" and factor["triggers"]
 
 
+def test_build_appends_the_evidence_chain_once(repo, capsys):
+    """BL-01: 7章「出典の連鎖」is the build's own chapter; a rebuild replaces it instead of adding another."""
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    md = repo / out["md"]
+    fill(md, ALL_MID)
+    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 0, out
+    assert set(out["evidence"]) == {"verified", "unverified", "missing", "reasons"}
+    result = json.loads((repo / out["json"]).read_text(encoding="utf-8"))
+    assert "claims" in result["evidence"] and all("evidence" in f for f in result["factors"])
+    code, again = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 0, again
+    assert md.read_text(encoding="utf-8").count(f"## {D.EVIDENCE_CHAPTER}. 出典の連鎖") == 1
+
+
 def test_build_rejects_bad_confidence_and_blank_triggers(repo, capsys):
     _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
     md = repo / out["md"]

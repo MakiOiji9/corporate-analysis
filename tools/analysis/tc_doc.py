@@ -20,6 +20,7 @@ from __future__ import annotations
 import re
 from string import Template
 
+import an_evidence as EV
 import an_quality as Q
 import mdparse as M
 from ff_doc import (CHANGED_FROM_PREVIOUS, CONFIDENCE, DIFFERS_FROM_CANDIDATE, LOW_CONFIDENCE, TIE_BREAK,
@@ -39,6 +40,8 @@ UNKNOWN_MARK = "？"
 PENDING = "判定保留"
 VERSION = 2  # 2 (2026-11): base and conservative verdicts (KBF score), counter-argument, confidence
 COUNTER_LABEL = "反論（この結論が間違っているとしたら）"
+EVIDENCE_CHAPTER = 9  # an_evidence: build appends 出典の連鎖 after the template's 8 chapters
+CUSTOMER_CLAIM, COMPETITOR_CLAIM = "1. 顧客", "2.2 競合との比較"
 MARK_SCORE = {"○": 1, "△": 0, "×": -1}
 MIN_SCORED_KBF = 2
 
@@ -121,6 +124,26 @@ def parse(text: str) -> dict:
         "moat_checks": handoff.get("モート分析で確かめること", ""), "counter": handoff.get(COUNTER_LABEL, ""),
         "changes": M.bullets(M.section(text, "7.")), "gaps": M.bullets(M.section(text, "8.")),
     }
+
+
+def _kbf_claim(kbf: str) -> str:
+    return f"3. KBF {kbf.strip()}"
+
+
+def claims(parsed: dict) -> list[tuple[str, str]]:
+    """(claim, 情報源 cell): the customer (1章), the competitor comparison (2.2) and each KBF row's 根拠 (3章)."""
+    rows = [(CUSTOMER_CLAIM, parsed["customer"]["source"]), (COMPETITOR_CLAIM, parsed["competitor"]["source"])]
+    rows += [(_kbf_claim(r["kbf"]), r["basis"]) for r in parsed["kbf_rows"]]
+    return [(claim, cell) for claim, cell in rows if not M.is_blank(cell)]
+
+
+def with_evidence(result: dict, chain: dict) -> dict:
+    """The json with the customer's, the competitor's and each KBF row's evidence, and the whole chain."""
+    found = EV.by_claim(chain)
+    return dict(result, customer=dict(result["customer"], evidence=found.get(CUSTOMER_CLAIM, [])),
+                competitor=dict(result["competitor"], evidence=found.get(COMPETITOR_CLAIM, [])),
+                kbf_table=[dict(r, evidence=found.get(_kbf_claim(r["kbf"]), [])) for r in result["kbf_table"]],
+                evidence=chain)
 
 
 # ---------- checks ----------

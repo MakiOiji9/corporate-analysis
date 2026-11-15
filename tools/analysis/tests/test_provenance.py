@@ -10,9 +10,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "report"))
 
 import an_evidence as EV  # noqa: E402
 import cr_render as R  # noqa: E402
+import cr_sections as CS  # noqa: E402
+import ff_doc as FD  # noqa: E402
 import ff_inputs as I  # noqa: E402
 import front_matter as FM  # noqa: E402
 import provenance as PV  # noqa: E402
+import sw_doc as SD  # noqa: E402
+import tc_doc as TD  # noqa: E402
 from common import MANIFEST_FIELDS  # noqa: E402
 
 BODY = ("# 有価証券報告書 抜粋 — 例示株式会社（1234）\n\n**収集日**: 2026-01-10\n**情報源**:\n"
@@ -106,6 +110,7 @@ def test_split_refs_reads_raw_files_and_sections_and_skips_the_analysis_own_chap
     assert PV.split_refs(cell) == [PV.Ref(RAW, ("6",)), PV.Ref("2026-01-10_competitors.md", ("7", "8"))]
     assert PV.split_refs("md 2.1") == [] and PV.split_refs(None) == []
     assert PV.split_refs(f"{RAW}「７．」") == [PV.Ref(RAW, ("7",))]  # full-width digits and dot
+    assert PV.split_refs("2026-11-09_outlook.md「5.」") == []  # the market outlook is not a raw file
 
 
 def test_a_cell_is_not_used_as_a_glob(tmp_path):
@@ -152,6 +157,54 @@ def test_chapter_is_appended_once_and_stripped_before_the_checks(tmp_path):
     assert "| 4. ブランド | 2026-01-10_2025-03_yuho.md「1.」 | DOC1 有価証券報告書 第10期 2025-06-20 | 2 |" in once
     assert EV.apply(once, 12, chain) == once
     assert EV.strip(once) == md
+
+
+# ---------- the claims of five-forces, three-c and swot ----------
+
+def _chain(*claims: str) -> dict:
+    """A chain whose every claim has one verified document named after the claim."""
+    return {"claims": [{"claim": c, "source": "", "evidence": [{"status": PV.VERIFIED, "title": c}]} for c in claims],
+            "summary": PV.summary([])}
+
+
+def test_five_forces_claims_and_evidence_follow_the_factor_numbers():
+    parsed = {"industry_source": f"{RAW}「1.」", "factors": [
+        {"name": "新規参入の脅威", "source": f"{RAW}「6.」"}, {"name": "業界内の競争", "source": "—"}]}
+    assert FD.claims(parsed) == [("1. 業界の定義", f"{RAW}「1.」"), ("2.1 新規参入の脅威", f"{RAW}「6.」")]
+    result = FD.with_evidence({"factors": [{"name": "新規参入の脅威"}, {"name": "業界内の競争"}]},
+                              _chain("1. 業界の定義", "2.1 新規参入の脅威"))
+    assert result["factors"][0]["evidence"][0]["title"] == "2.1 新規参入の脅威" and result["factors"][1]["evidence"] == []
+    assert result["industry_evidence"][0]["title"] == "1. 業界の定義" and "claims" in result["evidence"]
+
+
+def test_three_c_claims_cover_customer_competitor_and_kbf_rows():
+    parsed = {"customer": {"source": f"{RAW}「1.」"}, "competitor": {"source": f"{RAW}「6.」"},
+              "kbf_rows": [{"kbf": "品質 ", "basis": f"{RAW}「8.」"}, {"kbf": "価格", "basis": "brief.md 3."}]}
+    assert [c for c, _ in TD.claims(parsed)] == ["1. 顧客", "2.2 競合との比較", "3. KBF 品質", "3. KBF 価格"]
+    result = TD.with_evidence({"customer": {}, "competitor": {}, "kbf_table": [{"kbf": "品質"}]},
+                              _chain("1. 顧客", "3. KBF 品質"))
+    assert result["customer"]["evidence"] and result["competitor"]["evidence"] == []
+    assert result["kbf_table"][0]["evidence"][0]["title"] == "3. KBF 品質"
+
+
+def test_swot_claims_are_per_quadrant_item_and_skip_the_none_row():
+    parsed = {"quadrants": {"S": [{"id": "S1", "source": f"{RAW}「1.」"}], "W": [{"id": "なし", "source": "—"}],
+                            "O": [], "T": [{"id": "T1", "source": f"{RAW}「8.」"}]}}
+    assert [c for c, _ in SD.claims(parsed)] == ["強み S1", "脅威 T1"]
+    result = SD.with_evidence({"quadrants": {"S": [{"id": "S1"}], "T": [{"id": "T1"}]}}, _chain("強み S1"))
+    assert result["quadrants"]["S"][0]["evidence"] and result["quadrants"]["T"][0]["evidence"] == []
+
+
+def test_report_shows_the_sources_of_five_forces_three_c_and_swot():
+    verified = [{"status": "検証済み", "title": "有報", "pages": "2", "url": "https://example.com/y.pdf"}]
+    cards = CS._three_c_cards({"customer_evidence": verified, "competitor_evidence": []})
+    assert cards.count("<b>出典</b>") == 1 and '<a href="https://example.com/y.pdf" rel="noopener">有報</a> p.2' in cards
+    detail = {"quadrants": {"S": [{"id": "S1", "fact": "継続率", "impact": "大", "evidence": verified}],
+                            "T": [{"id": "T1", "fact": "参入", "impact": "中"}]}}
+    grid = CS.swot_grid(detail, {"verdict": "Yes"})
+    assert "SWOT の各項目の出典" in grid and "<b>S1</b>" in grid.split("SWOT の各項目の出典")[1]
+    assert "<b>T1</b>" not in grid.split("SWOT の各項目の出典")[1]  # an item without evidence is not listed
+    assert "SWOT の各項目の出典" not in CS.swot_grid({"quadrants": {"S": [{"id": "S1", "fact": "f"}]}}, {})
 
 
 # ---------- readers of the raw header ----------

@@ -3,8 +3,8 @@ the saved original and its pages (BL-01).
 
 A 情報源 cell names raw files the way the briefs show them:
     2026-11-01_2026-02_yuho.md「6. 研究開発・特許・許認可（p.42-43）」、2026-11-01_competitors.md「7.」、md 3.1
-Each raw file with the sections after it becomes one Ref; 'md 3.1' (the analysis' own computed chapter) is not a
-document and is skipped. resolve() returns one Evidence per cited document with a status:
+Each raw file with the sections after it becomes one Ref; 'md 3.1' (the analysis' own computed chapter) and the
+market outlook ({week}_outlook.md, whose own sources are BL-07) are not documents and are skipped. resolve() returns one Evidence per cited document with a status:
     検証済み            the raw section names a document saved in sources/ (manifest.csv, file present) and its pages
     未検証              with the reason: Front Matter なし / Front Matter の形式の誤り / 節の出典なし / 原本なし /
                         ページなし / 検索要約
@@ -33,6 +33,7 @@ RAW_REF = re.compile(r"(\d{4}-\d{2}-\d{2}_[^\s「」、，,／/]+?\.md)((?:\s*�
 SECTION_REF = re.compile(r"「([^」]*)」")
 SECTION_NUMBER = re.compile(r"^\s*([0-9０-９]+)[.．]")  # full-width digits are read as the same section
 ORIGINAL_SUFFIXES = (".pdf", ".html", ".htm", ".xlsx", ".txt")  # what a reader opens, before the XBRL zip
+OUTLOOK_SUFFIX = "_outlook.md"
 
 
 @dataclass(frozen=True)
@@ -63,6 +64,8 @@ class Evidence:
 def split_refs(cell: str | None) -> list[Ref]:
     refs = []
     for m in RAW_REF.finditer(cell or ""):
+        if m.group(1).endswith(OUTLOOK_SUFFIX):  # the market outlook is a report, not a raw file (its sources: BL-07)
+            continue
         sections = []
         for title in SECTION_REF.findall(m.group(2)):
             number = SECTION_NUMBER.match(title)

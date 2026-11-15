@@ -26,6 +26,7 @@ from __future__ import annotations
 import re
 from string import Template
 
+import an_evidence as EV
 import an_fill as F
 import an_quality as Q
 import mdparse as M
@@ -47,6 +48,7 @@ DETAIL_LIMIT = 120  # characters of an upstream reason shown in 1.1
 DIGIT = re.compile(r"[0-9０-９]")
 VERSION = 2  # 2 (2026-11): impact on profit, structural top strength, base and conservative verdicts, counter
 COUNTER_LABEL = "反論（この結論が間違っているとしたら）"
+EVIDENCE_CHAPTER = 10  # an_evidence: build appends 出典の連鎖 after the template's 9 chapters
 PROFIT = re.compile(r"営業利益|経常利益|純利益|利益の\s*[0-9０-９約]|利益に占め|利益が\s*[0-9０-９約]")
 CYCLICAL = re.compile(r"過去最高|最高益|急増|急回復|急拡大|特需|一時的")
 PERSISTENT = re.compile(r"\d+\s*(年|期)連続|\d+\s*年(間|以上)続|長年|継続して")
@@ -130,6 +132,24 @@ def items_of(parsed: dict, quadrant: str) -> list[dict]:
     """The quadrant's rows, without the single 'なし' row."""
     rows = parsed["quadrants"][quadrant]
     return [] if rows and rows[0]["id"] == NONE else rows
+
+
+def _item_claim(quadrant: str, item_id: str) -> str:
+    return f"{QUADRANT_NAME[quadrant]} {item_id.strip()}"
+
+
+def claims(parsed: dict) -> list[tuple[str, str]]:
+    """(claim, 情報源 cell) of every item of the four quadrants (2.1〜2.4)."""
+    rows = [(_item_claim(q, r["id"]), r["source"]) for q, _, _ in QUADRANTS for r in items_of(parsed, q)]
+    return [(claim, cell) for claim, cell in rows if not M.is_blank(cell)]
+
+
+def with_evidence(result: dict, chain: dict) -> dict:
+    """The json with each quadrant item's evidence and the whole chain (a new dict)."""
+    found = EV.by_claim(chain)
+    quadrants = {q: [dict(i, evidence=found.get(_item_claim(q, i["id"]), [])) for i in items]
+                 for q, items in result["quadrants"].items()}
+    return dict(result, quadrants=quadrants, evidence=chain)
 
 
 def _find(parsed: dict, quadrant: str, item_id: str) -> dict | None:

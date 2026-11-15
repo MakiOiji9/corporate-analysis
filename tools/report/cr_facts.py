@@ -8,6 +8,7 @@ import json
 import re
 from pathlib import Path
 
+import cr_evidence as EVR
 import cr_extras as X
 import cr_factors as F
 import cr_judge as J
@@ -29,7 +30,6 @@ from sf_series import JAPAN_TICKER, unit_label
 MARKETS = {"日本": "japan", "米国": "us"}
 STATUS_EARNINGS = "四半期決算"
 GAP_LIMIT = 12  # 材料不足の一覧に出す数（重複を除く）
-EVIDENCE_KEYS = ("status", "reason", "doc_id", "title", "url", "published", "period", "pages", "local_path")  # BL-01
 
 
 def _get(d: object, *keys: str) -> object:
@@ -48,8 +48,8 @@ def market_of(company: S.Company) -> str:
 
 def _five_forces(r: dict) -> dict:
     return {"industry": r.get("industry"), "total": r.get("total"),
-            "factors": [{"name": f.get("name"), "rating": f.get("rating"), "reason": f.get("reason")}
-                        for f in r.get("factors") or []]}
+            "factors": [{"name": f.get("name"), "rating": f.get("rating"), "reason": f.get("reason"),
+                         "evidence": EVR.slim(f.get("evidence"))} for f in r.get("factors") or []]}
 
 
 def _three_c(r: dict) -> dict:
@@ -64,7 +64,9 @@ def _three_c(r: dict) -> dict:
             "comparison": [{k: c.get(k) for k in ("name", "self", "year", "sales", "margin", "share", "cagr")}
                            for c in r.get("comparison") or []],
             "strengths": _get(r, "handoff", "strengths"), "weaknesses": _get(r, "handoff", "weaknesses"),
-            "company_conclusion": r.get("company_conclusion")}
+            "company_conclusion": r.get("company_conclusion"),
+            "customer_evidence": EVR.slim(customer.get("evidence")),
+            "competitor_evidence": EVR.slim(_get(r, "competitor", "evidence"))}
 
 
 def _moat(r: dict) -> dict:
@@ -72,7 +74,7 @@ def _moat(r: dict) -> dict:
     return {"durability": r.get("durability"), "effective": r.get("effective_moats") or [],
             "moats": [{"type": m.get("type"), "group": m.get("group"), "rating": m.get("rating"),
                        "mechanism": m.get("mechanism"),
-                       "evidence": [{k: e.get(k) for k in EVIDENCE_KEYS} for e in m.get("evidence") or []]}
+                       "evidence": EVR.slim(m.get("evidence"))}
                       for m in r.get("moats") or []],
             "risks": r.get("risks") or [], "trend": r.get("trend"),
             "axes": {k: (v or {}).get("rating") for k, v in (r.get("axes") or {}).items()},
@@ -82,7 +84,8 @@ def _moat(r: dict) -> dict:
 
 
 def _swot(r: dict) -> dict:
-    quadrants = {key: [{"id": i.get("id"), "fact": i.get("fact"), "impact": i.get("impact")} for i in items]
+    quadrants = {key: [{"id": i.get("id"), "fact": i.get("fact"), "impact": i.get("impact"),
+                        "evidence": EVR.slim(i.get("evidence"))} for i in items]
                  for key, items in (r.get("quadrants") or {}).items()}
     return {"sentence": r.get("sentence"), "top_strength": r.get("top_strength"), "top_threat": r.get("top_threat"),
             "quadrants": quadrants}

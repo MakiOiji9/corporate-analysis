@@ -31,6 +31,7 @@ sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "marke
 
 import an_brief as AB  # noqa: E402
 import an_common as A  # noqa: E402
+import an_evidence as EV  # noqa: E402
 import an_fill as F  # noqa: E402
 import an_quality as Q  # noqa: E402
 import ff_brief as B  # noqa: E402
@@ -250,7 +251,7 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     if not target:
         return emit({"ok": False, "error": "five-forces.md が無い（先に prepare）"})
     date, md_path = target
-    text = md_path.read_text(encoding="utf-8")
+    text = EV.strip(md_path.read_text(encoding="utf-8"))  # 出典の連鎖 is the build's own chapter, not the template's
     issues = D.validate(text, _template(root))
     if issues:
         return emit({"ok": False, "md": company.rel(md_path), "issues": issues})
@@ -262,8 +263,9 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     if issues:
         return emit({"ok": False, "md": company.rel(md_path), "issues": issues})
     scored = D.score(parsed)
-    atomic_write_text(md_path, D.apply_scores(text, scored))
-    result = result_json(company, date, text, parsed, scored)
+    chain = EV.claims_evidence(company.path, D.claims(parsed))
+    atomic_write_text(md_path, EV.apply(D.apply_scores(text, scored), D.EVIDENCE_CHAPTER, chain))
+    result = D.with_evidence(result_json(company, date, text, parsed, scored), chain)
     json_path = company.file(date, P.JSON_SUFFIX)
     atomic_write_text(json_path, json.dumps(result, ensure_ascii=False, indent=1) + "\n")
     pruned = A.prune(company.analysis_dir, P.MD_SUFFIX)  # keep the latest result and the one before it
@@ -278,6 +280,7 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
         "tie_breaks": [f["name"] for f in scored["factors"] if f["tie_break"]],
         "low_confidence": [f["name"] for f in scored["factors"] if f["confidence"] == D.LOW_CONFIDENCE],
         "gaps": [g for g in parsed["gaps"] if not M.is_blank(g) and g != "なし"],
+        "evidence": chain["summary"], "missing_sources": EV.missing(chain),
     })
 
 

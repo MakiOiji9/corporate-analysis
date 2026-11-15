@@ -12,6 +12,7 @@ from __future__ import annotations
 import re
 from string import Template
 
+import an_evidence as EV
 import an_quality as Q
 import mdparse as M
 from outlook import FORBIDDEN
@@ -33,6 +34,8 @@ CHANGED_FROM_PREVIOUS = "前回から変更"
 PENDING = "（build が記入）"
 FIXED_MARK = "（確定）"
 HEADING2 = re.compile(r"^##\s+(\d+)\.", re.M)
+EVIDENCE_CHAPTER = 7  # an_evidence: build appends 出典の連鎖 after the template's 6 chapters
+INDUSTRY_CLAIM = "1. 業界の定義"
 VERSION = 2  # 2 (2026-11): base and conservative attractiveness, score range, other segments, counter-argument
 COUNTER_LABEL = "反論（この結論が間違っているとしたら）"
 SEGMENT_SECTION = "2.6"
@@ -100,6 +103,25 @@ def parse(text: str) -> dict:
     return {"industry": industry.get("業界の定義", ""), "industry_source": industry.get("根拠（情報源）", ""),
             "counter": industry.get(COUNTER_LABEL, ""), "segments": parse_segments(text),
             "factors": factors, "changes": M.bullets(M.section(text, "5.")), "gaps": M.bullets(M.section(text, "6."))}
+
+
+def _factor_claim(name: str) -> str:
+    number = next((n for _, n, label in FACTORS if label == name), "2.")
+    return f"{number} {name}"
+
+
+def claims(parsed: dict) -> list[tuple[str, str]]:
+    """(claim, 情報源 cell): the industry definition (1章) and the five forces (2.1〜2.5)."""
+    rows = [(INDUSTRY_CLAIM, parsed["industry_source"])]
+    rows += [(_factor_claim(f["name"]), f["source"]) for f in parsed["factors"]]
+    return [(claim, cell) for claim, cell in rows if not M.is_blank(cell)]
+
+
+def with_evidence(result: dict, chain: dict) -> dict:
+    """The json with each factor's evidence, the industry's and the whole chain (a new dict)."""
+    found = EV.by_claim(chain)
+    factors = [dict(f, evidence=found.get(_factor_claim(f["name"]), [])) for f in result["factors"]]
+    return dict(result, factors=factors, industry_evidence=found.get(INDUSTRY_CLAIM, []), evidence=chain)
 
 
 def parse_segments(text: str) -> list[dict]:

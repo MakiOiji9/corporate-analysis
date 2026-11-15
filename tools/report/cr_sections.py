@@ -10,6 +10,7 @@ import re
 from html import escape
 
 import charts as C
+import cr_evidence as EVR
 import cr_glossary as G
 import cr_judge as J
 import cr_plain as P
@@ -122,13 +123,19 @@ def _mark(mark: str | None) -> str:
     return f'<span class="mk {MARK_CLASS.get(mark or "", "")}">{esc(mark or "—")}</span>'
 
 
+def _sources_line(evidence: list[dict] | None) -> str:
+    """'出典: …' under a 3C card; nothing for a result built before BL-01."""
+    return f'<p class="small"><b>出典</b>: {EVR.cell(evidence)}</p>' if evidence else ""
+
+
 def _three_c_cards(detail: dict) -> str:
     kbf = "".join(f'<li{" class=top" if i == 0 else ""}>{esc(k)}</li>' for i, k in enumerate(detail.get("kbf") or []))
     customer = (f'<div class="c3 c-customer"><div class="c3-h">Customer（顧客・市場）</div>'
                 f'<p class="small">{esc(detail.get("customers") or detail.get("customer") or "—")}</p>'
                 f'<p class="small"><b>選ぶときに重視すること（KBF。上ほど重要）</b></p><ol class="kbf">{kbf}</ol>'
                 f'<p class="small"><b>市場の成長性</b>: {esc(detail.get("growth") or "—")}。'
-                f'{esc(detail.get("growth_reason") or "")}</p></div>')
+                f'{esc(detail.get("growth_reason") or "")}</p>'
+                f'{_sources_line(detail.get("customer_evidence"))}</div>')
     comp_rows = [[esc(short_name(c["name"])) + (" <b>（対象）</b>" if c.get("self") else ""),
                   esc(num(c["sales"] / YEN_OKU, "億円", 0) if c.get("sales") else "—"),
                   esc(num(c.get("margin"), "%")), esc(num(c.get("cagr"), "%")), esc(num(c.get("share"), "%"))]
@@ -137,7 +144,8 @@ def _three_c_cards(detail: dict) -> str:
                   + table(["会社", "売上高", "営業利益率", "3年CAGR", "シェア"], comp_rows,
                           right=frozenset({1, 2, 3, 4}))
                   + f'<p class="small"><b>比較の結論</b>: {esc(_competitor_conclusion(detail))}。'
-                    f'{esc(detail.get("competitor_reason") or "")}</p></div>')
+                    f'{esc(detail.get("competitor_reason") or "")}</p>'
+                  + f'{_sources_line(detail.get("competitor_evidence"))}</div>')
     company = (f'<div class="c3 c-company"><div class="c3-h">Company（自社）</div>'
                f'<p class="small"><b>強み</b>: {esc(detail.get("strengths") or "—")}</p>'
                f'<p class="small"><b>弱み</b>: {esc(detail.get("weaknesses") or "—")}</p></div>')
@@ -175,7 +183,18 @@ def swot_grid(detail: dict, analysis: dict) -> str:
                   f'<ul>{items}</ul></div>')
     return (f'<h3>SWOT分析</h3><div class="swot">{cells}</div>'
             f'<p class="small muted">影響度: 大・中・小（枠で囲んだ項目は最大の強み・最大の脅威）</p>'
-            f'<p><b>強みで脅威に対抗できるか</b>: {badge(analysis.get("verdict"))} {esc(detail.get("sentence"))}</p>')
+            f'<p><b>強みで脅威に対抗できるか</b>: {badge(analysis.get("verdict"))} {esc(detail.get("sentence"))}</p>'
+            + _swot_sources(detail))
+
+
+def _swot_sources(detail: dict) -> str:
+    """Each item's 出典 in a folded table under the grid (the grid itself stays short); nothing before BL-01."""
+    rows = [[f"<b>{esc(i.get('id'))}</b>", esc(i.get("fact")), EVR.cell(i.get("evidence"))]
+            for key, _, _ in QUADRANTS for i in (detail.get("quadrants") or {}).get(key) or [] if i.get("evidence")]
+    if not rows:
+        return ""
+    return (f'<details><summary>SWOT の各項目の出典</summary><div class="inner">'
+            f'{table(["項目", "事実", "出典"], rows, nowrap=frozenset({0}))}</div></details>')
 
 
 # ---------------------------------------------------------------- management and shareholders

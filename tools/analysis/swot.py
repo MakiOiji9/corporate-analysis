@@ -30,6 +30,7 @@ sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "marke
 
 import an_brief as AB  # noqa: E402
 import an_common as A  # noqa: E402
+import an_evidence as EV  # noqa: E402
 import an_fill as F  # noqa: E402
 import an_quality as Q  # noqa: E402
 import ff_paths as FP  # noqa: E402
@@ -339,7 +340,8 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
         return emit({"ok": False, "error": "swot.md が無い（先に prepare）"})
     date, md_path = target
     found, previous = I.gather_swot(company), P.latest_result(company, before=date)
-    text = F.fill_at_build(md_path.read_text(encoding="utf-8"), D.BUILD_KEYS,
+    # 出典の連鎖 is the build's own chapter, not the template's: taken off before the checks
+    text = F.fill_at_build(EV.strip(md_path.read_text(encoding="utf-8")), D.BUILD_KEYS,
                            lambda t: D.build_fills(t, found, previous))
     ups = upstream(company)
     # the required items are recomputed so a row deleted from 1.1 can't bypass the rule
@@ -352,8 +354,9 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     if issues:
         return emit({"ok": False, "md": company.rel(md_path), "issues": issues})
     judged = D.judge(parsed)
-    atomic_write_text(md_path, D.apply_conclusion(text, judged, parsed["sentence"]))
-    result = result_json(company, date, text, parsed, judged, items, ups)
+    chain = EV.claims_evidence(company.path, D.claims(parsed))
+    atomic_write_text(md_path, EV.apply(D.apply_conclusion(text, judged, parsed["sentence"]), D.EVIDENCE_CHAPTER, chain))
+    result = D.with_evidence(result_json(company, date, text, parsed, judged, items, ups), chain)
     json_path = company.file(date, P.JSON_SUFFIX)
     atomic_write_text(json_path, json.dumps(result, ensure_ascii=False, indent=1) + "\n")
     pruned = A.prune(company.analysis_dir, P.MD_SUFFIX)  # keep the latest result and the one before it
@@ -365,6 +368,7 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
         "counts": {q: len(D.items_of(parsed, q)) for q, _, _ in D.QUADRANTS},
         "valid_until": result["valid_until"], "previous": result["previous"], "upstream": result["upstream"],
         **D.flags(parsed), "gaps": [g for g in parsed["gaps"] if not M.is_blank(g) and g != "なし"],
+        "evidence": chain["summary"], "missing_sources": EV.missing(chain),
     })
 
 

@@ -31,6 +31,11 @@ def claims_evidence(company_dir: Path, claims: list[tuple[str, str]]) -> dict:
     return {"claims": rows, "summary": PV.summary(every)}
 
 
+def by_claim(chain: dict) -> dict[str, list[dict]]:
+    """claim label -> its Evidence dicts (an analysis puts them on the json items its claims came from)."""
+    return {c["claim"]: c["evidence"] for c in chain["claims"]}
+
+
 def missing(chain: dict) -> list[str]:
     """Raw files a 情報源 cell names that do not exist (build warns about them)."""
     return sorted({e["raw"] for c in chain["claims"] for e in c["evidence"] if e["status"] == PV.MISSING})

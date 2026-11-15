@@ -12,6 +12,18 @@ sources:
 - {id: Dash35, title: 安川電機 中期経営計画 Dash 35, confidence: 一次}
 - {id: 254Q_QA, title: 安川電機 2025年度 決算説明会 質疑応答, confidence: 一次}
 sections:
+  '1':
+  - {source: w2, pages: null}
+  - {source: w3, pages: null}
+  - {source: w1, pages: null}
+  - {source: w5, pages: null}
+  '4':
+  - {source: w2, pages: null}
+  - {source: w1, pages: null}
+  - {source: w5, pages: null}
+  '5':
+  - {source: w5, pages: null}
+  - {source: w1, pages: null}
   '2':
   - {source: w1, pages: null}
   - {source: w2, pages: null}

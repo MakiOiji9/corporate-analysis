@@ -706,6 +706,20 @@ def test_build_writes_sentence_summary_changes_and_gaps_from_the_picks(repo, cap
     assert "## 8. 前回からの変更点\n\n- 初回の分析" in text
 
 
+def test_build_appends_the_evidence_chain_once(repo, capsys):
+    """BL-01: 10章「出典の連鎖」is the build's own chapter; a rebuild replaces it instead of adding another."""
+    md = prepared(repo, capsys)
+    fill(md)
+    code, out = build(repo, capsys)
+    assert code == 0, out
+    result = json.loads((repo / out["json"]).read_text(encoding="utf-8"))
+    assert "claims" in result["evidence"]
+    assert all("evidence" in i for items in result["quadrants"].values() for i in items)
+    code, again = build(repo, capsys)
+    assert code == 0, again
+    assert md.read_text(encoding="utf-8").count(f"## {D.EVIDENCE_CHAPTER}. 出典の連鎖") == 1
+
+
 def test_conclusion_cell_separates_the_reason_from_the_sentence():
     pick = {"id": "S1", "fact": "f", "impact": "大"}
     judged = {"verdict": "No", "why": "規則に従い No を採った", "top_strength": pick, "top_threat": {**pick, "id": "T1"}}

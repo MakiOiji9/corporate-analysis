@@ -9,14 +9,13 @@ Charts are inline SVG from charts.py. One vertical page, overview first and deta
 """
 from __future__ import annotations
 
-import html
 from string import Template
-from urllib.parse import quote, urlparse
 
 import charts as C
 import cr_ch_price as CP
 import cr_dashboard as DB
 import cr_doc as D
+import cr_evidence as EVR
 import cr_glossary as G
 import cr_judge as J
 import cr_legends as L
@@ -155,8 +154,9 @@ def _stephead(grade: dict, title: str) -> str:
 def step1(facts: dict) -> str:
     d = facts["analyses"]
     ff = d["five_forces"]["detail"]
-    forces = table(["要因", "強さ", "理由"], [[esc(f["name"]), esc(f["rating"]), esc(f["reason"])]
-                                          for f in ff.get("factors") or []])
+    forces = table(["要因", "強さ", "理由", "出典"],
+                   [[esc(f["name"]), esc(f["rating"]), esc(f["reason"]), EVR.cell(f.get("evidence"))]
+                    for f in ff.get("factors") or []])
     inner = (_conditions(facts["step1"]["rows"]) + f"<h3>業界の5つの力（{esc(ff.get('industry'))}）</h3>" + forces
              + f"<h3>モート（強みの持続性）</h3><p>{esc(d['moat']['detail'].get('durability'))}</p>"
              + _moat_sources(d["moat"]["detail"]) + _conservative(d["moat"]) + _counters(d))
@@ -183,46 +183,9 @@ def _roic_chart(moat: dict) -> str:
                   "モート分析（有報・決算短信から計算）", "%", ROIC_NOTE)
 
 
-EVIDENCE_REASONS = {  # provenance.py's reasons in the reader's words
-    "Front Matter なし": "出典の記録なし", "Front Matter の形式の誤り": "出典の記録に誤り", "節の出典なし": "該当箇所の記録なし",
-    "原本なし": "原本の保存なし", "ページなし": "ページの記録なし", "検索要約": "検索結果の要約のみ"}
-
-
-def _source_url(url: str | None) -> str | None:
-    """The document's public URL (manifest.csv) when it is a web address; anything else is not linked."""
-    return url if url and urlparse(url).scheme in ("http", "https") else None
-
-
-def _evidence_href(e: dict) -> str | None:
-    """The public URL, so a reader on GitHub or Slack can open it; only a document with no URL falls back to the
-    saved original under sources/ (git-ignored: it opens only where it was fetched)."""
-    url = _source_url(e.get("url"))
-    if url:
-        return html.escape(url)
-    return html.escape(quote("../" + e["local_path"])) if e.get("local_path") else None  # a path: no plain()
-
-
-def _evidence_item(e: dict) -> str:
-    """'有価証券報告書 第110期 p.42-43' linked to its source, or '未検証（ページの記録なし） 資料名'."""
-    name = esc(e.get("title") or e.get("doc_id") or "")
-    href = _evidence_href(e)
-    named = f'<a href="{href}" rel="noopener">{name}</a>' if href and name else name
-    if e.get("status") != "検証済み":
-        reason = f"（{EVIDENCE_REASONS.get(e['reason'], e['reason'])}）" if e.get("reason") else ""
-        return f'<span class="ok-unk">{esc(e.get("status") or "")}{esc(reason)}</span>' + (f" {named}" if named else "")
-    pages = f" p.{esc(e['pages'])}" if e.get("pages") else ""
-    return f'<span class="ok-yes">✓</span> {named}{pages}'
-
-
-def _evidence_cell(m: dict) -> str:
-    """The moat row's sources (moat.json moats[].evidence); '—' for a result built before BL-01."""
-    items = list(dict.fromkeys(_evidence_item(e) for e in m.get("evidence") or []))  # two sections, one document
-    return "<br>".join(items) if items else "—"
-
-
 def _moat_sources(moat: dict) -> str:
     rows = [[esc(m.get("type")), esc(m.get("group") or ""), esc(m.get("rating")), esc(m.get("mechanism") or ""),
-             _evidence_cell(m)]
+             EVR.cell(m.get("evidence"))]
             for m in moat.get("moats") or []]
     if not rows:
         return ""

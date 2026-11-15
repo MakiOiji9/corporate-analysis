@@ -3,18 +3,31 @@ provenance: 1
 collected: '2026-11-01'
 sources:
 - {id: S100Y69H, title: 安川電機 有価証券報告書 第110期, confidence: 一次}
+- {id: S100O4U1, title: 安川電機 有価証券報告書 第106期（EDINET。前期比較の IFRS 再表示）, confidence: 一次}
 - {id: '140120261009548685', title: 安川電機 2027年2月期 中間期 決算短信, confidence: 一次}
 - {id: IR2606_QA, title: 安川電機 IR Day 2026 質疑応答, confidence: 一次}
 - {id: 262Q_QA_JP_1, title: 安川電機 2026年度 第2四半期 質疑応答, confidence: 一次}
 - {id: Dash35, title: 安川電機 中期経営計画 Dash 35, confidence: 一次}
 - {id: S100TJ0G, title: 安川電機 有価証券報告書 第108期（EDINET CSV）, confidence: 一次}
 - {id: S100YG3Q, title: ファナック 有価証券報告書 第57期, confidence: 一次}
+- {id: '140120261021553848', title: ファナック 2027年3月期 中間期 決算短信, confidence: 一次}
 - {id: S100YD3V, title: 三菱電機 有価証券報告書 第155期, confidence: 一次}
 - {id: S100YCEQ, title: 山洋電気 有価証券報告書 第124期, confidence: 一次}
+- {id: '140120261028557469', title: 山洋電気 2027年3月期 中間期 決算短信, confidence: 一次}
 - {id: w1, title: IRBANK 決算まとめ, url: 'https://irbank.net/6506/results', confidence: 二次}
 - {id: w2, title: Yahoo Finance チャート API, url: 'https://query1.finance.yahoo.com/v8/finance/chart/', confidence: 二次}
 - {id: w3, title: Web 検索の要約（weblio・lilys.ai・dri.co.jp ほか）, confidence: 検索要約}
 sections:
+  '2':
+  - {source: S100Y69H, pages: '2'}
+  - {source: S100O4U1, pages: null}
+  - {source: '140120261009548685', pages: '1'}
+  - {source: S100YG3Q, pages: null}
+  - {source: '140120261021553848', pages: '1'}
+  - {source: S100YD3V, pages: null}
+  - {source: S100YCEQ, pages: null}
+  - {source: '140120261028557469', pages: '1'}
+  - {source: w1, pages: null}
   '4':
   - {source: w3, pages: null}
   '7':
@@ -24,6 +37,11 @@ sections:
   - {source: S100YG3Q, pages: '9,16-17'}
   - {source: S100YD3V, pages: '44'}
   - {source: S100YCEQ, pages: '7,11'}
+  '8':
+  - {source: S100Y69H, pages: '9,42-43,108'}
+  - {source: S100YG3Q, pages: '2,16-17,48'}
+  - {source: S100YD3V, pages: '2,44'}
+  - {source: S100YCEQ, pages: '7,15'}
   '9':
   - {source: S100Y69H, pages: '90'}
   - {source: S100TJ0G, pages: null}

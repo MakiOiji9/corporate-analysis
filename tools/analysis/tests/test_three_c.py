@@ -663,6 +663,21 @@ def test_build_requires_a_counter_argument_and_records_confidence(repo, capsys):
     assert out["result"] == "triggered" and f"版 1 → {D.VERSION}" in out["reason"]
 
 
+def test_build_appends_the_evidence_chain_once(repo, capsys):
+    """BL-01: 9章「出典の連鎖」is the build's own chapter; a rebuild replaces it instead of adding another."""
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    md = repo / out["md"]
+    fill(md)
+    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 0, out
+    result = json.loads((repo / out["json"]).read_text(encoding="utf-8"))
+    assert "claims" in result["evidence"] and "evidence" in result["customer"] and "evidence" in result["competitor"]
+    assert all("evidence" in r for r in result["kbf_table"])
+    code, again = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 0, again
+    assert md.read_text(encoding="utf-8").count(f"## {D.EVIDENCE_CHAPTER}. 出典の連鎖") == 1
+
+
 def test_brief_has_source_notes_peer_kpi_and_no_repeated_customer_prose(repo, capsys):
     company = repo / "companies" / "7203_toyota"
     yuho = next((company / "raw" / "filings").glob("*_yuho.md"))

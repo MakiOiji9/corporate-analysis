@@ -10,7 +10,7 @@
 
 | 番号 | 優先 | 項目 | 状態 |
 |---|---|---|---|
-| BL-01 | P0 | 主張ごとの原典・ページまでの証拠の連鎖 | 着手（6506・moat で試行。9eca8ec） |
+| BL-01 | P0 | 主張ごとの原典・ページまでの証拠の連鎖 | 着手（6506 の STEP 1 の4分析で試行。9eca8ec） |
 | BL-02 | P1 | 期間別の重み・閾値の根拠の検証と感度の表示 | 未着手 |
 | BL-03 | P2 | トークン削減（計測してから） | 未着手 |
 | BL-04 | P1 | ヘッドレス実行のプロンプトインジェクション対策・再開時の鮮度ずれ | 未着手 |
@@ -62,7 +62,10 @@
   - 新しく作る raw: 雛形 `raw-header.md` と collect-company-info の保存ルールに Front Matter の書き方を足した。`raw_financials.py`・`refresh_valuation.py` が書く raw にも付く（data/ の表は `d1`、API は `w1`。ページは null）
   - 6506 の結果: moat が参照する raw 5本に付けた（ページは raw の本文の記載を、原本のテキストを `find_pages.py` で検索して確かめた）。61件の参照のうち 検証済み 23・未検証 38（検索要約 22、原本なし 13 … 調査会社の記事など web だけの資料、ページなし 3 … EDINET CSV など）。結論（なし）は変わらない
   - 3798・6532・CBRS は Front Matter が無いまま（moat を build し直すと全件「未検証（Front Matter なし）」になる）
-- **次の段階**: (1) 他の8分析に `claims` を渡して同じ章を出す、(2) 他社の raw に付ける（次の収集で新しい raw に付くのを待つか、`raw_provenance.py apply`）、(3) 地合い（BL-07）、(4) 未検証を build の拒否にするか（重要な主張だけ等）を決める。取得元の URL は会社の差し替え・削除で切れうる（そのときは manifest の sha256 で手元の原本と照合する）
+- **広げた（2026-11-15）**: five-forces（7章）・three-c（9章）・swot（10章）も、各 doc モジュールの `claims`・`with_evidence` で同じ「出典の連鎖」と json の `evidence` を出す。企業レポートは、五つの力の表に「出典」の列、3C の顧客・競合のカードに「出典」の行、SWOT は格子の下に折りたたみの「各項目の出典」（表示は `tools/report/cr_evidence.py` に共通化）。地合いの outlook.md への参照はたどらない（BL-07）
+  - 6506: competitors（2・8章）・industry-overview（1・4・5章）・mid-term-plan に Front Matter を足した。mid-term-plan の raw のページは資料のスライド番号（PDF の通しページ −1）だったため、原本のテキストを検索して通しページに直して書いた（raw の本文は変えていない）。結果は five-forces 検証済み 11・未検証 28、three-c 8・12、swot 41・39（結論はどれも変わらず）
+  - 気づいた点: raw によってページの数え方（PDF の通しページ / スライド番号）が混ざっている。収集の保存ルールで通しページに揃えるかを決める
+- **次の段階**: (1) 残りの5分析（profitability・growth・safety・cash-flow・valuation。数値は Python が raw の表から計算するので、どの表から計算したかをスクリプト側で記録する形）、(2) 他社の raw に付ける（次の収集で新しい raw に付くのを待つか、`raw_provenance.py apply`）、(3) 地合い（BL-07）、(4) 未検証を build の拒否にするか（重要な主張だけ等）を決める。取得元の URL は会社の差し替え・削除で切れうる（そのときは manifest の sha256 で手元の原本と照合する）
 
 ## BL-02 期間別の重み・閾値の根拠の検証と感度の表示
 

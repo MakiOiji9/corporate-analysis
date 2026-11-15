@@ -120,3 +120,51 @@
 - 代替品の普及率（ステッピングモータ等の他方式）と、根拠が検索要約中心の代替品の評価
 - 顧客の購買決定要因の定量データ（差別化の裏付け）
 - 磁石の在庫水準・レアアースレス磁石の採用比率（売り手の交渉力の確認）
+
+## 7. 出典の連鎖（build が記入）
+
+検証済み 11 件・未検証 28 件（原本なし 9、検索要約 14、ページなし 5）
+
+| 主張 | raw・節 | 資料 | ページ | 原本（URL。無ければ保存先） | 状態 |
+|---|---|---|---|---|---|
+| 1. 業界の定義 | 2026-11-01_2026-02_yuho.md「2.」 | S100Y69H 有価証券報告書 第110期（2026年2月期） 2026-05-25 | 5,9,105-107,130 | https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2 | 検証済み |
+| 2.1 新規参入の脅威 | 2026-11-01_industry-overview.md「3.」 | w1 天下工場産研『中国通用サーボ市場白書（2026）』 2026-09-19 | — | https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper | 未検証（原本なし） |
+| 2.1 新規参入の脅威 | 2026-11-01_industry-overview.md「3.」 | w5 Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか） | — | — | 未検証（検索要約） |
+| 2.1 新規参入の脅威 | 2026-11-01_2026-02_yuho.md「6.」 | S100Y69H 有価証券報告書 第110期（2026年2月期） 2026-05-25 | 36,42-43 | https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2 | 検証済み |
+| 2.2 代替品の脅威 | 2026-11-01_industry-overview.md「4.」 | w2 IFR World Robotics 2025・会長レポート（報道転載） | — | https://ifr.org/ifr-press-releases/news/global-robot-demand-in-factories-doubles-over-10-years | 未検証（検索要約） |
+| 2.2 代替品の脅威 | 2026-11-01_industry-overview.md「4.」 | w1 天下工場産研『中国通用サーボ市場白書（2026）』 2026-09-19 | — | https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper | 未検証（原本なし） |
+| 2.2 代替品の脅威 | 2026-11-01_industry-overview.md「4.」 | w5 Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか） | — | — | 未検証（検索要約） |
+| 2.2 代替品の脅威 | 2026-11-01_industry-overview.md「8.」 | w1 天下工場産研『中国通用サーボ市場白書（2026）』 2026-09-19 | — | https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper | 未検証（原本なし） |
+| 2.2 代替品の脅威 | 2026-11-01_industry-overview.md「8.」 | w2 IFR World Robotics 2025・会長レポート（報道転載） | — | https://ifr.org/ifr-press-releases/news/global-robot-demand-in-factories-doubles-over-10-years | 未検証（検索要約） |
+| 2.2 代替品の脅威 | 2026-11-01_industry-overview.md「8.」 | w3 日本ロボット工業会 事業報告 2025 | — | https://jara.jp/about/img/release/jigyo_hokoku/jara_jigyo_hokoku_2025.pdf | 未検証（検索要約） |
+| 2.2 代替品の脅威 | 2026-11-01_industry-overview.md「8.」 | w4 電波新聞デジタル 2026-10-10 | — | https://dempa-digital.com/?p=727493 | 未検証（原本なし） |
+| 2.2 代替品の脅威 | 2026-11-01_industry-overview.md「8.」 | w5 Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか） | — | — | 未検証（検索要約） |
+| 2.3 買い手の交渉力 | 2026-11-01_2026-02_yuho.md「3.」 | S100Y69H 有価証券報告書 第110期（2026年2月期） 2026-05-25 | 108 | https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2 | 検証済み |
+| 2.3 買い手の交渉力 | 2026-11-01_industry-overview.md「3.」 | w1 天下工場産研『中国通用サーボ市場白書（2026）』 2026-09-19 | — | https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper | 未検証（原本なし） |
+| 2.3 買い手の交渉力 | 2026-11-01_industry-overview.md「3.」 | w5 Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか） | — | — | 未検証（検索要約） |
+| 2.3 買い手の交渉力 | 2026-11-01_industry-overview.md「5.」 | w5 Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか） | — | — | 未検証（検索要約） |
+| 2.3 買い手の交渉力 | 2026-11-01_industry-overview.md「5.」 | w1 天下工場産研『中国通用サーボ市場白書（2026）』 2026-09-19 | — | https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper | 未検証（原本なし） |
+| 2.4 売り手の交渉力 | 2026-11-01_industry-overview.md「6.」 | w5 Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか） | — | — | 未検証（検索要約） |
+| 2.4 売り手の交渉力 | 2026-11-01_industry-overview.md「6.」 | 262Q_QA_JP_1 安川電機 2026年度 第2四半期 質疑応答 2026-10-09 | 2-5 | https://www.yaskawa.co.jp/wp-content/uploads/2026/10/262Q_QA_JP_1.pdf | 検証済み |
+| 2.4 売り手の交渉力 | 2026-11-01_industry-overview.md「6.」 | S100Y69H 安川電機 有価証券報告書 第110期 2026-02 | 14,32 | https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2 | 検証済み |
+| 2.4 売り手の交渉力 | 2026-11-01_industry-overview.md「6.」 | Dash35 安川電機 中期経営計画 Dash 35 2026-05-29 | 18,20 | https://www.yaskawa.co.jp/wp-content/uploads/2026/05/Dash35.pdf | 検証済み |
+| 2.4 売り手の交渉力 | 2026-11-01_industry-overview.md「6.」 | 254Q_QA 安川電機 2025年度 決算説明会 質疑応答 2026-04-10 | 7 | https://www.yaskawa.co.jp/wp-content/uploads/2026/04/254Q_QA.pdf | 検証済み |
+| 2.4 売り手の交渉力 | 2026-11-01_2026-02_yuho.md | S100Y69H 有価証券報告書 第110期（2026年2月期） 2026-05-25 | — | https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2 | 未検証（ページなし） |
+| 2.5 業界内の競争 | 2026-11-01_industry-overview.md「1.」 | w2 IFR World Robotics 2025・会長レポート（報道転載） | — | https://ifr.org/ifr-press-releases/news/global-robot-demand-in-factories-doubles-over-10-years | 未検証（検索要約） |
+| 2.5 業界内の競争 | 2026-11-01_industry-overview.md「1.」 | w3 日本ロボット工業会 事業報告 2025 | — | https://jara.jp/about/img/release/jigyo_hokoku/jara_jigyo_hokoku_2025.pdf | 未検証（検索要約） |
+| 2.5 業界内の競争 | 2026-11-01_industry-overview.md「1.」 | w1 天下工場産研『中国通用サーボ市場白書（2026）』 2026-09-19 | — | https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper | 未検証（原本なし） |
+| 2.5 業界内の競争 | 2026-11-01_industry-overview.md「1.」 | w5 Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか） | — | — | 未検証（検索要約） |
+| 2.5 業界内の競争 | 2026-11-01_industry-overview.md「2.」 | w1 天下工場産研『中国通用サーボ市場白書（2026）』 2026-09-19 | — | https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper | 未検証（原本なし） |
+| 2.5 業界内の競争 | 2026-11-01_industry-overview.md「2.」 | w2 IFR World Robotics 2025・会長レポート（報道転載） | — | https://ifr.org/ifr-press-releases/news/global-robot-demand-in-factories-doubles-over-10-years | 未検証（検索要約） |
+| 2.5 業界内の競争 | 2026-11-01_industry-overview.md「2.」 | w5 Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか） | — | — | 未検証（検索要約） |
+| 2.5 業界内の競争 | 2026-11-01_competitors.md「2.」 | S100Y69H 安川電機 有価証券報告書 第110期 2026-02 | 2 | https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2 | 検証済み |
+| 2.5 業界内の競争 | 2026-11-01_competitors.md「2.」 | S100O4U1 安川電機 有価証券報告書 第106期（EDINET。前期比較の IFRS 再表示） 2022-02 | — | https://api.edinet-fsa.go.jp/api/v2/documents/S100O4U1?type=2 | 未検証（ページなし） |
+| 2.5 業界内の競争 | 2026-11-01_competitors.md「2.」 | 140120261009548685 安川電機 2027年2月期 中間期 決算短信 2026-10-09 | 1 | https://www2.jpx.co.jp/disc/65060/140120261009548685.pdf | 検証済み |
+| 2.5 業界内の競争 | 2026-11-01_competitors.md「2.」 | S100YG3Q ファナック 有価証券報告書 第57期 2026-03 | — | https://api.edinet-fsa.go.jp/api/v2/documents/S100YG3Q?type=2 | 未検証（ページなし） |
+| 2.5 業界内の競争 | 2026-11-01_competitors.md「2.」 | 140120261021553848 ファナック 2027年3月期 中間期 決算短信 2026-09 | 1 | https://www2.jpx.co.jp/disc/69540/140120261021553848.pdf | 検証済み |
+| 2.5 業界内の競争 | 2026-11-01_competitors.md「2.」 | S100YD3V 三菱電機 有価証券報告書 第155期 2026-03 | — | https://api.edinet-fsa.go.jp/api/v2/documents/S100YD3V?type=2 | 未検証（ページなし） |
+| 2.5 業界内の競争 | 2026-11-01_competitors.md「2.」 | S100YCEQ 山洋電気 有価証券報告書 第124期 2026-03 | — | https://api.edinet-fsa.go.jp/api/v2/documents/S100YCEQ?type=2 | 未検証（ページなし） |
+| 2.5 業界内の競争 | 2026-11-01_competitors.md「2.」 | 140120261028557469 山洋電気 2027年3月期 中間期 決算短信 2026-09 | 1 | https://www2.jpx.co.jp/disc/65160/140120261028557469.pdf | 検証済み |
+| 2.5 業界内の競争 | 2026-11-01_competitors.md「2.」 | w1 IRBANK 決算まとめ | — | https://irbank.net/6506/results | 未検証（原本なし） |
+
+> 注: 情報源の列の raw と節から、raw の Front Matter と sources/manifest.csv をたどった結果（スクリプトが記入）。「検証済み」は原本のファイルとページまでたどれた主張。「未検証」は理由を添える。
