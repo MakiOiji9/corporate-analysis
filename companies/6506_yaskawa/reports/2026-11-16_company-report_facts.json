@@ -121,7 +121,7 @@
  "ticker": "6506",
  "name": "安川電機（6506）",
  "market": "日本",
- "date": "2026-11-14",
+ "date": "2026-11-16",
  "unit": "百万円",
  "price": {
   "value": 3773.0,
@@ -157,27 +157,455 @@
      {
       "name": "新規参入の脅威",
       "rating": "中",
-      "reason": "参入障壁は有り（技術: 機種ごとの代替検証が要る精度・信頼性、資本: 年間の研究開発費が数百億円規模）で強の条件に当たらない。一方、過去5年に Inovance など中国の国産メーカーが値下げとシェア拡大で台頭しており、有力な新規参入が無いとは言えないため弱にもしない（判断基準の中「資本力のある異業種や海外企業の参入例がある」）"
+      "reason": "参入障壁は有り（技術: 機種ごとの代替検証が要る精度・信頼性、資本: 年間の研究開発費が数百億円規模）で強の条件に当たらない。一方、過去5年に Inovance など中国の国産メーカーが値下げとシェア拡大で台頭しており、有力な新規参入が無いとは言えないため弱にもしない（判断基準の中「資本力のある異業種や海外企業の参入例がある」）",
+      "evidence": [
+       {
+        "status": "未検証",
+        "reason": "原本なし",
+        "doc_id": "w1",
+        "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+        "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+        "published": "2026-09-19",
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "検索要約",
+        "doc_id": "w5",
+        "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "S100Y69H",
+        "title": "有価証券報告書 第110期（2026年2月期）",
+        "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2",
+        "published": "2026-05-25",
+        "period": "2026-02",
+        "pages": "36,42-43",
+        "local_path": "sources/2026-11-01/S100Y69H.pdf"
+       }
+      ]
      },
      {
       "name": "代替品の脅威",
       "rating": "中",
-      "reason": "代替手段（協働ロボット・人手作業）はあるが、価格・性能で同等以上と書かれた材料が無く、強の条件を満たさない。他方式の普及率が不明で乗り換えの検証負担も二次情報の記述だけのため弱とも言い切れない。判断が分かれた点: 有力な代替手段が乏しい点は弱寄りだが、根拠が検索要約中心のため不利な中を採った"
+      "reason": "代替手段（協働ロボット・人手作業）はあるが、価格・性能で同等以上と書かれた材料が無く、強の条件を満たさない。他方式の普及率が不明で乗り換えの検証負担も二次情報の記述だけのため弱とも言い切れない。判断が分かれた点: 有力な代替手段が乏しい点は弱寄りだが、根拠が検索要約中心のため不利な中を採った",
+      "evidence": [
+       {
+        "status": "未検証",
+        "reason": "検索要約",
+        "doc_id": "w2",
+        "title": "IFR World Robotics 2025・会長レポート（報道転載）",
+        "url": "https://ifr.org/ifr-press-releases/news/global-robot-demand-in-factories-doubles-over-10-years",
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "原本なし",
+        "doc_id": "w1",
+        "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+        "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+        "published": "2026-09-19",
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "検索要約",
+        "doc_id": "w5",
+        "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "原本なし",
+        "doc_id": "w1",
+        "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+        "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+        "published": "2026-09-19",
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "検索要約",
+        "doc_id": "w2",
+        "title": "IFR World Robotics 2025・会長レポート（報道転載）",
+        "url": "https://ifr.org/ifr-press-releases/news/global-robot-demand-in-factories-doubles-over-10-years",
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "検索要約",
+        "doc_id": "w3",
+        "title": "日本ロボット工業会 事業報告 2025",
+        "url": "https://jara.jp/about/img/release/jigyo_hokoku/jara_jigyo_hokoku_2025.pdf",
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "原本なし",
+        "doc_id": "w4",
+        "title": "電波新聞デジタル",
+        "url": "https://dempa-digital.com/?p=727493",
+        "published": "2026-10-10",
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "検索要約",
+        "doc_id": "w5",
+        "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       }
+      ]
      },
      {
       "name": "買い手の交渉力",
       "rating": "中",
-      "reason": "単一顧客10%未満の条件は満たす（一次）が、弱には差別化の条件も要る。差別化を示す材料は二次の記述だけで、中国では価格で選ばれる領域があるため「差別化が限定的」の中に当たる。判断が分かれた点: 顧客の分散は弱の条件を満たすが、差別化の裏付けが弱いため不利な中を採った"
+      "reason": "単一顧客10%未満の条件は満たす（一次）が、弱には差別化の条件も要る。差別化を示す材料は二次の記述だけで、中国では価格で選ばれる領域があるため「差別化が限定的」の中に当たる。判断が分かれた点: 顧客の分散は弱の条件を満たすが、差別化の裏付けが弱いため不利な中を採った",
+      "evidence": [
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "S100Y69H",
+        "title": "有価証券報告書 第110期（2026年2月期）",
+        "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2",
+        "published": "2026-05-25",
+        "period": "2026-02",
+        "pages": "108",
+        "local_path": "sources/2026-11-01/S100Y69H.pdf"
+       },
+       {
+        "status": "未検証",
+        "reason": "原本なし",
+        "doc_id": "w1",
+        "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+        "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+        "published": "2026-09-19",
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "検索要約",
+        "doc_id": "w5",
+        "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "検索要約",
+        "doc_id": "w5",
+        "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "原本なし",
+        "doc_id": "w1",
+        "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+        "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+        "published": "2026-09-19",
+        "period": null,
+        "pages": null,
+        "local_path": null
+       }
+      ]
      },
      {
       "name": "売り手の交渉力",
       "rating": "中",
-      "reason": "粗利率は3年で+0.7pt と維持されており数値の候補は弱だが、焼結磁石の製造の94%が中国に集中し供給先は限られる。会社は磁石の長期確保とレアアースレス技術での代替を説明しており、判断基準の中「調達先は限られるが代替可能」に当たるため、候補より不利な中とした。判断が分かれた点: 供給の集中は強の「寡占」にも近いが、会社の一次資料に確保と代替の記述があるため中とした"
+      "reason": "粗利率は3年で+0.7pt と維持されており数値の候補は弱だが、焼結磁石の製造の94%が中国に集中し供給先は限られる。会社は磁石の長期確保とレアアースレス技術での代替を説明しており、判断基準の中「調達先は限られるが代替可能」に当たるため、候補より不利な中とした。判断が分かれた点: 供給の集中は強の「寡占」にも近いが、会社の一次資料に確保と代替の記述があるため中とした",
+      "evidence": [
+       {
+        "status": "未検証",
+        "reason": "検索要約",
+        "doc_id": "w5",
+        "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "262Q_QA_JP_1",
+        "title": "安川電機 2026年度 第2四半期 質疑応答",
+        "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/10/262Q_QA_JP_1.pdf",
+        "published": "2026-10-09",
+        "period": "2026-08",
+        "pages": "2-5",
+        "local_path": "sources/2026-11-01/262Q_QA_JP_1.pdf"
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "S100Y69H",
+        "title": "安川電機 有価証券報告書 第110期",
+        "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2",
+        "published": null,
+        "period": "2026-02",
+        "pages": "14,32",
+        "local_path": "sources/2026-11-01/S100Y69H.pdf"
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "Dash35",
+        "title": "安川電機 中期経営計画 Dash 35",
+        "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/05/Dash35.pdf",
+        "published": "2026-05-29",
+        "period": "2026-05",
+        "pages": "18,20",
+        "local_path": "sources/2026-11-01/Dash35.pdf"
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "254Q_QA",
+        "title": "安川電機 2025年度 決算説明会 質疑応答",
+        "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/04/254Q_QA.pdf",
+        "published": "2026-04-10",
+        "period": "2026-02",
+        "pages": "7",
+        "local_path": "sources/2026-11-01/254Q_QA.pdf"
+       },
+       {
+        "status": "未検証",
+        "reason": "ページなし",
+        "doc_id": "S100Y69H",
+        "title": "有価証券報告書 第110期（2026年2月期）",
+        "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2",
+        "published": "2026-05-25",
+        "period": "2026-02",
+        "pages": null,
+        "local_path": "sources/2026-11-01/S100Y69H.pdf"
+       }
+      ]
      },
      {
       "name": "業界内の競争",
       "rating": "中",
-      "reason": "強の条件（成長率3%未満、かつ競合の営業利益率が過半で低下）は、サーボの成長率5.82%と競合3社の利益率上昇で満たさない。弱の条件は上位2〜3社のシェアが過半の数値が要るが、中国の汎用サーボでも上位3社は過半に届かず、世界のシェア（海外の Siemens・Rockwell・ABB を含む集中度）は取得できないため満たさない。中国での値下げ競争があり、市場成長率が5%以上の領域もあるため、判定条件どおり中とした"
+      "reason": "強の条件（成長率3%未満、かつ競合の営業利益率が過半で低下）は、サーボの成長率5.82%と競合3社の利益率上昇で満たさない。弱の条件は上位2〜3社のシェアが過半の数値が要るが、中国の汎用サーボでも上位3社は過半に届かず、世界のシェア（海外の Siemens・Rockwell・ABB を含む集中度）は取得できないため満たさない。中国での値下げ競争があり、市場成長率が5%以上の領域もあるため、判定条件どおり中とした",
+      "evidence": [
+       {
+        "status": "未検証",
+        "reason": "検索要約",
+        "doc_id": "w2",
+        "title": "IFR World Robotics 2025・会長レポート（報道転載）",
+        "url": "https://ifr.org/ifr-press-releases/news/global-robot-demand-in-factories-doubles-over-10-years",
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "検索要約",
+        "doc_id": "w3",
+        "title": "日本ロボット工業会 事業報告 2025",
+        "url": "https://jara.jp/about/img/release/jigyo_hokoku/jara_jigyo_hokoku_2025.pdf",
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "原本なし",
+        "doc_id": "w1",
+        "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+        "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+        "published": "2026-09-19",
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "検索要約",
+        "doc_id": "w5",
+        "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "原本なし",
+        "doc_id": "w1",
+        "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+        "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+        "published": "2026-09-19",
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "検索要約",
+        "doc_id": "w2",
+        "title": "IFR World Robotics 2025・会長レポート（報道転載）",
+        "url": "https://ifr.org/ifr-press-releases/news/global-robot-demand-in-factories-doubles-over-10-years",
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "検索要約",
+        "doc_id": "w5",
+        "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "S100Y69H",
+        "title": "安川電機 有価証券報告書 第110期",
+        "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2",
+        "published": null,
+        "period": "2026-02",
+        "pages": "2",
+        "local_path": "sources/2026-11-01/S100Y69H.pdf"
+       },
+       {
+        "status": "未検証",
+        "reason": "ページなし",
+        "doc_id": "S100O4U1",
+        "title": "安川電機 有価証券報告書 第106期（EDINET。前期比較の IFRS 再表示）",
+        "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100O4U1?type=2",
+        "published": null,
+        "period": "2022-02",
+        "pages": null,
+        "local_path": "sources/2026-11-01/S100O4U1.pdf"
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "140120261009548685",
+        "title": "安川電機 2027年2月期 中間期 決算短信",
+        "url": "https://www2.jpx.co.jp/disc/65060/140120261009548685.pdf",
+        "published": "2026-10-09",
+        "period": "2026-08",
+        "pages": "1",
+        "local_path": "sources/2026-11-01/140120261009548685.pdf"
+       },
+       {
+        "status": "未検証",
+        "reason": "ページなし",
+        "doc_id": "S100YG3Q",
+        "title": "ファナック 有価証券報告書 第57期",
+        "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YG3Q?type=2",
+        "published": null,
+        "period": "2026-03",
+        "pages": null,
+        "local_path": "sources/2026-11-01/S100YG3Q.pdf"
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "140120261021553848",
+        "title": "ファナック 2027年3月期 中間期 決算短信",
+        "url": "https://www2.jpx.co.jp/disc/69540/140120261021553848.pdf",
+        "published": null,
+        "period": "2026-09",
+        "pages": "1",
+        "local_path": "sources/2026-11-01/140120261021553848.pdf"
+       },
+       {
+        "status": "未検証",
+        "reason": "ページなし",
+        "doc_id": "S100YD3V",
+        "title": "三菱電機 有価証券報告書 第155期",
+        "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YD3V?type=2",
+        "published": null,
+        "period": "2026-03",
+        "pages": null,
+        "local_path": "sources/2026-11-01/S100YD3V.pdf"
+       },
+       {
+        "status": "未検証",
+        "reason": "ページなし",
+        "doc_id": "S100YCEQ",
+        "title": "山洋電気 有価証券報告書 第124期",
+        "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YCEQ?type=2",
+        "published": null,
+        "period": "2026-03",
+        "pages": null,
+        "local_path": "sources/2026-11-01/S100YCEQ.pdf"
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "140120261028557469",
+        "title": "山洋電気 2027年3月期 中間期 決算短信",
+        "url": "https://www2.jpx.co.jp/disc/65160/140120261028557469.pdf",
+        "published": null,
+        "period": "2026-09",
+        "pages": "1",
+        "local_path": "sources/2026-11-01/140120261028557469.pdf"
+       },
+       {
+        "status": "未検証",
+        "reason": "原本なし",
+        "doc_id": "w1",
+        "title": "IRBANK 決算まとめ",
+        "url": "https://irbank.net/6506/results",
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       }
+      ]
      }
     ]
    }
@@ -293,7 +721,165 @@
     ],
     "strengths": "なし（3章に ○ の KBF なし）。SWOT で確かめる自社の事実: ACサーボの受注 +76%（2026年度 Q2、前年同期比）、受賞（MPX1310・MOTOMAN NEXT-NHC12）",
     "weaknesses": "営業利益率 8.7% が競合の中央値 10.1% を下回り、ファナック 21.4% とは 12.7pt の差（2026年2月期）。前中計「Realize 25」の全社業績・財務目標が未達で、会社自身が「（利益偏重で）シェアを落としている」と説明。最大顧客への依存は無い（10%以上の顧客なし）",
-    "company_conclusion": "最重要 KBF の品質（精度・信頼性）で、自社が競合より優れることを示す比較材料（精度・故障率・顧客評価・シェア）が無く ○ にできない。受賞はあるが品質の比較ではない"
+    "company_conclusion": "最重要 KBF の品質（精度・信頼性）で、自社が競合より優れることを示す比較材料（精度・故障率・顧客評価・シェア）が無く ○ にできない。受賞はあるが品質の比較ではない",
+    "customer_evidence": [
+     {
+      "status": "未検証",
+      "reason": "検索要約",
+      "doc_id": "w2",
+      "title": "IFR World Robotics 2025・会長レポート（報道転載）",
+      "url": "https://ifr.org/ifr-press-releases/news/global-robot-demand-in-factories-doubles-over-10-years",
+      "published": null,
+      "period": null,
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "status": "未検証",
+      "reason": "検索要約",
+      "doc_id": "w3",
+      "title": "日本ロボット工業会 事業報告 2025",
+      "url": "https://jara.jp/about/img/release/jigyo_hokoku/jara_jigyo_hokoku_2025.pdf",
+      "published": null,
+      "period": null,
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "status": "未検証",
+      "reason": "原本なし",
+      "doc_id": "w1",
+      "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+      "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+      "published": "2026-09-19",
+      "period": null,
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "status": "未検証",
+      "reason": "検索要約",
+      "doc_id": "w5",
+      "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+      "url": null,
+      "published": null,
+      "period": null,
+      "pages": null,
+      "local_path": null
+     }
+    ],
+    "competitor_evidence": [
+     {
+      "status": "検証済み",
+      "reason": null,
+      "doc_id": "S100Y69H",
+      "title": "安川電機 有価証券報告書 第110期",
+      "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2",
+      "published": null,
+      "period": "2026-02",
+      "pages": "2",
+      "local_path": "sources/2026-11-01/S100Y69H.pdf"
+     },
+     {
+      "status": "未検証",
+      "reason": "ページなし",
+      "doc_id": "S100O4U1",
+      "title": "安川電機 有価証券報告書 第106期（EDINET。前期比較の IFRS 再表示）",
+      "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100O4U1?type=2",
+      "published": null,
+      "period": "2022-02",
+      "pages": null,
+      "local_path": "sources/2026-11-01/S100O4U1.pdf"
+     },
+     {
+      "status": "検証済み",
+      "reason": null,
+      "doc_id": "140120261009548685",
+      "title": "安川電機 2027年2月期 中間期 決算短信",
+      "url": "https://www2.jpx.co.jp/disc/65060/140120261009548685.pdf",
+      "published": "2026-10-09",
+      "period": "2026-08",
+      "pages": "1",
+      "local_path": "sources/2026-11-01/140120261009548685.pdf"
+     },
+     {
+      "status": "未検証",
+      "reason": "ページなし",
+      "doc_id": "S100YG3Q",
+      "title": "ファナック 有価証券報告書 第57期",
+      "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YG3Q?type=2",
+      "published": null,
+      "period": "2026-03",
+      "pages": null,
+      "local_path": "sources/2026-11-01/S100YG3Q.pdf"
+     },
+     {
+      "status": "検証済み",
+      "reason": null,
+      "doc_id": "140120261021553848",
+      "title": "ファナック 2027年3月期 中間期 決算短信",
+      "url": "https://www2.jpx.co.jp/disc/69540/140120261021553848.pdf",
+      "published": null,
+      "period": "2026-09",
+      "pages": "1",
+      "local_path": "sources/2026-11-01/140120261021553848.pdf"
+     },
+     {
+      "status": "未検証",
+      "reason": "ページなし",
+      "doc_id": "S100YD3V",
+      "title": "三菱電機 有価証券報告書 第155期",
+      "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YD3V?type=2",
+      "published": null,
+      "period": "2026-03",
+      "pages": null,
+      "local_path": "sources/2026-11-01/S100YD3V.pdf"
+     },
+     {
+      "status": "未検証",
+      "reason": "ページなし",
+      "doc_id": "S100YCEQ",
+      "title": "山洋電気 有価証券報告書 第124期",
+      "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YCEQ?type=2",
+      "published": null,
+      "period": "2026-03",
+      "pages": null,
+      "local_path": "sources/2026-11-01/S100YCEQ.pdf"
+     },
+     {
+      "status": "検証済み",
+      "reason": null,
+      "doc_id": "140120261028557469",
+      "title": "山洋電気 2027年3月期 中間期 決算短信",
+      "url": "https://www2.jpx.co.jp/disc/65160/140120261028557469.pdf",
+      "published": null,
+      "period": "2026-09",
+      "pages": "1",
+      "local_path": "sources/2026-11-01/140120261028557469.pdf"
+     },
+     {
+      "status": "未検証",
+      "reason": "原本なし",
+      "doc_id": "w1",
+      "title": "IRBANK 決算まとめ",
+      "url": "https://irbank.net/6506/results",
+      "published": null,
+      "period": null,
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "status": "未検証",
+      "reason": "検索要約",
+      "doc_id": "w3",
+      "title": "Web 検索の要約（weblio・lilys.ai・dri.co.jp ほか）",
+      "url": null,
+      "published": null,
+      "period": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
    }
   },
   "moat": {
@@ -325,37 +911,378 @@
       "type": "ブランド",
       "group": "無形資産",
       "rating": "弱",
-      "mechanism": "「世界一／世界初の自動化コンポーネント」を掲げる（中計 Dash35 p5・p13）のは会社の主張で、競合より高い価格でシェアを保つことを示す第三者の事実は無い。価格改定の率・改定後の数量は開示なし（2021〜2024年度の質疑応答で「リピートするものは昨年より値上げ」の発言のみ）"
+      "mechanism": "「世界一／世界初の自動化コンポーネント」を掲げる（中計 Dash35 p5・p13）のは会社の主張で、競合より高い価格でシェアを保つことを示す第三者の事実は無い。価格改定の率・改定後の数量は開示なし（2021〜2024年度の質疑応答で「リピートするものは昨年より値上げ」の発言のみ）",
+      "evidence": [
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "262Q_QA_JP_1",
+        "title": "2026年度 第2四半期 決算説明会 質疑応答",
+        "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/10/262Q_QA_JP_1.pdf",
+        "published": "2026-10-09",
+        "period": "2026-08",
+        "pages": "2",
+        "local_path": "sources/2026-11-01/262Q_QA_JP_1.pdf"
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "254Q_QA",
+        "title": "2025年度 決算説明会 質疑応答",
+        "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/04/254Q_QA.pdf",
+        "published": "2026-04-10",
+        "period": "2026-02",
+        "pages": "7",
+        "local_path": "sources/2026-11-01/254Q_QA.pdf"
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "Dash35",
+        "title": "安川電機 中期経営計画 Dash 35",
+        "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/05/Dash35.pdf",
+        "published": "2026-05-29",
+        "period": "2026-05",
+        "pages": "5,13,19",
+        "local_path": "sources/2026-11-01/Dash35.pdf"
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "IR2606_QA",
+        "title": "安川電機 IR Day 2026 質疑応答",
+        "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/06/IR2606_QA.pdf",
+        "published": "2026-06-01",
+        "period": "2026-06",
+        "pages": "2",
+        "local_path": "sources/2026-11-01/IR2606_QA.pdf"
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "S100Y69H",
+        "title": "安川電機 有価証券報告書 第110期",
+        "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2",
+        "published": null,
+        "period": "2026-02",
+        "pages": "43",
+        "local_path": "sources/2026-11-01/S100Y69H.pdf"
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "S100YG3Q",
+        "title": "ファナック 有価証券報告書 第57期",
+        "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YG3Q?type=2",
+        "published": null,
+        "period": "2026-03",
+        "pages": "9,16-17",
+        "local_path": "sources/2026-11-01/S100YG3Q.pdf"
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "S100YD3V",
+        "title": "三菱電機 有価証券報告書 第155期",
+        "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YD3V?type=2",
+        "published": null,
+        "period": "2026-03",
+        "pages": "44",
+        "local_path": "sources/2026-11-01/S100YD3V.pdf"
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "S100YCEQ",
+        "title": "山洋電気 有価証券報告書 第124期",
+        "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YCEQ?type=2",
+        "published": null,
+        "period": "2026-03",
+        "pages": "7,11",
+        "local_path": "sources/2026-11-01/S100YCEQ.pdf"
+       }
+      ]
      },
      {
       "type": "規制・特許・許認可",
       "group": "無形資産",
       "rating": "弱",
-      "mechanism": "有報の研究開発の項に特許の件数・期限、事業に必要な許認可の記載は無く（「—」）、「主要国で特許権・商標権の権利化を推進」という会社の記述だけ。研究開発費は 24,006 百万円（売上収益比 4.4%）"
+      "mechanism": "有報の研究開発の項に特許の件数・期限、事業に必要な許認可の記載は無く（「—」）、「主要国で特許権・商標権の権利化を推進」という会社の記述だけ。研究開発費は 24,006 百万円（売上収益比 4.4%）",
+      "evidence": [
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "S100Y69H",
+        "title": "有価証券報告書 第110期（2026年2月期）",
+        "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2",
+        "published": "2026-05-25",
+        "period": "2026-02",
+        "pages": "36,42-43",
+        "local_path": "sources/2026-11-01/S100Y69H.pdf"
+       }
+      ]
      },
      {
       "type": "スイッチングコスト",
       "group": "スイッチングコスト",
       "rating": "弱",
-      "mechanism": "設置済みの機械では機種ごとに代替の検証が必要で（天下工場産研 2026-09-19、二次）、汎用サーボの79%は設備メーカー搭載。年間保守契約・リモートメンテナンスがある（2021年度 2Q 質疑応答）"
+      "mechanism": "設置済みの機械では機種ごとに代替の検証が必要で（天下工場産研 2026-09-19、二次）、汎用サーボの79%は設備メーカー搭載。年間保守契約・リモートメンテナンスがある（2021年度 2Q 質疑応答）",
+      "evidence": [
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "QAFY21_1",
+        "title": "2021年度 本決算 質疑応答",
+        "url": "https://www.yaskawa.co.jp/wp-content/uploads/2022/04/QAFY21_1.pdf",
+        "published": null,
+        "period": null,
+        "pages": "3",
+        "local_path": "sources/2026-11-09/QAFY21_1.pdf"
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "QA_FY21_2Q",
+        "title": "2021年度 2Q 質疑応答",
+        "url": "https://www.yaskawa.co.jp/wp-content/uploads/2021/10/QA_FY21_2Q.pdf",
+        "published": null,
+        "period": null,
+        "pages": "7",
+        "local_path": "sources/2026-11-09/QA_FY21_2Q.pdf"
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "QAFY221Q_JP",
+        "title": "2022年度 1Q 質疑応答",
+        "url": "https://www.yaskawa.co.jp/wp-content/uploads/2022/07/QAFY221Q_JP.pdf",
+        "published": null,
+        "period": null,
+        "pages": "3",
+        "local_path": "sources/2026-11-09/QAFY221Q_JP.pdf"
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "QAFY222Q_JP",
+        "title": "2022年度 2Q 質疑応答",
+        "url": "https://www.yaskawa.co.jp/wp-content/uploads/2022/10/QAFY222Q_JP.pdf",
+        "published": null,
+        "period": null,
+        "pages": "5",
+        "local_path": "sources/2026-11-09/QAFY222Q_JP.pdf"
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "QAFY232Q_JP",
+        "title": "2023年度 2Q 質疑応答",
+        "url": "https://www.yaskawa.co.jp/wp-content/uploads/2023/10/QAFY232Q_JP.pdf",
+        "published": null,
+        "period": null,
+        "pages": "3",
+        "local_path": "sources/2026-11-09/QAFY232Q_JP.pdf"
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "QAFY241Q_JP",
+        "title": "2024年度 1Q 質疑応答",
+        "url": "https://www.yaskawa.co.jp/wp-content/uploads/2024/07/QAFY241Q_JP.pdf",
+        "published": null,
+        "period": null,
+        "pages": "2",
+        "local_path": "sources/2026-11-09/QAFY241Q_JP.pdf"
+       },
+       {
+        "status": "未検証",
+        "reason": "原本なし",
+        "doc_id": "w1",
+        "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+        "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+        "published": "2026-09-19",
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "検索要約",
+        "doc_id": "w2",
+        "title": "IFR World Robotics 2025・会長レポート（報道転載）",
+        "url": "https://ifr.org/ifr-press-releases/news/global-robot-demand-in-factories-doubles-over-10-years",
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "検索要約",
+        "doc_id": "w5",
+        "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "原本なし",
+        "doc_id": "w1",
+        "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+        "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+        "published": "2026-09-19",
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "検索要約",
+        "doc_id": "w5",
+        "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       }
+      ]
      },
      {
       "type": "ネットワーク効果",
       "group": "ネットワーク効果",
       "rating": "該当なし",
-      "mechanism": "製品はサーボ・インバータ・ロボットなどの機器と保守で、利用者が増えるほど価値が上がる構造を示す記述は収集した資料に無い"
+      "mechanism": "製品はサーボ・インバータ・ロボットなどの機器と保守で、利用者が増えるほど価値が上がる構造を示す記述は収集した資料に無い",
+      "evidence": []
      },
      {
       "type": "コスト優位",
       "group": "コスト優位",
       "rating": "該当なし",
-      "mechanism": "2026年2月期の売上原価率 64.7% はファナック 61.7% より高く、販管費率 26.9% もファナック 16.9% より高い。営業利益率 8.7% は同業中央値 10.1% を下回る（2.2・3.2）"
+      "mechanism": "2026年2月期の売上原価率 64.7% はファナック 61.7% より高く、販管費率 26.9% もファナック 16.9% より高い。営業利益率 8.7% は同業中央値 10.1% を下回る（2.2・3.2）",
+      "evidence": [
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "S100Y69H",
+        "title": "安川電機 有価証券報告書 第110期",
+        "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2",
+        "published": null,
+        "period": "2026-02",
+        "pages": "90",
+        "local_path": "sources/2026-11-01/S100Y69H.pdf"
+       },
+       {
+        "status": "未検証",
+        "reason": "ページなし",
+        "doc_id": "S100TJ0G",
+        "title": "安川電機 有価証券報告書 第108期（EDINET CSV）",
+        "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100TJ0G?type=5",
+        "published": null,
+        "period": "2024-02",
+        "pages": null,
+        "local_path": "sources/2026-11-01/S100TJ0G_csv.zip"
+       },
+       {
+        "status": "未検証",
+        "reason": "ページなし",
+        "doc_id": "S100YG3Q",
+        "title": "ファナック 有価証券報告書 第57期",
+        "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YG3Q?type=2",
+        "published": null,
+        "period": "2026-03",
+        "pages": null,
+        "local_path": "sources/2026-11-01/S100YG3Q.pdf"
+       },
+       {
+        "status": "未検証",
+        "reason": "ページなし",
+        "doc_id": "S100YD3V",
+        "title": "三菱電機 有価証券報告書 第155期",
+        "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YD3V?type=2",
+        "published": null,
+        "period": "2026-03",
+        "pages": null,
+        "local_path": "sources/2026-11-01/S100YD3V.pdf"
+       },
+       {
+        "status": "検証済み",
+        "reason": null,
+        "doc_id": "S100YCEQ",
+        "title": "山洋電気 有価証券報告書 第124期",
+        "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YCEQ?type=2",
+        "published": null,
+        "period": "2026-03",
+        "pages": "19",
+        "local_path": "sources/2026-11-01/S100YCEQ.pdf"
+       }
+      ]
      },
      {
       "type": "効率的規模",
       "group": "効率的規模",
       "rating": "該当なし",
-      "mechanism": "中国の汎用サーボでは Inovance が 2025年に約30% のシェアを取り、Xinje・VEICHI・Sine など国産各社が値下げで拡販している（天下工場産研、二次）。少数の企業しか採算が合わない市場ではない"
+      "mechanism": "中国の汎用サーボでは Inovance が 2025年に約30% のシェアを取り、Xinje・VEICHI・Sine など国産各社が値下げで拡販している（天下工場産研、二次）。少数の企業しか採算が合わない市場ではない",
+      "evidence": [
+       {
+        "status": "未検証",
+        "reason": "原本なし",
+        "doc_id": "w1",
+        "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+        "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+        "published": "2026-09-19",
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "検索要約",
+        "doc_id": "w2",
+        "title": "IFR World Robotics 2025・会長レポート（報道転載）",
+        "url": "https://ifr.org/ifr-press-releases/news/global-robot-demand-in-factories-doubles-over-10-years",
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "検索要約",
+        "doc_id": "w5",
+        "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "原本なし",
+        "doc_id": "w1",
+        "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+        "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+        "published": "2026-09-19",
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "検索要約",
+        "doc_id": "w5",
+        "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       }
+      ]
      }
     ],
     "risks": [
@@ -511,88 +1438,998 @@
       {
        "id": "S1",
        "fact": "景気の一巡を通して、ROIC が資本コストを上回り、営業利益率も同業の中央値を上回る年が多い",
-       "impact": "大"
+       "impact": "大",
+       "evidence": []
       },
       {
        "id": "S2",
        "fact": "主力のモーションコントロールで受注が急増し、2026年度 Q2 の連結受注が四半期で過去最高になった",
-       "impact": "大"
+       "impact": "大",
+       "evidence": [
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "Dash35",
+         "title": "中期経営計画 Dash 35",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/05/Dash35.pdf",
+         "published": "2026-05-29",
+         "period": "2026-05",
+         "pages": "9-11",
+         "local_path": "sources/2026-11-01/Dash35.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "Vision2035",
+         "title": "長期経営計画 2035年ビジョン",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/05/Vision2035.pdf",
+         "published": "2026-05-29",
+         "period": "2026-05",
+         "pages": "11",
+         "local_path": "sources/2026-11-01/Vision2035.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "IR2606_02",
+         "title": "IR Day 2026 Dash 35 財務目標",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/06/IR2606_02.pdf",
+         "published": "2026-06-01",
+         "period": "2026-06",
+         "pages": "4",
+         "local_path": "sources/2026-11-01/IR2606_02.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "IR2606_QA",
+         "title": "IR Day 2026 経営計画説明会 質疑応答",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/06/IR2606_QA.pdf",
+         "published": "2026-06-01",
+         "period": "2026-06",
+         "pages": "1-3",
+         "local_path": "sources/2026-11-01/IR2606_QA.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "20261009_haifu",
+         "title": "2027年2月期 第2四半期 決算補足説明資料",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/10/20261009_haifu.pdf",
+         "published": "2026-10-09",
+         "period": "2026-08",
+         "pages": "18-19",
+         "local_path": "sources/2026-11-01/20261009_haifu.pdf"
+        }
+       ]
       },
       {
        "id": "S3",
        "fact": "売上収益の10%を超える外部顧客が無く、特定の顧客に依存していない",
-       "impact": "不明"
+       "impact": "不明",
+       "evidence": [
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "S100Y69H",
+         "title": "有価証券報告書 第110期（2026年2月期）",
+         "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2",
+         "published": "2026-05-25",
+         "period": "2026-02",
+         "pages": "108",
+         "local_path": "sources/2026-11-01/S100Y69H.pdf"
+        }
+       ]
       },
       {
        "id": "S4",
        "fact": "親会社所有者帰属持分比率 50%以上を安定水準とする方針で、財務の余力がある",
-       "impact": "不明"
+       "impact": "不明",
+       "evidence": [
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "S100Y69H",
+         "title": "有価証券報告書 第110期（2026年2月期）",
+         "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2",
+         "published": "2026-05-25",
+         "period": "2026-02",
+         "pages": "12-16,38-41",
+         "local_path": "sources/2026-11-01/S100Y69H.pdf"
+        }
+       ]
       }
      ],
      "W": [
       {
        "id": "W1",
        "fact": "直近の営業利益率が同業の中央値を下回り、3期連続で低下している",
-       "impact": "大"
+       "impact": "大",
+       "evidence": [
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "S100Y69H",
+         "title": "安川電機 有価証券報告書 第110期",
+         "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2",
+         "published": null,
+         "period": "2026-02",
+         "pages": "2",
+         "local_path": "sources/2026-11-01/S100Y69H.pdf"
+        },
+        {
+         "status": "未検証",
+         "reason": "ページなし",
+         "doc_id": "S100O4U1",
+         "title": "安川電機 有価証券報告書 第106期（EDINET。前期比較の IFRS 再表示）",
+         "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100O4U1?type=2",
+         "published": null,
+         "period": "2022-02",
+         "pages": null,
+         "local_path": "sources/2026-11-01/S100O4U1.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "140120261009548685",
+         "title": "安川電機 2027年2月期 中間期 決算短信",
+         "url": "https://www2.jpx.co.jp/disc/65060/140120261009548685.pdf",
+         "published": "2026-10-09",
+         "period": "2026-08",
+         "pages": "1",
+         "local_path": "sources/2026-11-01/140120261009548685.pdf"
+        },
+        {
+         "status": "未検証",
+         "reason": "ページなし",
+         "doc_id": "S100YG3Q",
+         "title": "ファナック 有価証券報告書 第57期",
+         "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YG3Q?type=2",
+         "published": null,
+         "period": "2026-03",
+         "pages": null,
+         "local_path": "sources/2026-11-01/S100YG3Q.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "140120261021553848",
+         "title": "ファナック 2027年3月期 中間期 決算短信",
+         "url": "https://www2.jpx.co.jp/disc/69540/140120261021553848.pdf",
+         "published": null,
+         "period": "2026-09",
+         "pages": "1",
+         "local_path": "sources/2026-11-01/140120261021553848.pdf"
+        },
+        {
+         "status": "未検証",
+         "reason": "ページなし",
+         "doc_id": "S100YD3V",
+         "title": "三菱電機 有価証券報告書 第155期",
+         "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YD3V?type=2",
+         "published": null,
+         "period": "2026-03",
+         "pages": null,
+         "local_path": "sources/2026-11-01/S100YD3V.pdf"
+        },
+        {
+         "status": "未検証",
+         "reason": "ページなし",
+         "doc_id": "S100YCEQ",
+         "title": "山洋電気 有価証券報告書 第124期",
+         "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100YCEQ?type=2",
+         "published": null,
+         "period": "2026-03",
+         "pages": null,
+         "local_path": "sources/2026-11-01/S100YCEQ.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "140120261028557469",
+         "title": "山洋電気 2027年3月期 中間期 決算短信",
+         "url": "https://www2.jpx.co.jp/disc/65160/140120261028557469.pdf",
+         "published": null,
+         "period": "2026-09",
+         "pages": "1",
+         "local_path": "sources/2026-11-01/140120261028557469.pdf"
+        },
+        {
+         "status": "未検証",
+         "reason": "原本なし",
+         "doc_id": "w1",
+         "title": "IRBANK 決算まとめ",
+         "url": "https://irbank.net/6506/results",
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "Dash35",
+         "title": "中期経営計画 Dash 35",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/05/Dash35.pdf",
+         "published": "2026-05-29",
+         "period": "2026-05",
+         "pages": "4",
+         "local_path": "sources/2026-11-01/Dash35.pdf"
+        }
+       ]
       },
       {
        "id": "W2",
        "fact": "前中計「Realize 25」の全社業績・財務目標が未達で、会社自身が明記している",
-       "impact": "大"
+       "impact": "大",
+       "evidence": [
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "Dash35",
+         "title": "中期経営計画 Dash 35",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/05/Dash35.pdf",
+         "published": "2026-05-29",
+         "period": "2026-05",
+         "pages": "4",
+         "local_path": "sources/2026-11-01/Dash35.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "Dash35",
+         "title": "中期経営計画 Dash 35",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/05/Dash35.pdf",
+         "published": "2026-05-29",
+         "period": "2026-05",
+         "pages": "9-11",
+         "local_path": "sources/2026-11-01/Dash35.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "Vision2035",
+         "title": "長期経営計画 2035年ビジョン",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/05/Vision2035.pdf",
+         "published": "2026-05-29",
+         "period": "2026-05",
+         "pages": "11",
+         "local_path": "sources/2026-11-01/Vision2035.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "IR2606_02",
+         "title": "IR Day 2026 Dash 35 財務目標",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/06/IR2606_02.pdf",
+         "published": "2026-06-01",
+         "period": "2026-06",
+         "pages": "4",
+         "local_path": "sources/2026-11-01/IR2606_02.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "IR2606_QA",
+         "title": "IR Day 2026 経営計画説明会 質疑応答",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/06/IR2606_QA.pdf",
+         "published": "2026-06-01",
+         "period": "2026-06",
+         "pages": "1-3",
+         "local_path": "sources/2026-11-01/IR2606_QA.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "20261009_haifu",
+         "title": "2027年2月期 第2四半期 決算補足説明資料",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/10/20261009_haifu.pdf",
+         "published": "2026-10-09",
+         "period": "2026-08",
+         "pages": "18-19",
+         "local_path": "sources/2026-11-01/20261009_haifu.pdf"
+        }
+       ]
       },
       {
        "id": "W3",
        "fact": "基幹システムの移行で上期の生産・出荷に影響が出て、2026年度の営業利益見通しを下方修正した",
-       "impact": "中"
+       "impact": "中",
+       "evidence": [
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "Dash35",
+         "title": "中期経営計画 Dash 35",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/05/Dash35.pdf",
+         "published": "2026-05-29",
+         "period": "2026-05",
+         "pages": "9-11",
+         "local_path": "sources/2026-11-01/Dash35.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "Vision2035",
+         "title": "長期経営計画 2035年ビジョン",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/05/Vision2035.pdf",
+         "published": "2026-05-29",
+         "period": "2026-05",
+         "pages": "11",
+         "local_path": "sources/2026-11-01/Vision2035.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "IR2606_02",
+         "title": "IR Day 2026 Dash 35 財務目標",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/06/IR2606_02.pdf",
+         "published": "2026-06-01",
+         "period": "2026-06",
+         "pages": "4",
+         "local_path": "sources/2026-11-01/IR2606_02.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "IR2606_QA",
+         "title": "IR Day 2026 経営計画説明会 質疑応答",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/06/IR2606_QA.pdf",
+         "published": "2026-06-01",
+         "period": "2026-06",
+         "pages": "1-3",
+         "local_path": "sources/2026-11-01/IR2606_QA.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "20261009_haifu",
+         "title": "2027年2月期 第2四半期 決算補足説明資料",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/10/20261009_haifu.pdf",
+         "published": "2026-10-09",
+         "period": "2026-08",
+         "pages": "18-19",
+         "local_path": "sources/2026-11-01/20261009_haifu.pdf"
+        }
+       ]
       },
       {
        "id": "W4",
        "fact": "会社は前中計の課題として「(利益偏重で)シェアを落としている」「FA市場の変化への追従」を挙げている",
-       "impact": "不明"
+       "impact": "不明",
+       "evidence": [
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "Dash35",
+         "title": "中期経営計画 Dash 35",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/05/Dash35.pdf",
+         "published": "2026-05-29",
+         "period": "2026-05",
+         "pages": "5,13-30",
+         "local_path": "sources/2026-11-01/Dash35.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "20261009_haifu",
+         "title": "2027年2月期 第2四半期 決算補足説明資料",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/10/20261009_haifu.pdf",
+         "published": "2026-10-09",
+         "period": "2026-08",
+         "pages": "15,21",
+         "local_path": "sources/2026-11-01/20261009_haifu.pdf"
+        }
+       ]
       }
      ],
      "O": [
       {
        "id": "O1",
        "fact": "世界の産業用ロボットの新規設置台数が伸びている",
-       "impact": "大"
+       "impact": "大",
+       "evidence": [
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w2",
+         "title": "IFR World Robotics 2025・会長レポート（報道転載）",
+         "url": "https://ifr.org/ifr-press-releases/news/global-robot-demand-in-factories-doubles-over-10-years",
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w3",
+         "title": "日本ロボット工業会 事業報告 2025",
+         "url": "https://jara.jp/about/img/release/jigyo_hokoku/jara_jigyo_hokoku_2025.pdf",
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "原本なし",
+         "doc_id": "w1",
+         "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+         "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+         "published": "2026-09-19",
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w5",
+         "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        }
+       ]
       },
       {
        "id": "O2",
        "fact": "日本の産業用ロボットの受注額が回復している",
-       "impact": "不明"
+       "impact": "不明",
+       "evidence": [
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w2",
+         "title": "IFR World Robotics 2025・会長レポート（報道転載）",
+         "url": "https://ifr.org/ifr-press-releases/news/global-robot-demand-in-factories-doubles-over-10-years",
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w3",
+         "title": "日本ロボット工業会 事業報告 2025",
+         "url": "https://jara.jp/about/img/release/jigyo_hokoku/jara_jigyo_hokoku_2025.pdf",
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "原本なし",
+         "doc_id": "w1",
+         "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+         "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+         "published": "2026-09-19",
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w5",
+         "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "原本なし",
+         "doc_id": "w1",
+         "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+         "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+         "published": "2026-09-19",
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w2",
+         "title": "IFR World Robotics 2025・会長レポート（報道転載）",
+         "url": "https://ifr.org/ifr-press-releases/news/global-robot-demand-in-factories-doubles-over-10-years",
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w3",
+         "title": "日本ロボット工業会 事業報告 2025",
+         "url": "https://jara.jp/about/img/release/jigyo_hokoku/jara_jigyo_hokoku_2025.pdf",
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "原本なし",
+         "doc_id": "w4",
+         "title": "電波新聞デジタル",
+         "url": "https://dempa-digital.com/?p=727493",
+         "published": "2026-10-10",
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w5",
+         "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        }
+       ]
       },
       {
        "id": "O3",
        "fact": "AI・データセンター・半導体投資が日系FA機器メーカーのモーションコントロールの需要要因として報じられた",
-       "impact": "不明"
+       "impact": "不明",
+       "evidence": [
+        {
+         "status": "未検証",
+         "reason": "原本なし",
+         "doc_id": "w1",
+         "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+         "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+         "published": "2026-09-19",
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w2",
+         "title": "IFR World Robotics 2025・会長レポート（報道転載）",
+         "url": "https://ifr.org/ifr-press-releases/news/global-robot-demand-in-factories-doubles-over-10-years",
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w3",
+         "title": "日本ロボット工業会 事業報告 2025",
+         "url": "https://jara.jp/about/img/release/jigyo_hokoku/jara_jigyo_hokoku_2025.pdf",
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "原本なし",
+         "doc_id": "w4",
+         "title": "電波新聞デジタル",
+         "url": "https://dempa-digital.com/?p=727493",
+         "published": "2026-10-10",
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w5",
+         "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "Dash35",
+         "title": "中期経営計画 Dash 35",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/05/Dash35.pdf",
+         "published": "2026-05-29",
+         "period": "2026-05",
+         "pages": "9-11",
+         "local_path": "sources/2026-11-01/Dash35.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "Vision2035",
+         "title": "長期経営計画 2035年ビジョン",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/05/Vision2035.pdf",
+         "published": "2026-05-29",
+         "period": "2026-05",
+         "pages": "11",
+         "local_path": "sources/2026-11-01/Vision2035.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "IR2606_02",
+         "title": "IR Day 2026 Dash 35 財務目標",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/06/IR2606_02.pdf",
+         "published": "2026-06-01",
+         "period": "2026-06",
+         "pages": "4",
+         "local_path": "sources/2026-11-01/IR2606_02.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "IR2606_QA",
+         "title": "IR Day 2026 経営計画説明会 質疑応答",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/06/IR2606_QA.pdf",
+         "published": "2026-06-01",
+         "period": "2026-06",
+         "pages": "1-3",
+         "local_path": "sources/2026-11-01/IR2606_QA.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "20261009_haifu",
+         "title": "2027年2月期 第2四半期 決算補足説明資料",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/10/20261009_haifu.pdf",
+         "published": "2026-10-09",
+         "period": "2026-08",
+         "pages": "18-19",
+         "local_path": "sources/2026-11-01/20261009_haifu.pdf"
+        }
+       ]
       }
      ],
      "T": [
       {
        "id": "T1",
        "fact": "サーボの主要材料のネオジム磁石は製造が中国に集中し、中国の輸出管理で対日供給が減っている（会社は長期確保とレアアースレス技術で対応と説明）",
-       "impact": "大"
+       "impact": "大",
+       "evidence": [
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w5",
+         "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "262Q_QA_JP_1",
+         "title": "安川電機 2026年度 第2四半期 質疑応答",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/10/262Q_QA_JP_1.pdf",
+         "published": "2026-10-09",
+         "period": "2026-08",
+         "pages": "2-5",
+         "local_path": "sources/2026-11-01/262Q_QA_JP_1.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "S100Y69H",
+         "title": "安川電機 有価証券報告書 第110期",
+         "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2",
+         "published": null,
+         "period": "2026-02",
+         "pages": "14,32",
+         "local_path": "sources/2026-11-01/S100Y69H.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "Dash35",
+         "title": "安川電機 中期経営計画 Dash 35",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/05/Dash35.pdf",
+         "published": "2026-05-29",
+         "period": "2026-05",
+         "pages": "18,20",
+         "local_path": "sources/2026-11-01/Dash35.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "254Q_QA",
+         "title": "安川電機 2025年度 決算説明会 質疑応答",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/04/254Q_QA.pdf",
+         "published": "2026-04-10",
+         "period": "2026-02",
+         "pages": "7",
+         "local_path": "sources/2026-11-01/254Q_QA.pdf"
+        },
+        {
+         "status": "未検証",
+         "reason": "原本なし",
+         "doc_id": "w1",
+         "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+         "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+         "published": "2026-09-19",
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w2",
+         "title": "IFR World Robotics 2025・会長レポート（報道転載）",
+         "url": "https://ifr.org/ifr-press-releases/news/global-robot-demand-in-factories-doubles-over-10-years",
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w3",
+         "title": "日本ロボット工業会 事業報告 2025",
+         "url": "https://jara.jp/about/img/release/jigyo_hokoku/jara_jigyo_hokoku_2025.pdf",
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "原本なし",
+         "doc_id": "w4",
+         "title": "電波新聞デジタル",
+         "url": "https://dempa-digital.com/?p=727493",
+         "published": "2026-10-10",
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w5",
+         "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        }
+       ]
       },
       {
        "id": "T2",
        "fact": "中国で国産のサーボ・インバータが値下げとシェア拡大で台頭している",
-       "impact": "大"
+       "impact": "大",
+       "evidence": [
+        {
+         "status": "未検証",
+         "reason": "原本なし",
+         "doc_id": "w1",
+         "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+         "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+         "published": "2026-09-19",
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w2",
+         "title": "IFR World Robotics 2025・会長レポート（報道転載）",
+         "url": "https://ifr.org/ifr-press-releases/news/global-robot-demand-in-factories-doubles-over-10-years",
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w5",
+         "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "原本なし",
+         "doc_id": "w1",
+         "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+         "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+         "published": "2026-09-19",
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w5",
+         "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "原本なし",
+         "doc_id": "w1",
+         "title": "天下工場産研『中国通用サーボ市場白書（2026）』",
+         "url": "https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper",
+         "published": "2026-09-19",
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w2",
+         "title": "IFR World Robotics 2025・会長レポート（報道転載）",
+         "url": "https://ifr.org/ifr-press-releases/news/global-robot-demand-in-factories-doubles-over-10-years",
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w3",
+         "title": "日本ロボット工業会 事業報告 2025",
+         "url": "https://jara.jp/about/img/release/jigyo_hokoku/jara_jigyo_hokoku_2025.pdf",
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "原本なし",
+         "doc_id": "w4",
+         "title": "電波新聞デジタル",
+         "url": "https://dempa-digital.com/?p=727493",
+         "published": "2026-10-10",
+         "period": null,
+         "pages": null,
+         "local_path": null
+        },
+        {
+         "status": "未検証",
+         "reason": "検索要約",
+         "doc_id": "w5",
+         "title": "Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）",
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        }
+       ]
       },
       {
        "id": "T3",
        "fact": "有報の事業等のリスクで、シェアの高い分野でも優位性の保証は無く、価格競争で業績が悪化しうると会社が説明",
-       "impact": "不明"
+       "impact": "不明",
+       "evidence": [
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "S100Y69H",
+         "title": "有価証券報告書 第110期（2026年2月期）",
+         "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2",
+         "published": "2026-05-25",
+         "period": "2026-02",
+         "pages": "31-37",
+         "local_path": "sources/2026-11-01/S100Y69H.pdf"
+        }
+       ]
       },
       {
        "id": "T4",
        "fact": "米国の暫定予算の期限（12-11）と米中関税休戦の期限が控えている",
-       "impact": "不明"
+       "impact": "不明",
+       "evidence": []
       },
       {
        "id": "T5",
        "fact": "米ドル・ユーロ・人民元建ての販売・調達があり、為替の変動が業績に響く",
-       "impact": "不明"
+       "impact": "不明",
+       "evidence": [
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "S100Y69H",
+         "title": "有価証券報告書 第110期（2026年2月期）",
+         "url": "https://api.edinet-fsa.go.jp/api/v2/documents/S100Y69H?type=2",
+         "published": "2026-05-25",
+         "period": "2026-02",
+         "pages": "31-37",
+         "local_path": "sources/2026-11-01/S100Y69H.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "Dash35",
+         "title": "中期経営計画 Dash 35",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/05/Dash35.pdf",
+         "published": "2026-05-29",
+         "period": "2026-05",
+         "pages": "9-11",
+         "local_path": "sources/2026-11-01/Dash35.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "Vision2035",
+         "title": "長期経営計画 2035年ビジョン",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/05/Vision2035.pdf",
+         "published": "2026-05-29",
+         "period": "2026-05",
+         "pages": "11",
+         "local_path": "sources/2026-11-01/Vision2035.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "IR2606_02",
+         "title": "IR Day 2026 Dash 35 財務目標",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/06/IR2606_02.pdf",
+         "published": "2026-06-01",
+         "period": "2026-06",
+         "pages": "4",
+         "local_path": "sources/2026-11-01/IR2606_02.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "IR2606_QA",
+         "title": "IR Day 2026 経営計画説明会 質疑応答",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/06/IR2606_QA.pdf",
+         "published": "2026-06-01",
+         "period": "2026-06",
+         "pages": "1-3",
+         "local_path": "sources/2026-11-01/IR2606_QA.pdf"
+        },
+        {
+         "status": "検証済み",
+         "reason": null,
+         "doc_id": "20261009_haifu",
+         "title": "2027年2月期 第2四半期 決算補足説明資料",
+         "url": "https://www.yaskawa.co.jp/wp-content/uploads/2026/10/20261009_haifu.pdf",
+         "published": "2026-10-09",
+         "period": "2026-08",
+         "pages": "18-19",
+         "local_path": "sources/2026-11-01/20261009_haifu.pdf"
+        }
+       ]
       }
      ]
     }
@@ -778,19 +2615,20 @@
    "label": "成長性",
    "step": "2-2",
    "skill": "growth",
-   "date": "2026-11-14",
-   "verdict": "普通",
-   "md": "companies/6506_yaskawa/analysis/growth/2026-11-14_growth.md",
+   "date": "2026-11-15",
+   "verdict": "良好",
+   "md": "companies/6506_yaskawa/analysis/growth/2026-11-15_growth.md",
    "subs": [
     "安定成長",
     "割り引いて扱う",
-    "問題あり"
+    "問題あり",
+    "良好"
    ],
    "confidence": null,
    "confidence_why": null,
    "counter": "",
-   "reason": "「成長の水準」は安定成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））",
-   "points": "会計基準をそろえた IFRS の8年（2019-02〜2026-02）を全年の回帰で見ると、売上 CAGR 4.4%・EPS CAGR 10.8% で安定成長に当たる（景気の山の 2019-02 を始点にした端点の CAGR では EPS がマイナスになり、始点の影響が大きい）。減収・減益の年はすべて会社が一時要因で説明しているが、直近3年は営業利益 CAGR -11.5% が売上 CAGR -0.8% を下回り、2024-02 以降の減益の回復はまだ確かめられない",
+   "reason": "「成長の水準」は安定成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））。ただし成長投資が良好（成長投資は良好: 売上に対する成長投資 11.7%（2022-02〜2026-02、以前と比べられない）、効率（増分 ROIC）は良好）なので一段上げた（差し引きで良好）",
+   "points": "会計基準をそろえた IFRS の8年（2019-02〜2026-02）を全年の回帰で見ると、売上 CAGR 4.4%・EPS CAGR 10.8% で安定成長に当たる。直近3年は営業利益 CAGR -11.5% が売上 CAGR -0.8% を下回り成長の質に問題があるが、成長投資（売上の 11.7%）の増分 ROIC が 13.6% と資本コストを上回り、差し引きで成長性は良好。減収・減益の年はすべて会社が一時要因で説明している",
    "gaps": [
     "警告: 会社計画 2021-02: 達成率 680% は予想と実績の単位の違いとみなし、「会社計画の信頼性」から除いた（20〜500% の範囲外）",
     "警告: 会計基準: 2019-02 に 日本基準→IFRS へ変わった。2019-02 と前年の比較は「減収・減益の年の原因」の減収・減益に数えない（基準が違う数字の比較のため）",
@@ -918,7 +2756,98 @@
       "net_income": 35240.0,
       "eps": 135.88
      }
-    ]
+    ],
+    "investment": {
+     "verdict": "良好",
+     "sentence": "成長投資は良好: 売上に対する成長投資 11.7%（2022-02〜2026-02、以前と比べられない）、効率（増分 ROIC）は良好",
+     "level": "不明",
+     "share": 11.7,
+     "earlier": null,
+     "span": "2022-02〜2026-02",
+     "capex_to_dep": 2.19,
+     "peer_median": null,
+     "peer_own": null,
+     "peer_level": null,
+     "peer_count": null,
+     "underinvest": false,
+     "efficiency": "良好",
+     "efficiency_basis": "増分 ROIC",
+     "roic": 13.6,
+     "rows": [
+      {
+       "year": "2019-02",
+       "capex": 23057,
+       "depreciation": 15927,
+       "rnd": 20792,
+       "working_capital": null,
+       "acquisition": 3058,
+       "growth": 30980
+      },
+      {
+       "year": "2020-02",
+       "capex": 22325,
+       "depreciation": 16746,
+       "rnd": 18999,
+       "working_capital": 538,
+       "acquisition": 0,
+       "growth": 25116
+      },
+      {
+       "year": "2021-02",
+       "capex": 8609,
+       "depreciation": 16092,
+       "rnd": 17851,
+       "working_capital": 2876,
+       "acquisition": 0,
+       "growth": 13244
+      },
+      {
+       "year": "2022-02",
+       "capex": 24227,
+       "depreciation": 17475,
+       "rnd": 18175,
+       "working_capital": 36484,
+       "acquisition": 0,
+       "growth": 61411
+      },
+      {
+       "year": "2023-02",
+       "capex": 21931,
+       "depreciation": 19669,
+       "rnd": 18778,
+       "working_capital": 81238,
+       "acquisition": 0,
+       "growth": 102278
+      },
+      {
+       "year": "2024-02",
+       "capex": 31025,
+       "depreciation": 20802,
+       "rnd": 21247,
+       "working_capital": 23547,
+       "acquisition": 0,
+       "growth": 55017
+      },
+      {
+       "year": "2025-02",
+       "capex": 37304,
+       "depreciation": 20799,
+       "rnd": 23773,
+       "working_capital": -8389,
+       "acquisition": 0,
+       "growth": 31889
+      },
+      {
+       "year": "2026-02",
+       "capex": 46240,
+       "depreciation": 21084,
+       "rnd": 24006,
+       "working_capital": 16138,
+       "acquisition": 0,
+       "growth": 65300
+      }
+     ]
+    }
    }
   },
   "safety": {
@@ -1067,9 +2996,9 @@
    "label": "キャッシュフロー",
    "step": "2-4",
    "skill": "cash-flow",
-   "date": "2026-11-11",
+   "date": "2026-11-15",
    "verdict": "普通",
-   "md": "companies/6506_yaskawa/analysis/cash-flow/2026-11-11_cash-flow.md",
+   "md": "companies/6506_yaskawa/analysis/cash-flow/2026-11-15_cash-flow.md",
    "subs": [
     "普通",
     "良好",
@@ -1081,7 +3010,7 @@
    "confidence_why": null,
    "counter": "",
    "reason": "「営業CF の安定性」が普通、「利益の質」が普通",
-   "points": "キャッシュフローは普通（「営業CF の安定性」が普通、「利益の質」が普通）。営業CF は10年（2017-02〜2026-02）で、マイナスは 2023-02 の1回で、翌年にプラスへ戻った（一時要因とみなす）。普通。FCF は2022-02〜2026-02の5年累計 71,610、プラスの年 4/5（累計プラスで過半数の年がプラス）。良好。営業CF対純利益比率は5年累計。平均 0.96倍より低い方で0.90倍。普通。",
+   "points": "キャッシュフローは普通（「営業CF の安定性」が普通、「利益の質」が普通）。営業CF は10年（2017-02〜2026-02）で、マイナスは 2023-02 の1回で、翌年にプラスへ戻った（一時要因とみなす）。普通。FCF は2022-02〜2026-02の5年累計 71,610、プラスの年 4/5（累計プラスで過半数の年がプラス）。良好。営業CF対純利益比率は5年累計（平均 0.96倍は参考）で0.90倍。普通。",
    "gaps": [
     "財務時系列: キャッシュ・フロー: raw に無い"
    ],
@@ -1098,7 +3027,7 @@
      },
      {
       "rating": "普通",
-      "sentence": "営業CF対純利益比率は5年累計。平均 0.96倍より低い方で0.90倍。普通"
+      "sentence": "営業CF対純利益比率は5年累計（平均 0.96倍は参考）で0.90倍。普通"
      },
      {
       "rating": "良好",
@@ -1199,9 +3128,9 @@
    "label": "バリュエーション",
    "step": "3",
    "skill": "valuation",
-   "date": "2026-11-14",
+   "date": "2026-11-15",
    "verdict": "妥当",
-   "md": "companies/6506_yaskawa/analysis/valuation/2026-11-14_valuation.md",
+   "md": "companies/6506_yaskawa/analysis/valuation/2026-11-15_valuation.md",
    "subs": [],
    "confidence": null,
    "confidence_why": null,
@@ -10154,7 +12083,7 @@
  "outlook": {
   "path": "market/report/2026-11-09_outlook.md",
   "week": "2026-11-09",
-  "age_days": 5,
+  "age_days": 7,
   "stale": false,
   "overall": "警戒",
   "summary": "市場のストレスが高い（日経平均の20日変動率35.7%、1年高値比−16.5%）ため警戒を維持。長期は平常で2段階離れる",
@@ -10183,10 +12112,10 @@
  "step1": {
   "grade": "B",
   "pending": false,
-  "why": "A の条件を満たさない: 勝てる理由が明確、モートが広い、SWOT が Yes",
+  "why": "A の条件を満たさない: 勝てる理由が明確、モートが狭い以上、SWOT が Yes",
   "failed": [
    "勝てる理由が明確",
-   "モートが広い",
+   "モートが狭い以上",
    "SWOT が Yes"
   ],
   "rows": [
@@ -10203,7 +12132,7 @@
     "ok": false
    },
    {
-    "condition": "モートが広い",
+    "condition": "モートが狭い以上",
     "value": "なし",
     "source": "1-3 モート",
     "ok": false
@@ -10219,8 +12148,8 @@
  "step2": {
   "grade": "A",
   "pending": false,
-  "score": 0.5,
-  "why": "平均点 +0.50（良好 +1・普通 0・懸念 −1。A は +0.5 以上、C は -0.25 以下）",
+  "score": 0.75,
+  "why": "平均点 +0.75（良好 +1・普通 0・懸念 −1。A は +0.5 以上、C は -0.25 以下）",
   "rows": [
    {
     "condition": "収益性",
@@ -10230,9 +12159,9 @@
    },
    {
     "condition": "成長性",
-    "value": "普通",
+    "value": "良好",
     "source": "2-2 成長性分析",
-    "ok": false
+    "ok": true
    },
    {
     "condition": "安全性",
@@ -10311,7 +12240,7 @@
      "score": 0.25,
      "value": "妥当（4指標の平均点 +0.25）",
      "reason": "PER 妥当／PBR 割安／PEG 割高（悲観ケース：5.14倍）／EV/EBITDA 割安／STEP 3 妥当（平均点：+0.25）",
-     "source": "3 バリュエーション分析（2026-11-14）",
+     "source": "3 バリュエーション分析（2026-11-15）",
      "pending": false,
      "contribution": 0.05
     },
@@ -10346,7 +12275,7 @@
      "score": 0.25,
      "value": "妥当（4指標の平均点 +0.25）",
      "reason": "PER 妥当／PBR 割安／PEG 割高（悲観ケース：5.14倍）／EV/EBITDA 割安／STEP 3 妥当（平均点：+0.25）",
-     "source": "3 バリュエーション分析（2026-11-14）",
+     "source": "3 バリュエーション分析（2026-11-15）",
      "pending": false,
      "contribution": 0.05
     },
@@ -10390,6 +12319,7 @@
    "provisional": null,
    "cautions": [],
    "unknown": [],
+   "coverage": 1.0,
    "verdict": "見送り",
    "why": "重み付けの点数 -0.26（+0.25 以上 投資検討、-0.25 以下 見送り。ウォッチまであと +0.01（-0.25 を超えればウォッチ））。プラス: 安全性・株価の割安さ（STEP 3）／マイナス: 地合い・直近の決算の進捗",
    "sensitivity": {
@@ -10437,7 +12367,7 @@
    }
   },
   "mid": {
-   "score": 0.042,
+   "score": 0.192,
    "rows": [
     {
      "key": "market",
@@ -10479,7 +12409,7 @@
      "score": 0.25,
      "value": "妥当（4指標の平均点 +0.25）",
      "reason": "PER 妥当／PBR 割安／PEG 割高（悲観ケース：5.14倍）／EV/EBITDA 割安／STEP 3 妥当（平均点：+0.25）",
-     "source": "3 バリュエーション分析（2026-11-14）",
+     "source": "3 バリュエーション分析（2026-11-15）",
      "pending": false,
      "contribution": 0.05
     },
@@ -10487,12 +12417,12 @@
      "key": "growth",
      "label": "成長性",
      "weight": 15,
-     "score": -0.5,
-     "value": "普通（内訳から -0.5）",
-     "reason": "「成長の水準」は安定成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））（一部の項目は材料不足のため保守的に扱った）（内訳の評価が悪い側に寄るため -0.5 点で数えた）",
-     "source": "2-2 成長性分析（2026-11-14）",
+     "score": 0.5,
+     "value": "良好（内訳から +0.5）",
+     "reason": "「成長の水準」は安定成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））。ただし成長投資が良好（成長投資は良好: 売上に対する成長投資 11.7%（2022-02〜2026-02、以前と比べられない）、効率（増分 ROIC）は良好）なので一段上げた（差し引きで良好）（一部の項目は材料不足のため保守的に扱った）（内訳の評価が悪い側に寄るため +0.5 点で数えた）",
+     "source": "2-2 成長性分析（2026-11-15）",
      "pending": false,
-     "contribution": -0.075
+     "contribution": 0.075
     },
     {
      "key": "profitability",
@@ -10512,7 +12442,7 @@
      "score": 0.5,
      "value": "普通（内訳から +0.5）",
      "reason": "「営業CF の安定性」が普通、「利益の質」が普通（内訳の評価が良い側に寄るため +0.5 点で数えた）",
-     "source": "2-4 キャッシュフロー分析（2026-11-11）",
+     "source": "2-4 キャッシュフロー分析（2026-11-15）",
      "pending": false,
      "contribution": 0.05
     },
@@ -10552,13 +12482,24 @@
      "contribution": 0.1
     },
     {
+     "key": "growth",
+     "label": "成長性",
+     "weight": 15,
+     "score": 0.5,
+     "value": "良好（内訳から +0.5）",
+     "reason": "「成長の水準」は安定成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））。ただし成長投資が良好（成長投資は良好: 売上に対する成長投資 11.7%（2022-02〜2026-02、以前と比べられない）、効率（増分 ROIC）は良好）なので一段上げた（差し引きで良好）（一部の項目は材料不足のため保守的に扱った）（内訳の評価が悪い側に寄るため +0.5 点で数えた）",
+     "source": "2-2 成長性分析（2026-11-15）",
+     "pending": false,
+     "contribution": 0.075
+    },
+    {
      "key": "valuation",
      "label": "株価の割安さ（STEP 3）",
      "weight": 20,
      "score": 0.25,
      "value": "妥当（4指標の平均点 +0.25）",
      "reason": "PER 妥当／PBR 割安／PEG 割高（悲観ケース：5.14倍）／EV/EBITDA 割安／STEP 3 妥当（平均点：+0.25）",
-     "source": "3 バリュエーション分析（2026-11-14）",
+     "source": "3 バリュエーション分析（2026-11-15）",
      "pending": false,
      "contribution": 0.05
     },
@@ -10569,7 +12510,7 @@
      "score": 0.5,
      "value": "普通（内訳から +0.5）",
      "reason": "「営業CF の安定性」が普通、「利益の質」が普通（内訳の評価が良い側に寄るため +0.5 点で数えた）",
-     "source": "2-4 キャッシュフロー分析（2026-11-11）",
+     "source": "2-4 キャッシュフロー分析（2026-11-15）",
      "pending": false,
      "contribution": 0.05
     },
@@ -10607,38 +12548,69 @@
      "source": "成長性分析（決算短信の四半期の進捗）",
      "pending": false,
      "contribution": -0.15
-    },
-    {
-     "key": "growth",
-     "label": "成長性",
-     "weight": 15,
-     "score": -0.5,
-     "value": "普通（内訳から -0.5）",
-     "reason": "「成長の水準」は安定成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））（一部の項目は材料不足のため保守的に扱った）（内訳の評価が悪い側に寄るため -0.5 点で数えた）",
-     "source": "2-2 成長性分析（2026-11-14）",
-     "pending": false,
-     "contribution": -0.075
     }
    ],
    "knockout": [],
    "provisional": null,
    "cautions": [],
    "unknown": [],
+   "coverage": 1.0,
    "verdict": "ウォッチ",
-   "why": "重み付けの点数 +0.04（+0.25 以上 投資検討、-0.25 以下 見送り。投資検討まであと +0.21（+0.25 以上で投資検討））。プラス: 収益性・株価の割安さ（STEP 3）／マイナス: 直近の決算の進捗・成長性",
+   "why": "重み付けの点数 +0.19（+0.25 以上 投資検討、-0.25 以下 見送り。投資検討まであと +0.06（+0.25 以上で投資検討））。プラス: 収益性・成長性／マイナス: 直近の決算の進捗",
    "sensitivity": {
-    "to_up": 0.208,
-    "to_down": 0.292,
+    "to_up": 0.058,
+    "to_down": 0.442,
     "nearest": {
      "to": "投資検討",
-     "gap": 0.208,
-     "text": "投資検討まであと +0.21（+0.25 以上で投資検討）"
+     "gap": 0.058,
+     "text": "投資検討まであと +0.06（+0.25 以上で投資検討）"
     },
-    "movers": []
+    "movers": [
+     {
+      "key": "growth",
+      "label": "成長性",
+      "direction": "1段良くなれば",
+      "verdict": "投資検討",
+      "score": 0.267,
+      "to": 1.0
+     },
+     {
+      "key": "valuation",
+      "label": "株価の割安さ（STEP 3）",
+      "direction": "1段良くなれば",
+      "verdict": "投資検討",
+      "score": 0.342,
+      "to": 1.0
+     },
+     {
+      "key": "price",
+      "label": "株価のテクニカル（トレンド・勢い・位置）",
+      "direction": "1段良くなれば",
+      "verdict": "投資検討",
+      "score": 0.275,
+      "to": 1.0
+     },
+     {
+      "key": "progress",
+      "label": "直近の決算の進捗",
+      "direction": "1段良くなれば",
+      "verdict": "投資検討",
+      "score": 0.342,
+      "to": 0.0
+     },
+     {
+      "key": "market",
+      "label": "地合い",
+      "direction": "1段良くなれば",
+      "verdict": "投資検討",
+      "score": 0.292,
+      "to": 1.0
+     }
+    ]
    }
   },
   "long": {
-   "score": 0.087,
+   "score": 0.362,
    "rows": [
     {
      "key": "market",
@@ -10658,20 +12630,20 @@
      "score": 0.25,
      "value": "妥当（4指標の平均点 +0.25）",
      "reason": "PER 妥当／PBR 割安／PEG 割高（悲観ケース：5.14倍）／EV/EBITDA 割安／STEP 3 妥当（平均点：+0.25）",
-     "source": "3 バリュエーション分析（2026-11-14）",
+     "source": "3 バリュエーション分析（2026-11-15）",
      "pending": false,
      "contribution": 0.037
     },
     {
      "key": "growth",
      "label": "成長性",
-     "weight": 10,
-     "score": -0.5,
-     "value": "普通（内訳から -0.5）",
-     "reason": "「成長の水準」は安定成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））（一部の項目は材料不足のため保守的に扱った）（内訳の評価が悪い側に寄るため -0.5 点で数えた）",
-     "source": "2-2 成長性分析（2026-11-14）",
+     "weight": 20,
+     "score": 0.5,
+     "value": "良好（内訳から +0.5）",
+     "reason": "「成長の水準」は安定成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））。ただし成長投資が良好（成長投資は良好: 売上に対する成長投資 11.7%（2022-02〜2026-02、以前と比べられない）、効率（増分 ROIC）は良好）なので一段上げた（差し引きで良好）（一部の項目は材料不足のため保守的に扱った）（内訳の評価が悪い側に寄るため +0.5 点で数えた）",
+     "source": "2-2 成長性分析（2026-11-15）",
      "pending": false,
-     "contribution": -0.05
+     "contribution": 0.1
     },
     {
      "key": "profitability",
@@ -10687,13 +12659,13 @@
     {
      "key": "cash_flow",
      "label": "キャッシュフロー",
-     "weight": 10,
+     "weight": 5,
      "score": 0.5,
      "value": "普通（内訳から +0.5）",
      "reason": "「営業CF の安定性」が普通、「利益の質」が普通（内訳の評価が良い側に寄るため +0.5 点で数えた）",
-     "source": "2-4 キャッシュフロー分析（2026-11-11）",
+     "source": "2-4 キャッシュフロー分析（2026-11-15）",
      "pending": false,
-     "contribution": 0.05
+     "contribution": 0.025
     },
     {
      "key": "safety",
@@ -10731,13 +12703,13 @@
     {
      "key": "moat",
      "label": "強みの持続性（モート）",
-     "weight": 15,
-     "score": -1.0,
-     "value": "なし",
-     "reason": "超過収益はある（弱い）が、それを守る「強」「中」の源泉が無い（業態に共通する収益性や一時的な要因の可能性）",
+     "weight": 10,
+     "score": 0.0,
+     "value": "なし（超過収益は弱い。それを守る源泉は特定できない）",
+     "reason": "超過収益はある（弱い）が、それを守る「強」「中」の源泉が無い（業態に共通する収益性や一時的な要因の可能性）（資本コストを上回る利益はあるため、モートが無いことは点数では中立に数えた。マイナスにするのは超過収益そのものが無いとき）",
      "source": "1-3 モート分析（2026-11-14）",
      "pending": false,
-     "contribution": -0.15
+     "contribution": 0.0
     },
     {
      "key": "swot",
@@ -10752,6 +12724,17 @@
     }
    ],
    "good": [
+    {
+     "key": "growth",
+     "label": "成長性",
+     "weight": 20,
+     "score": 0.5,
+     "value": "良好（内訳から +0.5）",
+     "reason": "「成長の水準」は安定成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））。ただし成長投資が良好（成長投資は良好: 売上に対する成長投資 11.7%（2022-02〜2026-02、以前と比べられない）、効率（増分 ROIC）は良好）なので一段上げた（差し引きで良好）（一部の項目は材料不足のため保守的に扱った）（内訳の評価が悪い側に寄るため +0.5 点で数えた）",
+     "source": "2-2 成長性分析（2026-11-15）",
+     "pending": false,
+     "contribution": 0.1
+    },
     {
      "key": "profitability",
      "label": "収益性",
@@ -10775,17 +12758,6 @@
      "contribution": 0.05
     },
     {
-     "key": "cash_flow",
-     "label": "キャッシュフロー",
-     "weight": 10,
-     "score": 0.5,
-     "value": "普通（内訳から +0.5）",
-     "reason": "「営業CF の安定性」が普通、「利益の質」が普通（内訳の評価が良い側に寄るため +0.5 点で数えた）",
-     "source": "2-4 キャッシュフロー分析（2026-11-11）",
-     "pending": false,
-     "contribution": 0.05
-    },
-    {
      "key": "safety",
      "label": "安全性",
      "weight": 5,
@@ -10803,50 +12775,48 @@
      "score": 0.25,
      "value": "妥当（4指標の平均点 +0.25）",
      "reason": "PER 妥当／PBR 割安／PEG 割高（悲観ケース：5.14倍）／EV/EBITDA 割安／STEP 3 妥当（平均点：+0.25）",
-     "source": "3 バリュエーション分析（2026-11-14）",
+     "source": "3 バリュエーション分析（2026-11-15）",
      "pending": false,
      "contribution": 0.037
-    }
-   ],
-   "bad": [
-    {
-     "key": "moat",
-     "label": "強みの持続性（モート）",
-     "weight": 15,
-     "score": -1.0,
-     "value": "なし",
-     "reason": "超過収益はある（弱い）が、それを守る「強」「中」の源泉が無い（業態に共通する収益性や一時的な要因の可能性）",
-     "source": "1-3 モート分析（2026-11-14）",
-     "pending": false,
-     "contribution": -0.15
     },
     {
-     "key": "growth",
-     "label": "成長性",
-     "weight": 10,
-     "score": -0.5,
-     "value": "普通（内訳から -0.5）",
-     "reason": "「成長の水準」は安定成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））（一部の項目は材料不足のため保守的に扱った）（内訳の評価が悪い側に寄るため -0.5 点で数えた）",
-     "source": "2-2 成長性分析（2026-11-14）",
+     "key": "cash_flow",
+     "label": "キャッシュフロー",
+     "weight": 5,
+     "score": 0.5,
+     "value": "普通（内訳から +0.5）",
+     "reason": "「営業CF の安定性」が普通、「利益の質」が普通（内訳の評価が良い側に寄るため +0.5 点で数えた）",
+     "source": "2-4 キャッシュフロー分析（2026-11-15）",
      "pending": false,
-     "contribution": -0.05
+     "contribution": 0.025
     }
    ],
+   "bad": [],
    "knockout": [],
    "provisional": null,
    "cautions": [],
    "unknown": [],
-   "verdict": "ウォッチ",
-   "why": "重み付けの点数 +0.09（+0.25 以上 投資検討、-0.25 以下 見送り。投資検討まであと +0.16（+0.25 以上で投資検討））。プラス: 収益性・地合い／マイナス: 強みの持続性（モート）・成長性",
+   "coverage": 1.0,
+   "verdict": "投資検討",
+   "why": "重み付けの点数 +0.36（+0.25 以上 投資検討、-0.25 以下 見送り。ウォッチまであと -0.11（+0.25 を下回ればウォッチ））。プラス: 成長性・収益性／マイナスの要素なし",
    "sensitivity": {
-    "to_up": 0.163,
-    "to_down": 0.337,
+    "to_up": null,
+    "to_down": 0.612,
     "nearest": {
-     "to": "投資検討",
-     "gap": 0.163,
-     "text": "投資検討まであと +0.16（+0.25 以上で投資検討）"
+     "to": "ウォッチ",
+     "gap": -0.112,
+     "text": "ウォッチまであと -0.11（+0.25 を下回ればウォッチ）"
     },
-    "movers": []
+    "movers": [
+     {
+      "key": "three_c",
+      "label": "勝てる理由（3C）",
+      "direction": "1段悪くなれば",
+      "verdict": "ウォッチ",
+      "score": 0.212,
+      "to": -1.0
+     }
+    ]
    }
   }
  },
@@ -10854,7 +12824,7 @@
   "verdict": "ウォッチ",
   "note": "",
   "why": "STEP 1・2 が B を含む、STEP 3 が妥当（判定マトリクス）",
-  "disagree": ""
+  "disagree": "判定マトリクスはウォッチだが、長期の判定は投資検討（重み付けの点数 +0.36）。マトリクスは STEP 1・2・3 の3つの総合だけを見るが、長期の判定は各分析の良い点・悪い点を重みで足し合わせるため、片方の総合が低くても他の強みで補われることがある。レポートの判定は長期の判定を使う"
  },
  "gaps": [
   {
@@ -10963,9 +12933,9 @@
    "label": "成長性",
    "step": "2-2",
    "result": "fresh",
-   "reason": "有効期限 2027-03-14 まで有効（再分析しない）",
-   "date": "2026-11-14",
-   "verdict": "普通"
+   "reason": "有効期限 2027-03-15 まで有効（再分析しない）",
+   "date": "2026-11-15",
+   "verdict": "良好"
   },
   {
    "key": "safety",
@@ -10983,8 +12953,8 @@
    "label": "キャッシュフロー",
    "step": "2-4",
    "result": "fresh",
-   "reason": "有効期限 2027-05-30 まで有効（再分析しない）",
-   "date": "2026-11-11",
+   "reason": "有効期限 2027-06-03 まで有効（再分析しない）",
+   "date": "2026-11-15",
    "verdict": "普通"
   },
   {
@@ -10993,8 +12963,8 @@
    "label": "バリュエーション",
    "step": "3",
    "result": "fresh",
-   "reason": "有効期限 2026-11-21 まで有効（再分析しない）",
-   "date": "2026-11-14",
+   "reason": "有効期限 2026-11-22 まで有効（再分析しない）",
+   "date": "2026-11-15",
    "verdict": "妥当"
   }
  ],
@@ -11002,8 +12972,8 @@
   {
    "key": "prices",
    "label": "日々の株価",
-   "date": "2026-11-12",
-   "age_days": 2,
+   "date": "2026-11-13",
+   "age_days": 3,
    "max_days": 7,
    "by": "prepare",
    "item": "株価",
@@ -11014,7 +12984,7 @@
    "key": "news",
    "label": "直近3か月の開示・ニュース",
    "date": "2026-11-11",
-   "age_days": 3,
+   "age_days": 5,
    "max_days": 7,
    "by": "collect-ir",
    "item": "直近3か月の適時開示・決算・業績修正・主要ニュースの日付と見出し",
@@ -11025,7 +12995,7 @@
    "key": "consensus",
    "label": "アナリスト予想・株価指標",
    "date": "2026-11-10",
-   "age_days": 4,
+   "age_days": 6,
    "max_days": 30,
    "by": "collect-peers-valuation",
    "item": "アナリスト予想（今期・来期の予想EPS）と株価指標",
@@ -11036,7 +13006,7 @@
    "key": "market",
    "label": "地合いレポート（指数・業種の値動き）",
    "date": "2026-11-09",
-   "age_days": 5,
+   "age_days": 7,
    "max_days": 7,
    "by": "market-report",
    "item": "",
@@ -11047,7 +13017,7 @@
    "key": "governance",
    "label": "大株主・役員・増資の履歴（有価証券報告書）",
    "date": "2026-02-28",
-   "age_days": 259,
+   "age_days": 261,
    "max_days": 400,
    "by": "collect-filings",
    "item": "大株主・役員・発行済株式数の推移（有価証券報告書の XBRL から yuho_governance.py）",
@@ -11058,7 +13028,7 @@
    "key": "management",
    "label": "経営者の目標と実績・発言",
    "date": "2026-10-09",
-   "age_days": 36,
+   "age_days": 38,
    "max_days": 120,
    "by": "collect-ir",
    "item": "経営者の目標と実績・社長メッセージ（過去3〜4年の決算説明会資料）",
@@ -11108,7 +13078,7 @@
     {
      "id": "B5",
      "item": "一貫した収益力",
-     "value": "成長性 普通",
+     "value": "成長性 良好",
      "ok": true,
      "source": "2-2 成長性"
     },
@@ -11352,6 +13322,85 @@
    ]
   }
  },
+ "projection": {
+  "ok": true,
+  "reason": null,
+  "eps0": 135.88,
+  "per": 29.762,
+  "per_basis": "有報の期末PER 5 期の平均",
+  "years": [
+   3,
+   5
+  ],
+  "cases": [
+   {
+    "name": "悲観",
+    "rate": 5.4,
+    "basis": "基本の半分"
+   },
+   {
+    "name": "基本",
+    "rate": 10.8,
+    "basis": "PEG の標準ケース（成長率の候補の最小）"
+   },
+   {
+    "name": "楽観",
+    "rate": 16.200000000000003,
+    "basis": "成長率の候補の最大 34.8% に上限（基本の 1.5 倍・25% の低い方）をかけた率"
+   }
+  ],
+  "rows": [
+   {
+    "years": 3,
+    "case": "悲観",
+    "eps": 159.10263444832,
+    "price": 4735.2126064509,
+    "change": 25.50258697192951,
+    "annual": 7.865913548149583
+   },
+   {
+    "years": 5,
+    "case": "悲観",
+    "eps": 176.7496622507899,
+    "price": 5260.423447908009,
+    "change": 39.42283190850806,
+    "annual": 6.872699638442037
+   },
+   {
+    "years": 3,
+    "case": "基本",
+    "eps": 184.83100262656004,
+    "price": 5500.94030017168,
+    "change": 45.79751656961781,
+    "annual": 13.392250674904883
+   },
+   {
+    "years": 5,
+    "case": "基本",
+    "eps": 226.91036800853325,
+    "price": 6753.306372669967,
+    "change": 78.99036238192332,
+    "annual": 12.348151043068123
+   },
+   {
+    "years": 3,
+    "case": "楽観",
+    "eps": 213.19348178463997,
+    "price": 6345.064404874455,
+    "change": 68.1702731215069,
+    "annual": 18.91858780166016
+   },
+   {
+    "years": 5,
+    "case": "楽観",
+    "eps": 287.86321961881936,
+    "price": 8567.385142295301,
+    "change": 127.07090226067588,
+    "annual": 17.823602447694164
+   }
+  ],
+  "note": "今の EPS が各ケースの率で伸び、株価が過去5年の平均PER で評価されると仮定した水準。売りを考える目安の一つで、株価の予想ではない"
+ },
  "winds": {
   "ok": true,
   "week": "2026-11-09",
@@ -11395,42 +13444,42 @@
  },
  "moves": {
   "ok": true,
-  "end": "2026-11-10",
+  "end": "2026-11-13",
   "index_name": "日経平均",
   "sector_name": "電機・精密",
   "returns": [
    {
     "label": "1か月",
-    "stock": -21.1,
-    "index": -12.4,
-    "sector": -17.8,
-    "vs_index": -8.7,
-    "vs_sector": -3.3
+    "stock": -19.5,
+    "index": -9.7,
+    "sector": -15.6,
+    "vs_index": -9.8,
+    "vs_sector": -3.9
    },
    {
     "label": "3か月",
-    "stock": -29.7,
-    "index": -9.7,
-    "sector": -14.6,
-    "vs_index": -20.0,
-    "vs_sector": -15.1
+    "stock": -30.2,
+    "index": -11.0,
+    "sector": -17.9,
+    "vs_index": -19.2,
+    "vs_sector": -12.3
    },
    {
     "label": "52週",
-    "stock": -8.4,
-    "index": 18.8,
-    "sector": 14.9,
-    "vs_index": -27.2,
-    "vs_sector": -23.3
+    "stock": -9.7,
+    "index": 19.2,
+    "sector": 12.6,
+    "vs_index": -28.9,
+    "vs_sector": -22.3
    }
   ],
-  "beta": 1.88,
+  "beta": 1.85,
   "split": {
    "span": "3か月",
-   "stock": -29.7,
-   "market": -18.2,
-   "own": -11.5,
-   "beta": 1.88
+   "stock": -30.2,
+   "market": -20.4,
+   "own": -9.8,
+   "beta": 1.85
   },
   "big_days": [
    {
@@ -11480,9 +13529,7 @@
    "RSI 39（中立）",
    "出来高 1.07倍（20日平均÷60日平均、平常）"
   ],
-  "notes": [
-   "指数・業種の系列は 2026-11-10 まで。騰落率の比較はその日までで揃えた"
-  ]
+  "notes": []
  },
  "phase": {
   "phase": "下落局面",
