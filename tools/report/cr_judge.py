@@ -187,7 +187,8 @@ def _weighted(weights: dict[str, int], factors: dict[str, dict]) -> tuple[float 
                      "pending": bool(f.get("pending"))})
     used = [r for r in rows if r["score"] is not None]
     total = sum(r["weight"] for r in used)
-    coverage = round(total / sum(weights.values()), 3)
+    # a 判定保留 analysis scores 0 in the average but is no evidence: it does not count toward the coverage
+    coverage = round(sum(r["weight"] for r in used if not r["pending"]) / sum(weights.values()), 3)
     if not total:
         return None, [dict(r, contribution=None) for r in rows], coverage
     score = sum(r["weight"] * r["score"] for r in used) / total
@@ -218,6 +219,7 @@ def horizon_score(horizon: str, factors: dict[str, dict], flags: list[str] | tup
     bad = sorted((r for r in rows if (r["contribution"] or 0) < 0), key=lambda r: r["contribution"])
     stops = knockouts(horizon, list(flags), step1_grade)
     unknown = [r["label"] for r in rows if r["score"] is None]
+    short = unknown + [f"{r['label']}（判定保留）" for r in rows if r["score"] is not None and r["pending"]]
     base = {"score": score, "rows": rows, "good": good, "bad": bad, "knockout": stops, "provisional": None,
             "cautions": list(cautions), "unknown": unknown, "coverage": coverage}
     if stops:
@@ -228,11 +230,11 @@ def horizon_score(horizon: str, factors: dict[str, dict], flags: list[str] | tup
         provisional = _verdict_for(score)
         return {**base, "verdict": PENDING, "provisional": provisional,
                 "why": (f"判定に使えた材料が重みの {coverage:.0%} で、{MIN_COVERAGE:.0%} に届かないため判定保留"
-                        f"（暫定の点数 {score:+.2f}、{provisional}相当）。足りない材料: {'・'.join(unknown)}")}
+                        f"（暫定の点数 {score:+.2f}、{provisional}相当）。足りない材料: {'・'.join(short)}")}
     plus = f"プラス: {'・'.join(r['label'] for r in good[:2])}" if good else "プラスの要素なし"
     minus = f"マイナス: {'・'.join(r['label'] for r in bad[:2])}" if bad else "マイナスの要素なし"
     near = nearest(score)
-    covered = f"。判定に使えた材料 {coverage:.0%}（足りない材料: {'・'.join(unknown)}）" if unknown else ""
+    covered = f"。判定に使えた材料 {coverage:.0%}（足りない材料: {'・'.join(short)}）" if short else ""
     why = (f"重み付けの点数 {score:+.2f}（{UP:+.2f} 以上 投資検討、{DOWN:+.2f} 以下 見送り。{near['text']}）。"
            f"{plus}／{minus}{covered}{_notes(horizon, step1_grade, cautions)}")
     return {**base, "verdict": _verdict_for(score), "why": why}
@@ -268,7 +270,8 @@ def sensitivity(horizon: str, factors: dict[str, dict], flags: list[str] | tuple
     """Distance to the thresholds and the single factors whose one-step move would change the verdict."""
     current = horizon_score(horizon, factors, flags, step1_grade)
     out: dict = {"to_up": None, "to_down": None, "nearest": None, "movers": []}
-    if current["score"] is None or current["knockout"]:
+    # a horizon held for lack of material has no boundary to cross: its provisional score is not a reading
+    if current["score"] is None or current["knockout"] or current["verdict"] == PENDING:
         return out
     score = current["score"]
     out["nearest"] = nearest(score)
@@ -337,7 +340,8 @@ def matrix_note(matrix: dict, long: dict) -> str:
     """Why the long horizon's verdict differs from the matrix: the matrix reads three grades, the long horizon
     weighs every factor (the report's verdict is the long horizon's)."""
     if (not matrix.get("verdict") or matrix["verdict"] == long.get("verdict") or long.get("score") is None
-            or long.get("knockout")):  # a knockout already says why the long horizon is 見送り
+            or long.get("knockout")  # a knockout already says why the long horizon is 見送り
+            or long.get("verdict") == PENDING):  # held for lack of material: its own reason says so
         return ""
     return (f"判定マトリクスは{matrix['verdict']}だが、長期の判定は{long['verdict']}（重み付けの点数 "
             f"{long['score']:+.2f}）。マトリクスは STEP 1・2・3 の3つの総合だけを見るが、長期の判定は各分析の"

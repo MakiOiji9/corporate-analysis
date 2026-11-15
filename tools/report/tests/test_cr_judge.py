@@ -142,6 +142,29 @@ def test_coverage_at_the_minimum_still_gives_a_verdict():
     assert J.horizon_score("short", below)["verdict"] == "判定保留"
 
 
+def test_pending_analyses_do_not_count_as_material():
+    # a 判定保留 analysis scores 0 but is no evidence: STEP 1's four (40% of the long horizon) and the valuation (15%)
+    # pending leave 45%, so the horizon is pending too
+    factors = _all(1.0)
+    for key in ("five_forces", "three_c", "moat", "swot", "valuation"):
+        factors[key] = _f(0.0, pending=True)
+    result = J.horizon_score("long", factors)
+    assert result["coverage"] == pytest.approx(0.45) and result["verdict"] == "判定保留"
+    assert "勝てる理由（3C）（判定保留）" in result["why"]
+
+
+def test_a_pending_horizon_has_no_nearest_boundary_or_movers():
+    factors = {k: _f(None) for k in _all(0.0)}
+    factors["safety"] = _f(1.0)
+    out = J.sensitivity("short", factors)
+    assert out["nearest"] is None and out["movers"] == []
+
+
+def test_the_matrix_note_is_left_out_for_a_pending_long_horizon():
+    long = {"verdict": "判定保留", "score": 0.30, "knockout": []}
+    assert J.matrix_note({"verdict": "ウォッチ"}, long) == ""
+
+
 def test_full_coverage_does_not_mention_it():
     result = J.horizon_score("mid", _all(0.0))
     assert result["coverage"] == 1.0 and "判定に使えた材料" not in result["why"]

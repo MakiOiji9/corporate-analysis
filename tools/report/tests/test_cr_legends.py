@@ -23,14 +23,15 @@ def _section(text: str, number: int) -> str:
 
 def test_the_scripts_conditions_match_the_knowledge_files():
     """The conditions are defined twice (the knowledge files and cr_legends.py): keep them in step."""
-    scored = set(re.findall(r'"([BSR]\d+)"', (REPORT / "cr_legends.py").read_text(encoding="utf-8")))
+    # the conditions the script judges are the ones it builds a check row for: _check("B1", ...)
+    scored = set(re.findall(r'_check\(\s*"([BSR]\d+)"', (REPORT / "cr_legends.py").read_text(encoding="utf-8")))
     for name in ("buffett", "soros", "rogers"):
         text = (KNOWLEDGE / f"{name}.md").read_text(encoding="utf-8")
         checklist = set(ID_ROW.findall(_section(text, 4)))
         mapping = set(ID_ROW.findall(_section(text, 5)))
+        assert checklist, f"{name}.md の4章に条件の表が無い"
         prefix = next(iter(checklist))[0]
         mine = {c for c in scored if c[0] == prefix}
-        assert checklist, f"{name}.md の4章に条件の表が無い"
         assert mine <= checklist, f"{name}: スクリプトだけにある条件 {sorted(mine - checklist)}"
         assert mapping <= checklist, f"{name}: 5章の対応表だけにある条件 {sorted(mapping - checklist)}"
         unscored = checklist - mine
