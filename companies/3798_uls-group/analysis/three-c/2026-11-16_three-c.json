@@ -1,0 +1,475 @@
+{
+ "version": 2,
+ "company": "3798_uls-group",
+ "name": "ULSグループ（3798）",
+ "date": "2026-11-16",
+ "valid_until": "2027-11-16",
+ "confidence": {
+  "primary": 1,
+  "reference": 0,
+  "unknown": 4,
+  "known": 2,
+  "total": 6,
+  "why": "一次資料 1/2・参考 0・不明 4/6",
+  "level": "低"
+ },
+ "counter": "今回の「あいまい」はKBFの比較材料不足が主な原因であり、ULSのAI駆動開発（Devinパートナーシップ）が競合より優れると判定できる材料が揃えば「明確」に変わりうる。競合の財務比較は会計基準の混在（ライズのIFRS転換後、ノースサンドは3期分のみ営業利益が取得可能）があり、比較の精度に制約がある",
+ "conservative_verdict": "あいまい",
+ "kbf_scores": {
+  "self": null,
+  "peers": [
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "scored": 0
+ },
+ "customer": {
+  "segment": "コンサルティング事業（単一セグメント）。セグメント別の営業利益の開示なし（単一セグメントのため全社値と一致）。子会社別売上高はULSコンサルティング14,591百万円（主力）、ピースミール・テクノロジー2,059百万円の2社が主要（有報 第26期 p.6、2026年3月期）",
+  "customers": "国内の大規模事業者（法人）が主な顧客層。業種はサービス・情報通信・金融・製造・自治体・公共を中心に、顧客数167社（うち新規60社、前期150社）。最大顧客はパソナで売上比14.6%（2,428百万円）、上位5社で38%（前期34%から上昇）。リピート率89%（前期92%から低下。「前期取引実績ある顧客の当期売上高を連結売上高で除して算出」）（2026年3月期、決算説明会資料 2026年5月）",
+  "kbf": [
+   "実績",
+   "専門性",
+   "サポート体制",
+   "料金体系"
+  ],
+  "kbf_basis": "定量的なKBF調査は取得できなかったため、解説記事の評価軸とフレームワーク例から選定した。解説記事（kotora.jp）では「実績・専門性・料金体系・サポート体制・業界対応力」の順で評価軸として挙げられている（調査データではなく記事の評価軸）。IDC Japan の調査では国内企業がDXパートナーを選ぶ際に「人的コンタクトや業界団体での他社からの情報（アナログな経路）」が上位とされ（クラウド Watch経由、原発表未確認）、実績・信頼関係が重視されると読み取れる。実績を最重要（1位）としたのは記事の記載順に従う。2〜4番目（専門性・サポート体制・料金体系）の順は調査データの裏付けなし。サポート体制と料金体系の順番は不確か",
+  "seen": "国内プロジェクトベース市場（ITコンサルティング／SI）: 2024年 3兆5,728億円（前年比 +10.4%）、2024〜2029年 CAGR（予測）9.1%、2029年予測 5兆5,159億円（IDC Japan、2025年6月23日発表）",
+  "source": "companies/3798_uls-group/raw/market/2026-10-11_industry-overview.md「1-1. 国内プロジェクトベース市場（ITコンサルティング／SI）」",
+  "confidence": "二次",
+  "conclusion": "顧客は国内の大規模事業者（法人）で、最も重視するのは実績（過去の成功事例・顧客満足）。市場の成長性は高（主力市場 CAGR 9.1%、IDC Japan の国内プロジェクトベース市場）",
+  "evidence": [
+   {
+    "raw": "2026-10-11_industry-overview.md",
+    "section": "1-1. 国内プロジェクトベース市場（ITコンサルティング／SI）",
+    "status": "未検証",
+    "reason": "Front Matter なし",
+    "doc_id": null,
+    "title": null,
+    "url": null,
+    "published": null,
+    "period": null,
+    "confidence": null,
+    "pages": null,
+    "local_path": null
+   }
+  ]
+ },
+ "kbf": [
+  "実績",
+  "専門性",
+  "サポート体制",
+  "料金体系"
+ ],
+ "growth": {
+  "rating": "高",
+  "reason": "主力市場の国内プロジェクトベース市場（ITコンサルティング／SI）の CAGR が9.1%（IDC Japan、2024〜2029年予測）で、判断基準の「年3%以上で 高」に当たる",
+  "candidate": "高"
+ },
+ "competitor": {
+  "rating": "同等",
+  "reason": "営業利益率18.3%は6社中5位で中位（1位でも最下位でもない）。シェアの公表値がなく営業利益率だけの比較となり、判断基準「シェアの数値がなく営業利益率だけの候補では1位でも同等」のため同等。規則上「優位」に届かないため明確にはならない（証拠から否定されたのではない）",
+  "seen": "営業利益率18.3%は6社中5位（中位。1位=ベイカレント34.3%、2位=シグマクシス25.4%、3位=ノースサンド21.2%、4位=ライズ20.2%、6位=LTS6.9%）。ITコンサルティング市場のシェアは未公表のためシェアの比較なし",
+  "source": "companies/3798_uls-group/raw/market/2026-10-13_competitors.md「2. 売上高・営業利益・営業利益率」およびスクリプトの比較表（2.1）",
+  "confidence": "一次",
+  "conclusion": "競合と比べて同等。根拠: 営業利益率18.3% vs 競合の中央値21.2%（シェアの公表値なし、規則上「優位」に届かない）",
+  "candidate": "同等",
+  "candidate_fixed": false,
+  "evidence": [
+   {
+    "raw": "2026-10-13_competitors.md",
+    "section": "2",
+    "status": "未検証",
+    "reason": "Front Matter なし",
+    "doc_id": null,
+    "title": null,
+    "url": null,
+    "published": null,
+    "period": null,
+    "confidence": null,
+    "pages": null,
+    "local_path": null
+   }
+  ]
+ },
+ "comparison": [
+  {
+   "name": "ULSグループ（3798）（対象）",
+   "self": true,
+   "year": "2026-03",
+   "sales": 16600000000.0,
+   "margin": 18.3,
+   "share": null,
+   "cagr": 24.9,
+   "source": "2026-10-13_competitors.md「2. 売上高・営業利益・営業利益率（最大10年推移。最低7年）」, data/*.csv"
+  },
+  {
+   "name": "ノースサンド（446A）",
+   "self": false,
+   "year": "2026-01",
+   "sales": 26185000000.0,
+   "margin": 21.2,
+   "share": null,
+   "cagr": null,
+   "source": "2026-10-13_competitors.md「2. 売上高・営業利益・営業利益率（最大10年推移。最低7年）」"
+  },
+  {
+   "name": "ライズ・コンサルティング・グループ（9168）",
+   "self": false,
+   "year": "2026-02",
+   "sales": 8421000000.0,
+   "margin": 20.2,
+   "share": null,
+   "cagr": 20.9,
+   "source": "2026-10-13_competitors.md「2. 売上高・営業利益・営業利益率（最大10年推移。最低7年）」"
+  },
+  {
+   "name": "ベイカレント（6532）",
+   "self": false,
+   "year": "2026-02",
+   "sales": 148332000000.0,
+   "margin": 34.3,
+   "share": null,
+   "cagr": 24.9,
+   "source": "2026-10-13_competitors.md「2. 売上高・営業利益・営業利益率（最大10年推移。最低7年）」"
+  },
+  {
+   "name": "シグマクシス・ホールディングス（6088）",
+   "self": false,
+   "year": "2026-03",
+   "sales": 23831000000.0,
+   "margin": 25.4,
+   "share": null,
+   "cagr": 11.2,
+   "source": "2026-10-13_competitors.md「2. 売上高・営業利益・営業利益率（最大10年推移。最低7年）」"
+  },
+  {
+   "name": "エル・ティー・エス（6560）",
+   "self": false,
+   "year": "2025-12",
+   "sales": 17101000000.0,
+   "margin": 6.9,
+   "share": null,
+   "cagr": 21.1,
+   "source": "2026-10-13_competitors.md「2. 売上高・営業利益・営業利益率（最大10年推移。最低7年）」"
+  }
+ ],
+ "kbf_table": [
+  {
+   "kbf": "実績",
+   "self": "？",
+   "peers": {
+    "ノースサンド（446A）": "？",
+    "ライズ・コンサルティング・グループ（9168）": "？",
+    "ベイカレント（6532）": "？",
+    "シグマクシス・ホールディングス（6088）": "？",
+    "エル・ティー・エス（6560）": "？"
+   },
+   "basis": "ULS: AI駆動開発事例あり（Devin、みずほ証券での工数削減70〜90%。決算説明会資料 2026年5月）・リピート率89%（2026年3月期）だが、競合の同定義指標と比べられない。ノースサンド(A): 顧客293社（急成長）・稼働率90%以上だが実績の質の比較材料なし。ライズ(B): 顧客119社、比較材料なし。ベイカレント(C): 最大規模（売上1,483億円）だが顧客数・満足度の開示なし。シグマクシス(D): SAPの「プロジェクト・オブ・ザ・イヤー」2年連続（2025・2026年）はSAP導入領域に限定でULSの主戦場（AI上流工程）とは異なる。LTS(E): 比較材料なし（出典: 2026-10-13_competitors.md「8. 顧客・人員のKPIと第三者評価」）",
+   "evidence": [
+    {
+     "raw": "2026-10-13_competitors.md",
+     "section": "8",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    }
+   ]
+  },
+  {
+   "kbf": "専門性",
+   "self": "？",
+   "peers": {
+    "ノースサンド（446A）": "？",
+    "ライズ・コンサルティング・グループ（9168）": "？",
+    "ベイカレント（6532）": "？",
+    "シグマクシス・ホールディングス（6088）": "？",
+    "エル・ティー・エス（6560）": "？"
+   },
+   "basis": "ULS: Devin（Cognition AI）パートナーシップ（2025年5月締結）・ULBOK・「二刀流人材」は会社の主張（決算説明会資料 2026年5月）だが他社との客観的比較基準（特許・認定等）なし。ノースサンド(A): 「スキルより人にフォーカス」「未経験採用→育成」が主戦略で技術専門性の客観的指標なし。ライズ(B): 「Scopeless」スタイルは主張のみ。ベイカレント(C): テクノロジー子会社設立・生成AI大賞審査員（社員就任、会社の成果ではない）。シグマクシス(D): SAP/SaaS・AI活用支援重点だが特許・認定件数の開示なし。LTS(E): DXエンジニアリング（開発実装も担う）。全社、特許・認定件数の開示なし（2026-10-13_competitors.md「7. 主力製品と強み」）",
+   "evidence": [
+    {
+     "raw": "2026-10-13_competitors.md",
+     "section": "7",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    }
+   ]
+  },
+  {
+   "kbf": "サポート体制",
+   "self": "？",
+   "peers": {
+    "ノースサンド（446A）": "？",
+    "ライズ・コンサルティング・グループ（9168）": "？",
+    "ベイカレント（6532）": "？",
+    "シグマクシス・ホールディングス（6088）": "？",
+    "エル・ティー・エス（6560）": "？"
+   },
+   "basis": "ULS: リピート率89%（前期92%から低下。「前期取引実績ある顧客の当期売上高を連結売上高で除して算出」。決算説明会資料 2026年5月）は他社の同定義指標と比べられない。シグマクシス(D): NSI97（プロジェクト満足度、会社実施アンケートで5段階評価の平均を100点換算）があるがULSのリピート率と定義が異なり直接比較できない。他社はプロジェクト品質の定量指標を開示していない（2026-10-13_competitors.md「8. 顧客・人員のKPIと第三者評価」）",
+   "evidence": [
+    {
+     "raw": "2026-10-13_competitors.md",
+     "section": "8",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    }
+   ]
+  },
+  {
+   "kbf": "料金体系",
+   "self": "？",
+   "peers": {
+    "ノースサンド（446A）": "？",
+    "ライズ・コンサルティング・グループ（9168）": "？",
+    "ベイカレント（6532）": "？",
+    "シグマクシス・ホールディングス（6088）": "？",
+    "エル・ティー・エス（6560）": "？"
+   },
+   "basis": "ULS: 月額単価開示なし（タイム・アンド・マテリアルが主体、外注費11.9%。有報 p.97・決算説明会資料 2026年5月）。ライズ(B): 稼働対象コンサルタントの平均単価253万円/月（前期261万円）が唯一の開示値で「外資系・総合ファームに対してバリュープライス」と主張するが比較対象は外資系・総合ファームであり独立系コンサル間の比較ではない。ノースサンド(A)・ベイカレント(C)・シグマクシス(D)・LTS(E): 月額単価開示なし（2026-10-13_competitors.md「8. 顧客・人員のKPIと第三者評価」）",
+   "evidence": [
+    {
+     "raw": "2026-10-13_competitors.md",
+     "section": "8",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    }
+   ]
+  }
+ ],
+ "company_conclusion": "最重要KBF（実績）においてULSは他社と比べられる材料がなく○とは言えない。AI駆動開発（Devinパートナーシップ）では先行的な事例があるが、競合5社との実績の客観的比較材料（第三者評価・受賞等）が揃っていない",
+ "top_kbf": "実績",
+ "top_kbf_win": false,
+ "win_reason": "なし（材料不足）。大規模事業者が重視する実績において、AI駆動開発（Devinパートナーシップ）では先行的な地位がある可能性はあるが、競合5社との実績・専門性・サポート体制の比較材料がほぼなく、テンプレートを埋める根拠がない",
+ "verdict": "あいまい",
+ "verdict_reason": "最重要KBF（実績）で自社と競合を比べる材料が無いため ？ を △ とみなし、競合との比較「同等」で判定（材料不足のため保守的に判定。明確にはしない）（シェアの数値が無く、競合との比較は規則上「優位」に届かないため明確にはならない。証拠から否定されたのではない）",
+ "conservative": [
+  "最重要KBF（実績）の比較が ？ → △ とみなした"
+ ],
+ "triggers": "営業利益率が競合の中央値（21.2%）を安定的に下回り続けると劣位の条件を満たす可能性がある。実績のKBFが比較可能になる条件: 顧客満足度や受賞・認定など第三者評価をULSが公表すれば比較でき、競合より優れると確認できれば明確に変わりうる",
+ "handoff": {
+  "strengths": "なし（3章でULSが○となったKBFがない）",
+  "weaknesses": "2章で競合との比較が同等（営業利益率18.3%は6社中5位）。1章の顧客への依存: 最大顧客パソナが14.6%（2,428百万円、前期11.1%から上昇）、上位5社で38%（前期34%から上昇）。リピート率が前期92%から89%に低下",
+  "moat_checks": "営業利益率の長期推移（同業との差の縮小・拡大、特にベイカレント・シグマクシスとの比較）、リピート率の推移（89%から改善されるか）、AI駆動開発の受注件数・成約率・単価の推移（Devinパートナーシップの先行優位が維持されるか）"
+ },
+ "changes": [
+  "判定の基準改定（版1→版2）による再分析。KBF・成長性（高）・競合との比較（同等）・勝てる理由（あいまい）はすべて前回（2026-10-31）と同じ材料・評価"
+ ],
+ "gaps": [
+  "業界: 購買決定要因: 定量調査なし（取得試みたが不可）。KBFの重要度・順番の裏付けに調査データを使えない",
+  "実績（KBF1）: 競合5社のうちシグマクシス以外は第三者評価・受賞の開示なし。全社に共通する実績の比較指標がない",
+  "専門性（KBF2）: 特許件数・技術認定件数の開示が全社でなく、客観的比較ができない",
+  "サポート体制（KBF3）: リピート率（ULS 89%）は他社が同定義で開示しておらず比較できない",
+  "料金体系（KBF4）: 月額単価はライズのみ開示（253万円/月）で他社との比較ができない"
+ ],
+ "inputs": [
+  "companies/3798_uls-group/raw/filings/2026-10-11_2026-03_yuho.md",
+  "companies/3798_uls-group/raw/ir/2026-10-11_business-overview.md",
+  "companies/3798_uls-group/raw/market/2026-10-11_industry-overview.md",
+  "companies/3798_uls-group/raw/market/2026-10-13_competitors.md"
+ ],
+ "seen": [
+  "companies/3798_uls-group/raw/filings/2026-10-11_2026-03_yuho.md",
+  "companies/3798_uls-group/raw/ir/2026-10-11_business-overview.md",
+  "companies/3798_uls-group/raw/ir/2026-10-13_business-overview.md",
+  "companies/3798_uls-group/raw/market/2026-10-11_industry-overview.md",
+  "companies/3798_uls-group/raw/market/2026-10-13_competitors.md",
+  "companies/3798_uls-group/raw/market/2026-10-21_competitors.md",
+  "companies/3798_uls-group/raw/market/2026-10-31_competitors.md",
+  "companies/3798_uls-group/raw/market/2026-11-10_competitors.md"
+ ],
+ "input_digests": {
+  "segment": "b06193b26db999fef837e44971409775372452f2",
+  "customers": "9a68dd27ffda59295706c35d76c68299019f2b4c",
+  "products": "23c608708452afb8391d6880cad138ce2b06f2d7",
+  "customer_base": "6f5675a0c6321bf75e2a3a93d223e65780c8d82a",
+  "kpi": "5d58ebd7069824c8eaeda5965236974c4381aaf7",
+  "strategy": "87941b8ce63d51601f05e99db494a7d243f68ed6",
+  "market_size": "c07e634b93ffe302f85bf01f0ddb90e2a7e4297a",
+  "share": "da06f552567929b163e4680fe2d4993c5d14e2f8",
+  "kbf": "",
+  "peer_selection": "d2a8e2c01518a98e6ebd41ec46801d666c199ab9",
+  "peers": "4c83f5e4f963e1364bc5c400742e4e27ade073cf",
+  "peer_share": "14bc0ba0d4fd6ec1ab395ba2841fa69010e4c2c1",
+  "peer_kpi": "8443ede9160958b7a276e1cfa1f41b05b74c8f8e",
+  "peer_claims": "e257707fc542f40af5453268b309f3514dc2a776",
+  "patents": "",
+  "peer_patents": ""
+ },
+ "five_forces": {
+  "date": "2026-11-16",
+  "attractiveness": "中",
+  "industry": "ITコンサルティング業界（主力セグメント：コンサルティング事業、単一セグメント）"
+ },
+ "outlook": "market/report/2026-11-09_outlook.md",
+ "previous": {
+  "date": "2026-10-31",
+  "verdict": "あいまい"
+ },
+ "md": "companies/3798_uls-group/analysis/three-c/2026-11-16_three-c.md",
+ "evidence": {
+  "claims": [
+   {
+    "claim": "1. 顧客",
+    "source": "companies/3798_uls-group/raw/market/2026-10-11_industry-overview.md「1-1. 国内プロジェクトベース市場（ITコンサルティング／SI）」",
+    "evidence": [
+     {
+      "raw": "2026-10-11_industry-overview.md",
+      "section": "1-1. 国内プロジェクトベース市場（ITコンサルティング／SI）",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "2.2 競合との比較",
+    "source": "companies/3798_uls-group/raw/market/2026-10-13_competitors.md「2. 売上高・営業利益・営業利益率」およびスクリプトの比較表（2.1）",
+    "evidence": [
+     {
+      "raw": "2026-10-13_competitors.md",
+      "section": "2",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "3. KBF 実績",
+    "source": "ULS: AI駆動開発事例あり（Devin、みずほ証券での工数削減70〜90%。決算説明会資料 2026年5月）・リピート率89%（2026年3月期）だが、競合の同定義指標と比べられない。ノースサンド(A): 顧客293社（急成長）・稼働率90%以上だが実績の質の比較材料なし。ライズ(B): 顧客119社、比較材料なし。ベイカレント(C): 最大規模（売上1,483億円）だが顧客数・満足度の開示なし。シグマクシス(D): SAPの「プロジェクト・オブ・ザ・イヤー」2年連続（2025・2026年）はSAP導入領域に限定でULSの主戦場（AI上流工程）とは異なる。LTS(E): 比較材料なし（出典: 2026-10-13_competitors.md「8. 顧客・人員のKPIと第三者評価」）",
+    "evidence": [
+     {
+      "raw": "2026-10-13_competitors.md",
+      "section": "8",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "3. KBF 専門性",
+    "source": "ULS: Devin（Cognition AI）パートナーシップ（2025年5月締結）・ULBOK・「二刀流人材」は会社の主張（決算説明会資料 2026年5月）だが他社との客観的比較基準（特許・認定等）なし。ノースサンド(A): 「スキルより人にフォーカス」「未経験採用→育成」が主戦略で技術専門性の客観的指標なし。ライズ(B): 「Scopeless」スタイルは主張のみ。ベイカレント(C): テクノロジー子会社設立・生成AI大賞審査員（社員就任、会社の成果ではない）。シグマクシス(D): SAP/SaaS・AI活用支援重点だが特許・認定件数の開示なし。LTS(E): DXエンジニアリング（開発実装も担う）。全社、特許・認定件数の開示なし（2026-10-13_competitors.md「7. 主力製品と強み」）",
+    "evidence": [
+     {
+      "raw": "2026-10-13_competitors.md",
+      "section": "7",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "3. KBF サポート体制",
+    "source": "ULS: リピート率89%（前期92%から低下。「前期取引実績ある顧客の当期売上高を連結売上高で除して算出」。決算説明会資料 2026年5月）は他社の同定義指標と比べられない。シグマクシス(D): NSI97（プロジェクト満足度、会社実施アンケートで5段階評価の平均を100点換算）があるがULSのリピート率と定義が異なり直接比較できない。他社はプロジェクト品質の定量指標を開示していない（2026-10-13_competitors.md「8. 顧客・人員のKPIと第三者評価」）",
+    "evidence": [
+     {
+      "raw": "2026-10-13_competitors.md",
+      "section": "8",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "3. KBF 料金体系",
+    "source": "ULS: 月額単価開示なし（タイム・アンド・マテリアルが主体、外注費11.9%。有報 p.97・決算説明会資料 2026年5月）。ライズ(B): 稼働対象コンサルタントの平均単価253万円/月（前期261万円）が唯一の開示値で「外資系・総合ファームに対してバリュープライス」と主張するが比較対象は外資系・総合ファームであり独立系コンサル間の比較ではない。ノースサンド(A)・ベイカレント(C)・シグマクシス(D)・LTS(E): 月額単価開示なし（2026-10-13_competitors.md「8. 顧客・人員のKPIと第三者評価」）",
+    "evidence": [
+     {
+      "raw": "2026-10-13_competitors.md",
+      "section": "8",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   }
+  ],
+  "summary": {
+   "verified": 0,
+   "unverified": 6,
+   "missing": 0,
+   "reasons": {
+    "Front Matter なし": 6
+   }
+  }
+ }
+}
