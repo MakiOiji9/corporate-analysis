@@ -8,7 +8,10 @@ or a forecast). Every number comes from facts.json; the words are fixed template
   sizing()         a conditional cap per stock: 0 / 小 (≤2%) / 中 (≤5%) / 大 (≤8%) of a portfolio, from conviction
                    (the long verdict, STEP 1・2 grades, warnings) and one step down on large daily moves
                    (ATR over VOLATILE_ATR of the price, or beta over VOLATILE_BETA)
-  holder()         for holders: add near the band's low edge, take profit near its high edge, exit at the stop
+  short_plan()     短期: the short verdict, entries and exits at the chart's prices (cr_scenarios, as in chapter 07)
+  mid_plan()       中期: the mid verdict × the valuation band, take profit at its high edge, review on weak progress
+  long_plan()      長期: action() plus the 3- and 5-year levels (cr_projection): take part at the base case's 3-year
+                   level, review the rest above the bull case's 5-year level or when EPS grows slower than the bear case
   monitors()       what to watch: the next results' progress, the largest threat, the top buying factor, ROIC
   catalysts()      the next results and the market calendar of the weekly outlook
   legend_actions() what each investor's way of thinking would do, and how the three views split
@@ -20,6 +23,7 @@ from statistics import median
 import charts as C
 import cr_dashboard as DB
 import cr_judge as J
+import cr_projection as PJ
 from cr_html import badge, bullet_list, esc
 from slides import table
 
@@ -177,19 +181,93 @@ def sizing(facts: dict) -> dict:
     return {"level": level, "cap": CAPS[level], "why": why}
 
 
-# ---------------------------------------------------------------- holders, monitors, catalysts
+# ---------------------------------------------------------------- plans by horizon
 
-def holder(facts: dict) -> dict:
-    s = scenarios(facts)
-    _, currency = _price(facts)
+BREAKS = "上の「判断が崩れる条件」に当たれば、持ち続ける理由を見直す"
+SHORT_STANCE = {J.CONSIDER: "押し目で買い、上の抵抗線で利益を確定する短い売買を考えられる",
+                J.WATCH: "短期の材料（株価の流れ・地合い・決算の進み具合）がそろうまで様子を見る",
+                J.PASS: "短期では手を出さない", J.PENDING: "判断の材料がそろうのを待つ"}
+MID_PROGRESS = "次の決算で営業利益の進み具合が前年同期の 90% 未満なら、持ち続ける理由を見直す"
+
+
+def _verdict(facts: dict, key: str) -> str:
+    return (facts["horizons"].get(key) or {}).get("verdict") or J.PENDING
+
+
+def _technical_levels(facts: dict) -> tuple[list[dict], list[dict], list[dict]]:
+    """(entries, takes, exits) as {label, price}: cr_scenarios' prices (the same as chapter 07), else the raw lines."""
+    s = facts.get("scenarios") or {}
+    if s.get("ok"):
+        holder = s.get("holder") or {}
+        return ([{"label": b["basis"], "price": b["price"]} for b in s["buys"][:2]],
+                holder.get("take") or [], holder.get("exit") or [])
     levels = ((facts.get("prices") or {}).get("technicals") or {}).get("levels") or {}
-    stop = (levels.get("stop") or {}).get("price")
-    return {"add": (f"{_yen(s['band']['low'], currency)} 近く（指標が割安と見る水準）まで下がり、事業の判定が変わらなければ"
-                    "買い増しを考える") if s else "—",
-            "take": (f"{_yen(s['band']['high'], currency)} 以上（指標が割高と見る水準）では一部の利益確定を考える"
-                     if s else "—"),
-            "exit": (f"{_yen(stop, currency)}（チャートの損切りの目安）を下回るか、上の「判断が崩れる条件」に当たれば"
-                     "持ち続ける理由を見直す" if stop else "上の「判断が崩れる条件」に当たれば持ち続ける理由を見直す")}
+    stop = levels.get("stop") or {}
+    return ([{"label": x.get("label") or "支持線", "price": x["price"]} for x in (levels.get("supports") or [])[:2]],
+            [{"label": x.get("label") or "抵抗線", "price": x["price"]} for x in (levels.get("resistances") or [])[:1]],
+            [{"label": "損切りの目安", "price": stop["price"]}] if stop.get("price") else [])
+
+
+def short_plan(facts: dict) -> dict:
+    _, currency = _price(facts)
+    verdict = _verdict(facts, "short")
+    entries, takes, exits = _technical_levels(facts)
+    buy = [f"{_yen(e['price'], currency)}（{e['label']}）" for e in entries] if verdict in (J.CONSIDER, J.WATCH) else []
+    out = [f"{_yen(t['price'], currency)}（{t['label']}）付近で利益確定を考える" for t in takes[:1]]
+    out += [f"{_yen(x['price'], currency)}（{x['label']}）を下回ったら損切りを考える" for x in exits[:1]]
+    return {"key": "short", "verdict": verdict, "stance": SHORT_STANCE[verdict], "entries": buy,
+            "exits": out or ["チャートの目安が計算できない（株価のデータが足りない）"]}
+
+
+def _mid_stance(verdict: str, position: str | None) -> str:
+    if verdict == J.CONSIDER:
+        return {DB.BELOW: "指標の割安側にあり、買いを考えられる", DB.INSIDE: "目安の帯の下側まで下がるのを待って買う",
+                DB.ABOVE: "下がるのを待つ"}.get(position, "株価の指標がそろうのを待つ")
+    if verdict == J.WATCH:
+        return "次の決算の進み具合と株価の位置を確かめてから考える"
+    return "今は買わない" if verdict == J.PASS else "判断の材料がそろうのを待つ"
+
+
+def mid_plan(facts: dict) -> dict:
+    price, currency = _price(facts)
+    verdict = _verdict(facts, "mid")
+    s = scenarios(facts)
+    band = (s or {}).get("band") or {}
+    entries = ([f"{_yen(band['low'], currency)} 以下で指標の割安側に入る"]
+               if s and verdict in (J.CONSIDER, J.WATCH) else [])
+    exits = ([f"{_yen(band['high'], currency)}（強気シナリオ・指標が割高と見る水準）に届いたら一部の利益確定を考える"]
+             if s else [])
+    return {"key": "mid", "verdict": verdict, "stance": _mid_stance(verdict, band.get("position") if price else None),
+            "entries": entries, "exits": exits + [MID_PROGRESS]}
+
+
+def long_plan(facts: dict) -> dict:
+    price, currency = _price(facts)
+    a = action(facts)
+    p = facts.get("projection") or PJ.build(facts)
+    notes = []
+    if p.get("ok"):
+        base3, bull5 = PJ.level(p, "基本", 3), PJ.level(p, "楽観", 5)
+        exits = [f"基本ケースの3年後の水準 {_yen(base3, currency)} に届いたら一部の利益確定を考える"
+                 "（3年より早く届くほど、業績より先に株価の評価が上がっている）",
+                 f"楽観ケースの5年後の水準 {_yen(bull5, currency)} を超えたら、残りも持ち続ける理由を見直す",
+                 f"決算ごとの EPS の伸びが悲観ケースの年 {PJ.rate(p, '悲観'):.1f}% を下回り続けたら、保有の理由を見直す"]
+        if price and price >= base3:
+            notes.append("今の株価はすでに基本ケースの3年後の水準を上回っている（成長を先取りした株価）")
+    else:
+        s = scenarios(facts)
+        exits = ([f"{_yen(s['band']['high'], currency)} 以上（指標が割高と見る水準）では一部の利益確定を考える"]
+                 if s else [])
+        notes.append(f"3年後・5年後の水準は出していない: {p.get('reason')}")
+    return {"key": "long", "verdict": _verdict(facts, "long"), "stance": a["stance"], "entries": a["steps"],
+            "alerts": a["alerts"], "exits": exits + [BREAKS], "notes": notes, "projection": p}
+
+
+def plans(facts: dict) -> list[dict]:
+    return [short_plan(facts), mid_plan(facts), long_plan(facts)]
+
+
+# ---------------------------------------------------------------- monitors, catalysts
 
 
 def monitors(facts: dict, breaks: list[str]) -> list[str]:
@@ -238,32 +316,65 @@ def _scenario_table(s: dict, currency: str) -> str:
     return table(["シナリオ", "株価の目安", "今の株価から", "前提"], rows, right=frozenset({1, 2}))
 
 
+HORIZON_TITLES = {"short": "短期（〜3ヶ月）", "mid": "中期（6ヶ月〜1年）", "long": "長期（3年以上）"}
+HORIZON_LEADS = {"short": "チャートの支持線・抵抗線で入り、出る。価格は 07 章の売買シナリオと同じ。",
+                 "mid": "指標の割安・割高の帯と、次の決算の進み具合で判断する。",
+                 "long": "事業と成長が続く前提で持ち、成長の前提で描いた3年後・5年後の水準を売りの目安にする。"}
+
+
 def action_card(facts: dict) -> str:
-    """The short version for the first screen: the stance, the sizing cap and the next review."""
-    a, z = action(facts), sizing(facts)
-    return (f'<div class="action"><div><span class="k">今の行動の目安</span><b>{esc(a["stance"])}</b></div>'
+    """The short version for the first screen: the stance of each horizon, the sizing cap and the next review."""
+    z = sizing(facts)
+    lines = "".join(f'<span class="hz">{esc(HORIZON_TITLES[p["key"]][:2])}: <b>{esc(p["stance"])}</b></span>'
+                    for p in plans(facts))
+    return (f'<div class="action"><div><span class="k">今の行動の目安</span>{lines}</div>'
             f'<div><span class="k">1銘柄の配分の目安</span><b>{esc(z["cap"])}</b></div>'
             f'<div><span class="k">次に見直す日</span><span class="rv">{esc(facts.get("review") or "—")}</span></div>'
             '<a href="#thesis">行動計画を見る</a></div>')
 
 
+def _projection_table(p: dict, currency: str) -> str:
+    def cell(case: str, years: int) -> str:
+        r = next(x for x in p["rows"] if x["case"] == case and x["years"] == years)
+        tail = "" if r["annual"] is None else f'<br><span class="small muted">今から年 {C.fmt(r["annual"], 1, True)}%</span>'
+        return f"<b>{esc(_yen(r['price'], currency))}</b>{tail}"
+    rows = [[f"<b>{esc(c['name'])}</b>", esc(f"{c['rate']:.1f}%"), *(cell(c["name"], n) for n in p["years"]),
+             f'<span class="small">{esc(c["basis"])}</span>'] for c in p["cases"]]
+    return table(["ケース", "EPS の伸び（年）", *(f"{n}年後の水準" for n in p["years"]), "成長率の根拠"], rows,
+                 right=frozenset({1, 2, 3}))
+
+
+def _plan_block(plan: dict, facts: dict, currency: str) -> str:
+    key = plan["key"]
+    out = (f'<div class="hplan"><h4>{esc(HORIZON_TITLES[key])} {badge(plan["verdict"])}</h4>'
+           f'<p class="small muted">{esc(HORIZON_LEADS[key])}</p><p>今の行動の目安: <b>{esc(plan["stance"])}</b></p>')
+    if key == "mid":
+        s = scenarios(facts)
+        out += (_scenario_table(s, currency) + '<p class="small muted">指標の割安・割高の境目から計算した今の目安で、'
+                "株価の予想ではない。</p>") if s else '<p class="muted">株価の指標が足りず、目安の帯を計算できない。</p>'
+    if key == "long":
+        p = plan["projection"]
+        if p.get("ok"):
+            out += (f"<p>EPS {esc(C.fmt(p['eps0'], 1))}{esc(currency)} × {esc(p['per_basis'])} "
+                    f"{esc(C.fmt(p['per'], 1))}倍 を起点に、成長が続いた場合の水準</p>"
+                    + _projection_table(p, currency) + f'<p class="small muted">{esc(p["note"])}。</p>')
+    if plan["entries"]:
+        out += ("<h5>分けて買う場合の価格の目安</h5>" if key == "long" else "<h5>買いを考える価格</h5>") \
+            + bullet_list(plan["entries"])
+    if plan.get("alerts"):
+        out += "<h5>判断を変える条件（価格・事業）</h5>" + bullet_list(plan["alerts"])
+    out += "<h5>売り・見直しの目安</h5>" + bullet_list(plan["exits"])
+    if plan.get("notes"):
+        out += bullet_list(plan["notes"])
+    return out + "</div>"
+
+
 def html(facts: dict, breaks: list[str]) -> str:
     _, currency = _price(facts)
-    s, a, z, h = scenarios(facts), action(facts), sizing(facts), holder(facts)
-    out = "<h3>3つのシナリオ（株価の目安）</h3>"
-    out += (_scenario_table(s, currency) + '<p class="small muted">指標の割安・割高の境目から計算した目安で、'
-            "株価の予想ではない。</p>") if s else '<p class="muted">株価の指標が足りず計算できない。</p>'
-    long = facts["horizons"]["long"]
-    out += (f'<h3>今の行動の目安</h3><p>長期の判定 {badge(long["verdict"])} × 株価の位置 '
-            f'<b>{esc((s or {}).get("band", {}).get("position") or "—")}</b> → <b>{esc(a["stance"])}</b></p>')
-    if a["steps"]:
-        out += "<h4>分けて買う場合の価格の目安</h4>" + bullet_list(a["steps"])
-    if a["alerts"]:
-        out += "<h4>判断を変える条件（価格・事業）</h4>" + bullet_list(a["alerts"])
+    z = sizing(facts)
+    out = "<h3>期間別の行動計画</h3>" + "".join(_plan_block(p, facts, currency) for p in plans(facts))
     out += (f"<h3>配分の目安: {esc(z['cap'])}</h3>" + bullet_list(z["why"])
             + f'<p class="small muted">{esc(SIZING_NOTE)}</p>')
-    out += ("<h3>保有している場合</h3>" + table(["場面", "目安"], [["買い増し", esc(h["add"])], ["利益確定", esc(h["take"])],
-                                                          ["見直し", esc(h["exit"])]]))
     out += "<h3>見ておく項目</h3>" + bullet_list(monitors(facts, breaks))
     out += "<h3>近い予定</h3>" + bullet_list(catalysts(facts))
     return out

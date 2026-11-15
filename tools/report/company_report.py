@@ -39,6 +39,7 @@ import cr_facts as F  # noqa: E402
 import cr_judge as J  # noqa: E402
 import cr_legends as L  # noqa: E402
 import cr_plain as P  # noqa: E402
+import cr_projection as PJ  # noqa: E402
 import cr_render as R  # noqa: E402
 import cr_status as S  # noqa: E402
 import cr_technicals as T  # noqa: E402
@@ -149,6 +150,15 @@ def _technical(facts: dict) -> dict:
     return {"state": t.get("state"), "score": t.get("score")}
 
 
+def _projection(facts: dict) -> dict:
+    """The long-term levels for the summary: the base case's growth rate and its 3- and 5-year prices."""
+    p = facts.get("projection") or {}
+    if not p.get("ok"):
+        return {"ok": False, "reason": p.get("reason")}
+    base = {str(r["years"]): round(r["price"]) for r in p["rows"] if r["case"] == "基本"}
+    return {"ok": True, "per": p["per"], "base": {"rate": PJ.rate(p, "基本"), **base}}
+
+
 def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     company, error = _resolve(root, args.company)
     if error:
@@ -208,6 +218,7 @@ def result_json(company: S.Company, facts: dict, date: str, warnings: list[str])
         "step1": {k: facts["step1"][k] for k in ("grade", "pending", "why")},
         "step2": {k: facts["step2"][k] for k in ("grade", "pending", "why", "mismatch")},
         "step3": facts["step3"], "price": facts["price"], "legends": _legends(facts), "technical": _technical(facts),
+        "projection": _projection(facts),
         "price_range": {"source": p["source"], "current": p.get("current"), "first": p.get("first"),
                         "last": p.get("last"), "position_52w": w52["position"] if w52 else None},
         "analyses": {k: {"date": a["date"], "verdict": a["verdict"]} for k, a in facts["analyses"].items()},

@@ -17,6 +17,7 @@ import cr_plain as P
 import cr_positioning as POS
 import cr_moves as MV
 import cr_phase as PH
+import cr_projection as PJ
 import cr_scenarios as SC
 import cr_winds as WI
 import news_table as NT
@@ -301,7 +302,8 @@ def build(root: Path, company: S.Company, today: str, status: dict) -> dict:
                          _get(found["valuation"], "detail", "flip_values") or {}, context)
     profile = _profile(company)
     winds = WI.evaluate(root, profile, status["outlook"], _get(found["five_forces"], "detail", "industry") or "")
-    return {**facts, "legends": L.evaluate(facts), "scenarios": scenarios, "winds": winds,
+    return {**facts, "legends": L.evaluate(facts), "scenarios": scenarios, "projection": PJ.build(facts),
+            "winds": winds,
             "moves": moves(root, company, profile, market, prices, winds), "phase": PH.evaluate(phase_context(facts)),
             "governance": governance(company), "management": management(company)}
 

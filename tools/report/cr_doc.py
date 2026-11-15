@@ -302,6 +302,20 @@ def _scenario_lines(s: dict) -> list[str]:
     return lines + [""]
 
 
+def _projection_lines(p: dict) -> list[str]:
+    """長期の3年後・5年後の水準 (the HTML draws the table and the exits; the long text may mention the assumption)."""
+    if not p:
+        return []
+    head = ["## 4.3 長期の3年後・5年後の水準（参考。スクリプトが HTML に表と売りの目安を載せる。仮定の水準で予想ではない）", ""]
+    if not p.get("ok"):
+        return head + [f"- 出していない: {p.get('reason') or '—'}", ""]
+    lines = [f"- 起点: EPS {C.fmt(p['eps0'], 1)} × {p['per_basis']} {C.fmt(p['per'], 1)}倍"]
+    for c in p["cases"]:
+        levels = "、".join(f"{r['years']}年後 {C.fmt(r['price'], 0)}" for r in p["rows"] if r["case"] == c["name"])
+        lines.append(f"- {c['name']}（EPS 年 {c['rate']:.1f}%。{c['basis']}）: {levels}")
+    return head + lines + [""]
+
+
 RESIDUAL_NOTE = ("残差には、業種の動き・市場全体以外の要因・β の推計の誤差も含まれる。会社の材料だけで動いた分とは限らず、"
                  "値動きの原因を示す値ではない")
 
@@ -411,7 +425,8 @@ def render_brief(facts: dict, md_rel: str) -> str:
     lines += _premise(facts) + _analyses(facts) + [""] + _horizons(facts) + _prices(facts) + [""]
     lines += T.brief_lines(technicals(facts), facts["horizons"]["long"]["verdict"],
                            (facts.get("prices") or {}).get("positioning"))
-    lines += _scenario_lines(facts.get("scenarios") or {}) + _wind_lines(facts.get("winds") or {})
+    lines += (_scenario_lines(facts.get("scenarios") or {}) + _projection_lines(facts.get("projection") or {})
+              + _wind_lines(facts.get("winds") or {}))
     lines += _move_lines(facts.get("moves") or {}) + _phase_lines(facts.get("phase") or {})
     lines += _governance_lines(facts.get("governance"), facts.get("management"))
     lines += _recent(facts) + _conditions(facts) + L.brief_lines(facts)
