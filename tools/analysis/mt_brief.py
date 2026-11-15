@@ -13,7 +13,7 @@ from mt_paths import Company
 # brief chapter: (title, input keys). The comparison numbers come first (chapter 1); every raw section once.
 CHAPTERS = (
     ("無形資産: ブランド・価格決定力の材料", ("pricing", "peer_claims")),
-    ("無形資産: 規制・特許・許認可の材料", ("ip",)),
+    ("無形資産: 規制・特許・許認可の材料", ("ip", "patents", "peer_patents")),
     ("スイッチングコストの材料", ("retention", "installed_base", "customer_base", "kpi", "peer_kpi")),
     ("ネットワーク効果・効率的規模の材料（市場の大きさ・参入と撤退）", ("market_size", "entry")),
     ("コスト優位の材料", ("peer_cost", "industry_margin", "segments")),
