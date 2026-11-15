@@ -44,6 +44,7 @@
 情報収集用の Python スクリプトは `tools/collect/`（地合い用は `tools/collect/market/`）、レポート作成用は `tools/report/` にある。使い方とセットアップは `tools/README.md` を参照。
 設定はすべてこのリポジトリ内で完結する（`.venv`、`.env`、`.claude/settings.json`）。
 `.claude/settings.json` の PreToolUse hook（`tools/guard/write_guard.py`）が、スクリプト専用ファイルの手書き・完成済み raw の変更・スキル実行中の範囲外の書き込みをブロックする。
+すぐには対応しなかった改善の課題は `docs/improvement-backlog.md` に記録している（着手・完了したら状態とコミットを更新する）。
 
 ## GitHub Actions での定期実行
 
