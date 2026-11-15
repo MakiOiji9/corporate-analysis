@@ -445,7 +445,7 @@ def test_serious_red_flag_passes_every_horizon(repo, capsys):
 def test_horizons_weigh_differently(repo, capsys):
     _company(repo, {"moat": {"verdict": "なし"}, "three-c": {"verdict": "あいまい"},
                     "five-forces": {"attractiveness": "低"}, "profitability": {"verdict": "普通"},
-                    "growth": {"verdict": "普通"}})
+                    "growth": {"verdict": "懸念"}})
     out = _prepare(repo, capsys)
     assert out["horizons"]["short"] == "投資検討" and out["horizons"]["long"] != "投資検討"
 

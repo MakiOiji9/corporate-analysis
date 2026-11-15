@@ -42,8 +42,10 @@ WEIGHTS = {  # percent; each horizon sums to 100
     "short": {"market": 25, "price": 25, "progress": 20, "valuation": 20, "safety": 10},
     "mid": {"market": 10, "price": 10, "progress": 15, "valuation": 20, "growth": 15, "profitability": 10,
             "cash_flow": 10, "safety": 5, "swot": 5},
-    "long": {"market": 5, "valuation": 15, "growth": 10, "profitability": 10, "cash_flow": 10, "safety": 5,
-             "five_forces": 10, "three_c": 15, "moat": 15, "swot": 5},
+    # growth carries 手順5 (成長投資): whether the company keeps creating value matters more than whether a moat
+    # source could be named (most companies have none)
+    "long": {"market": 5, "valuation": 15, "growth": 20, "profitability": 10, "cash_flow": 5, "safety": 5,
+             "five_forces": 10, "three_c": 15, "moat": 10, "swot": 5},
 }
 FACTOR_LABELS = {"market": "地合い", "price": "株価のテクニカル（トレンド・勢い・位置）", "progress": "直近の決算の進捗",
                  "valuation": "株価の割安さ（STEP 3）", "growth": "成長性", "profitability": "収益性",
@@ -77,7 +79,7 @@ def step1(attractiveness: str | None, win: str | None, moat: str | None, swot: s
         _row("業界の魅力度が中以上", attractiveness, "1-1 ファイブフォース",
              attractiveness in ATTRACTIVE if attractiveness else None),
         _row("勝てる理由が明確", win, "1-2 3C", win == "明確" if _known(win) else None),
-        _row("モートが広い", moat, "1-3 モート", moat == "広い" if _known(moat) else None),
+        _row("モートが狭い以上", moat, "1-3 モート", moat in ("広い", "狭い") if _known(moat) else None),
         _row("SWOT が Yes", swot, "1-4 SWOT", swot == "Yes" if _known(swot) else None),
     ]
     failed = [r["condition"] for r in rows if r["ok"] is not True]

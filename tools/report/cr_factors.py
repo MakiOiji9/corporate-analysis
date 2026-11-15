@@ -6,6 +6,8 @@ Each factor is {score: +1..−1 or None (no material), value, reason, source, pe
              moved half a step by the analysis' own sub-ratings (subs, cr_facts.SUBS) when they lean the other way:
              a 普通 whose subs average ≥ +0.25 is +0.5 (≤ −0.25: −0.5); a 懸念 whose subs average ≥ 0 is −0.5
              (one narrow concern); a 良好 whose subs average ≤ 0 is +0.5. Needs two known subs; hold keeps −1.
+             The moat is scored by moat_factor: 広い +1, 狭い +0.5, なし 0 while the excess return is 強い/弱い (a
+             moat is rare; the lack of an identified source is not a weakness), −1 without an excess return.
   valuation  the average score of the indicators without the one-sided net-cash ratio (it can only be 割安 or
              妥当); fewer than two scored indicators is 判定保留 (0); the raw STEP 3 verdict when no scores
   market     the outlook's row for the horizon (平常 +1, 注意 0, 警戒 −1)
@@ -71,6 +73,25 @@ def analysis_factor(a: dict, hold: bool = False) -> dict:
             score = moved
     return _factor(score, value, reason + note,
                    f"{a['step']} {a['label']}分析（{a.get('date') or '未実施'}）", verdict == J.PENDING)
+
+
+MOAT_SCORE = {"広い": 1.0, "狭い": 0.5}
+EXCESS_RETURN = ("強い", "弱い")  # the moat analysis' 超過収益 ratings that show a return above the cost of capital
+
+
+def moat_factor(a: dict) -> dict:
+    """広い +1 / 狭い +0.5 / なし: 0 while the company earns above its cost of capital (超過収益 強い・弱い; the source
+    could not be found, which is the usual case and not a weakness), −1 without that excess return."""
+    factor = analysis_factor(a)
+    verdict = a.get("verdict")
+    if verdict in MOAT_SCORE:
+        return {**factor, "score": MOAT_SCORE[verdict]}
+    returns = ((a.get("detail") or {}).get("returns") or {}).get("rating")
+    if verdict == "なし" and returns in EXCESS_RETURN:
+        return {**factor, "score": 0.0, "value": f"なし（超過収益は{returns}。それを守る源泉は特定できない）",
+                "reason": factor["reason"] + "（資本コストを上回る利益はあるため、モートが無いことは点数では中立に"
+                                             "数えた。マイナスにするのは超過収益そのものが無いとき）"}
+    return factor
 
 
 def step3_verdict(valuation: dict) -> str | None:
@@ -142,6 +163,7 @@ def build(found: dict[str, dict], prices: dict, outlook: dict,
           burn: list[str] | tuple = ()) -> dict[str, dict[str, dict]]:
     """horizon -> factor key -> factor. burn (cr_judge.cash_burn) keeps the cash-flow factor's own score."""
     common = {key: analysis_factor(found[key], hold=bool(burn) and key == "cash_flow") for key in ANALYSIS_KEYS}
+    common["moat"] = moat_factor(found["moat"])
     common.update(valuation=valuation_factor(found["valuation"]), price=price_factor(prices),
                   progress=progress_factor(found["growth"]))
     return {horizon: {**common, "market": market_factor(outlook, horizon)} for horizon in PERIOD_KEYS}

@@ -29,10 +29,18 @@ def _f(score: float | None, pending: bool = False) -> dict:
     ("高", "明確", "広い", "No", "C", False),
     ("中", "判定保留", "なし", "条件付き", "B", True),
     ("中", "判定保留", "広い", "No", "C", False),
+    ("中", "明確", "狭い", "Yes", "A", False),  # a narrow moat is enough for A (a wide one is rare)
+    ("中", "明確", "なし", "Yes", "B", False),
 ])
 def test_step1_rules(attr, win, moat, swot, grade, pending):
     result = J.step1(attr, win, moat, swot)
     assert (result["grade"], result["pending"]) == (grade, pending)
+
+
+def test_long_horizon_weighs_growth_more_than_the_moat():
+    long = J.WEIGHTS["long"]
+    assert (long["growth"], long["moat"], long["cash_flow"]) == (20, 10, 5)
+    assert long["five_forces"] + long["three_c"] + long["moat"] + long["swot"] == 40
 
 
 # ---------------------------------------------------------------- STEP 2 (score + red flags)
@@ -116,8 +124,9 @@ def test_missing_factors_are_left_out_and_reweighted():
 
 
 def test_horizons_weigh_different_factors():
-    factors = {**_all(0.0), "moat": _f(-1.0), "three_c": _f(-1.0), "market": _f(1.0), "price": _f(1.0)}
-    assert J.horizon_score("long", factors)["verdict"] == "見送り"      # weak business
+    factors = {**_all(0.0), "moat": _f(-1.0), "three_c": _f(-1.0), "growth": _f(-1.0), "market": _f(1.0),
+               "price": _f(1.0)}
+    assert J.horizon_score("long", factors)["verdict"] == "見送り"      # weak business that does not grow
     assert J.horizon_score("short", factors)["verdict"] == "投資検討"    # good market and price position
 
 

@@ -232,13 +232,32 @@ def growth_block(facts: dict) -> str:
              f"{num(cagr.get('operating_income'), '%')}・EPS {num(cagr.get('eps'), '%')}（{g.get('growth_type') or '—'}）",
              f"会社計画の信頼性: {g.get('plan') or '—'}（過去の達成率の平均 {num(g.get('plan_average'), '%', 0)}）",
              f"成長の質: {g.get('quality_sentence') or g.get('quality') or '—'}",
+             f"成長投資（将来の成長のために使ったお金とその効率）: {(g.get('investment') or {}).get('sentence') or '—'}",
              f"市場の成長性（3C）: {tc.get('growth') or '—'}。{tc.get('market') or ''}",
              f"中期経営計画: {g.get('mtp') or '—'}"]
     plan_table = (f'<h4>今期の会社計画と進み具合（{esc(facts["unit"])}）</h4>'
                   + table(["項目", "前期の実績", "今期の会社予想", "予想の伸び", "進捗率", "前年同期の進捗率"], plan,
                           right=frozenset({1, 2, 3, 4, 5})) if plan else "")
     return ('<h3>成長の見通し</h3><ul class="plain">' + "".join(f"<li>{esc(x)}</li>" for x in lines) + "</ul>"
-            + plan_table)
+            + plan_table + investment_table(g.get("investment") or {}, facts["unit"]))
+
+
+INVEST_COLUMNS = (("capex", "設備投資"), ("depreciation", "減価償却費"), ("rnd", "研究開発費"),
+                  ("working_capital", "運転資本の増加"), ("acquisition", "子会社の取得"), ("growth", "成長投資"))
+
+
+def investment_table(inv: dict, unit: str) -> str:
+    """The yearly parts of the growth investment (成長性 手順5) with how to read them."""
+    rows = inv.get("rows") or []
+    if not rows:
+        return ""
+    body = [[esc(r.get("year"))] + [esc(num(r.get(k), "", 0)) for k, _ in INVEST_COLUMNS] for r in rows]
+    roic = num(inv.get("roic"), "%") if inv.get("roic") is not None else "—"
+    note = (f'<p class="small">読み方: 成長投資 = 設備投資 − 減価償却費（今の設備を保つ分）＋ 研究開発費 ＋ 運転資本の増加 '
+            f'＋ 子会社の取得。投資した分に対して利益がどれだけ増えたか（増分 ROIC）は {esc(roic)}'
+            f'（効率 {esc(inv.get("efficiency") or "—")}）。</p>')
+    return (f'<h4>成長投資の推移（{esc(unit)}）</h4>'
+            + table(["年度"] + [label for _, label in INVEST_COLUMNS], body, right=frozenset(range(1, 7))) + note)
 
 
 def peers_block(facts: dict) -> str:

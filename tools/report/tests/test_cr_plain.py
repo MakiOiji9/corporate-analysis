@@ -10,6 +10,15 @@ import cr_plain as P  # noqa: E402
 import cr_sections as CS  # noqa: E402
 
 
+def test_investment_table_shows_the_yearly_parts_and_the_incremental_roic():
+    inv = {"efficiency": "良好", "roic": 13.6,
+           "rows": [{"year": "2026-02", "capex": 46240, "depreciation": 21084, "rnd": 24006, "working_capital": 16138,
+                     "acquisition": 0, "growth": 65300}]}
+    html = CS.investment_table(inv, "百万円")
+    assert "成長投資の推移（百万円）" in html and "46,240" in html and "13.6%" in html
+    assert CS.investment_table({}, "百万円") == ""
+
+
 def test_step_number_becomes_what_the_step_checks():
     assert P.plain("手順1が良好、営業利益率が同業平均以上", "profitability") == "「ROE の水準と安定性」が良好、営業利益率が同業平均以上"
     assert "「利益の質」（営業CF対純利益比率 0.77倍（5年平均））が懸念" == P.plain(

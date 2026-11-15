@@ -42,6 +42,33 @@ def test_the_reason_says_when_the_score_was_moved():
     assert "+0.5" in factor["value"] and "内訳" in factor["reason"]
 
 
+def _moat(verdict: str, returns: str | None) -> dict:
+    return {"verdict": verdict, "reason": "r", "step": "1-3", "label": "モート", "date": "2026-11-14",
+            "detail": {"returns": {"rating": returns}}}
+
+
+@pytest.mark.parametrize("verdict, returns, score", [
+    ("広い", "強い", 1.0), ("狭い", "弱い", 0.5),
+    ("なし", "弱い", 0.0), ("なし", "強い", 0.0),  # excess returns without a source found: neutral
+    ("なし", "なし", -1.0), ("なし", "不明", -1.0), ("なし", None, -1.0),
+])
+def test_moat_score_separates_no_source_from_no_excess_return(verdict, returns, score):
+    assert F.moat_factor(_moat(verdict, returns))["score"] == score
+
+
+def test_a_neutral_moat_says_why():
+    factor = F.moat_factor(_moat("なし", "弱い"))
+    assert "源泉" in factor["value"] and "中立" in factor["reason"]
+
+
+def test_build_uses_the_moat_factor():
+    found = {key: _analysis("普通") for key in F.ANALYSIS_KEYS}
+    found["moat"] = _moat("なし", "弱い")
+    found["valuation"] = {"verdict": "妥当", "date": "2026-11-01", "detail": {}}
+    factors = F.build(found, {}, {"rows": {}})
+    assert factors["long"]["moat"]["score"] == 0.0
+
+
 def test_cash_burn_keeps_a_cash_flow_concern_at_minus_one():
     a = {**_analysis("懸念", ["懸念", "問題なし"]), "label": "キャッシュフロー"}
     assert F.analysis_factor(a)["score"] == -0.5
