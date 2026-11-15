@@ -9,7 +9,9 @@ Charts are inline SVG from charts.py. One vertical page, overview first and deta
 """
 from __future__ import annotations
 
+import html
 from string import Template
+from urllib.parse import quote, urlparse
 
 import charts as C
 import cr_ch_price as CP
@@ -181,8 +183,46 @@ def _roic_chart(moat: dict) -> str:
                   "モート分析（有報・決算短信から計算）", "%", ROIC_NOTE)
 
 
+EVIDENCE_REASONS = {  # provenance.py's reasons in the reader's words
+    "Front Matter なし": "出典の記録なし", "Front Matter の形式の誤り": "出典の記録に誤り", "節の出典なし": "該当箇所の記録なし",
+    "原本なし": "原本の保存なし", "ページなし": "ページの記録なし", "検索要約": "検索結果の要約のみ"}
+
+
+def _source_url(url: str | None) -> str | None:
+    """The document's public URL (manifest.csv) when it is a web address; anything else is not linked."""
+    return url if url and urlparse(url).scheme in ("http", "https") else None
+
+
+def _evidence_href(e: dict) -> str | None:
+    """The public URL, so a reader on GitHub or Slack can open it; only a document with no URL falls back to the
+    saved original under sources/ (git-ignored: it opens only where it was fetched)."""
+    url = _source_url(e.get("url"))
+    if url:
+        return html.escape(url)
+    return html.escape(quote("../" + e["local_path"])) if e.get("local_path") else None  # a path: no plain()
+
+
+def _evidence_item(e: dict) -> str:
+    """'有価証券報告書 第110期 p.42-43' linked to its source, or '未検証（ページの記録なし） 資料名'."""
+    name = esc(e.get("title") or e.get("doc_id") or "")
+    href = _evidence_href(e)
+    named = f'<a href="{href}" rel="noopener">{name}</a>' if href and name else name
+    if e.get("status") != "検証済み":
+        reason = f"（{EVIDENCE_REASONS.get(e['reason'], e['reason'])}）" if e.get("reason") else ""
+        return f'<span class="ok-unk">{esc(e.get("status") or "")}{esc(reason)}</span>' + (f" {named}" if named else "")
+    pages = f" p.{esc(e['pages'])}" if e.get("pages") else ""
+    return f'<span class="ok-yes">✓</span> {named}{pages}'
+
+
+def _evidence_cell(m: dict) -> str:
+    """The moat row's sources (moat.json moats[].evidence); '—' for a result built before BL-01."""
+    items = list(dict.fromkeys(_evidence_item(e) for e in m.get("evidence") or []))  # two sections, one document
+    return "<br>".join(items) if items else "—"
+
+
 def _moat_sources(moat: dict) -> str:
-    rows = [[esc(m.get("type")), esc(m.get("group") or ""), esc(m.get("rating")), esc(m.get("mechanism") or "")]
+    rows = [[esc(m.get("type")), esc(m.get("group") or ""), esc(m.get("rating")), esc(m.get("mechanism") or ""),
+             _evidence_cell(m)]
             for m in moat.get("moats") or []]
     if not rows:
         return ""
@@ -190,7 +230,7 @@ def _moat_sources(moat: dict) -> str:
     axis = "、".join(f"{name} {axes[k]}" for k, name in (("width", "幅"), ("depth", "深さ"), ("reach", "拡張性"))
                     if axes.get(k))
     head = f'<p class="small">堀の{esc(axis)}。傾向: {esc(moat.get("trend") or "—")}</p>' if axis else ""
-    return "<h4>強みの源泉（6種類）</h4>" + head + table(["源泉", "種類", "強さ", "仕組みと根拠"], rows)
+    return "<h4>強みの源泉（6種類）</h4>" + head + table(["源泉", "種類", "強さ", "仕組みと根拠", "出典"], rows)
 
 
 def _counters(d: dict) -> str:

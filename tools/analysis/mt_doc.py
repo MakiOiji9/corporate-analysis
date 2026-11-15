@@ -51,6 +51,7 @@ NO_RISK = "なし"
 PENDING = "判定保留"
 MOAT_COLUMNS = 6
 RISK_COLUMNS = 6
+EVIDENCE_CHAPTER = 12  # an_evidence: build appends 出典の連鎖 after the template's 11 chapters
 
 
 # ---------- skeleton ----------
@@ -137,6 +138,14 @@ def parse(text: str) -> dict:
         "counter": handoff.get(COUNTER_LABEL, ""),
         "changes": M.bullets(M.section(text, "10.")), "gaps": M.bullets(M.section(text, "11.")),
     }
+
+
+def claims(parsed: dict) -> list[tuple[str, str]]:
+    """(claim, 情報源 cell) of the rows that cite raw files: the six sources (4章), the share (5章), the risks (6章)."""
+    rows = [(f"4. {m['type']}", m["source"]) for m in parsed["moats"]]
+    rows.append(("5. シェアの推移", parsed["share"]["source"]))
+    rows += [(f"6. {r['factor'].strip()}", r["source"]) for r in parsed["risks"]]
+    return [(claim, cell) for claim, cell in rows if not M.is_blank(cell)]
 
 
 # ---------- fields build derives from the writer's rows (an_fill.fill_at_build) ----------

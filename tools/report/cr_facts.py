@@ -29,6 +29,7 @@ from sf_series import JAPAN_TICKER, unit_label
 MARKETS = {"日本": "japan", "米国": "us"}
 STATUS_EARNINGS = "四半期決算"
 GAP_LIMIT = 12  # 材料不足の一覧に出す数（重複を除く）
+EVIDENCE_KEYS = ("status", "reason", "doc_id", "title", "url", "published", "period", "pages", "local_path")  # BL-01
 
 
 def _get(d: object, *keys: str) -> object:
@@ -70,7 +71,9 @@ def _moat(r: dict) -> dict:
     returns = r.get("returns") or {}
     return {"durability": r.get("durability"), "effective": r.get("effective_moats") or [],
             "moats": [{"type": m.get("type"), "group": m.get("group"), "rating": m.get("rating"),
-                       "mechanism": m.get("mechanism")} for m in r.get("moats") or []],
+                       "mechanism": m.get("mechanism"),
+                       "evidence": [{k: e.get(k) for k in EVIDENCE_KEYS} for e in m.get("evidence") or []]}
+                      for m in r.get("moats") or []],
             "risks": r.get("risks") or [], "trend": r.get("trend"),
             "axes": {k: (v or {}).get("rating") for k, v in (r.get("axes") or {}).items()},
             "returns": {"hurdle": returns.get("hurdle"), "rating": returns.get("rating"), "basis": returns.get("basis"),

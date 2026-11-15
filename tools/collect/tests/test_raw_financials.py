@@ -10,6 +10,7 @@ sys.path[:0] = [str(COLLECT), str(REPO / "tools" / "analysis"), str(REPO / "tool
                 str(COLLECT / "market")]
 
 import an_common as A  # noqa: E402
+import front_matter as FM  # noqa: E402
 import raw_financials as RF  # noqa: E402
 import sf_series  # noqa: E402
 
@@ -54,7 +55,9 @@ def test_writes_tables_and_leaves_fill_only_for_judgement(tmp_path, capsys):
     code, out = _run(root, capsys)
     text = (root / out["path"]).read_text(encoding="utf-8")
     assert code == 0 and out["path"] == f"companies/{DIR}/raw/ir/{DATE}_financials-historical.md"
-    assert text.startswith("# 財務データ時系列（2024年3月期〜2026年3月期） — 例示株式会社（1234）")
+    meta, body = FM.parse(text)  # BL-01: the script's tables rest on data/financials.csv
+    assert meta["sources"][0]["id"] == "d1" and sorted(meta["sections"]) == ["1", "4", "5", "8"]
+    assert body.startswith("# 財務データ時系列（2024年3月期〜2026年3月期） — 例示株式会社（1234）")
     assert "| 売上高 | 1,000 | 1,100 | 1,200 |" in text
     assert "| 自己資本 | 1,180 | 1,280 | 1,370 |" in text            # net assets − non-controlling interests
     assert "| 有利子負債 | 100 | 0 | 50 |" in text

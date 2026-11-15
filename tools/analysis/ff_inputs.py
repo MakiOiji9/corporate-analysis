@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import an_common as A
+import front_matter as FM
 import mdparse as M
 from ff_paths import DATED, Company
 
@@ -232,10 +233,21 @@ def collect_requests(found: dict[str, Found]) -> list[dict]:
     return [{"agent": agent, "items": items} for agent, items in by_agent.items()]
 
 
+def _source_line(text: str) -> str:
+    """The front matter's documents in one line (empty when the file has none or it is malformed)."""
+    try:
+        meta = FM.parse(text)[0]
+    except FM.FrontMatterError:
+        return ""
+    return FM.source_line(meta) if meta else ""
+
+
 def header_notes(path: Path) -> str:
-    """情報源・注意 lines above a raw file's first section (title and 収集日 dropped), capped."""
-    lines = []
-    for line in COMMENT.sub("", path.read_text(encoding="utf-8")).splitlines():
+    """情報源・注意 lines above a raw file's first section (title and 収集日 dropped), capped. The front matter's
+    document IDs come first, so the brief can name them."""
+    text = path.read_text(encoding="utf-8")
+    lines = [line for line in (_source_line(text),) if line]
+    for line in COMMENT.sub("", FM.body_of(text)).splitlines():
         if line.startswith("## ") or line.strip() == "---":
             break
         if line.startswith("# ") or line.startswith("**収集日**") or not line.strip() or line.strip() == ">":

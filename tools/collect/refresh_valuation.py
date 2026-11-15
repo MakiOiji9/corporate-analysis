@@ -28,6 +28,7 @@ HERE = Path(__file__).resolve().parent
 TOOLS = HERE.parent
 sys.path[:0] = [str(HERE), str(HERE / "market"), str(TOOLS / "analysis"), str(TOOLS / "report")]
 
+import front_matter as FM  # noqa: E402
 import mdparse as M  # noqa: E402
 import stock_prices as SP  # noqa: E402
 import va_inputs as VI  # noqa: E402
@@ -141,13 +142,21 @@ HEADER_NOTE = ("> 確度の定義: 一次＝会社・取引所・官公庁の原
                "（単位・会計期間を明記）。")
 
 
+def _front_matter(today: str, url: str, sections: tuple[str, ...]) -> str:
+    """The price comes from the chart API (no saved original), the per-share values from the previous raw file."""
+    return FM.render({"provenance": FM.VERSION, "collected": today,
+                      "sources": [{"id": "w1", "title": "Yahoo Finance チャート API", "url": url, "confidence": "二次"}],
+                      "sections": {n: [{"source": "w1", "pages": None}] for n in sections}})
+
+
 def valuation_text(name: str, today: str, base: str, symbol: str, own: dict, price: float, prev_rel: str) -> str:
     cur = own["currency"]
     rows = [f"| 株価 | {_fmt_price(price, cur)} | 基準日 {base} の確定終値。Yahoo Finance チャート API、取得 {today}（二次） |",
             f"| 時価総額 | {_fmt_cap(price * own['shares'], cur)}（= {_fmt_price(price, cur)} × {own['shares']:,.0f}株） | "
             "自己株式を除く株式数ベースの計算値 |"]
     rows += [f"| {label} | {value} | {note} |" for label, value, note in own["kept_rows"]]
-    return "\n".join([
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
+    return _front_matter(today, url, ("1", "3")) + "\n".join([
         f"# 株価・バリュエーションデータ — {name}", "",
         f"**収集日**: {today}", "**情報源**:",
         f"- Yahoo Finance チャート API（https://query1.finance.yahoo.com/v8/finance/chart/{symbol}）{today} 取得。"
@@ -172,7 +181,8 @@ def _competitor_row(p: dict) -> str:
 
 
 def competitors_text(name: str, today: str, base: str, peers: list[dict], prev_rel: str) -> str:
-    return "\n".join([
+    url = "https://query1.finance.yahoo.com/v8/finance/chart/"
+    return _front_matter(today, url, ("6",)) + "\n".join([
         f"# 競合・同業他社 — {name}", "",
         f"**収集日**: {today}", "**情報源**:",
         f"- Yahoo Finance チャート API {today} 取得。{base} の確定終値（自社と同じ基準日）— 確度: 二次",

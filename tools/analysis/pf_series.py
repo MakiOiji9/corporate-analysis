@@ -16,6 +16,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+import front_matter as FM
 import mdparse as M
 from common import read_csv_rows
 from ff_inputs import Found, raw_files
@@ -291,6 +292,7 @@ def _prose(body: str) -> str:
 def from_raw_text(text: str, source: str, include: re.Pattern | None = None,
                   fields: Fields = PROFITABILITY) -> list[tuple[str, str, Value]]:
     """(field, year, Value) of every table in a raw file, in reading order."""
+    text = FM.body_of(text)  # the front matter's titles are not the file's unit
     first = SECTION.search(text)
     file_factor = unit_of(text[:first.start()] if first else text) or 1.0
     out = []

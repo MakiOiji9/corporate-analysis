@@ -1,3 +1,23 @@
+---
+provenance: 1
+collected: '2026-11-09'
+sources:
+- {id: QAFY21_1, title: 2021年度 本決算 質疑応答, confidence: 一次}
+- {id: QA_FY21_2Q, title: 2021年度 2Q 質疑応答, confidence: 一次}
+- {id: QAFY221Q_JP, title: 2022年度 1Q 質疑応答, confidence: 一次}
+- {id: QAFY222Q_JP, title: 2022年度 2Q 質疑応答, confidence: 一次}
+- {id: QAFY232Q_JP, title: 2023年度 2Q 質疑応答, confidence: 一次}
+- {id: QAFY241Q_JP, title: 2024年度 1Q 質疑応答, confidence: 一次}
+- {id: YR2025J_A4, title: YASKAWAレポート2025（日本語本文は文字化けで未精査）, confidence: 一次}
+sections:
+  '7':
+  - {source: QAFY21_1, pages: '3'}
+  - {source: QA_FY21_2Q, pages: '7'}
+  - {source: QAFY221Q_JP, pages: '3'}
+  - {source: QAFY222Q_JP, pages: '5'}
+  - {source: QAFY232Q_JP, pages: '3'}
+  - {source: QAFY241Q_JP, pages: '2'}
+---
 # 事業概要（継続率・解約率・ストック型売上の比率のみ。update 差分） — 安川電機（6506）
 
 **収集日**: 2026-11-09（前回収集日 2026-11-01）

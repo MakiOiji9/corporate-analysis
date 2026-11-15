@@ -3,4 +3,5 @@ requests>=2.31
 certifi>=2024.2.2
 openpyxl>=3.1
 cryptography>=3.1  # pypdf needs it for AES-encrypted government PDFs
+PyYAML>=6.0  # raw の Front Matter（tools/collect/front_matter.py）
 pytest>=8.0

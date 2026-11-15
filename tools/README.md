@@ -53,6 +53,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 | `raw_financials.py` | data の CSV から財務時系列の raw を作る（1・4・5・8章は記入済み、残りは FILL。collect-filings が FILL だけを書く） | `raw/ir/{日付}_financials-historical.md` |
 | `collect_progress.py` | 初回収集の進み具合（担当ごとの済み／未了と `next`）。途中で止まった収集を続きから再開するのに使う | 1行の JSON |
 | `sources_admin.py` | manifest の誤登録行を除去（`remove`。原本は `sources/_removed/` へ移動） | `sources/manifest.csv` |
+| `raw_provenance.py` | raw の Front Matter（使った資料と、節ごとの資料・ページ。形式は `front_matter.py`）を、過去の日付の raw に後から付ける（`apply --company X --file raw/... --spec spec.json`。本文が1バイトも変わらないことを確かめてから書く）。全 raw の有無・形式・manifest との突き合わせは `check --company X` | raw の先頭の Front Matter、1行の JSON |
 
 ### 地合い用（`tools/collect/market/`）
 
@@ -227,7 +228,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 `.claude/settings.json` の PreToolUse hook として、Write / Edit の前に毎回実行される（標準ライブラリだけで動く。PATH 上の `python` を使う）。
 
 - スクリプト専用のファイル（`data/`・`sources/`・`index.csv`・`tasks.json`・`status.md`・生成された表・お気に入り台帳 `companies/favorites.json`）の手書きをブロック
-- `market/**/raw/*.md` は FILL 欄が残っている間だけ Edit を許可。`companies/*/raw/` の過去日付のファイルは変更禁止
+- `market/**/raw/*.md` は FILL 欄が残っている間だけ Edit を許可。`companies/*/raw/` の過去日付のファイルは変更禁止（Front Matter を後から付けるのは `tools/collect/raw_provenance.py apply` だけ）
 - collect-market-info の実行中（`market/sessions/*/.running`）は、tasks.json の `allowed_files` 以外への書き込みをブロック
 - `market/report/` の facts.json・brief.md・HTML は手書き禁止。outlook.md は Edit のみ（新規作成・上書き不可）で、過去の週の完成済みのものは変更禁止
 - `companies/*/analysis/five-forces/`・`three-c/`・`moat/`・`swot/`・`profitability/`・`growth/`・`cash-flow/`・`safety/`・`valuation/` の brief.md・json は手書き禁止。five-forces.md・three-c.md・moat.md・swot.md・profitability.md・growth.md・cash-flow.md・safety.md・valuation.md は Edit のみで、過去の日付の build 済み（json がある）ものは変更禁止

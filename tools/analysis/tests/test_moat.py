@@ -665,6 +665,21 @@ def test_forbidden_phrase_and_flags(repo, capsys):
     assert out["tie_breaks"] == ["シェアの推移"]
 
 
+def test_build_appends_the_evidence_chain_once(repo, capsys):
+    """BL-01: build resolves the 情報源 cells and writes 12章; a rebuild replaces it instead of adding another."""
+    out = built(repo, capsys, share_source="2026-01-01_typo.md「4.」、brief.md 6.")
+    assert out["missing_sources"] == ["2026-01-01_typo.md"] and out["evidence"]["missing"] == 1
+    md = repo / out["md"]
+    assert md.read_text(encoding="utf-8").count(f"## {D.EVIDENCE_CHAPTER}. 出典の連鎖") == 1
+    result = json.loads((repo / out["json"]).read_text(encoding="utf-8"))
+    claim, = [c for c in result["evidence"]["claims"] if c["claim"] == "5. シェアの推移"]
+    assert claim["evidence"][0]["status"] == "参照先なし"
+    assert all(m["evidence"] == [] for m in result["moats"])  # 'brief.md 2.' names no raw file
+    code, again = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 0, again
+    assert md.read_text(encoding="utf-8").count("出典の連鎖") == 1
+
+
 def test_second_analysis_requires_change_reason(repo, capsys):
     built(repo, capsys)
     later = "2026-11-01"
