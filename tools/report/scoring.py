@@ -61,6 +61,8 @@ DRAWDOWN_HIGH, DRAWDOWN_LOW = -10.0, -3.0        # % below the 1-year high
 MA_BAND = 2.0
 EPS = 1e-9
 HALF_WEIGHT_DAYS = 45   # a monthly figure whose month ended this long before the report week counts half
+MIN_AXIS_COVERAGE = 0.5  # share of an axis' signal weight that must be available; below it the axis is 暫定
+PENDING = "判定保留"     # the attention level when no axis has enough material (a calm reading of no data)
 
 
 @dataclass(frozen=True)
@@ -404,7 +406,20 @@ def attention(ratings: dict[str, str]) -> str:
     return CALM
 
 
+def coverage(signals: list[Signal]) -> float:
+    """The available signals' share of the axis' weight (a missing signal scores 0, so a total near 0 can mean
+    either a real middle reading or no data)."""
+    total = sum(s.weight for s in signals)
+    return round(sum(s.weight for s in signals if s.available) / total, 3) if total else 0.0
+
+
+def insufficient(signals: list[Signal]) -> bool:
+    return coverage(signals) < MIN_AXIS_COVERAGE
+
+
 def score_market(market: str, data: Inputs, previous: dict[str, str] | None) -> dict:
+    """The three axes and the attention candidate. An axis below MIN_AXIS_COVERAGE keeps its label (the writer
+    adopts one of the three) but is flagged 暫定; with every axis short the candidate is 判定保留, not 平常."""
     axes = []
     for key, name, labels in AXES:
         signals = weighted(SIGNALS[key](market, data), data.asof)
@@ -413,8 +428,11 @@ def score_market(market: str, data: Inputs, previous: dict[str, str] | None) -> 
         rating, held = rate(total, before, labels)
         axes.append({"key": key, "name": name, "total": total, "rating": rating, "held": held, "previous": before,
                      "signals": [{**asdict(s), "points": s.points} for s in signals],
-                     "missing": [s.name for s in signals if not s.available]})
-    return {"axes": axes, "candidate": attention({a["key"]: a["rating"] for a in axes}),
+                     "missing": [s.name for s in signals if not s.available],
+                     "coverage": coverage(signals), "insufficient": insufficient(signals)})
+    short = [a["name"] for a in axes if a["insufficient"]]
+    candidate = PENDING if len(short) == len(axes) else attention({a["key"]: a["rating"] for a in axes})
+    return {"axes": axes, "candidate": candidate, "provisional": bool(short), "insufficient": short,
             "reference": reference(market, data)}
 
 

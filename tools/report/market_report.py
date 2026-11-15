@@ -30,6 +30,7 @@ import brief as B  # noqa: E402
 import consistency as K  # noqa: E402
 import facts as F  # noqa: E402
 import outlook as O  # noqa: E402
+import scoring as SC  # noqa: E402
 import slides as S  # noqa: E402
 from common import atomic_write_text, utf8_stdout  # noqa: E402
 from state import FILL, REPO_ROOT, STATE_DONE, STATE_DRAFT, Paths, check, parse_week  # noqa: E402
@@ -76,6 +77,11 @@ def cmd_prepare(args: argparse.Namespace, paths: Paths) -> int:
         template = (paths.template_dir / "outlook.md").read_text(encoding="utf-8")
         atomic_write_text(outlook_path, B.render_outlook(paths, facts, template, today))
     warnings = [K.label(c) for c in facts["moved"] + facts["checks"]]
+    if short_axes(facts):
+        warnings.append("材料が半分に届かない軸（評価は暫定。採用の理由と 9章に書く）: " + "、".join(short_axes(facts)))
+    if pending_markets(facts):
+        warnings.append(f"{'・'.join(pending_markets(facts))}は3つの軸とも材料不足で判定保留。build は通らない"
+                        "（collect-market-info で時系列を取り直す）")
     kept_text = outlook_path.read_text(encoding="utf-8") if kept else ""
     if kept and (B.handoff_rows(facts) not in kept_text or "| 注意の度合い | 金融環境 |" not in kept_text):
         warnings.append("作成途中の outlook.md は前の facts.json から作られた骨組みで、8章の候補・10章が今回の数値と違う。"
@@ -96,17 +102,35 @@ def cmd_prepare(args: argparse.Namespace, paths: Paths) -> int:
     })
 
 
+MARKET_NAMES = {"japan": "日本", "us": "米国"}
+
+
+def pending_markets(facts: dict) -> list[str]:
+    """Markets whose attention candidate is 判定保留 (every axis short of material)."""
+    return [MARKET_NAMES.get(m, m) for m, s in (facts.get("scores") or {}).items() if s.get("candidate") == SC.PENDING]
+
+
+def short_axes(facts: dict) -> list[str]:
+    """「日本 景気（取得 40%）」for every axis flagged 暫定 (below half of its signal weight)."""
+    return [f"{MARKET_NAMES.get(m, m)} {a['name']}（取得 {a['coverage']:.0%}）"
+            for m, s in (facts.get("scores") or {}).items() for a in s.get("axes") or [] if a.get("insufficient")]
+
+
 def cmd_build(args: argparse.Namespace, paths: Paths) -> int:
     week = parse_week(args.week)
     facts_path, outlook_path = paths.report_file(week, "facts.json"), paths.report_file(week, "outlook.md")
     missing = [paths.rel(p) for p in (facts_path, outlook_path) if not p.exists()]
     if missing:
         return emit({"ok": False, "week": week, "error": f"ファイルが無い: {', '.join(missing)}（先に prepare）"})
+    facts = json.loads(facts_path.read_text(encoding="utf-8"))
+    pending = pending_markets(facts)
+    if pending:  # no axis has half of its signals: a 平常 here would be a reading of missing data
+        return emit({"ok": False, "week": week, "error": f"{'・'.join(pending)}は3つの軸とも材料が半分に届かず、注意の度合いを"
+                     "判定できない（判定保留）。collect-market-info で時系列を取り直してから prepare をやり直す"})
     text = outlook_path.read_text(encoding="utf-8")
     issues = O.validate(text, (paths.template_dir / "outlook.md").read_text(encoding="utf-8"))
     if issues:
         return emit({"ok": False, "week": week, "outlook": paths.rel(outlook_path), "issues": issues})
-    facts = json.loads(facts_path.read_text(encoding="utf-8"))
     parsed = O.parse(text)
     issues = O.check_against_facts(parsed, facts)
     if issues:

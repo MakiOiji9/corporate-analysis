@@ -106,8 +106,21 @@ def test_price_momentum_is_reference_only():
 def test_missing_inputs_score_zero_and_are_listed():
     result = SC.score_market("us", SC.Inputs({}, {}, {}), None)
     assert all(a["total"] == 0 for a in result["axes"])
-    assert [a["rating"] for a in result["axes"]] == ["中立", "横ばい", "普通"] and result["candidate"] == "平常"
     assert "VIX" in _axis(result, "stress")["missing"]
+
+
+def test_no_data_is_not_read_as_calm():
+    # 改善案.md P0: every signal missing used to give 中立・横ばい・普通 → 平常
+    result = SC.score_market("us", SC.Inputs({}, {}, {}), None)
+    assert all(a["coverage"] == 0 and a["insufficient"] for a in result["axes"])
+    assert result["candidate"] == "判定保留" and result["provisional"]
+    assert result["insufficient"] == ["金融環境", "景気", "市場のストレス"]
+
+
+def test_an_axis_with_half_its_signals_counts():
+    signals = [SC.Signal("a", "1", "r", 1), SC.missing("b", "r")]
+    assert SC.coverage(signals) == 0.5 and not SC.insufficient(signals)
+    assert SC.insufficient([SC.Signal("a", "1", "r", 1), SC.missing("b", "r"), SC.missing("c", "r")])
 
 
 def test_stale_derived_value_is_not_scored():

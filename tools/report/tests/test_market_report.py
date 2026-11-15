@@ -15,6 +15,7 @@ import charts as C  # noqa: E402
 import facts as F  # noqa: E402
 import market_report as MR  # noqa: E402
 import outlook as O  # noqa: E402
+import scoring as SC  # noqa: E402
 from state import Paths, check, outlook_state, parse_week, previous_outlook  # noqa: E402
 
 SESSION = "2026-10-12_weekly"
@@ -165,7 +166,10 @@ def _japan_rows() -> list[str]:
 
 
 @pytest.fixture()
-def repo(tmp_path: Path) -> Path:
+def repo(tmp_path: Path, monkeypatch) -> Path:
+    # the fixture holds a few series only: these tests are about the pipeline, so every axis counts as scored
+    # (test_build_refuses_when_no_axis_has_material keeps the real threshold)
+    monkeypatch.setattr(SC, "MIN_AXIS_COVERAGE", 0.0)
     shutil.copytree(REPO / "tools" / "collect" / "market" / "catalog", tmp_path / "tools/collect/market/catalog")
     shutil.copytree(REPO / ".ai" / "templates" / "market-report", tmp_path / ".ai/templates/market-report")
     market = tmp_path / "market"
@@ -466,6 +470,15 @@ def test_build_warns_when_draft_predates_facts(repo, capsys):
                        encoding="utf-8")
     code, out = _run(repo, "build", "--week", "2026-10-12", capsys=capsys)
     assert code == 0 and out["warnings"]
+
+
+def test_build_refuses_when_no_axis_has_material(repo, capsys, monkeypatch):
+    monkeypatch.setattr(SC, "MIN_AXIS_COVERAGE", 0.5)  # the real threshold: the fixture's few series are not enough
+    code, out = _run(repo, "prepare", "--week", "2026-10-12", capsys=capsys)
+    assert code == 0 and "判定保留" in out["candidates"].values()
+    assert any("判定保留" in w for w in out["warnings"])
+    code, out = _run(repo, "build", "--week", "2026-10-12", capsys=capsys)
+    assert code == 1 and "判定保留" in out["error"] and "collect-market-info" in out["error"]
 
 
 def test_build_without_prepare(repo, capsys):

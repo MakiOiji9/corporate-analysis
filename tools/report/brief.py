@@ -132,7 +132,10 @@ def score_lines(facts: dict) -> list[str]:
             held = "。前週の評価を保った（ヒステリシス）" if a["held"] else ""
             prev = f"、前週 {a['previous']}" if a["previous"] else ""
             gaps = f"。未取得: {'、'.join(a['missing'])}" if a["missing"] else ""
-            lines.append(f"- {a['name']}: 合計 {SC.total_text(a['total'])} → 候補 **{a['rating']}**{prev}{held}{gaps}")
+            short = (f"。**暫定**: 取得できた信号が重みの {a['coverage']:.0%} で半分に届かない（材料不足。評価は中ほどに"
+                     "寄りやすい。採用の理由と 9章に書く）") if a.get("insufficient") else ""
+            lines.append(f"- {a['name']}: 合計 {SC.total_text(a['total'])} → 候補 **{a['rating']}**{prev}{held}{gaps}"
+                         f"{short}")
         lines += ["", f"参考（軸には入れない。短期の反転が知られている・割高さは緊張の度合いではない）: "
                       + "、".join(f"{r['name']} {r['value']}" for r in score.get("reference", [])), ""]
     return lines

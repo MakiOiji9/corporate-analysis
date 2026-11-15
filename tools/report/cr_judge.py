@@ -170,7 +170,11 @@ def _verdict_for(score: float) -> str:
     return CONSIDER if score >= UP else PASS if score <= DOWN else WATCH
 
 
-def _weighted(weights: dict[str, int], factors: dict[str, dict]) -> tuple[float | None, list[dict]]:
+MIN_COVERAGE = 0.6  # share of a horizon's weight that must be known for a verdict (else 判定保留, the score provisional)
+
+
+def _weighted(weights: dict[str, int], factors: dict[str, dict]) -> tuple[float | None, list[dict], float]:
+    """(score over the known factors, rows, coverage = the known factors' share of the horizon's weight)."""
     rows = []
     for key, weight in weights.items():
         f = factors.get(key) or {}
@@ -179,12 +183,13 @@ def _weighted(weights: dict[str, int], factors: dict[str, dict]) -> tuple[float 
                      "pending": bool(f.get("pending"))})
     used = [r for r in rows if r["score"] is not None]
     total = sum(r["weight"] for r in used)
+    coverage = round(total / sum(weights.values()), 3)
     if not total:
-        return None, [dict(r, contribution=None) for r in rows]
+        return None, [dict(r, contribution=None) for r in rows], coverage
     score = sum(r["weight"] * r["score"] for r in used) / total
     rows = [dict(r, contribution=round(r["weight"] * r["score"] / total, 3) if r["score"] is not None else None)
             for r in rows]
-    return round(score, 3), rows
+    return round(score, 3), rows, coverage
 
 
 STEP1_C_NOTE = "STEP 1 が C（勝てる理由がなし、または SWOT が No）。事業の強みは点数で減点済みだが、確かめてから判断する"
@@ -204,21 +209,28 @@ def horizon_score(horizon: str, factors: dict[str, dict], flags: list[str] | tup
                   step1_grade: str | None = None, cautions: list[str] | tuple = ()) -> dict:
     """The verdict of one horizon. factors: key -> {score (+1..−1 or None), value, reason, source, pending}.
     cautions are shown in the reason without stopping the horizon (e.g. cash burn with a strong balance sheet)."""
-    score, rows = _weighted(WEIGHTS[horizon], factors)
+    score, rows, coverage = _weighted(WEIGHTS[horizon], factors)
     good = sorted((r for r in rows if (r["contribution"] or 0) > 0), key=lambda r: -r["contribution"])
     bad = sorted((r for r in rows if (r["contribution"] or 0) < 0), key=lambda r: r["contribution"])
     stops = knockouts(horizon, list(flags), step1_grade)
+    unknown = [r["label"] for r in rows if r["score"] is None]
     base = {"score": score, "rows": rows, "good": good, "bad": bad, "knockout": stops, "provisional": None,
-            "cautions": list(cautions), "unknown": [r["label"] for r in rows if r["score"] is None]}
+            "cautions": list(cautions), "unknown": unknown, "coverage": coverage}
     if stops:
         return {**base, "verdict": PASS, "why": f"足切り: {'、'.join(stops)}（点数にかかわらず見送り）"}
     if score is None:
         return {**base, "verdict": PENDING, "why": "判定に使える材料が無い"}
+    if coverage < MIN_COVERAGE:  # a verdict on a small part of the weight would read the few known factors as all
+        provisional = _verdict_for(score)
+        return {**base, "verdict": PENDING, "provisional": provisional,
+                "why": (f"判定に使えた材料が重みの {coverage:.0%} で、{MIN_COVERAGE:.0%} に届かないため判定保留"
+                        f"（暫定の点数 {score:+.2f}、{provisional}相当）。足りない材料: {'・'.join(unknown)}")}
     plus = f"プラス: {'・'.join(r['label'] for r in good[:2])}" if good else "プラスの要素なし"
     minus = f"マイナス: {'・'.join(r['label'] for r in bad[:2])}" if bad else "マイナスの要素なし"
     near = nearest(score)
+    covered = f"。判定に使えた材料 {coverage:.0%}（足りない材料: {'・'.join(unknown)}）" if unknown else ""
     why = (f"重み付けの点数 {score:+.2f}（{UP:+.2f} 以上 投資検討、{DOWN:+.2f} 以下 見送り。{near['text']}）。"
-           f"{plus}／{minus}{_notes(horizon, step1_grade, cautions)}")
+           f"{plus}／{minus}{covered}{_notes(horizon, step1_grade, cautions)}")
     return {**base, "verdict": _verdict_for(score), "why": why}
 
 

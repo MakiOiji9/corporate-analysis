@@ -123,6 +123,30 @@ def test_missing_factors_are_left_out_and_reweighted():
     assert J.horizon_score("short", {k: _f(None) for k in factors})["verdict"] == "判定保留"
 
 
+def test_a_single_known_factor_is_not_enough_for_a_verdict():
+    # 改善案.md P0: only 安全性 (10% of the short horizon) known used to give +1.00 and 投資検討
+    factors = {k: _f(None) for k in _all(0.0)}
+    factors["safety"] = _f(1.0)
+    result = J.horizon_score("short", factors)
+    assert result["verdict"] == "判定保留" and result["provisional"] == "投資検討"
+    assert result["coverage"] == pytest.approx(0.10) and "10%" in result["why"]
+
+
+def test_coverage_at_the_minimum_still_gives_a_verdict():
+    # short: market 25 + price 25 + valuation 20 known = 70%; progress 20 + safety 10 missing
+    factors = {**_all(1.0), "progress": _f(None), "safety": _f(None)}
+    result = J.horizon_score("short", factors)
+    assert result["verdict"] == "投資検討" and result["coverage"] == pytest.approx(0.70)
+    assert "判定に使えた材料 70%" in result["why"]
+    below = {**factors, "valuation": _f(None)}  # 50%
+    assert J.horizon_score("short", below)["verdict"] == "判定保留"
+
+
+def test_full_coverage_does_not_mention_it():
+    result = J.horizon_score("mid", _all(0.0))
+    assert result["coverage"] == 1.0 and "判定に使えた材料" not in result["why"]
+
+
 def test_horizons_weigh_different_factors():
     factors = {**_all(0.0), "moat": _f(-1.0), "three_c": _f(-1.0), "growth": _f(-1.0), "market": _f(1.0),
                "price": _f(1.0)}
