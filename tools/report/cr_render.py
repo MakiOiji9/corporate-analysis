@@ -363,5 +363,6 @@ def render(template: str, facts: dict, parsed: dict, md_text: str) -> str:
     body = (masthead(facts) + "<main>" + main
             + glossary(md_text + D.render_brief(facts, "").split(D.WRITING_RULES)[0])
             + f'</main><footer><div class="wrap"><p>{esc(DISCLAIMER)}</p>'
-              f'<p>作成: 企業分析レポートの作成スクリプト（{esc(facts["date"])}）</p></div></footer>')
+              f'<p>作成: 企業分析レポートの作成スクリプト（{esc(facts["date"])}、判定規則の版 {J.RULES_VERSION}。'
+              '過去のレポートは作成時の版の規則で判定している）</p></div></footer>')
     return Template(template).safe_substitute(title=esc(f"{facts['name']} 企業分析レポート {facts['date']}"), body=body)

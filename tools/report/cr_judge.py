@@ -171,6 +171,10 @@ def _verdict_for(score: float) -> str:
 
 
 MIN_COVERAGE = 0.6  # share of a horizon's weight that must be known for a verdict (else 判定保留, the score provisional)
+# the version of the horizon rules (weights, thresholds, coverage), written into every report so an old report reads
+# against the rules it was built with. 2 (2026-11): growth 20 / moat 10 long weights, moat neutral with an excess
+# return, the coverage rule
+RULES_VERSION = 2
 
 
 def _weighted(weights: dict[str, int], factors: dict[str, dict]) -> tuple[float | None, list[dict], float]:

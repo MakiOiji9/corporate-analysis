@@ -36,6 +36,7 @@ import an_fill as AF  # noqa: E402
 import cr_batch as B  # noqa: E402
 import cr_doc as D  # noqa: E402
 import cr_facts as F  # noqa: E402
+import cr_judge as J  # noqa: E402
 import cr_legends as L  # noqa: E402
 import cr_plain as P  # noqa: E402
 import cr_render as R  # noqa: E402
@@ -199,8 +200,10 @@ def result_json(company: S.Company, facts: dict, date: str, warnings: list[str])
     p = facts["prices"]
     w52 = next((w for w in p.get("ranges") or [] if w["label"] == "52週"), None)
     return {
+        "rules_version": J.RULES_VERSION,
         "company": company.dirname, "name": facts["name"], "date": date, "market": facts["market"],
-        "horizons": {k: {"verdict": h["verdict"], "provisional": h["provisional"], "why": h["why"]}
+        "horizons": {k: {"verdict": h["verdict"], "provisional": h["provisional"], "why": h["why"],
+                         "score": h.get("score"), "coverage": h.get("coverage")}
                      for k, h in facts["horizons"].items()},
         "step1": {k: facts["step1"][k] for k in ("grade", "pending", "why")},
         "step2": {k: facts["step2"][k] for k in ("grade", "pending", "why", "mismatch")},

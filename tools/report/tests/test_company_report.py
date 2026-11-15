@@ -14,6 +14,7 @@ sys.path[:0] = [str(REPORT), str(REPO / "tools" / "analysis"), str(REPO / "tools
 
 import company_report as CR  # noqa: E402
 import cr_doc as D  # noqa: E402
+import cr_judge as CJ  # noqa: E402
 import cr_legends as L  # noqa: E402
 import cr_status as S  # noqa: E402
 import cr_technicals as T  # noqa: E402
@@ -292,6 +293,9 @@ def test_prepare_fill_build_flow(repo, capsys):
     assert "## 投資の神の視点" in (company / "reports" / f"{TODAY}_company-report_brief.md").read_text(encoding="utf-8")
     result = json.loads((company / "reports" / f"{TODAY}_company-report.json").read_text(encoding="utf-8"))
     assert result["horizons"]["long"]["verdict"] == "投資検討" and result["price_range"]["source"] == "prices"
+    assert result["rules_version"] == CJ.RULES_VERSION and 0 < result["horizons"]["long"]["coverage"] <= 1
+    html = (company / "reports" / f"{TODAY}_company-report.html").read_text(encoding="utf-8")
+    assert f"判定規則の版 {CJ.RULES_VERSION}" in html and "確率ではない" in html
     assert _run(repo, capsys, "check", "--company", "3798", "--date", TODAY)["next"] == "report_existing"
     again = _prepare(repo, capsys)
     assert not again["ok"] and "--redo" in again["error"]
