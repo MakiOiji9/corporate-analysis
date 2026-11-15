@@ -17,11 +17,11 @@
     (b) sales growth not from M&A (the acquired companies' annual sales taken out of the last year), (c) EPS growth
     not from buybacks (EPS CAGR − 純利益 CAGR <= 2pt). 手順1 is judged again with the organic sales CAGR / the net
     income CAGR where (b) / (c) fail.
-  手順5 (結論, in this order): 懸念: 手順1 (or the quality-adjusted 手順1) 停滞・縮小, or a 構造 year /
-    判定保留: 手順1 lacks years / 普通: a quality problem / 判定保留: a 不明 year or a quality point that
-    could not be checked / 良好: 高成長 or 安定成長 with none of the above.
-    Then conservative(): a comparison that decides the verdict within BORDER_PT of its line moves 良好 → 普通 and
-    普通 → 懸念 (policy.md「迷ったら低い方」).
+  手順5 (成長投資): 投資比率 × 投資効率 (gr_invest).
+  結論 (in this order): 懸念: 手順1 (or the quality-adjusted 手順1) 停滞・縮小, or a 構造 year /
+    判定保留: 手順1 lacks years / 普通: a quality problem or a 不明 year / 良好: 高成長 or 安定成長 with none of the
+    above. Then with_investment(): 手順5 問題あり moves it one step down, 良好 lifts a 普通 back to 良好 (not a 懸念,
+    not with a 構造・不明 year). A comparison within BORDER_PT of its line is noted in the reason (conservative()).
 """
 from __future__ import annotations
 
@@ -32,6 +32,7 @@ import re
 import an_common as A
 import gr_facts as F
 import gr_inputs as I
+import gr_invest as V
 import gr_series as S
 from ff_metrics import _months_apart
 
@@ -547,10 +548,38 @@ def unknown_notes(declines: list[dict], s4: dict, classes: dict[str, str] | None
     return notes + [f"成長の質の「{u}」を確かめられない → 問題ありとはみなさない" for u in s4.get("unknown") or []]
 
 
-def decide(s1: dict, declines: list[dict], s4: dict, classes: dict[str, str] | None) -> tuple[str, str, list[str]]:
-    """judge() and then conservative(): (verdict, why, downgraded). A comparison near its line is noted in why;
-    it no longer moves the verdict, so downgraded stays empty (kept for the result's shape)."""
-    verdict, why = judge(s1, declines, s4, classes)
+STEP_DOWN = {"良好": "普通", "普通": "懸念"}
+
+
+def _bought_growth(s4: dict | None) -> bool:
+    """手順4 found the sales growth bought (M&A): the acquisitions are part of the growth investment, so its
+    efficiency would grade the purchase rather than the business."""
+    checks = (s4 or {}).get("checks") or []
+    return len(checks) > 1 and checks[1].get("status") == "問題あり"
+
+
+def with_investment(verdict: str, why: str, s1: dict, declines: list[dict], classes: dict[str, str] | None,
+                    s5: dict | None, s4: dict | None = None) -> tuple[str, str]:
+    """手順5 (成長投資) moves the verdict one step: 問題あり down (良好 → 普通, 普通 → 懸念); 良好 lifts a 普通 back to
+    良好 when 手順1 grew and no decline year is 構造 or 不明 (a 普通 from a quality problem: the two cancel out),
+    except when the 普通 comes from M&A-bought growth. A 懸念 is never lifted (weak growth is not made up for by
+    investment); 普通 / 不明 / 対象外 leave it."""
+    word = (s5 or {}).get("verdict")
+    if word == "問題あり" and verdict in STEP_DOWN:
+        return STEP_DOWN[verdict], f"{why}。さらに成長投資に問題あり（{s5['sentence']}）で一段下げた"
+    filled = classes or {}
+    unsure = [d["year"] for d in declines if filled.get(d["year"]) in ("構造", "不明")]
+    if (word == "良好" and verdict == "普通" and s1["rating"] in ("高成長", "安定成長") and not unsure
+            and not _bought_growth(s4)):
+        return "良好", f"{why}。ただし成長投資が良好（{s5['sentence']}）なので一段上げた（差し引きで良好）"
+    return verdict, why
+
+
+def decide(s1: dict, declines: list[dict], s4: dict, classes: dict[str, str] | None,
+           s5: dict | None = None) -> tuple[str, str, list[str]]:
+    """judge(), with_investment() and then conservative(): (verdict, why, downgraded). A comparison near its line is
+    noted in why; it no longer moves the verdict, so downgraded stays empty (kept for the result's shape)."""
+    verdict, why = with_investment(*judge(s1, declines, s4, classes), s1, declines, classes, s5, s4)
     reasons = conservative(verdict, s1, s4)
     if not reasons:
         return verdict, why, []
@@ -620,12 +649,13 @@ def candidates(company, found: dict) -> dict:
     s3 = step3(plans)
     ma = S.ma_rows(found["ma"])
     s4 = step4(s1, rows, ma, found["ma"].status)
-    verdict, why, downgraded = decide(s1, declines, s4, None)
+    s5 = V.step5(company, s1, rows, has_plan=found["targets"].status == "ok")
+    verdict, why, downgraded = decide(s1, declines, s4, None, s5)
     records = F.split_records(company)
     return {"series": series, "rows": rows, "splits": splits, "odd_share_jumps": odd, "plan_dropped": dropped,
             "basis_changes": basis_changes(rows),
             "split_notes": [split_note(s, F.match_split(s, records)) for s in splits],
-            "step1": s1, "declines": declines, "step3": s3, "ma": ma, "step4": s4,
+            "step1": s1, "declines": declines, "step3": s3, "ma": ma, "step4": s4, "step5": s5,
             "progress": F.current_progress(company, series), "receivables": receivables_text(series),
             "borderline": borderline(s1, s3, s4), "verdict": verdict, "why": why, "downgraded": downgraded}
 

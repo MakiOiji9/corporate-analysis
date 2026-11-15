@@ -21,6 +21,7 @@ from validate import check_fill, check_structure, check_tables
 
 UNKNOWN = "不明"
 TEMPORARY = "一時"
+VERSION = 2  # 2 (2026-11): 手順5 成長投資（投資比率 × 投資効率）moves the verdict one step
 
 
 # ---------- tables ----------
@@ -136,6 +137,64 @@ def consistency_table_rows(rows: list[dict]) -> str:
     return "\n".join(f"| {r['check']} | {r['step1']} | {r['step2']} | {r['result']} |" for r in rows)
 
 
+def _x(value: float | None) -> str:
+    return "—" if value is None else f"{value:.2f}倍"
+
+
+def _share_text(value: float | None) -> str:
+    return "—" if value is None else f"{value:.1f}%"
+
+
+def _signed_cagr(value: float | None) -> str:
+    return "—" if value is None else f"{value:+.1f}%"
+
+
+def invest_table_rows(s5: dict) -> str:
+    if not s5["rows"]:
+        return f"| — | — | — | — | — | — | — | — | {s5['sentence']} |"
+    return "\n".join(
+        f"| {r['year']} | {_m(r['sales'])} | {_m(r['capex'])} | {_m(r['depreciation'])} | {_x(r['capex_to_dep'])} | "
+        f"{_m(r['rnd'])} | {_m(r['working_capital'])} | {_m(r['acquisition'])} | {_m(r['growth'])} |"
+        for r in s5["rows"])
+
+
+def _people_cell(p: dict | None) -> tuple[str, str]:
+    if not p or not p["employees"]:
+        return "従業員数の時系列なし", "不明"
+    salary = (f"、平均年間給与（提出会社）{p['salary'][-1][1] / 10000:,.0f}万円（{p['salary'][-1][0]}）"
+              if p["salary"] else "")
+    share = f"、人件費の目安（従業員数 × 平均年間給与 ÷ 売上）{p['people_share']:.1f}%" if p["people_share"] else ""
+    return (f"従業員数 {p['employees'][-1][1]:,.0f}名（CAGR {_signed_cagr(p['employees_cagr'])}）、1人当たり営業利益 "
+            f"CAGR {_signed_cagr(p['per_employee_cagr'])}{salary}{share}"), ("効率の判定に使う" if p["intensive"] else "参考")
+
+
+def invest_check_rows(s5: dict) -> str:
+    r, e = s5["ratio"], s5["efficiency"]
+    lines = []
+    if s5["verdict"] == "対象外":
+        return f"| 成長投資の判定 | {s5['sentence']} | 対象外 |"
+    if r:
+        same = (f"（両方の期間にそろう項目だけで比べると直近 {_share_text(r.get('recent_comparable'))}）"
+                if r.get("recent_comparable") not in (None, r["recent"]) else "")
+        earlier = (f"、以前 {r['earlier']:.1f}%（{r['earlier_span']}）{same}" if r["earlier"] is not None
+                   else "、以前の値なし")
+        rnd = f"・研究開発費 {r['rnd_share']:.1f}%" if r["rnd_share"] is not None else ""
+        lines.append(f"| 投資比率 | 売上に対する成長投資 {_share_text(r['recent'])}（{r['span']}）{earlier}。設備投資 "
+                     f"{_share_text(r['capex_share'])}{rnd} | {r['level']}{FIXED_MARK} |")
+        under = "対象外（設備が少ない業態）" if r["asset_light"] else "投資不足" if r["underinvest"] else "問題なし"
+        lines.append(f"| 維持を超える投資か | 設備投資 ÷ 減価償却費 {_x(r['capex_to_dep'])}（直近） | {under}{FIXED_MARK} |")
+    if e:
+        roic = e.get("roic") or {}
+        lines.append(f"| 投資効率（増分 ROIC） | {roic.get('sentence', '—')} | {roic.get('rating', '不明')}"
+                     f"{'' if e['basis'] == '増分 ROIC' else '（参考）'} |")
+    detail, use = _people_cell(s5.get("people"))
+    rating = e["rating"] if e and e["basis"] == "人材" else use
+    lines.append(f"| 人材 | {detail} | {rating} |")
+    notes = "。".join(s5.get("notes") or [])
+    lines.append(f"| 成長投資の判定 | {s5['sentence']}{'。' + notes if notes else ''} | {s5['verdict']}{FIXED_MARK} |")
+    return "\n".join(lines)
+
+
 # ---------- skeleton ----------
 
 def render_skeleton(template: str, values: dict, cands: dict, consistency: list[dict]) -> str:
@@ -147,6 +206,7 @@ def render_skeleton(template: str, values: dict, cands: dict, consistency: list[
                   decline_rows=decline_table_rows(cands["declines"]), decline_note=decline_note(),
                   plan_rows=plan_table_rows(s3["rows"]), step3_rating=rating_cell(s3["rating"], s3["basis"]),
                   quality_rows=quality_table_rows(s4), adjusted_step1=adjusted_cell(s4, s1),
+                  invest_rows=invest_table_rows(cands["step5"]), invest_checks=invest_check_rows(cands["step5"]),
                   consistency_rows=consistency_table_rows(consistency))
     return Template(template).safe_substitute(filled)
 
@@ -211,7 +271,8 @@ def _changes(cands: dict, previous: tuple[str, dict] | None) -> str:
               ("減収・減益の年", "、".join(d["year"] for d in old.get("declines") or []) or "なし",
                "、".join(d["year"] for d in cands["declines"]) or "なし"),
               ("手順3", o3.get("rating"), cands["step3"]["rating"]),
-              ("成長の質", o4.get("quality"), cands["step4"]["quality"])]
+              ("成長の質", o4.get("quality"), cands["step4"]["quality"]),
+              ("成長投資", (old.get("step5") or {}).get("verdict"), cands["step5"]["verdict"])]
     return AF.changes_bullets(previous, pairs)
 
 
@@ -250,6 +311,7 @@ def parse(text: str) -> dict:
         "declines": declines, "structural": _kv(chapter2).get("構造要因の評価", ""),
         "mtp": _kv(M.section(text, "3.")).get("中期経営計画の達成状況", ""),
         "drivers": _kv(M.section(text, "4.")).get("成長の背景", ""),
+        "invest": _kv(M.section(text, "4.")).get("成長投資の背景", ""),
         "consistency_comment": _kv(M.section(text, "6.")).get("コメント", ""),
         "report_points": handoff.get("レポートで使う要点", ""), "step3_hint": handoff.get("STEP 3 の成長率設定への示唆", ""),
         "step2_checks": handoff.get("STEP 2 の他の分析で確かめること", ""), "triggers": handoff.get("評価が変わる条件", ""),
@@ -265,7 +327,8 @@ def classes(parsed: dict) -> dict[str, str]:
 
 def _required_cells(p: dict) -> list[tuple[str, str]]:
     return [("2. 構造要因の評価", p["structural"]), ("3. 中期経営計画の達成状況", p["mtp"]),
-            ("4. 成長の背景", p["drivers"]), ("6. コメント", p["consistency_comment"]),
+            ("4. 成長の背景", p["drivers"]), ("4. 成長投資の背景", p.get("invest", "")),
+            ("6. コメント", p["consistency_comment"]),
             ("7. レポートで使う要点", p["report_points"]), ("7. STEP 3 の成長率設定への示唆", p["step3_hint"]),
             ("7. STEP 2 の他の分析で確かめること", p["step2_checks"]), ("7. 評価が変わる条件", p["triggers"])]
 
@@ -356,7 +419,7 @@ def step2_sentence(cands: dict, year_classes: dict[str, str]) -> str:
 
 def final(cands: dict, year_classes: dict[str, str]) -> tuple[str, str, list[str]]:
     """(verdict, why, the reasons it was moved down for being near a line)."""
-    return decide(cands["step1"], cands["declines"], cands["step4"], year_classes)
+    return decide(cands["step1"], cands["declines"], cands["step4"], year_classes, cands.get("step5"))
 
 
 def conclusion_section(cands: dict, year_classes: dict[str, str]) -> str:
@@ -368,6 +431,7 @@ def conclusion_section(cands: dict, year_classes: dict[str, str]) -> str:
         f"| 手順2 減収・減益の原因 | {step2_sentence(cands, year_classes)} |",
         f"| 手順3 会社計画の信頼性 | {s3['sentence']} |",
         f"| 手順4 成長の質 | {s4['sentence']}{'。' + s4['adjusted']['sentence'] if s4['adjusted'] else ''} |",
+        f"| 手順5 成長投資 | {cands['step5']['sentence']} |",
         f"| 境界に近い比較 | {'。'.join(cands['borderline']) or 'なし'} |",
         f"| 成長性 | **{verdict}**: {why} |"])
 

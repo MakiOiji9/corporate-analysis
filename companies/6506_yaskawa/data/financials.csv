@@ -1,5 +1,6 @@
 doc_id,period_end,item,value,unit,element,context
 S100FVG3,2019-02-28,acquisition_of_subsidiaries,-3058,百万円,jpcrp030000-asr_E01741-000:PurchaseOfInvestmentOfSubsidiariesResultingInChangeInScopeOfConsolidationInvCF,CurrentYearDuration
+S100FVG3,2018-02-28,capex_tangible,-17751,百万円,jppfs_cor:PurchaseOfPropertyPlantAndEquipmentAndIntangibleAssetsInvCF,Prior1YearDuration
 S100IOOX,2019-02-28,capex_tangible,-23057,百万円,jpigp_cor:PurchaseOfPropertyPlantAndEquipmentAndIntangibleAssetsInvCFIFRS,Prior1YearDuration
 S100LETR,2020-02-29,capex_tangible,-22325,百万円,jpigp_cor:PurchaseOfPropertyPlantAndEquipmentAndIntangibleAssetsInvCFIFRS,Prior1YearDuration
 S100O4U1,2021-02-28,capex_tangible,-8609,百万円,jpigp_cor:PurchaseOfPropertyPlantAndEquipmentAndIntangibleAssetsInvCFIFRS,Prior1YearDuration

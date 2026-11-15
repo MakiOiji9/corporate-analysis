@@ -110,8 +110,10 @@ STATEMENT_ITEMS = {
                      "DepreciationAndAmortizationOpeCF"],
     "capex_tangible": ["PurchaseOfPropertyPlantAndEquipmentInvCFIFRS",
                        "PurchaseOfPropertyPlantAndEquipmentAndIntangibleAssetsInvCFIFRS",
-                       "PurchaseOfPropertyPlantAndEquipmentInvCF"],
-    "capex_intangible": ["PurchaseOfIntangibleAssetsInvCFIFRS", "PurchaseOfIntangibleAssetsInvCF"],
+                       "PurchaseOfPropertyPlantAndEquipmentInvCF",
+                       "PurchaseOfPropertyPlantAndEquipmentAndIntangibleAssetsInvCF"],  # J-GAAP, one line for both
+    "capex_intangible": ["PurchaseOfIntangibleAssetsInvCFIFRS", "PurchaseOfIntangibleAssetsInvCF",
+                         "PurchaseOfSoftwareInvCF"],
     "acquisition_of_subsidiaries": [
         "PurchaseOfSharesOfSubsidiariesResultingInChangeInScopeOfConsolidationInvCFIFRS",
         "PurchaseOfSharesOfSubsidiariesResultingInChangeInScopeOfConsolidationInvCF",

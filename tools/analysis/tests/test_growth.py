@@ -595,6 +595,22 @@ def test_full_cycle_then_fresh_and_triggered(repo, capsys):
     assert out["result"] == "triggered" and out["next"] == "prepare"
 
 
+def test_result_carries_the_version_and_growth_investment_and_old_rules_trigger(repo, capsys):
+    fill(prepared(repo, capsys))
+    _, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    path = repo / out["json"]
+    result = json.loads(path.read_text(encoding="utf-8"))
+    assert result["version"] == D.VERSION
+    # the fixture has no data/financials.csv: no capex series, so 手順5 cannot judge and leaves the verdict alone
+    assert result["step5"]["verdict"] == "不明" and result["verdict"] == "良好"
+    text = (repo / out["md"]).read_text(encoding="utf-8")
+    assert "### 成長投資（手順5、スクリプトが判定）" in text and "| 手順5 成長投資 |" in text
+    path.write_text(json.dumps({k: v for k, v in result.items() if k != "version"}, ensure_ascii=False),
+                    encoding="utf-8")
+    _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["result"] == "triggered" and f"版 1 → {D.VERSION}" in out["reason"]
+
+
 @pytest.mark.parametrize("cls, verdict", [("構造", "懸念"), ("不明", "普通")])
 def test_class_decides_the_verdict(repo, capsys, cls, verdict):
     fill(prepared(repo, capsys), cls)
