@@ -302,6 +302,10 @@ def _scenario_lines(s: dict) -> list[str]:
     return lines + [""]
 
 
+RESIDUAL_NOTE = ("残差には、業種の動き・市場全体以外の要因・β の推計の誤差も含まれる。会社の材料だけで動いた分とは限らず、"
+                 "値動きの原因を示す値ではない")
+
+
 def _pct_or_dash(v: float | None) -> str:
     return "—" if v is None else f"{v:+.1f}%"
 
@@ -317,8 +321,9 @@ def _move_lines(m: dict) -> list[str]:
               for r in m["returns"]]
     s = m.get("split")
     if s:
-        lines.append(f"- 地合いの分と会社固有の分（{s['span']}、β {s['beta']:.2f}）: 株価 {_pct_or_dash(s['stock'])} のうち、"
-                     f"市場の動きで説明できる分 {_pct_or_dash(s['market'])}、会社固有の分 {_pct_or_dash(s['own'])}")
+        lines.append(f"- 市場の動きで説明できる分と、できない分（{s['span']}、β {s['beta']:.2f}。β は過去1年の週ごとの値動きから"
+                     f"推計）: 株価 {_pct_or_dash(s['stock'])} のうち、市場の動きで説明できる分 {_pct_or_dash(s['market'])}、"
+                     f"指数の動きで説明できない分（残差） {_pct_or_dash(s['own'])}。{RESIDUAL_NOTE}")
     for d in m.get("big_days") or []:
         news = "、".join(f"{n['date']} {n['kind']}「{n['title']}」" + (f"（{n['summary']}）" if n["summary"] else "")
                         for n in d["news"]) or "前後2営業日に開示なし"

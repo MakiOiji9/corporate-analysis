@@ -41,7 +41,8 @@ import va_rules as R
 import sector_rules as SR
 import va_series as V
 
-TAX_RATE = 0.30
+# the statutory rate per market, the same as the moat analysis' NOPAT (mt_returns.TAX, in %)
+TAX_RATE = {"japan": 0.306, "us": 0.25}
 SPECIAL_SHARE = 0.10
 DROP_SHARE = 0.50
 HALVED = 0.50
@@ -137,11 +138,13 @@ def eps_step(base: dict) -> dict:
         reason = None
     if reason or eps is None:
         return {**out, "sentence": f"実績EPS {R.fmt(eps, '', 2)}（{reason or 'EPS が無い'}。調整しない）"}
-    adj_ni = ni - special * (1 - TAX_RATE)
+    tax = TAX_RATE.get(base.get("market") or "japan", TAX_RATE["japan"])
+    adj_ni = ni - special * (1 - tax)
     adj = eps * adj_ni / ni
     return {**out, "adjusted": True, "eps_used": adj, "adjusted_net_income": adj_ni,
             "sentence": (f"特別損益（特別利益 {amount(gain)} − 特別損失 {amount(loss)}）が純利益 {amount(ni)} の"
-                         f"{share * 100:.1f}%で10%以上のため、調整EPS {adj:.2f}（調整純利益 {amount(adj_ni)}）を使う")}
+                         f"{share * 100:.1f}%で10%以上のため、税引後（税率 {tax * 100:.1f}%）で除いた調整EPS {adj:.2f}"
+                         f"（調整純利益 {amount(adj_ni)}）を使う")}
 
 
 def _per_history(base: dict) -> list[tuple[str, float | None, float | None]]:

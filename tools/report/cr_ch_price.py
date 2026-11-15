@@ -158,9 +158,10 @@ def _move_tables(m: dict) -> str:
                  "業種との差"], rows, right=frozenset({1, 2, 3, 4, 5}))
     s = m.get("split")
     if s:
-        out += (f'<p><b>地合いの分と会社固有の分（{esc(s["span"])}）</b>: 株価 {_pct_cell(s["stock"])} のうち、'
-                f'市場の動きで説明できる分 {_pct_cell(s["market"])}（β {s["beta"]:.2f} × 市場）、'
-                f'会社固有の分 {_pct_cell(s["own"])}</p>')
+        out += (f'<p><b>市場の動きで説明できる分と、できない分（{esc(s["span"])}）</b>: 株価 {_pct_cell(s["stock"])} のうち、'
+                f'市場の動きで説明できる分 {_pct_cell(s["market"])}（β {s["beta"]:.2f} × 市場。β は過去1年の週ごとの値動き'
+                f'から推計）、指数の動きで説明できない分（残差） {_pct_cell(s["own"])}</p>'
+                f'<p class="small">{esc(D.RESIDUAL_NOTE)}</p>')
     days = [[esc(d["date"]), _pct_cell(d["change"]), esc(f"{d['volume_ratio']}倍" if d["volume_ratio"] else "—"),
              _pct_cell(d["index_change"]),
              "<br>".join(f'{esc(n["date"])} {esc(n["kind"])}「{esc(n["title"])}」' for n in d["news"])

@@ -402,8 +402,14 @@ def _base(rows: list[dict] | None = None, price: float = 1000.0, forecast: float
 def test_eps_adjusted_at_ten_percent_of_net_income(gain, adjusted):
     s1 = X.eps_step(_base(_rows(gain=gain)))
     assert s1["adjusted"] is adjusted
-    if adjusted:
-        assert s1["eps_used"] == pytest.approx(84 * (840 - 84 * 0.7) / 840)
+    if adjusted:  # a Japanese company: the statutory rate 30.6% (mt_returns.TAX), the same as the moat analysis'
+        assert s1["eps_used"] == pytest.approx(84 * (840 - 84 * (1 - 0.306)) / 840)
+        assert "税率 30.6%" in s1["sentence"]
+
+
+def test_eps_adjustment_uses_the_us_tax_rate_for_a_us_company():
+    s1 = X.eps_step({**_base(_rows(gain=84)), "market": "us"})
+    assert s1["eps_used"] == pytest.approx(84 * (840 - 84 * 0.75) / 840) and "税率 25.0%" in s1["sentence"]
 
 
 @pytest.mark.parametrize("ni_2026, op_2026, na", [
