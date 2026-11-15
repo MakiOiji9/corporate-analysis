@@ -48,6 +48,8 @@ DURATION_ITEMS = {
     "summary.cff": ["NetCashProvidedByUsedInFinancingActivities"],
     "depreciation": ["DepreciationDepletionAndAmortization", "DepreciationAndAmortization"],
     "capex_tangible": ["PaymentsToAcquirePropertyPlantAndEquipment"],
+    "capex_intangible": ["PaymentsToAcquireIntangibleAssets"],
+    "acquisition_of_subsidiaries": ["PaymentsToAcquireBusinessesNetOfCashAcquired"],
     "dividends_paid": ["PaymentsOfDividends", "PaymentsOfDividendsCommonStock"],
     "treasury_stock_purchase": ["PaymentsForRepurchaseOfCommonStock"],
     "gross_profit": ["GrossProfit"],
@@ -67,6 +69,7 @@ INSTANT_ITEMS = {
     "current_liabilities": ["LiabilitiesCurrent"],
     "receivables": ["AccountsReceivableNetCurrent"],
     "inventories": ["InventoryNet"],
+    "trade_payables": ["AccountsPayableCurrent", "AccountsPayableTradeCurrent"],
     "summary.cash_equivalents": ["CashAndCashEquivalentsAtCarryingValue"],
     # debt, leases and the EV items; the item names follow xbrl_financials.py so the analyses read both markets
     "short_term_loans": ["ShortTermBorrowings", "CommercialPaper"],

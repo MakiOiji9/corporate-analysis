@@ -152,6 +152,41 @@ def test_per_and_employees_are_not_percentages(tmp_path):
     assert got["summary.employees"] == ("12483", "人")
 
 
+def test_extract_growth_investment_items(tmp_path):
+    lines = _dei("2026-02-28") + [
+        "jpcrp_cor:ResearchAndDevelopmentExpensesResearchAndDevelopmentActivities\t研究開発費\tCurrentYearDuration\t"
+        "当期\t連結\t期間\tJPY\t円\t24006000000",
+        "jpcrp_cor:ResearchAndDevelopmentExpensesResearchAndDevelopmentActivities\t研究開発費\tCurrentYearDuration_"
+        "jpcrp030000-asr_E01741-000MotionControlReportableSegmentMember\t当期\t連結\t期間\tJPY\t円\t11672000000",
+        "jpigp_cor:TradePayablesCLIFRS\t営業債務\tCurrentYearInstant\t当期末\t連結\t時点\tJPY\t円\t57681000000",
+        "jpigp_cor:TradePayablesCLIFRS\t営業債務\tPrior1YearInstant\t前期末\t連結\t時点\tJPY\t円\t59112000000",
+        "jpcrp_cor:AverageAnnualSalaryInformationAboutReportingCompanyInformationAboutEmployees\t平均年間給与\t"
+        "CurrentYearInstant_NonConsolidatedMember\t当期末\t個別\t時点\tJPY\t円\t8599531",
+        "jpcrp030000-asr_E01741-000:PurchaseOfInvestmentOfSubsidiariesResultingInChangeInScopeOfConsolidationInvCF\t"
+        "x\tCurrentYearDuration\t当期\t連結\t期間\tJPY\t円\t-3058000000",
+    ]
+    _filing(tmp_path, "a", lines)
+    got = {(r["period_end"], r["item"]): (r["value"], r["unit"]) for r in extract(load_rows(tmp_path / "a"), "S100INV")}
+    assert got[("2026-02-28", "research_and_development")] == ("24006", "百万円")  # consolidated, not a segment
+    assert got[("2026-02-28", "trade_payables")] == ("57681", "百万円")
+    assert got[("2025-02-28", "trade_payables")] == ("59112", "百万円")
+    assert got[("2026-02-28", "summary.average_salary")] == ("8599531", "円")  # yen, not 百万円
+    assert got[("2026-02-28", "acquisition_of_subsidiaries")] == ("-3058", "百万円")
+
+
+def test_jgaap_research_and_development_note(tmp_path):
+    lines = _dei("2018-02-20") + [
+        "jpcrp_cor:ResearchAndDevelopmentExpensesIncludedInGeneralAndAdministrativeExpensesAndManufacturingCostFor"
+        f"CurrentPeriod\t研究開発費\t{ctx}\t当期\t連結\t期間\tJPY\t円\t{value}"
+        for ctx, value in (("CurrentYearDuration", 20792000000), ("Prior1YearDuration", 19072000000))] + [
+        "jppfs_cor:NotesAndAccountsPayableTrade\t支払手形及び買掛金\tCurrentYearInstant\t当期末\t連結\t時点\tJPY\t円\t71823000000"]
+    _filing(tmp_path, "a", lines)
+    got = {(r["period_end"], r["item"]): r["value"] for r in extract(load_rows(tmp_path / "a"), "S100JGP")}
+    assert got[("2018-02-20", "research_and_development")] == "20792"
+    assert got[("2017-02-20", "research_and_development")] == "19072"
+    assert got[("2018-02-20", "trade_payables")] == "71823"
+
+
 def test_upsert_is_idempotent_and_renders(tmp_path):
     rows = extract(load_rows(_write_csv(tmp_path)), "S100TEST")
     out = tmp_path / "financials.csv"

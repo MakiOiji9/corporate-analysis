@@ -68,6 +68,20 @@ def test_debt_leases_sbc_and_shares_are_extracted():
     assert rows[("2025-12-31", "shares_outstanding")] == ("210000000", "株")
 
 
+def test_growth_investment_items_are_extracted():
+    facts = {"facts": {"us-gaap": {
+        **FACTS["facts"]["us-gaap"],
+        "AccountsPayableCurrent": {"units": {"USD": [_fact(80_000_000, "2025-12-31")]}},
+        "PaymentsToAcquireBusinessesNetOfCashAcquired": {"units": {"USD": [_fact(25_000_000, "2025-12-31", "2025-01-01")]}},
+        "PaymentsToAcquireIntangibleAssets": {"units": {"USD": [_fact(4_000_000, "2025-12-31", "2025-01-01")]}},
+    }}}
+    rows = {(r["period_end"], r["item"]): r["value"] for r in annual_rows(facts)}
+    assert rows[("2025-12-31", "trade_payables")] == "80"
+    # us-gaap reports payments as positive amounts (like capex_tangible); the analyses read them by size
+    assert rows[("2025-12-31", "acquisition_of_subsidiaries")] == "25"
+    assert rows[("2025-12-31", "capex_intangible")] == "4"
+
+
 def test_quarterly_rows_keep_three_month_values_only():
     rows = {(r["period_end"], r["item"]): r for r in quarterly_rows(FACTS)}
     assert rows[("2026-06-30", "net_sales")]["value"] == "180" and rows[("2026-06-30", "net_sales")]["form"] == "10-Q"
