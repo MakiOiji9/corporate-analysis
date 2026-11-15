@@ -1,0 +1,52 @@
+{
+ "session": "market/sessions/2026-11-16_weekly",
+ "collected": "2026-11-16",
+ "markets": [
+  "japan",
+  "us"
+ ],
+ "mode": "update",
+ "tasks": [
+  {
+   "type": "search-calendar",
+   "market": "japan",
+   "title": "政治・イベント日程（日本）",
+   "output": "market/sessions/2026-11-16_weekly/raw/calendar-japan.md",
+   "inputs": [],
+   "max_searches": 12,
+   "template": ".ai/templates/collect-market-info/raw/calendar.md",
+   "allowed_files": [
+    "market/sessions/2026-11-16_weekly/raw/calendar-japan.md"
+   ],
+   "id": "T01"
+  },
+  {
+   "type": "search-calendar",
+   "market": "us",
+   "title": "政治・イベント日程（米国）",
+   "output": "market/sessions/2026-11-16_weekly/raw/calendar-us.md",
+   "inputs": [],
+   "max_searches": 12,
+   "template": ".ai/templates/collect-market-info/raw/calendar.md",
+   "allowed_files": [
+    "market/sessions/2026-11-16_weekly/raw/calendar-us.md"
+   ],
+   "id": "T02"
+  }
+ ],
+ "new_docs": [
+  {
+   "doc_key": "presidential-actions-2026-11-12",
+   "watch_key": "presidential-actions",
+   "layer": "A",
+   "title": "Nominations Sent to the Senate",
+   "published": "2026-11-12",
+   "url": "https://www.whitehouse.gov/presidential-actions/2026/11/nominations-sent-to-the-senate-16a6/",
+   "page_url": "",
+   "raw_path": "market/policy/us/raw/2026-11-16_presidential-actions.md",
+   "collected": "2026-11-16",
+   "status": "listed",
+   "market": "us"
+  }
+ ]
+}
