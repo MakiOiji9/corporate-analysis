@@ -131,13 +131,47 @@ def is_thin_section(body: str) -> bool:
     return any(w in text for w in THIN_WORDS)
 
 
+STATUS_UPDATED = re.compile(r"\*\*最終更新\*\*[:：]\s*(\d{4}-\d{2}-\d{2})")
+RECORD_PERIOD = re.compile(r"(\d{4})\s*[-年/.]\s*(\d{1,2})")
+PERIOD_COLUMN = "時点"
+
+
+def _record_period(text: str) -> str | None:
+    """'2026-02期' / '2026年2月期' -> '2026-02'."""
+    m = RECORD_PERIOD.search(text or "")
+    return f"{m.group(1)}-{int(m.group(2)):02d}" if m and 1 <= int(m.group(2)) <= 12 else None
+
+
+def _annual_periods(company: Company) -> list[tuple[str, str]]:
+    """(collected date, fiscal period YYYY-MM) of the company's annual reports under raw/ (有報・10-K・目論見書)."""
+    import freshness as T  # imports an_common only; kept local so ff_inputs stays the base of the input modules
+    return [(date, period[:7]) for date, period, kind in T.filings(company.path) if kind in T.ANNUAL_FILINGS]
+
+
 def unavailable_items(company: Company) -> list[str]:
-    """項目 column of status.md 未取得項目 (things collect tried and could not get)."""
+    """項目 column of status.md 未取得項目 (things collect tried and could not get), without the records that expired:
+    a record holds for the fiscal year it was made in (its 時点 column, else the annual report known at the
+    status.md 最終更新 date) and lapses once a newer annual report of the company is under raw/, so an item that
+    could not be got is asked for once more each year instead of never again."""
     status = company.path / "status.md"
     if not status.exists():
         return []
-    found = M.section_by_title(status.read_text(encoding="utf-8"), "未取得")
-    return [r.get("項目", "") for r in M.table_dicts(found[1])] if found else []
+    text = status.read_text(encoding="utf-8")
+    found = M.section_by_title(text, "未取得")
+    if not found:
+        return []
+    annual = _annual_periods(company)
+    current = max((p for _, p in annual), default=None)
+    updated = STATUS_UPDATED.search(text)
+    at_update = max((p for d, p in annual if updated and d <= updated.group(1)), default=None)
+    out = []
+    for row in M.table_dicts(found[1]):
+        column = next((v for k, v in row.items() if PERIOD_COLUMN in k), "")
+        period = _record_period(column) or at_update
+        if current and period and current > period:
+            continue  # a newer fiscal year: try once more
+        out.append(row.get("項目", ""))
+    return out
 
 
 CHAPTER_NUMBER = re.compile(r"^(\d+(?:\.\d+)*\.)\s")

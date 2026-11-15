@@ -206,6 +206,24 @@ def peer_shares(found, company) -> list[dict]:
     return out
 
 
+STALE_MONTHS = 12  # the peers' newest fiscal year this far behind the target's: their annual numbers are a year old
+
+
+def peer_state(found, company, own_last: str | None) -> tuple[str, str | None]:
+    """(missing / stale / ok, the peers' newest fiscal year) of「成長投資の材料」. Stale when the target's newest year
+    is STALE_MONTHS or more after the peers' newest (a new annual report of the target and the peers' table not
+    renewed since)."""
+    if found is None or found.status not in ("ok", "thin") or not found.body:
+        return "missing", None
+    years = [r["year"] for r in _peer_rows(found.body) if not _is_self(r["name"], company)]
+    if not years:
+        return "missing", None
+    newest = max(years)
+    if own_last and _months_apart(newest, own_last) >= STALE_MONTHS:
+        return "stale", newest
+    return "ok", newest
+
+
 def peer_median(peers: list[dict]) -> tuple[float | None, bool]:
     """The peers' median share, with the R&D only when every peer reports it (else the capex-only share)."""
     if not peers:

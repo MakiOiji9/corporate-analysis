@@ -694,6 +694,9 @@ CHAPTER_OF = {OWN_ITEM: "1. 損益・貸借・CF", I.SPEC["plan"].label: "4. 会
 
 def _hints(company, item: str, cands: dict) -> list[str]:
     """Template chapter and the originals already in sources/ that cover the item (passed to the collector)."""
+    if item.startswith(PEER_INVEST_ITEM):
+        return ["雛形 competitors.md「14. 成長投資の材料」（競合ごとに直近から最大5期。自社の行は不要）",
+                "取れない会社は親への報告の未取得項目に「成長投資の材料（会社名）」と、自社の決算期の時点を書く"]
     chapter = next((c for label, c in CHAPTER_OF.items() if item.startswith(label)), None)
     out = [f"雛形 financials-historical.md「{chapter}」"] if chapter else []
     if item.startswith(DECLINE_ITEM):
@@ -707,11 +710,34 @@ def _hints(company, item: str, cands: dict) -> list[str]:
     return out
 
 
+PEER_INVEST_ITEM = I.SPEC["peer_invest"].label
+PEER_INVEST_WORD = "成長投資の材料"  # the words of a status.md 未取得項目 for it
+
+
+def peer_request(found: dict, company, cands: dict, unavailable: list[str]) -> str | None:
+    """The peers' growth-investment table, asked for when it is missing or a fiscal year old (手順5 compares the
+    ratio with the peers' median). Not asked for while a 未取得項目 of this fiscal year says it could not be got
+    (ff_inputs.unavailable_items lets the record lapse at the company's next annual report), for a company without
+    capex numbers of its own, or for one the rule does not cover (金融)."""
+    s5 = cands.get("step5") or {}
+    if s5.get("verdict") == "対象外" or not s5.get("rows") or any(PEER_INVEST_WORD in u for u in unavailable):
+        return None
+    state, newest = V.peer_state(found.get("peer_invest"), company, cands["step1"].get("last"))
+    if state == "ok":
+        return None
+    why = "無い" if state == "missing" else f"古い: 同業の最新が {newest} 期で自社の {cands['step1']['last']} 期より1年以上前"
+    return f"{PEER_INVEST_ITEM}（{why}）"
+
+
 def collect_requests(company, found: dict, cands: dict) -> list[dict]:
-    """Missing required sections, plus a short own history, and the company's explanation of the decline years.
-    Each request carries hints: the template chapter and the originals already saved for the years concerned."""
+    """Missing required sections, plus a short own history, the company's explanation of the decline years and
+    the peers' growth-investment table. Each request carries hints: the template chapter and the originals already
+    saved for the years concerned."""
     unavailable = I.unavailable_items(company)
     extra: list[tuple[str, str]] = []
+    peer = peer_request(found, company, cands, unavailable)
+    if peer:
+        extra.append(("collect-peers-valuation", peer))
     if cands["step1"]["years"] < MIN_YEARS and not any(OWN_UNAVAILABLE in u for u in unavailable):
         extra.append(("collect-filings", OWN_ITEM))
     if cands["declines"] and found["decline"].status in ("missing", "blank"):

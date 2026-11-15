@@ -162,6 +162,37 @@ def test_ratio_compares_with_the_peer_median():
     assert r["peer_count"] == 2
 
 
+def _self():
+    from types import SimpleNamespace
+    return SimpleNamespace(ticker="6506", name="自社", dirname="6506_self", display_name=lambda: "自社（6506）")
+
+
+def test_peer_state_is_missing_stale_or_ok():
+    assert V.peer_state(None, _self(), "2026-02") == ("missing", None)
+    assert V.peer_state(_found(PEER_TABLE), _self(), "2026-02") == ("ok", "2026-03")
+    # the target closed 2027-02 and the newest peer year is still 2026-03 (11 months): not stale yet
+    assert V.peer_state(_found(PEER_TABLE), _self(), "2027-02") == ("ok", "2026-03")
+    assert V.peer_state(_found(PEER_TABLE), _self(), "2027-03") == ("stale", "2026-03")
+
+
+def _cands(rows=True, verdict="良好", last="2026-02") -> dict:
+    return {"step1": {"last": last}, "step5": {"verdict": verdict, "rows": [{"year": last}] if rows else []}}
+
+
+def test_peer_request_asks_once_per_fiscal_year():
+    found = {"peer_invest": None}
+    item = X.peer_request(found, _self(), _cands(), [])
+    assert item and item.startswith(X.PEER_INVEST_ITEM) and "無い" in item
+    assert X.peer_request(found, _self(), _cands(), ["競合: 成長投資の材料（未取得）"]) is None  # recorded this year
+    assert X.peer_request({"peer_invest": _found(PEER_TABLE)}, _self(), _cands(), []) is None  # fresh
+    assert "古い" in X.peer_request({"peer_invest": _found(PEER_TABLE)}, _self(), _cands(last="2027-03"), [])
+
+
+def test_peer_request_is_not_made_without_own_numbers_or_for_banks():
+    assert X.peer_request({"peer_invest": None}, _self(), _cands(rows=False), []) is None
+    assert X.peer_request({"peer_invest": None}, _self(), _cands(verdict="対象外"), []) is None
+
+
 def test_the_md_row_shows_the_peer_comparison():
     import gr_doc as D
     r = {"peer_median": 2.5, "peer_own": 7.0, "peer_level": "高い", "peer_count": 2, "peer_with_rnd": True,
