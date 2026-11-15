@@ -26,13 +26,17 @@
 """
 from __future__ import annotations
 
+import re
 import statistics
 
+import mdparse as M
 import mt_returns as R
+import pf_series as PS
 import sector_rules as SR
 import sf_series as SS
 from common import read_csv_rows
 from ff_metrics import _months_apart
+from tc_metrics import _is_self
 
 RATIO_YEARS = 5
 RATIO_BAND = 0.2
@@ -126,23 +130,114 @@ def _comparable(recent: list[dict], earlier: list[dict]) -> tuple[float | None, 
     return _share(marked[:len(recent)], "comparable"), _share(marked[len(recent):], "comparable")
 
 
-def ratio(rows: list[dict]) -> dict:
+def _level(now: float | None, base: float | None) -> str:
+    if now is None or base is None:
+        return "不明"
+    band = max(RATIO_BAND * abs(base), RATIO_MIN_PT)
+    return "高い" if now - base >= band else "低い" if base - now >= band else "標準"
+
+
+def combined_level(past: str, peer: str) -> str:
+    """高い / 低い only when both comparisons that could be made say so (one alone decides when the other is 不明)."""
+    known = [x for x in (past, peer) if x != "不明"]
+    if not known:
+        return "不明"
+    return known[0] if len(set(known)) == 1 else "標準"
+
+
+# ---------- 同業との比較（competitors.md「成長投資の材料」） ----------
+
+PEER_FIELDS = PS.Fields({"sales": PS.LABELS["sales"], "capex": ("設備投資",), "depreciation": ("減価償却費",),
+                         "rnd": ("研究開発費",)}, (), PS.SKIP_SECTION)
+PEER_COLUMNS = (("company", ("会社",)), ("year", ("年度", "決算期")))
+YEAR_MONTH = re.compile(r"^\s*(\d{4})-(\d{1,2})\b")
+
+
+def _period(cell: str) -> str | None:
+    """pf_series.period ('2026/03', '2026年3月期'), and the '2026-03' the analyses themselves write."""
+    found = PS.period(cell)
+    m = None if found else YEAR_MONTH.match(cell.replace("*", ""))
+    return found or (f"{m.group(1)}-{int(m.group(2)):02d}" if m and 1 <= int(m.group(2)) <= 12 else None)
+
+
+def _peer_rows(body: str) -> list[dict]:
+    """{name, year, values} per row of the tables with 会社 and 年度 columns. The share is a ratio of amounts in one
+    row, so each row's own unit is enough (no conversion to the target's unit)."""
+    out = []
+    for table in M.tables(body):
+        header = table[0]
+        cols = {key: next((i for i, h in enumerate(header) if any(w in h for w in words)), None)
+                for key, words in PEER_COLUMNS}
+        if cols["company"] is None or cols["year"] is None:
+            continue
+        names = {i: PS.field_of(h, PEER_FIELDS) for i, h in enumerate(header)}
+        for row in table[1:]:
+            year = _period(row[cols["year"]]) if cols["year"] < len(row) else None
+            if not year:
+                continue
+            values = {name: v for i, name in names.items() if name and i < len(row)
+                      if (v := PS.amount(row[i], 1.0)) is not None}
+            out.append({"name": row[cols["company"]].replace("*", "").strip(), "year": year, "values": values})
+    return out
+
+
+def peer_shares(found, company) -> list[dict]:
+    """[{name, share, share_capex, has_rnd, years}] per peer: (設備投資 − 減価償却費 + 研究開発費) ÷ 売上高 over its newest
+    RATIO_YEARS rows with sales, capex and depreciation (share_capex leaves the R&D out)."""
+    if found is None or found.status not in ("ok", "thin") or not found.body:
+        return []
+    by_peer: dict[str, list[dict]] = {}
+    for r in _peer_rows(found.body):
+        v = r["values"]
+        if _is_self(r["name"], company) or not all(k in v for k in ("sales", "capex", "depreciation")):
+            continue
+        by_peer.setdefault(SS.base_name(r["name"]), []).append({**v, "name": r["name"], "year": r["year"]})
+    out = []
+    for rows in by_peer.values():
+        rows = sorted(rows, key=lambda x: x["year"])[-RATIO_YEARS:]
+        sales = sum(x["sales"] for x in rows)
+        if sales <= 0:
+            continue
+        capex = sum(abs(x["capex"]) - x["depreciation"] for x in rows)
+        has_rnd = all("rnd" in x for x in rows)
+        rnd = sum(x.get("rnd", 0.0) for x in rows)
+        out.append({"name": rows[0]["name"], "share": round((capex + rnd) / sales * 100, 1),
+                    "share_capex": round(capex / sales * 100, 1), "has_rnd": has_rnd, "years": len(rows)})
+    return out
+
+
+def peer_median(peers: list[dict]) -> tuple[float | None, bool]:
+    """The peers' median share, with the R&D only when every peer reports it (else the capex-only share)."""
+    if not peers:
+        return None, False
+    with_rnd = all(p["has_rnd"] for p in peers)
+    values = [p["share"] if with_rnd else p["share_capex"] for p in peers]
+    return round(statistics.median(values), 1), with_rnd
+
+
+def ratio(rows: list[dict], peers: list[dict] | None = None) -> dict:
     recent = rows[-RATIO_YEARS:]
     # the first year has no year before it for the working capital: leave it out of the earlier window
     earlier = [r for r in rows[-2 * RATIO_YEARS:-RATIO_YEARS] if not (r is rows[0] and r["working_capital"] is None)]
     now = _share(recent, "growth")
-    level, before, now_same = "不明", None, None
+    past, before, now_same = "不明", None, None
     if len(earlier) >= 3:
         now_same, before = _comparable(recent, earlier)
-        if now_same is not None and before is not None:
-            band = max(RATIO_BAND * abs(before), RATIO_MIN_PT)
-            level = "高い" if now_same - before >= band else "低い" if before - now_same >= band else "標準"
+        past = _level(now_same, before)
+    # the peers report capex, depreciation and R&D only: the target is compared on the same parts
+    median, with_rnd = peer_median(peers or [])
+    own_rows = [dict(r, peer_part=r["net_capex"] + ((r["rnd"] or 0.0) if with_rnd else 0.0)) for r in recent]
+    peer_own = _share(own_rows, "peer_part") if median is not None else None
+    peer_level = _level(peer_own, median)
+    level = combined_level(past, peer_level)
     capex_share = _share(recent, "capex")
     tail = [r["capex_to_dep"] for r in rows[-UNDERINVEST_YEARS:]]
     light = capex_share is not None and capex_share < ASSET_LIGHT_PCT
     under = (not light and len(tail) == UNDERINVEST_YEARS and all(t is not None and t < UNDERINVEST for t in tail))
-    return {"recent": now, "earlier": before, "level": level, "years": len(recent),
-            "recent_comparable": now_same,
+    return {"recent": now, "earlier": before, "level": level, "years": len(recent), "past_level": past,
+            "recent_comparable": now_same, "peer_own": peer_own, "peer_median": median, "peer_level": peer_level,
+            "peer_count": len(peers or []), "peer_with_rnd": with_rnd,
+            "peers": [{k: p[k] for k in ("name", "share", "share_capex", "years")} for p in peers or []],
             "span": f"{recent[0]['year']}〜{recent[-1]['year']}" if recent else "—",
             "earlier_span": f"{earlier[0]['year']}〜{earlier[-1]['year']}" if len(earlier) >= 3 else None,
             "capex_share": capex_share, "rnd_share": _share(recent, "rnd"),
@@ -248,7 +343,7 @@ def _empty(result: str, text: str, **extra) -> dict:
             "notes": [], **extra}
 
 
-def step5(company, s1: dict, growth_rows: list[dict], has_plan: bool) -> dict:
+def step5(company, s1: dict, growth_rows: list[dict], has_plan: bool, peers: list[dict] | None = None) -> dict:
     """The growth investment of 手順5: {verdict, sentence, ratio, efficiency, people, rows, notes}."""
     excluded, info = SR.applies(company, {SR.FINANCIAL})
     if excluded:
@@ -267,8 +362,10 @@ def step5(company, s1: dict, growth_rows: list[dict], has_plan: bool) -> dict:
         return _empty("不明", "設備投資・減価償却費の時系列が無く、成長投資を計算できない",
                       efficiency={"rating": roic["rating"], "basis": "増分 ROIC", "sentence": roic["sentence"],
                                   "roic": roic}, people=staff)
-    r = ratio(rows)
+    r = ratio(rows, peers)
     notes = []
+    if not peers:
+        notes.append("同業の成長投資の材料が無く、投資比率は自社の過去とだけ比べた")
     # labour-intensive companies are asset-light; the parent's salary × the group's headcount overstates the people
     # cost of a holding company with heavy-asset subsidiaries, so a capex-heavy company stays on the ROIC
     if staff["intensive"] and r["asset_light"]:

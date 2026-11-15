@@ -168,6 +168,18 @@ def _people_cell(p: dict | None) -> tuple[str, str]:
             f"CAGR {_signed_cagr(p['per_employee_cagr'])}{salary}{share}"), ("効率の判定に使う" if p["intensive"] else "参考")
 
 
+def _peer_text(r: dict) -> str:
+    """The peer comparison of the ratio and how the two comparisons were combined."""
+    if r.get("peer_median") is None:
+        return f"同業の材料なし（以前との比較 {r.get('past_level', '不明')} だけで判定）"
+    parts = "設備投資の純増 ＋ 研究開発費" if r.get("peer_with_rnd") else "設備投資の純増（研究開発費が無い同業があるため除く）"
+    peers = "、".join(f"{p['name']} {p['share'] if r.get('peer_with_rnd') else p['share_capex']:.1f}%"
+                      for p in r.get("peers") or [])
+    return (f"同業比較（{parts} ÷ 売上）: 自社 {_share_text(r['peer_own'])}、同業 {r['peer_count']}社の中央値 "
+            f"{_share_text(r['peer_median'])}（{peers}）で {r['peer_level']}。以前との比較 {r.get('past_level', '不明')}。"
+            "両方が同じ向きのときだけ 高い・低い")
+
+
 def invest_check_rows(s5: dict) -> str:
     r, e = s5["ratio"], s5["efficiency"]
     lines = []
@@ -180,7 +192,7 @@ def invest_check_rows(s5: dict) -> str:
                    else "、以前の値なし")
         rnd = f"・研究開発費 {r['rnd_share']:.1f}%" if r["rnd_share"] is not None else ""
         lines.append(f"| 投資比率 | 売上に対する成長投資 {_share_text(r['recent'])}（{r['span']}）{earlier}。設備投資 "
-                     f"{_share_text(r['capex_share'])}{rnd} | {r['level']}{FIXED_MARK} |")
+                     f"{_share_text(r['capex_share'])}{rnd}。{_peer_text(r)} | {r['level']}{FIXED_MARK} |")
         under = "対象外（設備が少ない業態）" if r["asset_light"] else "投資不足" if r["underinvest"] else "問題なし"
         lines.append(f"| 維持を超える投資か | 設備投資 ÷ 減価償却費 {_x(r['capex_to_dep'])}（直近） | {under}{FIXED_MARK} |")
     if e:

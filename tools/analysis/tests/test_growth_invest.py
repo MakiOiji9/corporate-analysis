@@ -2,6 +2,8 @@
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "collect"))
 
@@ -101,6 +103,72 @@ def test_surge_compares_the_last_two_years_with_the_three_before():
     rows = [_row(y, 1000.0, 20.0) for y in _years(3)] + [_row(y, 1000.0, 40.0) for y in _years(2, 2020)]
     assert V.surge(rows) is True
     assert V.surge(rows[:-1]) is False
+
+
+# ---------- 同業との比較 ----------
+
+PEER_TABLE = """## 14. 成長投資の材料
+
+| 会社 | 年度 | 売上高 | 設備投資 | 減価償却費 | 研究開発費 | 出典・確度 |
+|---|---|---|---|---|---|---|
+| 自社（6506） | 2026-02 | 1,000 | 90 | 50 | 40 | 有報 |
+| アルファ | 2026-03 | 2,000 | 160 | 100 | 60 | 有報 |
+| アルファ | 2025-03 | 2,000 | 140 | 100 | 60 | 有報 |
+| ベータ | 2025-12 | 500 | 30 | 25 | — | 10-K（百万ドル） |
+| ガンマ | 2026-03 | 800 | — | 40 | 20 | 有報 |
+"""
+
+
+def _found(body: str):
+    from types import SimpleNamespace
+    return SimpleNamespace(status="ok", body=body)
+
+
+def test_peer_shares_read_capex_depreciation_and_rnd_per_peer():
+    from types import SimpleNamespace
+    company = SimpleNamespace(ticker="6506", name="自社", dirname="6506_self", display_name=lambda: "自社（6506）")
+    peers = V.peer_shares(_found(PEER_TABLE), company)
+    by_name = {p["name"]: p for p in peers}
+    assert set(by_name) == {"アルファ", "ベータ"}  # the target's own row and a peer without capex are left out
+    assert by_name["アルファ"]["share"] == 5.5  # (160 + 140 − 200 + 120) ÷ 4,000
+    assert by_name["アルファ"]["share_capex"] == 2.5  # (160 + 140 − 200) ÷ 4,000
+    assert by_name["アルファ"]["years"] == 2 and by_name["アルファ"]["has_rnd"] is True
+    assert by_name["ベータ"]["share"] == 1.0 and by_name["ベータ"]["has_rnd"] is False
+
+
+def test_peer_median_uses_rnd_only_when_every_peer_has_it():
+    peers = [{"name": "a", "share": 4.0, "share_capex": 3.0, "has_rnd": True, "years": 2},
+             {"name": "b", "share": 1.0, "share_capex": 1.0, "has_rnd": False, "years": 1}]
+    assert V.peer_median(peers) == (2.0, False)  # the capex-only shares 3.0 and 1.0
+    assert V.peer_median(peers[:1]) == (4.0, True)
+    assert V.peer_median([]) == (None, False)
+
+
+@pytest.mark.parametrize("past, peer, level", [
+    ("高い", "高い", "高い"), ("低い", "低い", "低い"), ("高い", "標準", "標準"), ("高い", "低い", "標準"),
+    ("不明", "高い", "高い"), ("低い", "不明", "低い"), ("不明", "不明", "不明"),
+])
+def test_level_is_high_or_low_only_when_both_comparisons_agree(past, peer, level):
+    assert V.combined_level(past, peer) == level
+
+
+def test_ratio_compares_with_the_peer_median():
+    rows = [dict(_row(y, 1000.0, 80.0), net_capex=50.0, rnd=20.0) for y in _years(5, 2022)]
+    peers = [{"name": "a", "share": 2.0, "share_capex": 1.0, "has_rnd": True, "years": 5},
+             {"name": "b", "share": 3.0, "share_capex": 2.0, "has_rnd": True, "years": 5}]
+    r = V.ratio(rows, peers)
+    # own (net capex + R&D) ÷ sales = 7.0% vs the peers' median 2.5%; no earlier years: the peers decide
+    assert (r["peer_own"], r["peer_median"], r["peer_level"], r["level"]) == (7.0, 2.5, "高い", "高い")
+    assert r["peer_count"] == 2
+
+
+def test_the_md_row_shows_the_peer_comparison():
+    import gr_doc as D
+    r = {"peer_median": 2.5, "peer_own": 7.0, "peer_level": "高い", "peer_count": 2, "peer_with_rnd": True,
+         "past_level": "不明", "peers": [{"name": "a", "share": 2.0, "share_capex": 1.0, "years": 5}]}
+    text = D._peer_text(r)
+    assert "自社 7.0%" in text and "中央値 2.5%" in text and "a 2.0%" in text
+    assert "同業の材料なし" in D._peer_text({"peer_median": None, "past_level": "標準"})
 
 
 # ---------- 投資効率 ----------

@@ -116,6 +116,8 @@ def _investment(s5: dict) -> dict:
     return {"verdict": s5.get("verdict"), "sentence": s5.get("sentence"),
             "level": ratio.get("level"), "share": ratio.get("recent"), "earlier": ratio.get("earlier"),
             "span": ratio.get("span"), "capex_to_dep": ratio.get("capex_to_dep"),
+            "peer_median": ratio.get("peer_median"), "peer_own": ratio.get("peer_own"),
+            "peer_level": ratio.get("peer_level"), "peer_count": ratio.get("peer_count"),
             "underinvest": ratio.get("underinvest"),
             "efficiency": (s5.get("efficiency") or {}).get("rating"),
             "efficiency_basis": (s5.get("efficiency") or {}).get("basis"),

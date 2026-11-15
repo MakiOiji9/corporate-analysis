@@ -649,7 +649,8 @@ def candidates(company, found: dict) -> dict:
     s3 = step3(plans)
     ma = S.ma_rows(found["ma"])
     s4 = step4(s1, rows, ma, found["ma"].status)
-    s5 = V.step5(company, s1, rows, has_plan=found["targets"].status == "ok")
+    s5 = V.step5(company, s1, rows, has_plan=found["targets"].status == "ok",
+                 peers=V.peer_shares(found.get("peer_invest"), company))
     verdict, why, downgraded = decide(s1, declines, s4, None, s5)
     records = F.split_records(company)
     return {"series": series, "rows": rows, "splits": splits, "odd_share_jumps": odd, "plan_dropped": dropped,
