@@ -48,7 +48,7 @@ $PY -I tools/report/market_report.py check [--week {week}]
 | 状態 | すること |
 |---|---|
 | `running` が空でない | 収集が実行中。**止めて**ユーザーに報告する（収集を横から始めない） |
-| `fresh: false` | 材料が出力週より古い。collect-market-info を `market=both topic=weekly` で実行する（起動方法はエントリーポイントの指示に従う）。finalize が `ok: true` で終わったら check をもう一度実行する。`ok: true` にならなければ止めて、収集の完了報告と一緒にユーザーに報告する |
+| `fresh: false` | 材料が出力週より古い。collect-market-info を `market=both topic=weekly` で実行する（起動方法はエントリーポイントの指示に従う）。finalize が `ok: true` で終わったら、収集の完了報告は出さずに（ここで終えない）check をもう一度実行する。収集の結果はこのスキルの完了報告の「収集」行にまとめる。`ok: true` にならなければ止めて、収集の完了報告と一緒にユーザーに報告する |
 | `outlook: "done"` | この週のレポートは作成済み。ユーザーが作り直しを指示していなければ、既存の HTML の場所を伝えて終わる。指示があれば手順 2 で `--redo` を付ける |
 | `fresh: true` | 手順 2 へ |
 
