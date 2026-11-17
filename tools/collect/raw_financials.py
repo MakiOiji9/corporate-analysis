@@ -23,6 +23,7 @@ from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # scripts run with python -I
+import front_matter as FM  # noqa: E402
 import render_tables as RT  # noqa: E402
 from common import REPO_ROOT, atomic_write_text, utf8_stdout  # noqa: E402
 
@@ -165,7 +166,13 @@ def _fill(key: str, what: str) -> str:
 def _header(company: Path, date: str, fin: list[dict], tdnet: list[dict], periods: list[str]) -> str:
     title = f"# 財務データ時系列（{_period_label(periods[0])}〜{_period_label(periods[-1])}） — {_company_name(company)}"
     source = "SEC EDGAR" if RT.money_unit(fin) == "百万ドル" else "EDINET XBRL"
-    return "\n".join([
+    # the script's tables (1・4・5・8章) rest on data/; the writer adds the documents of 2・3・6・7章 (same day)
+    sources = [{"id": "d1", "title": f"data/financials.csv（{source}）", "confidence": "一次"}]
+    if tdnet:
+        sources.append({"id": "d2", "title": "data/tdnet_facts.csv（決算短信 iXBRL）", "confidence": "一次"})
+    meta = {"provenance": FM.VERSION, "collected": date, "sources": sources,
+            "sections": {n: [{"source": "d1", "pages": None}] for n in ("1", "4", "5", "8")}}
+    return FM.render(meta) + "\n".join([
         title, "",
         "<!-- 1・4・5・8章の表は tools/collect/raw_financials.py が data/*.csv から記入済み。表は手で直さず、"
         "FILL の欄だけを書く（書いたら FILL のコメントは消す） -->", "",

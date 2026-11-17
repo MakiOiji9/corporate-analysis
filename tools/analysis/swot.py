@@ -8,7 +8,7 @@ Usage:
 
 --company takes '3798', '3798_uls-group' or part of the directory name.
 list:    companies under companies/ with the state of their SWOT and moat results (for choosing one).
-check:   is the latest SWOT result still valid (180 days, no changed yuho / mid-term-plan / business-overview /
+check:   is the latest SWOT result still valid (365 days, no changed yuho / mid-term-plan / business-overview /
          industry section, no newer five-forces / 3C / moat result)? Is the moat result usable (STEP 1-3 comes
          first; it runs 3C and five-forces itself)? Is the market outlook fresh? Which inputs are missing? -> "next".
 prepare: analysis/swot/{date}_brief.md (what the writer reads) and the {date}_swot.md skeleton
@@ -30,7 +30,9 @@ sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "marke
 
 import an_brief as AB  # noqa: E402
 import an_common as A  # noqa: E402
+import an_evidence as EV  # noqa: E402
 import an_fill as F  # noqa: E402
+import an_quality as Q  # noqa: E402
 import ff_paths as FP  # noqa: E402
 import mdparse as M  # noqa: E402
 import moat as MT  # noqa: E402
@@ -80,6 +82,18 @@ def _upstream_summary(ups: dict) -> dict:
             for k, v in ups.items()}
 
 
+def missing_upstream(company: P.Company, result: dict) -> list[str]:
+    """The upstream results this SWOT was built on that no longer exist (pruned or moved aside): its references
+    point at nothing, so it is rebuilt on the current ones."""
+    out = []
+    for kind, ref in (result.get("upstream") or {}).items():
+        if kind in UPSTREAM and ref and ref.get("date"):
+            path = company.root / _upstream_file(company, kind, ref["date"])
+            if not path.exists():
+                out.append(f"参照した上流の結果が無い（{kind} {ref['date']}）。今の結果で作り直す")
+    return out
+
+
 def moat_state(company: P.Company, today: str) -> dict:
     state = MT.evaluate(MP.Company(company.root, company.path), today)
     return {"result": state["result"], "reason": state["reason"], "latest": state["latest"]}
@@ -99,6 +113,10 @@ def evaluate(company: P.Company, today: str) -> dict:
                            "verdict": result.get("verdict"), "valid_until": P.valid_until(date)}
         state["newer_raw"] = T.triggers(company, date, "annual",
                                         [("ファイブフォース", FP), ("3C", TP), ("モート", MP)])
+        state["newer_raw"] = state["newer_raw"] + missing_upstream(company, result)
+        old_rules = Q.outdated(result, D.VERSION)
+        if old_rules:
+            state["newer_raw"] = state["newer_raw"] + [old_rules]
     if draft and (not latest or draft[0] >= latest[0]):
         state.update(result="draft", reason=f"作成途中の {company.rel(draft[1])} がある（続きから書く）")
     elif not latest:
@@ -292,8 +310,10 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, judged: 
     found = I.gather_swot(company)
     previous = P.latest_result(company, before=date)
     return {
-        "company": company.dirname, "name": company.display_name(), "date": date,
+        "version": D.VERSION, "company": company.dirname, "name": company.display_name(), "date": date,
         "valid_until": P.valid_until(date),
+        "confidence": D.quality(parsed), "counter": parsed["counter"],
+        "conservative_verdict": judged["conservative_verdict"],
         "quadrants": {q: D.items_of(parsed, q) for q, _, _ in D.QUADRANTS},
         "required": items, "scale": X.scale(company),
         "top_strength": judged["top_strength"], "top_threat": judged["top_threat"],
@@ -320,7 +340,8 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
         return emit({"ok": False, "error": "swot.md が無い（先に prepare）"})
     date, md_path = target
     found, previous = I.gather_swot(company), P.latest_result(company, before=date)
-    text = F.fill_at_build(md_path.read_text(encoding="utf-8"), D.BUILD_KEYS,
+    # 出典の連鎖 is the build's own chapter, not the template's: taken off before the checks
+    text = F.fill_at_build(EV.strip(md_path.read_text(encoding="utf-8")), D.BUILD_KEYS,
                            lambda t: D.build_fills(t, found, previous))
     ups = upstream(company)
     # the required items are recomputed so a row deleted from 1.1 can't bypass the rule
@@ -333,8 +354,9 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     if issues:
         return emit({"ok": False, "md": company.rel(md_path), "issues": issues})
     judged = D.judge(parsed)
-    atomic_write_text(md_path, D.apply_conclusion(text, judged, parsed["sentence"]))
-    result = result_json(company, date, text, parsed, judged, items, ups)
+    chain = EV.claims_evidence(company.path, D.claims(parsed))
+    atomic_write_text(md_path, EV.apply(D.apply_conclusion(text, judged, parsed["sentence"]), D.EVIDENCE_CHAPTER, chain))
+    result = D.with_evidence(result_json(company, date, text, parsed, judged, items, ups), chain)
     json_path = company.file(date, P.JSON_SUFFIX)
     atomic_write_text(json_path, json.dumps(result, ensure_ascii=False, indent=1) + "\n")
     pruned = A.prune(company.analysis_dir, P.MD_SUFFIX)  # keep the latest result and the one before it
@@ -346,6 +368,7 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
         "counts": {q: len(D.items_of(parsed, q)) for q, _, _ in D.QUADRANTS},
         "valid_until": result["valid_until"], "previous": result["previous"], "upstream": result["upstream"],
         **D.flags(parsed), "gaps": [g for g in parsed["gaps"] if not M.is_blank(g) and g != "なし"],
+        "evidence": chain["summary"], "missing_sources": EV.missing(chain),
     })
 
 

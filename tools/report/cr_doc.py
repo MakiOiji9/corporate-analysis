@@ -118,7 +118,8 @@ def _horizons(facts: dict) -> list[str]:
         lines += _horizon_lines(facts, key, label)
     m = facts.get("matrix") or {}
     lines += ["### 長期の参考: フレームワークの判定マトリクス", "",
-              f"- {m.get('verdict', '—')}{'（' + m['note'] + '）' if m.get('note') else ''}。{m.get('why', '')}", ""]
+              f"- {m.get('verdict', '—')}{'（' + m['note'] + '）' if m.get('note') else ''}。{m.get('why', '')}"]
+    lines += [f"- {m['disagree']}", ""] if m.get("disagree") else [""]
     return lines
 
 
@@ -301,6 +302,24 @@ def _scenario_lines(s: dict) -> list[str]:
     return lines + [""]
 
 
+def _projection_lines(p: dict) -> list[str]:
+    """長期の3年後・5年後の水準 (the HTML draws the table and the exits; the long text may mention the assumption)."""
+    if not p:
+        return []
+    head = ["## 4.3 長期の3年後・5年後の水準（参考。スクリプトが HTML に表と売りの目安を載せる。仮定の水準で予想ではない）", ""]
+    if not p.get("ok"):
+        return head + [f"- 出していない: {p.get('reason') or '—'}", ""]
+    lines = [f"- 起点: EPS {C.fmt(p['eps0'], 1)} × {p['per_basis']} {C.fmt(p['per'], 1)}倍"]
+    for c in p["cases"]:
+        levels = "、".join(f"{r['years']}年後 {C.fmt(r['price'], 0)}" for r in p["rows"] if r["case"] == c["name"])
+        lines.append(f"- {c['name']}（EPS 年 {c['rate']:.1f}%。{c['basis']}）: {levels}")
+    return head + lines + [""]
+
+
+RESIDUAL_NOTE = ("残差には、業種の動き・市場全体以外の要因・β の推計の誤差も含まれる。会社の材料だけで動いた分とは限らず、"
+                 "値動きの原因を示す値ではない")
+
+
 def _pct_or_dash(v: float | None) -> str:
     return "—" if v is None else f"{v:+.1f}%"
 
@@ -316,8 +335,9 @@ def _move_lines(m: dict) -> list[str]:
               for r in m["returns"]]
     s = m.get("split")
     if s:
-        lines.append(f"- 地合いの分と会社固有の分（{s['span']}、β {s['beta']:.2f}）: 株価 {_pct_or_dash(s['stock'])} のうち、"
-                     f"市場の動きで説明できる分 {_pct_or_dash(s['market'])}、会社固有の分 {_pct_or_dash(s['own'])}")
+        lines.append(f"- 市場の動きで説明できる分と、できない分（{s['span']}、β {s['beta']:.2f}。β は過去1年の週ごとの値動きから"
+                     f"推計）: 株価 {_pct_or_dash(s['stock'])} のうち、市場の動きで説明できる分 {_pct_or_dash(s['market'])}、"
+                     f"指数の動きで説明できない分（残差） {_pct_or_dash(s['own'])}。{RESIDUAL_NOTE}")
     for d in m.get("big_days") or []:
         news = "、".join(f"{n['date']} {n['kind']}「{n['title']}」" + (f"（{n['summary']}）" if n["summary"] else "")
                         for n in d["news"]) or "前後2営業日に開示なし"
@@ -405,7 +425,8 @@ def render_brief(facts: dict, md_rel: str) -> str:
     lines += _premise(facts) + _analyses(facts) + [""] + _horizons(facts) + _prices(facts) + [""]
     lines += T.brief_lines(technicals(facts), facts["horizons"]["long"]["verdict"],
                            (facts.get("prices") or {}).get("positioning"))
-    lines += _scenario_lines(facts.get("scenarios") or {}) + _wind_lines(facts.get("winds") or {})
+    lines += (_scenario_lines(facts.get("scenarios") or {}) + _projection_lines(facts.get("projection") or {})
+              + _wind_lines(facts.get("winds") or {}))
     lines += _move_lines(facts.get("moves") or {}) + _phase_lines(facts.get("phase") or {})
     lines += _governance_lines(facts.get("governance"), facts.get("management"))
     lines += _recent(facts) + _conditions(facts) + L.brief_lines(facts)

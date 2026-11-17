@@ -1,3 +1,34 @@
+---
+provenance: 1
+collected: '2026-11-01'
+sources:
+- {id: Dash35, title: 中期経営計画 Dash 35, confidence: 一次}
+- {id: Vision2035, title: 長期経営計画 2035年ビジョン, confidence: 一次}
+- {id: IR2606_02, title: IR Day 2026 Dash 35 財務目標, confidence: 一次}
+- {id: IR2606_QA, title: IR Day 2026 経営計画説明会 質疑応答, confidence: 一次}
+- {id: 20261009_haifu, title: 2027年2月期 第2四半期 決算補足説明資料, confidence: 一次}
+- {id: 20260410_haihu, title: 2026年2月期 通期 決算補足説明資料, confidence: 一次}
+- {id: 262Q_QA_JP_1, title: 2026年度 第2四半期 決算説明会 質疑応答, confidence: 一次}
+sections:
+  '1':
+  - {source: Dash35, pages: null}
+  '2':
+  - {source: Dash35, pages: 9-11}
+  - {source: Vision2035, pages: '11'}
+  - {source: IR2606_02, pages: '4'}
+  - {source: IR2606_QA, pages: 1-3}
+  - {source: 20261009_haifu, pages: 18-19}
+  '3':
+  - {source: Dash35, pages: '5,13-30'}
+  - {source: 20261009_haifu, pages: '15,21'}
+  '4':
+  - {source: Dash35, pages: '11'}
+  - {source: 20261009_haifu, pages: '22'}
+  - {source: 20260410_haihu, pages: '2'}
+  - {source: 262Q_QA_JP_1, pages: '5'}
+  '5':
+  - {source: Dash35, pages: '4'}
+---
 # 中期経営計画 — 安川電機（6506）
 
 **収集日**: 2026-11-01

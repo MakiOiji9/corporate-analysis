@@ -3,7 +3,8 @@
 - returns: 1 month, 3 months and 52 weeks of the stock, the market index (日経平均 / S&P500) and the company's
   sector series (sector_map), all ending on the same day (the market series may stop earlier than the stock's)
 - beta: the stock's weekly returns regressed on the index's over the last year; the 3-month move splits into the
-  market's part (beta × the index) and the company's own part (the rest)
+  market's part (beta × the index) and the residual the index does not explain (the rest: the sector, other factors
+  and the error of the estimate as well as the company's own news; not a cause)
 - big days: the last BIG_LOOKBACK trading days where the price moved BIG_ATR × the usual daily range on
   BIG_VOLUME × the usual volume, each with the disclosures within NEWS_DAYS trading days (news_table)
 - consensus: what the technical indicators say together (cr_technicals)

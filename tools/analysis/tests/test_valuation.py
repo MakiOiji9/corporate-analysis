@@ -307,13 +307,21 @@ def test_combine_single_axis_and_none():
     ({"a": R.LOW, "b": R.FAIR}, R.LOW),  # +0.5
     ({"a": R.HIGH, "b": R.FAIR}, R.HIGH),  # -0.5
     ({"a": R.LOW, "b": R.FAIR, "c": R.FAIR}, R.FAIR),  # +0.33
-    ({"a": R.LOW, "b": R.NA, "c": R.PENDING}, R.LOW),  # one scored: judged on it (材料不足のため1指標)
+    ({"a": R.LOW, "b": R.NA, "c": R.PENDING}, R.PENDING),  # one scored: not enough to call it 割安
     ({"a": R.NA, "b": R.PENDING}, R.PENDING),  # nothing scored
 ])
 def test_score(ratings, verdict):
     result = R.score(ratings)
     assert result["verdict"] == verdict
     assert result["single"] == (len(result["scores"]) == 1)
+
+
+def test_score_leaves_the_one_sided_net_cash_ratio_out_of_the_average():
+    result = R.score({"PER": R.FAIR, "PBR": R.FAIR, R.ONE_SIDED: R.LOW})
+    assert result["scores"][R.ONE_SIDED] == 1 and result["average"] == 0 and result["verdict"] == R.FAIR
+    assert "参考" in result["basis"]
+    alone = R.score({"PBR": R.LOW, R.ONE_SIDED: R.LOW})  # PBR is the only two-sided indicator
+    assert alone["verdict"] == R.PENDING and alone["single"]
 
 
 # ---------- va_series ----------
@@ -394,8 +402,14 @@ def _base(rows: list[dict] | None = None, price: float = 1000.0, forecast: float
 def test_eps_adjusted_at_ten_percent_of_net_income(gain, adjusted):
     s1 = X.eps_step(_base(_rows(gain=gain)))
     assert s1["adjusted"] is adjusted
-    if adjusted:
-        assert s1["eps_used"] == pytest.approx(84 * (840 - 84 * 0.7) / 840)
+    if adjusted:  # a Japanese company: the statutory rate 30.6% (mt_returns.TAX), the same as the moat analysis'
+        assert s1["eps_used"] == pytest.approx(84 * (840 - 84 * (1 - 0.306)) / 840)
+        assert "税率 30.6%" in s1["sentence"]
+
+
+def test_eps_adjustment_uses_the_us_tax_rate_for_a_us_company():
+    s1 = X.eps_step({**_base(_rows(gain=84)), "market": "us"})
+    assert s1["eps_used"] == pytest.approx(84 * (840 - 84 * 0.75) / 840) and "税率 25.0%" in s1["sentence"]
 
 
 @pytest.mark.parametrize("ni_2026, op_2026, na", [

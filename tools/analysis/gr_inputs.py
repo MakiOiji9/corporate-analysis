@@ -28,6 +28,9 @@ SPECS = (
     Spec("policy", "有報: 経営方針・中期経営計画", "yuho", "経営方針", "collect-filings", False),
     Spec("targets", "中期経営計画: 目標値", "mid-term-plan", "目標", "collect-ir", False),
     Spec("mtp_result", "中期経営計画: 前回計画の達成状況", "mid-term-plan", "達成状況", "collect-ir", False),
+    # 手順5 の投資比率を同業と比べる材料（任意。無ければ自社の過去とだけ比べる）
+    Spec("peer_invest", "競合: 成長投資の材料（設備投資・減価償却費・研究開発費）", "competitors", "成長投資の材料",
+         "collect-peers-valuation", False),
 )
 SPEC = {s.key: s for s in SPECS}
 # a newer file of these kinds re-opens a valid result

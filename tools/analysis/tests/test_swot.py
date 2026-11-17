@@ -12,6 +12,9 @@ REPO = ANALYSIS.parents[1]
 sys.path[:0] = [str(ANALYSIS), str(REPO / "tools" / "report"), str(REPO / "tools" / "collect" / "market"),
                 str(REPO / "tools" / "collect"), str(REPO / "tools" / "guard")]
 
+import ff_doc as FD  # noqa: E402
+import mt_doc as MD  # noqa: E402
+import tc_doc as TD  # noqa: E402
 import sw_doc as D  # noqa: E402
 import sw_metrics as X  # noqa: E402
 import sw_paths as P  # noqa: E402
@@ -129,6 +132,10 @@ def _company(root: Path, mtp: str = MTP, collected: str = COLLECTED) -> Path:
 
 
 def _result(root: Path, kind: str, date: str, result: dict) -> None:
+    """An upstream result built under the current rules (an older version would ask for its rebuild first)."""
+    versions = {"moat": MD.VERSION, "three-c": TD.VERSION, "five-forces": FD.VERSION}
+    if kind in versions:
+        result = {"version": versions[kind], **result}
     directory = root / "companies" / COMPANY_DIR / "analysis" / kind
     directory.mkdir(parents=True, exist_ok=True)
     (directory / f"{date}_{kind}.md").write_text(f"# {kind}\n\n完成\n", encoding="utf-8")
@@ -174,9 +181,9 @@ def run(root: Path, *argv: str, capsys) -> tuple[int, dict]:
     return code, json.loads(capsys.readouterr().out.strip().splitlines()[-1])
 
 
-S_ROW = "| S1 | 1-3 スイッチングコスト | 継続率が高い | 継続率 93%（2026/03） | brief 1. | 一次 | 大 | 売上の80%に関わる |"
-W_ROW = "| W1 | リスク 顧客の集中 | 上位1社の比率が高い | 12.0% | brief 1. | 一次 | 中 | 売上の12% |"
-O_ROW = "| O1 | 業界 市場成長 | 市場が伸びる | 年5% | brief 4. | 二次 | 中 | 売上 +5% |"
+S_ROW = "| S1 | 1-3 スイッチングコスト | 継続率が高い | 継続率 93%（2026/03） | brief 1. | 一次 | 大 | 営業利益の80%を支える |"
+W_ROW = "| W1 | リスク 顧客の集中 | 上位1社の比率が高い | 12.0% | brief 1. | 一次 | 中 | 失えば営業利益の12% |"
+O_ROW = "| O1 | 業界 市場成長 | 市場が伸びる | 年5% | brief 4. | 二次 | 中 | 営業利益 +5% |"
 T_ROW = "| T1 | 1-1 新規参入の脅威 | 参入が続く | 上場2件 | brief 0. | 二次 | 大 | 単価下落で利益の20%超 |"
 ANSWERS = {
     "top-strength": "S1", "top-strength-reason": "影響が最も大きい", "top-threat": "T1",
@@ -185,6 +192,7 @@ ANSWERS = {
     "sentence": "S1 により、T1 に対して条件付きで耐えられる。理由：採用計画が進めば単価を守れる",
     "step2-checks": "営業利益率", "summary": "強みで脅威に条件付きで耐える", "triggers": "採用が計画を下回れば No",
     "changes": "- 初回の分析", "gaps": "- なし",
+    "counter": "継続率は高いが、新規参入が値下げで顧客を奪えば強みは利益に表れなくなる",
 }
 
 
@@ -355,14 +363,61 @@ def test_new_period_yuho_triggers(repo, capsys):
     ({"t": T_ROW.replace("| 大 |", "| 小 |"), "top_threat": "なし", "answer": "Yes", "measure": "—",
       "sentence": "S1 により、なし に対して耐えられる。理由：中以上の脅威が無い"}, "Yes"),
     ({"t": T_ROW.replace("| 大 |", "| 不明 |"), "top_threat": "なし"}, "条件付き"),  # 不明 read as 大, measure given
+    # the unknown threat is not shown to be large: the base verdict is 条件付き, the conservative one No
     ({"t": T_ROW.replace("| 大 |", "| 不明 |"), "top_threat": "なし", "answer": "No", "measure": "—",
-      "sentence": "S1 により、なし に対して耐えられない。理由：施策が無い"}, "No"),
+      "sentence": "S1 により、なし に対して耐えられない。理由：施策が無い"}, "条件付き"),
 ])
 def test_verdict(repo, capsys, kwargs, verdict):
     fill(prepared(repo, capsys), **kwargs)
     code, out = build(repo, capsys)
     assert code == 0, out
     assert out["verdict"] == verdict
+
+
+# ---------- version 2: impact on profit, structural strength, base and conservative verdicts ----------
+
+def test_conservative_verdict_is_kept_beside_the_base(repo, capsys):
+    fill(prepared(repo, capsys), t=T_ROW.replace("| 大 |", "| 不明 |"), top_threat="なし", answer="No", measure="—",
+         sentence="S1 により、なし に対して耐えられない。理由：施策が無い")
+    code, out = build(repo, capsys)
+    result = json.loads((repo / out["json"]).read_text(encoding="utf-8"))
+    assert result["verdict"] == "条件付き" and result["conservative_verdict"] == "No"
+    text = (repo / out["md"]).read_text(encoding="utf-8")  # the md says both, so 5章 (No) and 6章 agree
+    assert "| SWOT の結論（基本の判定） | **条件付き**" in text and "| 保守的な判定（5章の判定） | No" in text
+    assert "対策の開示は無く" in result["verdict_reason"]
+
+
+@pytest.mark.parametrize("kwargs, message", [
+    ({"w": W_ROW.replace("失えば営業利益の12%", "売上の12%")}, "営業利益への影響"),
+    ({"s": S_ROW.replace("継続率が高い", "2026年度 Q2 の受注が過去最高")}, "景気循環"),
+    ({"counter": "なし"}, "反論"),
+])
+def test_version_two_validation(repo, capsys, kwargs, message):
+    fill(prepared(repo, capsys), **kwargs)
+    code, out = build(repo, capsys)
+    assert code == 1 and any(message in issue for issue in out["issues"]), out
+
+
+def test_a_persistent_order_record_may_be_the_top_strength(repo, capsys):
+    fill(prepared(repo, capsys), s=S_ROW.replace("継続率が高い", "受注が5年連続で過去最高"))
+    code, out = build(repo, capsys)
+    assert code == 0, out
+
+
+def test_result_records_confidence_and_rebuilds_on_old_version_or_missing_upstream(repo, capsys):
+    fill(prepared(repo, capsys))
+    code, out = build(repo, capsys)
+    assert code == 0, out
+    path = repo / out["json"]
+    result = json.loads(path.read_text(encoding="utf-8"))
+    assert result["version"] == D.VERSION and result["confidence"]["level"] in ("高", "中", "低") and result["counter"]
+    path.write_text(json.dumps({**result, "version": 1}, ensure_ascii=False), encoding="utf-8")
+    _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["result"] == "triggered" and f"版 1 → {D.VERSION}" in out["reason"]
+    gone = {**result, "upstream": {**result["upstream"], "moat": {"date": "2026-09-01", "verdict": "狭い"}}}
+    path.write_text(json.dumps(gone, ensure_ascii=False), encoding="utf-8")
+    _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["result"] == "triggered" and "参照した上流" in out["reason"]
 
 
 def test_threat_falls_back_to_medium(repo, capsys):
@@ -414,7 +469,8 @@ def test_required_rows_follow_the_upstream_results(tmp_path, capsys):
 
 
 def test_flags(repo, capsys):
-    fill(prepared(repo, capsys), w=W_ROW.replace("売上の12%", "迷った: 中と小。売上の12%").replace("| 一次 |", "| 参考 |"))
+    fill(prepared(repo, capsys), w=W_ROW.replace("失えば営業利益の12%", "迷った: 中と小。失えば営業利益の12%")
+         .replace("| 一次 |", "| 参考 |"))
     _, out = build(repo, capsys)
     assert out["tie_breaks"] == ["W1"] and out["low_confidence"] == ["W1"] and out["unknown"] == []
 
@@ -632,7 +688,7 @@ def test_brief_carries_upstream_evidence_with_sources(tmp_path, capsys):
 
 
 def test_large_or_medium_impact_needs_a_figure(repo, capsys):
-    fill(prepared(repo, capsys), w=W_ROW.replace("売上の12%", "売上の一部"))
+    fill(prepared(repo, capsys), w=W_ROW.replace("失えば営業利益の12%", "営業利益の一部"))
     code, out = build(repo, capsys)
     assert code == 1 and any("W1: 影響度「中」の理由に" in issue for issue in out["issues"]), out
 
@@ -648,3 +704,26 @@ def test_build_writes_sentence_summary_changes_and_gaps_from_the_picks(repo, cap
     assert "S1（継続率が高い）により、T1（参入が続く）に対して条件付きで耐えられる。理由：採用が進めば耐えられる" in text
     assert "最大の強みはS1（継続率が高い）、最大の脅威はT1（参入が続く）。SWOT の結論は条件付き" in text
     assert "## 8. 前回からの変更点\n\n- 初回の分析" in text
+
+
+def test_build_appends_the_evidence_chain_once(repo, capsys):
+    """BL-01: 10章「出典の連鎖」is the build's own chapter; a rebuild replaces it instead of adding another."""
+    md = prepared(repo, capsys)
+    fill(md)
+    code, out = build(repo, capsys)
+    assert code == 0, out
+    result = json.loads((repo / out["json"]).read_text(encoding="utf-8"))
+    assert "claims" in result["evidence"]
+    assert all("evidence" in i for items in result["quadrants"].values() for i in items)
+    code, again = build(repo, capsys)
+    assert code == 0, again
+    assert md.read_text(encoding="utf-8").count(f"## {D.EVIDENCE_CHAPTER}. 出典の連鎖") == 1
+
+
+def test_conclusion_cell_separates_the_reason_from_the_sentence():
+    pick = {"id": "S1", "fact": "f", "impact": "大"}
+    judged = {"verdict": "No", "why": "規則に従い No を採った", "top_strength": pick, "top_threat": {**pick, "id": "T1"}}
+    row = D.conclusion_section(judged, "S1により、T1に対して耐えられない。").splitlines()[-1]
+    assert "No を採った。まとめ: S1により" in row
+    judged = {**judged, "why": "数値の対策が無い。"}
+    assert "無い。まとめ: S1" in D.conclusion_section(judged, "S1により…").splitlines()[-1]

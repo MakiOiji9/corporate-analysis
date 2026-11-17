@@ -17,11 +17,11 @@
     (b) sales growth not from M&A (the acquired companies' annual sales taken out of the last year), (c) EPS growth
     not from buybacks (EPS CAGR − 純利益 CAGR <= 2pt). 手順1 is judged again with the organic sales CAGR / the net
     income CAGR where (b) / (c) fail.
-  手順5 (結論, in this order): 懸念: 手順1 (or the quality-adjusted 手順1) 停滞・縮小, or a 構造 year /
-    判定保留: 手順1 lacks years / 普通: a quality problem / 判定保留: a 不明 year or a quality point that
-    could not be checked / 良好: 高成長 or 安定成長 with none of the above.
-    Then conservative(): a comparison that decides the verdict within BORDER_PT of its line moves 良好 → 普通 and
-    普通 → 懸念 (policy.md「迷ったら低い方」).
+  手順5 (成長投資): 投資比率 × 投資効率 (gr_invest).
+  結論 (in this order): 懸念: 手順1 (or the quality-adjusted 手順1) 停滞・縮小, or a 構造 year /
+    判定保留: 手順1 lacks years / 普通: a quality problem or a 不明 year / 良好: 高成長 or 安定成長 with none of the
+    above. Then with_investment(): 手順5 問題あり moves it one step down, 良好 lifts a 普通 back to 良好 (not a 懸念,
+    not with a 構造・不明 year). A comparison within BORDER_PT of its line is noted in the reason (conservative()).
 """
 from __future__ import annotations
 
@@ -32,6 +32,7 @@ import re
 import an_common as A
 import gr_facts as F
 import gr_inputs as I
+import gr_invest as V
 import gr_series as S
 from ff_metrics import _months_apart
 
@@ -505,17 +506,16 @@ def judge(s1: dict, declines: list[dict], s4: dict, classes: dict[str, str] | No
         return "懸念", f"構造的な減収・減益の要因あり（{'、'.join(structural)}）"
     if s1["rating"] is None:
         return "判定保留", f"手順1を判定できない（{s1['basis']}）"
-    unknown = [y for y in years if filled.get(y) == "不明"] if classes is not None else []
-    if unknown:  # a cause that cannot be told is read as 構造 (never as the favourable 一時)
-        return "懸念", (f"減収・減益の原因が不明の年（{'、'.join(unknown)}）を構造的な要因とみなした"
-                      "（材料不足のため保守的に判定）")
     if s4["problems"]:
         return "普通", f"手順1は{s1['rating']}だが、成長の質に問題あり（{'。'.join(s4['problems'])}）"
-    if s4["unknown"]:  # a quality point that cannot be checked is read as 問題あり
-        return "普通", (f"手順1は{s1['rating']}だが、成長の質の確認ができない点（{'・'.join(s4['unknown'])}）を"
-                      "問題ありとみなした（材料不足のため保守的に判定）")
+    unknown = [y for y in years if filled.get(y) == "不明"] if classes is not None else []
+    if unknown:  # a cause that cannot be told caps the verdict at 普通 (it is not evidence of a structural cause)
+        return "普通", (f"手順1は{s1['rating']}だが、減収・減益の原因が不明の年（{'、'.join(unknown)}）があり"
+                      "良好にはしない（材料不足）")
     pending = "（減収・減益の年の分類が一時のときの候補）" if classes is None and years else ""
-    return "良好", f"手順1が{s1['rating']}、構造的な減収減益要因なし、成長の質が高い{pending}"
+    unchecked = (f"。成長の質のうち{'・'.join(s4['unknown'])}は確かめきれない（材料不足。問題ありとはみなさない）"
+                 if s4["unknown"] else "")
+    return "良好", f"手順1が{s1['rating']}、構造的な減収減益要因なし、成長の質に問題なし{pending}{unchecked}"
 
 
 def conservative(verdict: str, s1: dict, s4: dict) -> list[str]:
@@ -541,24 +541,49 @@ def conservative(verdict: str, s1: dict, s4: dict) -> list[str]:
     return reasons
 
 
-LOWER = {"良好": "普通", "普通": "懸念"}
-
-
 def unknown_notes(declines: list[dict], s4: dict, classes: dict[str, str] | None) -> list[str]:
-    """How the unknowns were read on the conservative side (recorded in the result's conservative)."""
+    """How the unknowns were read (recorded in the result's conservative)."""
     filled = classes or {}
-    notes = [f"{d['year']} の減収・減益の原因が不明 → 構造とみなした" for d in declines if filled.get(d["year"]) == "不明"]
-    return notes + [f"成長の質の「{u}」を確かめられない → 問題ありとみなした" for u in s4.get("unknown") or []]
+    notes = [f"{d['year']} の減収・減益の原因が不明 → 良好にはしない" for d in declines if filled.get(d["year"]) == "不明"]
+    return notes + [f"成長の質の「{u}」を確かめられない → 問題ありとはみなさない" for u in s4.get("unknown") or []]
 
 
-def decide(s1: dict, declines: list[dict], s4: dict, classes: dict[str, str] | None) -> tuple[str, str, list[str]]:
-    """judge() and then conservative(): (verdict, why, the reasons it was moved down)."""
-    verdict, why = judge(s1, declines, s4, classes)
+STEP_DOWN = {"良好": "普通", "普通": "懸念"}
+
+
+def _bought_growth(s4: dict | None) -> bool:
+    """手順4 found the sales growth bought (M&A): the acquisitions are part of the growth investment, so its
+    efficiency would grade the purchase rather than the business."""
+    checks = (s4 or {}).get("checks") or []
+    return len(checks) > 1 and checks[1].get("status") == "問題あり"
+
+
+def with_investment(verdict: str, why: str, s1: dict, declines: list[dict], classes: dict[str, str] | None,
+                    s5: dict | None, s4: dict | None = None) -> tuple[str, str]:
+    """手順5 (成長投資) moves the verdict one step: 問題あり down (良好 → 普通, 普通 → 懸念); 良好 lifts a 普通 back to
+    良好 when 手順1 grew and no decline year is 構造 or 不明 (a 普通 from a quality problem: the two cancel out),
+    except when the 普通 comes from M&A-bought growth. A 懸念 is never lifted (weak growth is not made up for by
+    investment); 普通 / 不明 / 対象外 leave it."""
+    word = (s5 or {}).get("verdict")
+    if word == "問題あり" and verdict in STEP_DOWN:
+        return STEP_DOWN[verdict], f"{why}。さらに成長投資に問題あり（{s5['sentence']}）で一段下げた"
+    filled = classes or {}
+    unsure = [d["year"] for d in declines if filled.get(d["year"]) in ("構造", "不明")]
+    if (word == "良好" and verdict == "普通" and s1["rating"] in ("高成長", "安定成長") and not unsure
+            and not _bought_growth(s4)):
+        return "良好", f"{why}。ただし成長投資が良好（{s5['sentence']}）なので一段上げた（差し引きで良好）"
+    return verdict, why
+
+
+def decide(s1: dict, declines: list[dict], s4: dict, classes: dict[str, str] | None,
+           s5: dict | None = None) -> tuple[str, str, list[str]]:
+    """judge(), with_investment() and then conservative(): (verdict, why, downgraded). A comparison near its line is
+    noted in why; it no longer moves the verdict, so downgraded stays empty (kept for the result's shape)."""
+    verdict, why = with_investment(*judge(s1, declines, s4, classes), s1, declines, classes, s5, s4)
     reasons = conservative(verdict, s1, s4)
     if not reasons:
         return verdict, why, []
-    return (LOWER[verdict], f"{why}。ただし境界に近いため保守的に {verdict} から1段階下げた（{'、'.join(reasons)}）",
-            reasons)
+    return verdict, f"{why}。境界に近い比較あり（{'、'.join(reasons)}。次の決算で判定が変わりうる）", []
 
 
 def borderline(s1: dict, s3: dict, s4: dict) -> list[str]:
@@ -624,12 +649,14 @@ def candidates(company, found: dict) -> dict:
     s3 = step3(plans)
     ma = S.ma_rows(found["ma"])
     s4 = step4(s1, rows, ma, found["ma"].status)
-    verdict, why, downgraded = decide(s1, declines, s4, None)
+    s5 = V.step5(company, s1, rows, has_plan=found["targets"].status == "ok",
+                 peers=V.peer_shares(found.get("peer_invest"), company))
+    verdict, why, downgraded = decide(s1, declines, s4, None, s5)
     records = F.split_records(company)
     return {"series": series, "rows": rows, "splits": splits, "odd_share_jumps": odd, "plan_dropped": dropped,
             "basis_changes": basis_changes(rows),
             "split_notes": [split_note(s, F.match_split(s, records)) for s in splits],
-            "step1": s1, "declines": declines, "step3": s3, "ma": ma, "step4": s4,
+            "step1": s1, "declines": declines, "step3": s3, "ma": ma, "step4": s4, "step5": s5,
             "progress": F.current_progress(company, series), "receivables": receivables_text(series),
             "borderline": borderline(s1, s3, s4), "verdict": verdict, "why": why, "downgraded": downgraded}
 
@@ -667,6 +694,9 @@ CHAPTER_OF = {OWN_ITEM: "1. 損益・貸借・CF", I.SPEC["plan"].label: "4. 会
 
 def _hints(company, item: str, cands: dict) -> list[str]:
     """Template chapter and the originals already in sources/ that cover the item (passed to the collector)."""
+    if item.startswith(PEER_INVEST_ITEM):
+        return ["雛形 competitors.md「14. 成長投資の材料」（競合ごとに直近から最大5期。自社の行は不要）",
+                "取れない会社は親への報告の未取得項目に「成長投資の材料（会社名）」と、自社の決算期の時点を書く"]
     chapter = next((c for label, c in CHAPTER_OF.items() if item.startswith(label)), None)
     out = [f"雛形 financials-historical.md「{chapter}」"] if chapter else []
     if item.startswith(DECLINE_ITEM):
@@ -680,11 +710,34 @@ def _hints(company, item: str, cands: dict) -> list[str]:
     return out
 
 
+PEER_INVEST_ITEM = I.SPEC["peer_invest"].label
+PEER_INVEST_WORD = "成長投資の材料"  # the words of a status.md 未取得項目 for it
+
+
+def peer_request(found: dict, company, cands: dict, unavailable: list[str]) -> str | None:
+    """The peers' growth-investment table, asked for when it is missing or a fiscal year old (手順5 compares the
+    ratio with the peers' median). Not asked for while a 未取得項目 of this fiscal year says it could not be got
+    (ff_inputs.unavailable_items lets the record lapse at the company's next annual report), for a company without
+    capex numbers of its own, or for one the rule does not cover (金融)."""
+    s5 = cands.get("step5") or {}
+    if s5.get("verdict") == "対象外" or not s5.get("rows") or any(PEER_INVEST_WORD in u for u in unavailable):
+        return None
+    state, newest = V.peer_state(found.get("peer_invest"), company, cands["step1"].get("last"))
+    if state == "ok":
+        return None
+    why = "無い" if state == "missing" else f"古い: 同業の最新が {newest} 期で自社の {cands['step1']['last']} 期より1年以上前"
+    return f"{PEER_INVEST_ITEM}（{why}）"
+
+
 def collect_requests(company, found: dict, cands: dict) -> list[dict]:
-    """Missing required sections, plus a short own history, and the company's explanation of the decline years.
-    Each request carries hints: the template chapter and the originals already saved for the years concerned."""
+    """Missing required sections, plus a short own history, the company's explanation of the decline years and
+    the peers' growth-investment table. Each request carries hints: the template chapter and the originals already
+    saved for the years concerned."""
     unavailable = I.unavailable_items(company)
     extra: list[tuple[str, str]] = []
+    peer = peer_request(found, company, cands, unavailable)
+    if peer:
+        extra.append(("collect-peers-valuation", peer))
     if cands["step1"]["years"] < MIN_YEARS and not any(OWN_UNAVAILABLE in u for u in unavailable):
         extra.append(("collect-filings", OWN_ITEM))
     if cands["declines"] and found["decline"].status in ("missing", "blank"):

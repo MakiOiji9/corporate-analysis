@@ -10,7 +10,8 @@ and the STEP 3 scoring.
     goes back to 妥当圏.
   組み合わせ: the 3×3 table; with one axis only, that axis decides (片軸); with none -> 判定保留.
   STEP 3: 割安 +1 / 妥当 0 / 割高 −1 (評価対象外・判定保留 excluded); average >= +0.5 割安, <= −0.5 割高, else 妥当;
-    fewer than MIN_SCORED indicators scored -> 判定保留.
+    fewer than MIN_SCORED indicators scored -> 判定保留. The asset-based net-cash ratio (ONE_SIDED) can only be
+    割安 or 妥当, so it is kept in scores for reference but left out of the average and the count.
 """
 from __future__ import annotations
 
@@ -27,6 +28,7 @@ EXPLAIN_PT = 5.0
 SCORE = {LOW: 1, FAIR: 0, HIGH: -1}
 VERDICT_BAND = 0.5
 MIN_SCORED = 2
+ONE_SIDED = "ネットキャッシュ比率"  # never 割高: shown, not averaged
 BORDER_PCT = 5  # a position within 5pt of 33 / 67
 BORDER_PEER = 0.05  # a peer difference within 5pt of ±20%
 MATRIX = {(LOW, LOW): LOW, (LOW, FAIR): LOW, (LOW, HIGH): FAIR, (FAIR, LOW): LOW, (FAIR, FAIR): FAIR,
@@ -144,14 +146,18 @@ def more_expensive(a: str, b: str) -> str:
 def score(ratings: dict[str, str]) -> dict:
     """{scores, average, verdict, basis} over the indicators' ratings (name -> rating)."""
     scored = {name: SCORE[r] for name, r in ratings.items() if r in SCORE}
-    if not scored:
+    used = {name: s for name, s in scored.items() if name != ONE_SIDED}
+    reference = (f"。{ONE_SIDED}（{'割安' if scored[ONE_SIDED] > 0 else '妥当'}）は割高にならない指標のため参考"
+                 if ONE_SIDED in scored else "")
+    if not used:
         return {"scores": scored, "average": None, "verdict": PENDING, "single": False,
-                "basis": "点数になった指標が無い（判断に使える事実が無い）"}
-    average = sum(scored.values()) / len(scored)
+                "basis": f"点数になった指標が無い（判断に使える事実が無い）{reference}"}
+    average = sum(used.values()) / len(used)
+    if len(used) < MIN_SCORED:
+        return {"scores": scored, "average": None, "verdict": PENDING, "single": True,
+                "basis": f"点数になった指標が{next(iter(used))}だけで、割安・割高を決めない（ほかの指標は材料不足・"
+                         f"評価対象外。{MIN_SCORED}指標以上で判定する）{reference}"}
     verdict = LOW if average >= VERDICT_BAND else HIGH if average <= -VERDICT_BAND else FAIR
-    single = len(scored) < MIN_SCORED
-    note = (f"。{next(iter(scored))}だけで判定（ほかの指標は材料不足・評価対象外。材料不足のため1指標で判定）"
-            if single else "")
-    return {"scores": scored, "average": average, "verdict": verdict, "single": single,
-            "basis": f"{len(scored)} 指標の平均点 {average:+.2f}（+{VERDICT_BAND} 以上で割安、−{VERDICT_BAND} 以下で割高）"
-                     f"{note}"}
+    return {"scores": scored, "average": average, "verdict": verdict, "single": False,
+            "basis": f"{len(used)} 指標の平均点 {average:+.2f}（+{VERDICT_BAND} 以上で割安、−{VERDICT_BAND} 以下で割高）"
+                     f"{reference}"}

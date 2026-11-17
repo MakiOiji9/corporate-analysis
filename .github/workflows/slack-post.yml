@@ -1,0 +1,43 @@
+# Post a file of the reports (companies/ or market/ on main) to Slack, by hand from the Actions tab.
+# The same script (.github/scripts/slack_post.py) posts each company report after company-report.yml builds it.
+# Credentials: SLACK_BOT_TOKEN (secret) and SLACK_CHANNEL_ID (variable) of the Environment reports; see tools/README.md.
+name: slack-post
+
+on:
+  workflow_dispatch:
+    inputs:
+      path:
+        description: 投稿するファイル（companies/ か market/ 配下。例 market/report/2026-11-09_market-report.html）
+        type: string
+        required: true
+      message:
+        description: 添えるメッセージ（省略可）
+        type: string
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    environment: reports
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main # the links in the message point at main
+          persist-credentials: false
+
+      # The inputs go through env, never into the script text; the script accepts only companies/ and market/.
+      - name: Post to Slack
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }} # not a secret: an Environment variable
+          TARGET: ${{ inputs.path }}
+          MESSAGE: ${{ inputs.message }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python3 -I .github/scripts/slack_post.py file --path "$TARGET" --message "$MESSAGE" \
+            --repo "$GITHUB_REPOSITORY" --run-url "$RUN_URL"

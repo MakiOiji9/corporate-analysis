@@ -10,6 +10,7 @@ import re
 from html import escape
 
 import charts as C
+import cr_evidence as EVR
 import cr_glossary as G
 import cr_judge as J
 import cr_plain as P
@@ -78,6 +79,8 @@ def horizon_block(label: str, span: str, h: dict, prose: str, matrix: dict | Non
     good = "".join(_point(r) for r in h["good"]) or '<li class="muted">なし</li>'
     bad = "".join(_point(r) for r in h["bad"]) or '<li class="muted">なし</li>'
     knock = f'<p class="notice"><b>足切り</b>: {esc("、".join(h["knockout"]))}</p>' if h.get("knockout") else ""
+    knock += (f'<p class="notice"><b>注意</b>: {esc("、".join(h["cautions"]))}（判定は止めないが、確かめる）</p>'
+              if h.get("cautions") else "")
     unknown = (f'<p class="small muted">材料が無く点数から外した要素: {esc("・".join(h["unknown"]))}</p>'
                if h.get("unknown") else "")
     rows = table(["要素", "重み", "点数", "寄与", "値", "情報源"],
@@ -86,6 +89,8 @@ def horizon_block(label: str, span: str, h: dict, prose: str, matrix: dict | Non
                    esc(r["source"])] for r in h["rows"]], right=frozenset({1, 2, 3}))
     ref = (f'<p class="small"><b>参考: フレームワークの判定マトリクス</b> {badge(matrix["verdict"])} '
            f'{esc(matrix["why"])}</p>' if matrix else "")
+    if matrix and matrix.get("disagree"):
+        ref += f'<p class="small muted">{esc(matrix["disagree"])}</p>'
     score = "—" if h["score"] is None else f'{h["score"]:+.2f}'
     return (f'<div class="horizon {VERDICT_CLASS.get(h["verdict"], "")}"><div class="h-head"><h3>{esc(label)}'
             f'<span class="muted small">（{esc(span)}）</span></h3>{badge(h["verdict"])}'
@@ -118,13 +123,19 @@ def _mark(mark: str | None) -> str:
     return f'<span class="mk {MARK_CLASS.get(mark or "", "")}">{esc(mark or "—")}</span>'
 
 
+def _sources_line(evidence: list[dict] | None) -> str:
+    """'出典: …' under a 3C card; nothing for a result built before BL-01."""
+    return f'<p class="small"><b>出典</b>: {EVR.cell(evidence)}</p>' if evidence else ""
+
+
 def _three_c_cards(detail: dict) -> str:
     kbf = "".join(f'<li{" class=top" if i == 0 else ""}>{esc(k)}</li>' for i, k in enumerate(detail.get("kbf") or []))
     customer = (f'<div class="c3 c-customer"><div class="c3-h">Customer（顧客・市場）</div>'
                 f'<p class="small">{esc(detail.get("customers") or detail.get("customer") or "—")}</p>'
                 f'<p class="small"><b>選ぶときに重視すること（KBF。上ほど重要）</b></p><ol class="kbf">{kbf}</ol>'
                 f'<p class="small"><b>市場の成長性</b>: {esc(detail.get("growth") or "—")}。'
-                f'{esc(detail.get("growth_reason") or "")}</p></div>')
+                f'{esc(detail.get("growth_reason") or "")}</p>'
+                f'{_sources_line(detail.get("customer_evidence"))}</div>')
     comp_rows = [[esc(short_name(c["name"])) + (" <b>（対象）</b>" if c.get("self") else ""),
                   esc(num(c["sales"] / YEN_OKU, "億円", 0) if c.get("sales") else "—"),
                   esc(num(c.get("margin"), "%")), esc(num(c.get("cagr"), "%")), esc(num(c.get("share"), "%"))]
@@ -133,7 +144,8 @@ def _three_c_cards(detail: dict) -> str:
                   + table(["会社", "売上高", "営業利益率", "3年CAGR", "シェア"], comp_rows,
                           right=frozenset({1, 2, 3, 4}))
                   + f'<p class="small"><b>比較の結論</b>: {esc(_competitor_conclusion(detail))}。'
-                    f'{esc(detail.get("competitor_reason") or "")}</p></div>')
+                    f'{esc(detail.get("competitor_reason") or "")}</p>'
+                  + f'{_sources_line(detail.get("competitor_evidence"))}</div>')
     company = (f'<div class="c3 c-company"><div class="c3-h">Company（自社）</div>'
                f'<p class="small"><b>強み</b>: {esc(detail.get("strengths") or "—")}</p>'
                f'<p class="small"><b>弱み</b>: {esc(detail.get("weaknesses") or "—")}</p></div>')
@@ -171,7 +183,18 @@ def swot_grid(detail: dict, analysis: dict) -> str:
                   f'<ul>{items}</ul></div>')
     return (f'<h3>SWOT分析</h3><div class="swot">{cells}</div>'
             f'<p class="small muted">影響度: 大・中・小（枠で囲んだ項目は最大の強み・最大の脅威）</p>'
-            f'<p><b>強みで脅威に対抗できるか</b>: {badge(analysis.get("verdict"))} {esc(detail.get("sentence"))}</p>')
+            f'<p><b>強みで脅威に対抗できるか</b>: {badge(analysis.get("verdict"))} {esc(detail.get("sentence"))}</p>'
+            + _swot_sources(detail))
+
+
+def _swot_sources(detail: dict) -> str:
+    """Each item's 出典 in a folded table under the grid (the grid itself stays short); nothing before BL-01."""
+    rows = [[f"<b>{esc(i.get('id'))}</b>", esc(i.get("fact")), EVR.cell(i.get("evidence"))]
+            for key, _, _ in QUADRANTS for i in (detail.get("quadrants") or {}).get(key) or [] if i.get("evidence")]
+    if not rows:
+        return ""
+    return (f'<details><summary>SWOT の各項目の出典</summary><div class="inner">'
+            f'{table(["項目", "事実", "出典"], rows, nowrap=frozenset({0}))}</div></details>')
 
 
 # ---------------------------------------------------------------- management and shareholders
@@ -228,13 +251,32 @@ def growth_block(facts: dict) -> str:
              f"{num(cagr.get('operating_income'), '%')}・EPS {num(cagr.get('eps'), '%')}（{g.get('growth_type') or '—'}）",
              f"会社計画の信頼性: {g.get('plan') or '—'}（過去の達成率の平均 {num(g.get('plan_average'), '%', 0)}）",
              f"成長の質: {g.get('quality_sentence') or g.get('quality') or '—'}",
+             f"成長投資（将来の成長のために使ったお金とその効率）: {(g.get('investment') or {}).get('sentence') or '—'}",
              f"市場の成長性（3C）: {tc.get('growth') or '—'}。{tc.get('market') or ''}",
              f"中期経営計画: {g.get('mtp') or '—'}"]
     plan_table = (f'<h4>今期の会社計画と進み具合（{esc(facts["unit"])}）</h4>'
                   + table(["項目", "前期の実績", "今期の会社予想", "予想の伸び", "進捗率", "前年同期の進捗率"], plan,
                           right=frozenset({1, 2, 3, 4, 5})) if plan else "")
     return ('<h3>成長の見通し</h3><ul class="plain">' + "".join(f"<li>{esc(x)}</li>" for x in lines) + "</ul>"
-            + plan_table)
+            + plan_table + investment_table(g.get("investment") or {}, facts["unit"]))
+
+
+INVEST_COLUMNS = (("capex", "設備投資"), ("depreciation", "減価償却費"), ("rnd", "研究開発費"),
+                  ("working_capital", "運転資本の増加"), ("acquisition", "子会社の取得"), ("growth", "成長投資"))
+
+
+def investment_table(inv: dict, unit: str) -> str:
+    """The yearly parts of the growth investment (成長性 手順5) with how to read them."""
+    rows = inv.get("rows") or []
+    if not rows:
+        return ""
+    body = [[esc(r.get("year"))] + [esc(num(r.get(k), "", 0)) for k, _ in INVEST_COLUMNS] for r in rows]
+    roic = num(inv.get("roic"), "%") if inv.get("roic") is not None else "—"
+    note = (f'<p class="small">読み方: 成長投資 = 設備投資 − 減価償却費（今の設備を保つ分）＋ 研究開発費 ＋ 運転資本の増加 '
+            f'＋ 子会社の取得。投資した分に対して利益がどれだけ増えたか（増分 ROIC）は {esc(roic)}'
+            f'（効率 {esc(inv.get("efficiency") or "—")}）。</p>')
+    return (f'<h4>成長投資の推移（{esc(unit)}）</h4>'
+            + table(["年度"] + [label for _, label in INVEST_COLUMNS], body, right=frozenset(range(1, 7))) + note)
 
 
 def peers_block(facts: dict) -> str:

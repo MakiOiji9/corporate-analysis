@@ -46,6 +46,18 @@ jobs:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: bash .github/scripts/run-claude.sh "/market-report" "地合いレポート（$(date +%F)）"
 
+      # Claude can end right after the collection (its completion report ends the turn) with fresh material
+      # but no report. Run once more then: check is fresh, so the skill goes straight to prepare.
+      - name: Continue after the collection
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          status="$(.venv/bin/python -I tools/report/market_report.py check || true)"
+          if printf '%s' "$status" | python3 -I -c 'import json,sys; d=json.load(sys.stdin); sys.exit(0 if d.get("fresh") and not d.get("running") and not d.get("html_exists") else 1)'; then
+            echo "$status"
+            bash .github/scripts/run-claude.sh "/market-report" "地合いレポート・続き（$(date +%F)）"
+          fi
+
       # Claude can end without the report (a stop that asks the user, a build that kept failing).
       - name: Check the report was built
         id: built

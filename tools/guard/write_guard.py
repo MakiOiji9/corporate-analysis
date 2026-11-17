@@ -11,7 +11,8 @@ Rules (paths relative to the repository; writes outside it are not checked):
      <!-- FILL:... --> markers may be changed, and only with Edit (not overwritten). While a
      session runs, its allowed_files stay editable after the last FILL is gone, so a summariser
      can correct its own output; afterwards the file is immutable (market_collect.py reopen).
-  3. companies/*/raw/**: files collected on an earlier day are immutable.
+  3. companies/*/raw/**: files collected on an earlier day are immutable. Their front matter (BL-01) is put on
+     afterwards only by tools/collect/raw_provenance.py apply, which checks the body stays byte for byte.
   4. While a market session is running (market/sessions/*/.running), only the files listed
      in that session's tasks.json "allowed_files" may be written.
   5. market/report/: facts.json, brief.md, judgment.json and the HTML are script-only. {week}_outlook.md is

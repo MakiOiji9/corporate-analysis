@@ -8,7 +8,7 @@ Usage:
 
 --company takes '3798', '3798_uls-group' or part of the directory name.
 list:    companies under companies/ with the state of their 3C and five-forces results (for choosing one).
-check:   is the latest 3C result still valid (180 days, no newer yuho / business-overview / industry /
+check:   is the latest 3C result still valid (365 days, no newer yuho / business-overview / industry /
          competitors raw, no newer five-forces result)? Is the five-forces result usable (STEP 1-1 comes
          first)? Which required inputs are missing? How old is the outlook (header only)? -> "next".
 prepare: analysis/three-c/{date}_brief.md (what the writer reads) and the {date}_three-c.md skeleton
@@ -31,7 +31,9 @@ sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "marke
 
 import an_brief as AB  # noqa: E402
 import an_common as A  # noqa: E402
+import an_evidence as EV  # noqa: E402
 import an_fill as F  # noqa: E402
+import an_quality as Q  # noqa: E402
 import ff_paths as FP  # noqa: E402
 import freshness as T  # noqa: E402
 import five_forces as FF  # noqa: E402
@@ -74,6 +76,9 @@ def evaluate(company: P.Company, today: str) -> dict:
                            "json": company.rel(company.file(date, P.JSON_SUFFIX)),
                            "verdict": result.get("verdict"), "valid_until": P.valid_until(date)}
         state["newer_raw"] = T.triggers(company, date, "annual", [("ファイブフォース", FP)])
+        old_rules = Q.outdated(result, D.VERSION)
+        if old_rules:
+            state["newer_raw"] = state["newer_raw"] + [old_rules]
     if draft and (not latest or draft[0] >= latest[0]):
         state.update(result="draft", reason=f"作成途中の {company.rel(draft[1])} がある（続きから書く）")
     elif not latest:
@@ -248,8 +253,11 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: d
                  "peers": {peers[i]: m for i, m in enumerate(r["peers"]) if i < len(peers)}, "basis": r["basis"]}
                 for r in parsed["kbf_rows"]]
     return {
-        "company": company.dirname, "name": company.display_name(), "date": date,
+        "version": D.VERSION, "company": company.dirname, "name": company.display_name(), "date": date,
         "valid_until": P.valid_until(date),
+        "confidence": D.quality(parsed), "counter": parsed["counter"],
+        "conservative_verdict": judged["conservative_verdict"],
+        "kbf_scores": D.kbf_scores(parsed["kbf_rows"], len(peers)),
         "customer": parsed["customer"], "kbf": parsed["customer"]["kbf"],
         "growth": dict(parsed["growth"], candidate=cands["growth"]["rating"]),
         "competitor": dict(parsed["competitor"], candidate=cands["competitor"]["rating"],
@@ -279,7 +287,7 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     if not target:
         return emit({"ok": False, "error": "three-c.md が無い（先に prepare）"})
     date, md_path = target
-    text = md_path.read_text(encoding="utf-8")
+    text = EV.strip(md_path.read_text(encoding="utf-8"))  # 出典の連鎖 is the build's own chapter, not the template's
     # candidates / peers are recomputed so edited cells in the md can't bypass the rules
     cands = X.candidates(company, I.gather_3c(company))
     peer_count = len(X.peer_names(cands["rows"]))
@@ -290,9 +298,11 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     issues = D.check_reference(parsed, cands, P.latest_result(company, before=date))
     if issues:
         return emit({"ok": False, "md": company.rel(md_path), "issues": issues})
-    judged = D.judge(parsed, peer_count)
-    atomic_write_text(md_path, D.apply_conclusion(text, judged, parsed["competitor"]["rating"], cands["competitor"]))
-    result = result_json(company, date, text, parsed, cands, judged)
+    judged = D.judge(parsed, peer_count, share_missing=cands["competitor"].get("share_position") is None)
+    chain = EV.claims_evidence(company.path, D.claims(parsed))
+    concluded = D.apply_conclusion(text, judged, parsed["competitor"]["rating"], cands["competitor"])
+    atomic_write_text(md_path, EV.apply(concluded, D.EVIDENCE_CHAPTER, chain))
+    result = D.with_evidence(result_json(company, date, text, parsed, cands, judged), chain)
     json_path = company.file(date, P.JSON_SUFFIX)
     atomic_write_text(json_path, json.dumps(result, ensure_ascii=False, indent=1) + "\n")
     pruned = A.prune(company.analysis_dir, P.MD_SUFFIX)  # keep the latest result and the one before it
@@ -304,6 +314,7 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
         "growth": parsed["growth"]["rating"], "competitor": parsed["competitor"]["rating"],
         "valid_until": result["valid_until"], "previous": result["previous"], "five_forces": result["five_forces"],
         **D.flags(parsed), "gaps": [g for g in parsed["gaps"] if not M.is_blank(g) and g != "なし"],
+        "evidence": chain["summary"], "missing_sources": EV.missing(chain),
     })
 
 

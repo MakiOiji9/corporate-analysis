@@ -29,6 +29,7 @@ FIELDS = ["doc_id", "period_end", "item", "value", "unit", "element", "context"]
 JPY_PER_MILLION = 1_000_000
 # 'pure' values that are a multiple or a count, not a ratio to show in %
 PURE_NOT_PERCENT = {"summary.per": "倍", "summary.employees": "人"}
+YEN_NOT_MILLIONS = {"summary.average_salary"}  # a per-person amount: 百万円 would round it away
 # an EDINET document id (8 letters / digits) + _csv; not the XBRL_TO_CSV folder inside a package (Windows globs
 # ignore case)
 PACKAGE = re.compile(r"^[A-Za-z0-9]{8}_csv$")
@@ -70,6 +71,8 @@ NONCONSOLIDATED_SUMMARY_ITEMS = {  # reported only for the parent company
     "dps": ["DividendPaidPerShareSummaryOfBusinessResults"],
     "payout_ratio": ["PayoutRatioSummaryOfBusinessResults"],
     "issued_shares": ["TotalNumberOfIssuedSharesSummaryOfBusinessResults"],
+    # 従業員の状況: the parent's average salary, the current year only (older years come from older filings)
+    "average_salary": ["AverageAnnualSalaryInformationAboutReportingCompanyInformationAboutEmployees"],
 }
 STATEMENT_ITEMS = {
     "net_sales": ["RevenueIFRS", "NetSales", "Revenue", "OperatingRevenue1"],
@@ -107,12 +110,24 @@ STATEMENT_ITEMS = {
                      "DepreciationAndAmortizationOpeCF"],
     "capex_tangible": ["PurchaseOfPropertyPlantAndEquipmentInvCFIFRS",
                        "PurchaseOfPropertyPlantAndEquipmentAndIntangibleAssetsInvCFIFRS",
-                       "PurchaseOfPropertyPlantAndEquipmentInvCF"],
-    "capex_intangible": ["PurchaseOfIntangibleAssetsInvCFIFRS", "PurchaseOfIntangibleAssetsInvCF"],
+                       "PurchaseOfPropertyPlantAndEquipmentInvCF",
+                       "PurchaseOfPropertyPlantAndEquipmentAndIntangibleAssetsInvCF"],  # J-GAAP, one line for both
+    "capex_intangible": ["PurchaseOfIntangibleAssetsInvCFIFRS", "PurchaseOfIntangibleAssetsInvCF",
+                         "PurchaseOfSoftwareInvCF"],
     "acquisition_of_subsidiaries": [
         "PurchaseOfSharesOfSubsidiariesResultingInChangeInScopeOfConsolidationInvCFIFRS",
         "PurchaseOfSharesOfSubsidiariesResultingInChangeInScopeOfConsolidationInvCF",
-        "PurchaseOfInvestmentsInSubsidiariesResultingInChangeInScopeOfConsolidationInvCF"],
+        "PurchaseOfInvestmentsInSubsidiariesResultingInChangeInScopeOfConsolidationInvCF",
+        # company extensions seen in practice (e.g. 6506)
+        "PurchaseOfInvestmentOfSubsidiariesResultingInChangeInScopeOfConsolidationInvCF",
+        "PurchaseOfSharesOfSubsidiariesAndOthersResultingInChangeInScopeOfConsolidationInvCFIFRS"],
+    # growth investment (成長性 手順5): R&D from 研究開発活動 (the current year) or the J-GAAP note (2 years), and the
+    # payables that offset receivables and inventories in the working capital
+    "research_and_development": ["ResearchAndDevelopmentExpensesResearchAndDevelopmentActivities",
+                                 "ResearchAndDevelopmentExpensesIncludedInGeneralAndAdministrativeExpensesAnd"
+                                 "ManufacturingCostForCurrentPeriod"],
+    "trade_payables": ["TradePayablesCLIFRS", "TradeAndOtherPayablesCLIFRS", "NotesAndAccountsPayableTrade",
+                       "AccountsPayableTrade"],
     "dividends_paid": ["DividendsPaidFinCFIFRS", "CashDividendsPaidFinCF"],
     "treasury_stock_purchase": ["PaymentsForPurchaseOfTreasurySharesFinCFIFRS", "PurchaseOfTreasuryStockFinCF"],
     "cash_equivalents": ["CashAndCashEquivalentsIFRS", "CashAndCashEquivalents"],
@@ -216,6 +231,8 @@ def extract(rows: list[Row], doc_id: str) -> list[dict]:
             return
         if row.unit.lower() == "pure" and item in PURE_NOT_PERCENT:
             value, unit = row.value, PURE_NOT_PERCENT[item]
+        elif row.unit == "JPY" and item in YEN_NOT_MILLIONS:
+            value, unit = row.value, "円"
         else:
             value, unit = _normalise(row.value, row.unit)
         out.append({"doc_id": doc_id, "period_end": _shift_year(fy_end, back), "item": item,

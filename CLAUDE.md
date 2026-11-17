@@ -44,10 +44,11 @@
 情報収集用の Python スクリプトは `tools/collect/`（地合い用は `tools/collect/market/`）、レポート作成用は `tools/report/` にある。使い方とセットアップは `tools/README.md` を参照。
 設定はすべてこのリポジトリ内で完結する（`.venv`、`.env`、`.claude/settings.json`）。
 `.claude/settings.json` の PreToolUse hook（`tools/guard/write_guard.py`）が、スクリプト専用ファイルの手書き・完成済み raw の変更・スキル実行中の範囲外の書き込みをブロックする。
+すぐには対応しなかった改善の課題は `docs/improvement-backlog.md` に記録している（着手・完了したら状態とコミットを更新する）。
 
 ## GitHub Actions での定期実行
 
-`.github/workflows/market-report.yml`（毎週月曜 0:10 JST に `/market-report`）と `.github/workflows/company-report.yml`（月〜金 0:30 JST に A グループ、6:00 JST に B グループのお気に入り企業ごとに `/company-report`）が Claude Code をヘッドレスで実行し、`companies/`・`market/` の変更だけを main にコミットする。新しい企業の初期分析は Issue テンプレート「企業の初期分析」（`.github/ISSUE_TEMPLATE/company-analysis.yml`）で起票する（ラベル `company-analysis` が付いた時点で動く）と `.github/workflows/issue-company-report.yml` が Issue ごとの作業ブランチとドラフト PR で収集（担当ごとにコミット、途中で止まっても続きから）からレポートまで作り、PR を main にマージして Issue を閉じる（失敗時は開いたまま）。認証は Environment `reports` の Secret `CLAUDE_CODE_OAUTH_TOKEN`（`claude setup-token` で発行）。セットアップと認証情報の扱いは `tools/README.md` の「GitHub Actions での定期実行」を参照。
+`.github/workflows/market-report.yml`（毎週月曜 0:10 JST に `/market-report`）と `.github/workflows/company-report.yml`（月〜金 0:30 JST に A グループ、6:00 JST に B グループのお気に入り企業ごとに `/company-report`）が Claude Code をヘッドレスで実行し、`companies/`・`market/` の変更だけを main にコミットする。新しい企業の初期分析は Issue テンプレート「企業の初期分析」（`.github/ISSUE_TEMPLATE/company-analysis.yml`）で起票する（ラベル `company-analysis` が付いた時点で動く）と `.github/workflows/issue-company-report.yml` が Issue ごとの作業ブランチとドラフト PR で収集（担当ごとにコミット、途中で止まっても続きから）からレポートまで作り、PR を main にマージして Issue を閉じる（失敗時は開いたまま）。企業分析レポートはできたら Slack にも投稿し、任意のファイル（`companies/`・`market/` 配下）は `.github/workflows/slack-post.yml` を手動で実行して投稿する（どちらも `.github/scripts/slack_post.py`）。認証は Environment `reports` の Secret `CLAUDE_CODE_OAUTH_TOKEN`（`claude setup-token` で発行）。セットアップと認証情報の扱いは `tools/README.md` の「GitHub Actions での定期実行」を参照。
 
 ## 言語ポリシー
 

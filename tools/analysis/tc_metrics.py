@@ -10,6 +10,7 @@ The comparison table (2.1) is computed here so the writer never calculates.
 from __future__ import annotations
 
 import re
+import statistics
 
 import mdparse as M
 from common import read_csv_rows
@@ -27,6 +28,8 @@ CSV_ITEMS = (("financials.csv", "item", "net_sales", "operating_income"),
              ("tdnet_facts.csv", "element", "NetSales", "OperatingIncome"))
 CODE = re.compile(r"[（(]\s*([0-9A-Z]{1,5})\s*[)）]")
 NOISE = re.compile(r"[（(].*?[)）]|参考[:：]|株式会社|ホールディングス|HD|グループ|\s")
+COMPANY_WIDE = re.compile(r"全社|連結全体|グループ全体")
+MAX_MARKETS = 4  # market growth lines averaged for the growth candidate
 
 
 # ---------- 手順1 成長性 ----------
@@ -37,18 +40,22 @@ def _growth_rating(value: float) -> str:
 
 
 def growth(found: Found) -> dict:
-    """Candidate from the first market growth figure in industry-overview「市場規模と成長率」."""
-    lines = market_growth(found)
-    for line in lines:
+    """Candidate from the mean of the market growth figures in industry-overview「市場規模と成長率」 (up to
+    MAX_MARKETS lines): the main business usually spans several markets, and taking the first (or the lowest) one
+    would decide the rating by the order of the table."""
+    found_values = []
+    for line in market_growth(found)[:MAX_MARKETS]:
         m = PERCENT.search(line.split(":", 1)[-1])
         if m:
-            value = float(m.group(1))
-            others = "; ".join(x for x in lines[:4] if x != line)
-            return {"rating": _growth_rating(value), "fixed": False, "value": value,
-                    "basis": (f"先頭の市場の成長率 {value:.1f}%（{line}）。主力事業の市場が別なら書き手が選ぶ。"
-                              f"目安: 3%以上 高 / 0〜3% 中 / マイナス 低" + (f"。他の市場: {others}" if others else ""))}
-    return {"rating": None, "fixed": False, "value": None,
-            "basis": "市場規模の表に成長率（CAGR）の列・行が無い" if found.status == "ok" else "市場規模の記載が無い"}
+            found_values.append((float(m.group(1)), line))
+    if not found_values:
+        return {"rating": None, "fixed": False, "value": None,
+                "basis": "市場規模の表に成長率（CAGR）の列・行が無い" if found.status == "ok" else "市場規模の記載が無い"}
+    value = round(sum(v for v, _ in found_values) / len(found_values), 1)
+    listed = "; ".join(line for _, line in found_values)
+    return {"rating": _growth_rating(value), "fixed": False, "value": value,
+            "basis": (f"市場の成長率 {len(found_values)} 件の平均 {value:.1f}%（{listed}）。主力事業の売上構成が分かれば"
+                      "構成比で重みを付けて書き手が選ぶ。目安: 3%以上 高 / 0〜3% 中 / マイナス 低")}
 
 
 # ---------- 手順2 競合: 比較表 ----------
@@ -179,9 +186,15 @@ def _years_apart(rows: list[dict]) -> list[str]:
 
 
 def peer_average(rows: list[dict], key: str) -> float | None:
-    """Simple average over the peers (target excluded) that have the value: the framework's 業界平均."""
+    """Median over the peers (target excluded) that have the value: the framework's 業界平均, as a median so that one
+    outlier peer (a high-margin specialist) does not decide the comparison (moat and SWOT read the same way)."""
     values = [r[key] for r in rows if not r["self"] and r.get(key) is not None]
-    return round(sum(values) / len(values), 1) if values else None
+    return round(statistics.median(values), 1) if values else None
+
+
+def company_wide(rows: list[dict]) -> list[str]:
+    """Peers whose figures are the whole company (a diversified group), not the segment that competes."""
+    return [r["name"] for r in rows if not r["self"] and COMPANY_WIDE.search(r["name"] or "")]
 
 
 def competitor(rows: list[dict]) -> dict:
@@ -192,8 +205,9 @@ def competitor(rows: list[dict]) -> dict:
         return {"rating": None, "fixed": False, "margin_position": None, "share_position": share_pos,
                 "peer_margin_avg": None, "basis": "自社または競合の営業利益率がそろわない（比較表を作れない）"}
     stale = _years_apart(rows)
+    wide = company_wide(rows)
     avg = peer_average(rows, "margin")
-    parts = [f"営業利益率 {target['margin']:.1f}%（{m_count}社中 {m_rank}位: {margin_pos}。競合の単純平均 {avg:.1f}%）"]
+    parts = [f"営業利益率 {target['margin']:.1f}%（{m_count}社中 {m_rank}位: {margin_pos}。競合の中央値 {avg:.1f}%）"]
     if share_pos:
         parts.append(f"シェア {target['share']:.1f}%（{s_count}社中 {s_rank}位: {share_pos}）")
         if margin_pos == share_pos == "上位":
@@ -202,13 +216,16 @@ def competitor(rows: list[dict]) -> dict:
             rating = "劣位"
         else:
             rating = "同等"
-        fixed = not stale
+        fixed = not stale and not wide
     else:
-        parts.append("シェア: 比較できる数値なし（営業利益率だけで判定）")
+        parts.append("シェア: 比較できる数値なし（営業利益率だけで判定。規則上「優位」には届かない）")
         rating = "劣位" if margin_pos == "下位" else "同等"  # one metric cannot make 優位; bottom -> 不利な方
         fixed = False
     if stale:
         parts.append(f"年度が1年以上古い会社あり: {', '.join(stale)}")
+    if wide:
+        parts.append(f"全社の数値で比べた競合あり（多角化しており、競合する事業の数値ではない）: {', '.join(wide)}。"
+                     "セグメントの数値があれば書き手がそれで比べる")
     basis = "、".join(parts) + "。目安: 両方上位 優位 / 片方上位・中位 同等 / 両方下位 劣位"
     return {"rating": rating, "fixed": fixed, "margin_position": margin_pos, "share_position": share_pos,
             "peer_margin_avg": avg, "basis": basis}

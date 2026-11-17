@@ -13,6 +13,7 @@ sys.path[:0] = [str(ANALYSIS), str(REPO / "tools" / "report"), str(REPO / "tools
 
 import ff_inputs as F  # noqa: E402
 import ff_metrics as FM  # noqa: E402
+import ff_doc as FD  # noqa: E402
 import tc_doc as D  # noqa: E402
 import tc_inputs as I  # noqa: E402
 import tc_metrics as X  # noqa: E402
@@ -122,6 +123,7 @@ ANSWERS = {
     "company-conclusion": "品質で ○", "win-reason": "個人顧客が重視する品質において、生産方式により、競合より優れている",
     "triggers": "営業利益率が競合平均を下回れば劣位", "strengths": "品質", "weaknesses": "なし",
     "moat-checks": "利益率の10年推移", "changes": "- 初回の分析", "gaps": "- なし",
+    "counter": "品質の差は業界団体の調査だけが根拠で、競合が同水準に追いつけば勝てる理由は薄れる",
 }
 
 
@@ -145,7 +147,8 @@ def _five_forces(root: Path, date: str = FF_DAY, attractiveness: str = "中") ->
     directory = root / "companies" / "7203_toyota" / "analysis" / "five-forces"
     directory.mkdir(parents=True, exist_ok=True)
     (directory / f"{date}_five-forces.md").write_text("# ファイブフォース\n\n完成\n", encoding="utf-8")
-    result = {"attractiveness": attractiveness, "total": 5, "industry": "自動車業界", "valid_until": "2027-10-05",
+    result = {"version": FD.VERSION, "attractiveness": attractiveness, "total": 5, "industry": "自動車業界",
+              "valid_until": "2027-10-05",
               "factors": [{"key": "rivalry", "name": "業界内の競争", "rating": "中", "reason": "拮抗"}]}
     (directory / f"{date}_five-forces.json").write_text(json.dumps(result, ensure_ascii=False), encoding="utf-8")
 
@@ -595,12 +598,84 @@ def test_peer_amounts_without_a_unit_take_the_stated_unit():
     assert FM.peer_margins(_found("peers", plain))[0]["series"][0]["sales"] == 857831  # no unit stated: as it is
 
 
-def test_competitor_basis_shows_peer_average():
+def test_competitor_basis_shows_peer_median():
     rows = [{"name": "自社", "self": True, "margin": 18.3, "share": None, "year": "2026-03"},
             {"name": "A", "self": False, "margin": 25.4, "share": None, "year": "2026-03"},
-            {"name": "B", "self": False, "margin": 3.3, "share": None, "year": "2026-07"}]
+            {"name": "B", "self": False, "margin": 3.2, "share": None, "year": "2026-07"}]
     cand = X.competitor(rows)
-    assert cand["peer_margin_avg"] == 14.3 and "競合の単純平均 14.3%" in cand["basis"]
+    assert cand["peer_margin_avg"] == 14.3 and "競合の中央値 14.3%" in cand["basis"]
+    assert "規則上「優位」には届かない" in cand["basis"]  # margin only: say so, it is not evidence of 同等
+
+
+def test_company_wide_peer_figures_are_flagged_and_not_fixed():
+    rows = [{"name": "自社", "self": True, "margin": 8.7, "share": 20.0, "year": "2026-02"},
+            {"name": "三菱電機（全社）", "self": False, "margin": 7.3, "share": 15.0, "year": "2026-03"},
+            {"name": "B社", "self": False, "margin": 5.0, "share": 10.0, "year": "2026-03"}]
+    cand = X.competitor(rows)
+    assert not cand["fixed"] and "全社の数値" in cand["basis"] and "三菱電機" in cand["basis"]
+
+
+def test_growth_candidate_averages_the_listed_markets():
+    body = "| 市場 | CAGR |\n|---|---|\n| サーボ | 5.8% |\n| インバータ | 2.8% |\n"
+    cand = X.growth(_found("market_size", body))
+    assert cand["value"] == pytest.approx(4.3) and cand["rating"] == "高" and "平均" in cand["basis"]
+
+
+# ---------- version 2: KBF score, base and conservative verdicts, counter-argument ----------
+
+def _parsed(rows: list[tuple[str, str, list[str]]], comp: str = "優位", win: str = "品質で優れる") -> dict:
+    return {"kbf_rows": [{"kbf": k, "self": s, "peers": p, "basis": "b"} for k, s, p in rows],
+            "competitor": {"rating": comp}, "win_reason": win}
+
+
+def test_kbf_scores_weight_the_more_important_factors():
+    scores = D.kbf_scores(_parsed([("品質", "○", ["△", "×"]), ("価格", "×", ["○", "○"])])["kbf_rows"], 2)
+    assert scores["self"] == pytest.approx(1 / 3) and scores["peers"] == [pytest.approx(1 / 3), pytest.approx(-1 / 3)]
+    assert D.kbf_scores([{"kbf": "品質", "self": "？", "peers": ["？", "？"]}], 2)["self"] is None
+
+
+def test_base_verdict_reads_the_other_factors_when_the_top_one_is_unknown():
+    parsed = _parsed([("品質", "？", ["△", "△"]), ("納期", "○", ["×", "×"]), ("価格", "○", ["△", "×"])])
+    judged = D.judge(parsed, 2)
+    assert judged["verdict"] == "明確" and judged["conservative_verdict"] == "あいまい"
+    assert "重み" in judged["why"] and judged["conservative"]
+
+
+def test_verdict_names_a_rule_that_cannot_be_reached():
+    judged = D.judge(_parsed([("品質", "○", ["△", "×"])], comp="同等"), 2, share_missing=True)
+    assert judged["verdict"] == "あいまい" and "シェア" in judged["why"]
+
+
+def test_build_requires_a_counter_argument_and_records_confidence(repo, capsys):
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    fill(repo / out["md"], counter="なし")
+    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 1 and any("反論" in i for i in out["issues"])
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    fill(repo / out["md"])
+    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 0, out
+    path = repo / out["json"]
+    result = json.loads(path.read_text(encoding="utf-8"))
+    assert result["version"] == D.VERSION and result["confidence"]["level"] in ("高", "中", "低") and result["counter"]
+    path.write_text(json.dumps({**result, "version": 1}, ensure_ascii=False), encoding="utf-8")
+    _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
+    assert out["result"] == "triggered" and f"版 1 → {D.VERSION}" in out["reason"]
+
+
+def test_build_appends_the_evidence_chain_once(repo, capsys):
+    """BL-01: 9章「出典の連鎖」is the build's own chapter; a rebuild replaces it instead of adding another."""
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    md = repo / out["md"]
+    fill(md)
+    code, out = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 0, out
+    result = json.loads((repo / out["json"]).read_text(encoding="utf-8"))
+    assert "claims" in result["evidence"] and "evidence" in result["customer"] and "evidence" in result["competitor"]
+    assert all("evidence" in r for r in result["kbf_table"])
+    code, again = run(repo, "build", "--company", "7203", capsys=capsys)
+    assert code == 0, again
+    assert md.read_text(encoding="utf-8").count(f"## {D.EVIDENCE_CHAPTER}. 出典の連鎖") == 1
 
 
 def test_brief_has_source_notes_peer_kpi_and_no_repeated_customer_prose(repo, capsys):

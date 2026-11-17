@@ -1,6 +1,6 @@
 ---
 name: swot
-description: SWOT分析スキル。企業分析フレームワーク.md の STEP 1-4（1-1〜1-3 の結果と中期経営計画・事業等のリスク・業界・地合いの事実を 強み/弱み/機会/脅威 に振り分け、影響度 大/中/小 を評価し、最大の強みで最大の脅威に対抗できるかを SWOT Yes/条件付き/No（材料不足なら判定保留） で判定）を、collect-company-info・collect-market-info・market-report が集めた材料とファイブフォース・3C・モートの結果から行い、companies/{ticker}_{name}/analysis/swot/ に Markdown と JSON で保存する。結果は180日有効で、期間内は再分析しない（新しい有報・中期経営計画・事業概要・業界の収集や新しい上流の分析があれば再分析）。モートが未実施なら先に moat、地合いが古ければ market-report、材料が足りなければ collect-company-info を実行する。SWOT・STEP 1 の総括・最大の強みと脅威を分析したいときに使う。
+description: SWOT分析スキル。企業分析フレームワーク.md の STEP 1-4（1-1〜1-3 の結果と中期経営計画・事業等のリスク・業界・地合いの事実を 強み/弱み/機会/脅威 に振り分け、影響度 大/中/小 を評価し、最大の強みで最大の脅威に対抗できるかを SWOT Yes/条件付き/No（材料不足なら判定保留） で判定）を、collect-company-info・collect-market-info・market-report が集めた材料とファイブフォース・3C・モートの結果から行い、companies/{ticker}_{name}/analysis/swot/ に Markdown と JSON で保存する。結果は365日有効で、期間内は再分析しない（新しい有報・中期経営計画・事業概要・業界の収集や新しい上流の分析があれば再分析）。モートが未実施なら先に moat、地合いが古ければ market-report、材料が足りなければ collect-company-info を実行する。SWOT・STEP 1 の総括・最大の強みと脅威を分析したいときに使う。
 argument-hint: "[{銘柄コード|企業ディレクトリ名|社名の一部}] [redo]  ※省略時は companies/ から選択"
 ---
 

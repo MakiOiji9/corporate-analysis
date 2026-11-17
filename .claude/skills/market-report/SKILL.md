@@ -11,5 +11,6 @@ argument-hint: "[week=YYYY-MM-DD] [redo]"
 ## Claude Code での実行方法
 
 - 手順 1 で `fresh: false` のときは、Skill ツールで `collect-market-info` を引数 `both topic=weekly` で起動し、その手順書（並列モード）を最後の finalize まで実行してから、このスキルの手順 1 に戻る
+  - collect-market-info の完了報告は出さず、ターンを終えずにそのまま手順 1 の check を実行する（ヘッドレス実行では、ここで報告するとレポートを作らずに終わる）。収集の結果は、このスキルの完了報告の「収集」行にまとめる
 - 執筆（手順 3）はサブエージェントに任せず、自分で brief.md を読んで outlook.md を Edit する（日米を一人の書き手が通して書く）
 - 書き込みは `tools/guard/write_guard.py`（PreToolUse hook）が監視する。ブロックされたら回避策を探さず、指摘に従う

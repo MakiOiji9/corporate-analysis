@@ -10,7 +10,8 @@
       "Edit(companies/**)",
       "Edit(market/sessions/**)",
       "Edit(market/policy/**)",
-      "Edit(market/report/**)"
+      "Edit(market/report/**)",
+      "Edit(*.md)"
     ]
   },
   "hooks": {

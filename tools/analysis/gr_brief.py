@@ -73,6 +73,10 @@ def _numbers_lines(cands: dict) -> list[str]:
              f"- 手順1: {s1['sentence']}", f"- 手順3: {s3['sentence']}", f"- 手順4: {s4['sentence']}"]
     if s4["adjusted"]:
         lines.append(f"  - 質の補正: {s4['adjusted']['sentence']}")
+    s5 = cands.get("step5")
+    if s5:
+        lines.append(f"- 手順5: {s5['sentence']}（年次表・比率・効率は md の 4章「成長投資」。4章の「成長投資の背景」に、"
+                     "下の中期経営計画・経営方針にある投資計画と効率の背景を書く）")
     if cands["declines"]:
         lines.append("- 分類する年（売上高・営業利益・EPS のどれかが前年を下回った年。md の 2章）:")
         for d in cands["declines"]:
@@ -84,8 +88,6 @@ def _numbers_lines(cands: dict) -> list[str]:
     lines.append(f"- 純利益 CAGR（参考）: {fmt_cagr(s1['net_income'])}")
     lines.append(f"- 今期の進捗（md の 3章。STEP 3 の示唆に使う）: {F.progress_text(cands['progress'])}")
     lines.append(f"- {cands['receivables']}（7章の「STEP 2 の他の分析で確かめること」に使う）")
-    if cands["downgraded"]:
-        lines.append("- 境界に近いため候補を保守的に1段階下げた理由: " + "、".join(cands["downgraded"]))
     if cands["borderline"]:
         lines.append("- 境界に近い比較（材料の誤差で判定が1段階動きうる。7章の「評価が変わる条件」に使う）: "
                      + "。".join(cands["borderline"]))

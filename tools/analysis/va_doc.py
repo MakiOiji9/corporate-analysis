@@ -213,6 +213,8 @@ def score_cells(cands: dict, alt: dict | None) -> dict:
         if key == "pbr" and alt is not None:
             rows.append(f"| {name} | {alt['pbr']['rating']} または {rating}（2章の改善策の回答で決まる） | "
                         f"{_score(alt['pbr']['rating'])} ／ {_score(rating)} |")
+        elif name == R.ONE_SIDED:  # never 割高: shown for reference, left out of the average
+            rows.append(f"| {name} | {rating} | 参考（平均から除外。割高にならない指標） |")
         else:
             rows.append(f"| {name} | {rating} | {_score(rating)} |")
     s3 = cands["step3"]

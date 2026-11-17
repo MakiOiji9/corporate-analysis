@@ -170,6 +170,50 @@ def bar_chart(points: list, title: str, decimals: int = 0, width: int = 720, hei
     return _frame(width, height, title, body)
 
 
+def range_chart(rows: list[dict], current: float | None, title: str, width: int = 720, row_h: int = 40) -> str:
+    """Horizontal ranges (a football field): rows [{label, low, high, mid?, note?, alt?}], one band per row, with an
+    optional middle tick and a vertical line at the current price. Bands carry class rng (rng alt for rows
+    flagged alt), the line class now."""
+    rows = [r for r in rows if r.get("low") is not None and r.get("high") is not None]
+    if not rows:
+        return EMPTY
+    left, right, top = 176, width - 24, 26
+    bottom = top + row_h * len(rows)
+    values = [v for r in rows for v in (r["low"], r["high"])] + ([current] if current else [])
+    lo, hi = min(values), max(values)
+    pad = (hi - lo) * 0.06 or abs(hi) * 0.1 or 1
+
+    def x(v: float) -> float:
+        return left + (right - left) * (v - (lo - pad)) / ((hi + pad) - (lo - pad))
+
+    body = []
+    for i, r in enumerate(rows):
+        yy = top + row_h * i
+        mid_y = yy + row_h / 2 + 4
+        cls = "rng alt" if r.get("alt") else "rng"
+        x0, x1 = x(min(r["low"], r["high"])), x(max(r["low"], r["high"]))
+        note = f' {r["note"]}' if r.get("note") else ""
+        body.append(f'<text class="rlabel" x="{left - 10}" y="{mid_y:.1f}" text-anchor="end">{escape(r["label"])}</text>')
+        body.append(f'<rect class="{cls}" x="{x0:.1f}" y="{yy + 9:.1f}" width="{max(x1 - x0, 2):.1f}" '
+                    f'height="{row_h - 18}" rx="3"><title>{escape(r["label"])}: {fmt(r["low"], 0)}〜'
+                    f'{fmt(r["high"], 0)}{escape(note)}</title></rect>')
+        if r.get("mid") is not None:
+            xm = x(r["mid"])
+            body.append(f'<line class="mid" x1="{xm:.1f}" x2="{xm:.1f}" y1="{yy + 6:.1f}" y2="{yy + row_h - 6:.1f}"/>')
+        # the end values sit outside the band, or just inside it when the band reaches the chart's edge
+        lo_x, lo_anchor = (x0 - 4, "end") if x0 - left > 44 else (x0 + 4, "start")
+        hi_x, hi_anchor = (x1 + 4, "start") if right - x1 > 44 else (x1 - 4, "end")
+        body.append(f'<text class="tick" x="{lo_x:.1f}" y="{mid_y:.1f}" text-anchor="{lo_anchor}">{fmt(r["low"], 0)}</text>')
+        if x1 - x0 > 90 or hi_anchor == "start":  # inside both ends only when the band is wide enough
+            body.append(f'<text class="tick" x="{hi_x:.1f}" y="{mid_y:.1f}" text-anchor="{hi_anchor}">'
+                        f'{fmt(r["high"], 0)}</text>')
+    if current:
+        xc = x(current)
+        body.append(f'<line class="now" x1="{xc:.1f}" x2="{xc:.1f}" y1="{top - 6}" y2="{bottom + 4}"/>')
+        body.append(f'<text class="now-l" x="{xc:.1f}" y="{top - 10}" text-anchor="middle">今 {fmt(current, 0)}</text>')
+    return _frame(width, bottom + 12, title, body)
+
+
 def sparkline(points: list, width: int = 160, height: int = 44) -> str:
     if len(points) < 2:
         return '<svg class="spark" viewBox="0 0 1 1" aria-hidden="true"></svg>'

@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import re
 
+import front_matter as FM
 import mdparse as M
 import pf_series as S
 from common import read_csv_rows
@@ -148,6 +149,7 @@ def read_table(table: list[list[str]], default_factor: float) -> list[tuple[str,
 
 
 def from_raw_text(text: str, source: str, include: re.Pattern | None = None) -> list[tuple[str, str, Value]]:
+    text = FM.body_of(text)  # the front matter's titles are not the file's unit
     first = S.SECTION.search(text)
     file_factor = unit_of(text[:first.start()] if first else text) or 1.0
     out = []

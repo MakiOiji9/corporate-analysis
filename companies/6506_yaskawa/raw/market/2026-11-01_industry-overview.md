@@ -1,3 +1,49 @@
+---
+provenance: 1
+collected: '2026-11-01'
+sources:
+- {id: w1, title: 天下工場産研『中国通用サーボ市場白書（2026）』, url: 'https://faxiangongchang.com/en/reports/china-general-servo-2026-white-paper', published: '2026-09-19', confidence: 二次}
+- {id: w2, title: IFR World Robotics 2025・会長レポート（報道転載）, url: 'https://ifr.org/ifr-press-releases/news/global-robot-demand-in-factories-doubles-over-10-years', confidence: 検索要約}
+- {id: w3, title: 日本ロボット工業会 事業報告 2025, url: 'https://jara.jp/about/img/release/jigyo_hokoku/jara_jigyo_hokoku_2025.pdf', confidence: 検索要約}
+- {id: w4, title: 電波新聞デジタル, url: 'https://dempa-digital.com/?p=727493', published: '2026-10-10', confidence: 二次}
+- {id: w5, title: Web 検索の要約（IEA・共同通信・JST・券商報告・QYResearch ほか）, confidence: 検索要約}
+- {id: 262Q_QA_JP_1, title: 安川電機 2026年度 第2四半期 質疑応答, confidence: 一次}
+- {id: S100Y69H, title: 安川電機 有価証券報告書 第110期, confidence: 一次}
+- {id: Dash35, title: 安川電機 中期経営計画 Dash 35, confidence: 一次}
+- {id: 254Q_QA, title: 安川電機 2025年度 決算説明会 質疑応答, confidence: 一次}
+sections:
+  '1':
+  - {source: w2, pages: null}
+  - {source: w3, pages: null}
+  - {source: w1, pages: null}
+  - {source: w5, pages: null}
+  '4':
+  - {source: w2, pages: null}
+  - {source: w1, pages: null}
+  - {source: w5, pages: null}
+  '5':
+  - {source: w5, pages: null}
+  - {source: w1, pages: null}
+  '2':
+  - {source: w1, pages: null}
+  - {source: w2, pages: null}
+  - {source: w5, pages: null}
+  '3':
+  - {source: w1, pages: null}
+  - {source: w5, pages: null}
+  '6':
+  - {source: w5, pages: null}
+  - {source: 262Q_QA_JP_1, pages: 2-5}
+  - {source: S100Y69H, pages: '14,32'}
+  - {source: Dash35, pages: '18,20'}
+  - {source: 254Q_QA, pages: '7'}
+  '8':
+  - {source: w1, pages: null}
+  - {source: w2, pages: null}
+  - {source: w3, pages: null}
+  - {source: w4, pages: null}
+  - {source: w5, pages: null}
+---
 # 業界概要（FA機器: ACサーボ・インバータ／産業用ロボット） — 安川電機
 
 **収集日**: 2026-11-01

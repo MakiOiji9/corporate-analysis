@@ -30,6 +30,10 @@ SPECS = (
          True, ("顧客・人員",), thin_check=True),
     Spec("peer_claims", "競合: 主力製品と強み", "competitors", "強み", "collect-peers-valuation", True,
          ("強み",), thin_check=True),
+    Spec("patents", "事業概要: 知的財産（特許の件数）", "business-overview", "知的財産", "collect-ir", False,
+         ("特許の件数",)),
+    Spec("peer_patents", "競合: 知的財産（特許の件数）", "competitors", "知的財産", "collect-peers-valuation", False,
+         ("特許の件数",)),
 )
 SPEC = {s.key: s for s in SPECS}
 # a newer file of these kinds re-opens a valid result

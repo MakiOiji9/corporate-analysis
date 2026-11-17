@@ -47,6 +47,11 @@ SPECS = (
     Spec("entry", "業界: 参入に必要な条件・新規参入と撤退", "industry-overview", "参入", "collect-market", False),
     Spec("outside_rating", "業界: 外部の評価（モート）", "industry-overview", "外部の評価", "collect-market", False,
          ("外部の評価",)),
+    # the patent counts (2026-11): the numbers behind 規制・特許・許認可 (optional: often not disclosed)
+    Spec("patents", "事業概要: 知的財産（特許の件数）", "business-overview", "知的財産", "collect-ir", False,
+         ("特許の件数",)),
+    Spec("peer_patents", "競合: 知的財産（特許の件数）", "competitors", "知的財産", "collect-peers-valuation", False,
+         ("特許の件数",)),
 ) + PEER_BALANCE
 SPEC = {s.key: s for s in SPECS}
 # a newer file of these kinds re-opens a valid result

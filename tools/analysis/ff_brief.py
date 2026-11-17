@@ -11,7 +11,7 @@ from ff_paths import Company
 
 # brief chapter per factor: (factor key, input keys shown under it)
 CHAPTER_INPUTS = (
-    ("entry", ("entry", "ip")),
+    ("entry", ("entry", "ip", "patents", "peer_patents")),
     ("substitutes", ("substitutes", "structural")),
     ("buyers", ("customers", "customer_base", "kbf")),
     ("suppliers", ("procurement", "supply")),

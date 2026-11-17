@@ -8,7 +8,7 @@ Usage:
 
 --company takes '3798', '3798_uls-group' or part of the directory name.
 list:    companies under companies/ with the state of their safety result (for choosing one).
-check:   is the latest result still valid (180 days, the sections and the yearly numbers it used unchanged)?
+check:   is the latest result still valid (120 days, the sections and the yearly numbers it used unchanged)?
          Which required inputs are missing (the own balance sheet needs the three indicators and 3 years of
          trend; the peers need competitors.md「安全性の指標」)? -> "next". Nothing upstream is required: the
          profitability result and the market outlook are only quoted in the brief.

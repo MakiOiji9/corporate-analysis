@@ -1,3 +1,11 @@
+---
+provenance: 1
+collected: YYYY-MM-DD
+sources:
+- {id: {manifest の doc_id / w1 / d1}, title: {資料名}, url: {URL}, published: YYYY-MM-DD, period: YYYY-MM, confidence: {一次 / 二次 / 検索要約}}
+sections:
+  "1": [{source: {sources の id}, pages: "{原本の通しページ。無ければ null}"}]
+---
 # {情報の種類} — {企業名}
 
 **収集日**: YYYY-MM-DD

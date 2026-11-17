@@ -17,7 +17,7 @@ from tc_paths import Company
 CHAPTERS = (
     ("顧客（Customer）の材料", ("segment", "customer_base", "customers", "market_size", "kbf")),
     ("競合（Competitor）の材料", ("peer_selection", "peers", "peer_share", "share", "peer_kpi")),
-    ("自社（Company）の材料", ("products", "kpi", "strategy", "peer_claims")),
+    ("自社（Company）の材料", ("products", "kpi", "strategy", "peer_claims", "patents", "peer_patents")),
 )
 STATUS_LABEL = {"missing": "raw に無い", "blank": "節はあるが空", "thin": "中身が薄い（見つからなかった旨の記載・空の行）",
                 "unavailable": "取得を試みたが取れていない（status.md）"}

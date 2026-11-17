@@ -1,3 +1,20 @@
+---
+provenance: 1
+collected: '2026-11-01'
+sources:
+- {id: w1, title: 安川電機 会社の基本事項（Web）, url: 'https://www.yaskawa.co.jp/company/profile/data', confidence: 一次}
+- {id: w2, title: 安川電機 私たちの事業（Web）, url: 'https://www.yaskawa.co.jp/company/profile/business', confidence: 一次}
+- {id: 20261009_haifu, title: 2027年2月期 第2四半期 決算補足説明資料, confidence: 一次}
+- {id: 20260410_haihu, title: 2026年2月期 通期 決算補足説明資料, confidence: 一次}
+- {id: 262Q_QA_JP_1, title: 2026年度 第2四半期 決算説明会 質疑応答, confidence: 一次}
+- {id: IR2606_QA, title: IR Day 2026 質疑応答, confidence: 一次}
+- {id: 254Q_QA, title: 2025年度 決算説明会 質疑応答, confidence: 一次}
+- {id: Dash35, title: 中期経営計画 Dash 35, confidence: 一次}
+sections:
+  '8':
+  - {source: 262Q_QA_JP_1, pages: '2'}
+  - {source: 254Q_QA, pages: '7'}
+---
 # 事業概要 — 安川電機（6506）
 
 **収集日**: 2026-11-01

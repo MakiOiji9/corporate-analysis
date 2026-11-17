@@ -1,15 +1,16 @@
 """Numbers behind the moat criteria (企業分析フレームワーク.md 1-3) and the candidates they imply.
 
 The gate (超過収益: ROIC against the cost of capital) and the pricing power are computed in mt_returns.
-Here the supporting operating-margin comparison (2.2): the number of consecutive fiscal years, counted back from
-the newest year that can be compared, in which the target's operating margin is above the median of the peers
-(7+ 強い / 1-6 弱い / 0 なし; the median, so that one outlier peer does not decide it). It is shown to the writer
-and recorded, but the verdict rests on the ROIC gate.
+Here the supporting operating-margin comparison (2.2): the share of the compared fiscal years in which the target's
+operating margin is above the median of the peers (margin_candidate; the median, so that one outlier peer does not
+decide it, and the share rather than a streak, so that one cyclical year does not cancel the rest). It is shown to
+the writer and recorded, but the verdict rests on the ROIC gate.
 The comparison table (2.2) and the cost-structure table (3.2) are computed here so the writer never calculates.
 """
 from __future__ import annotations
 
 import json
+import math
 import re
 import statistics
 
@@ -22,6 +23,7 @@ from ff_metrics import FORECAST, PERCENT, _margins_from_table, _months_apart, _p
 from tc_metrics import MAX_PEERS, _is_self, _series_from_data
 
 STRONG_YEARS = 7  # framework: 過去10年（最低でも7年以上）
+STRONG_SHARE = 0.8  # 強い: above the peer median in this share of the compared years
 MATCH_MONTHS = 6  # a peer's fiscal year counts for the target's year when its end is at most this far away
 SKIP_SECTION = re.compile(r"予想|計画|四半期|CAGR|提出会社|単体|個別")  # consolidated actuals only
 SECTION = re.compile(r"^#{2,3}\s+(.+)$", re.M)  # ### too, so a 提出会社 sub-table is skipped on its own
@@ -110,38 +112,32 @@ def comparison_rows(margins: dict[str, float], peer_list: list[dict]) -> list[di
     return rows
 
 
-def consecutive_above(rows: list[dict]) -> tuple[int, str | None]:
-    """(years, newest compared year): consecutive years above the peer average, counted back from the newest
-    year that has a peer average. A missing year or a year without peers ends the run."""
+def margin_candidate(rows: list[dict]) -> dict:
+    """強い: STRONG_YEARS+ years compared and above the peer median in STRONG_SHARE of them; なし: above in fewer
+    than half; else 弱い. The share of years, not a streak: one cyclical year below does not cancel nine above."""
     compared = [r for r in rows if r["avg"] is not None]
     if not compared:
-        return 0, None
-    newest = compared[-1]["year"]
-    count, previous = 0, None
-    for r in reversed([r for r in rows if r["year"] <= newest]):
-        if r["avg"] is None or r["self"] <= r["avg"]:
-            break
-        if previous and _months_apart(r["year"], previous) != 12:
-            break
-        count, previous = count + 1, r["year"]
-    return count, newest
-
-
-def margin_candidate(rows: list[dict]) -> dict:
-    count, newest = consecutive_above(rows)
-    compared = sum(1 for r in rows if r["avg"] is not None)
-    if newest is None:
         return {"rating": None, "fixed": False, "years_above": 0, "compared_years": 0,
                 "basis": "自社と競合の営業利益率を同じ年度で比べられない（自社または競合の推移が raw に無い）"}
-    rating = "強い" if count >= STRONG_YEARS else "弱い" if count >= 1 else "なし"
-    parts = [f"{newest} から遡って {count} 年連続で同業中央値を上回る（比較できた年 {compared}）"]
-    if 1 <= count < STRONG_YEARS and compared < STRONG_YEARS:
+    above = sum(1 for r in compared if r["self"] > r["avg"])
+    n = len(compared)
+    if above * 2 < n:
+        rating = "なし"
+    elif n >= STRONG_YEARS and above >= math.ceil(STRONG_SHARE * n):
+        rating = "強い"
+    else:
+        rating = "弱い"
+    latest = compared[-1]
+    parts = [f"{compared[0]['year']}〜{latest['year']} の比較できた {n} 年中 {above} 年で同業中央値を上回る"
+             f"（直近 {latest['year']} は{'上回る' if latest['self'] > latest['avg'] else '中央値以下'}）"]
+    if rating == "弱い" and n < STRONG_YEARS and above == n:
         parts.append(f"比較できる年が {STRONG_YEARS} 年に満たないため「強い」にはならない")
-    newer = [r["year"] for r in rows if r["year"] > newest]
+    newer = [r["year"] for r in rows if r["year"] > latest["year"]]
     if newer:
         parts.append(f"競合の数値が無い新しい年度（比較から除外）: {', '.join(newer)}")
-    basis = "。".join(parts) + f"。目安: {STRONG_YEARS}年以上 強い / 1〜{STRONG_YEARS - 1}年 弱い / 直近が中央値以下 なし"
-    return {"rating": rating, "fixed": True, "years_above": count, "compared_years": compared, "basis": basis}
+    basis = "。".join(parts) + (f"。目安: {STRONG_YEARS}年以上を比べて8割以上の年で上回る 強い / 上回った年が半分未満 なし"
+                                " / ほか 弱い（連続年数ではなく上回った年の割合で見る）")
+    return {"rating": rating, "fixed": True, "years_above": above, "compared_years": n, "basis": basis}
 
 
 def candidates(company, found: dict[str, Found]) -> dict:

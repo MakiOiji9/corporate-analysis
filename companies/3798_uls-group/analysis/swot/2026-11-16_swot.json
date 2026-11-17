@@ -1,0 +1,629 @@
+{
+ "version": 2,
+ "company": "3798_uls-group",
+ "name": "ULSグループ（3798）",
+ "date": "2026-11-16",
+ "valid_until": "2027-11-16",
+ "confidence": {
+  "primary": 8,
+  "reference": 0,
+  "unknown": 5,
+  "known": 9,
+  "total": 14,
+  "why": "一次資料 8/9・参考 0・不明 5/14",
+  "level": "低"
+ },
+ "counter": "最大の脅威（T2 AI技術代替）は会社が先行的にAI駆動開発（Devinパートナーシップ）で対応中であり、AIを活用したITコンサルティングの需要が増えれば逆にT2は脅威よりも機会になりうる。Devin活用で200社超の問い合わせがあるという事実は、AIの浸透がコンサルティング需要を増やしている可能性を示しており、最大の強みS1と合わせてYesに転じる材料になりうる。",
+ "conservative_verdict": "条件付き",
+ "quadrants": {
+  "S": [
+   {
+    "id": "S1",
+    "origin": "事業 リピート率",
+    "fact": "2026年3月期の売上の89%（約14,774百万円）が前期取引実績のある既存顧客からの継続取引で占められている",
+    "basis": "リピート率89%（2026/03、前期92%）。準委任契約83.1%=13,793百万円（2026/03）",
+    "source": "companies/3798_uls-group/raw/ir/2026-10-11_business-overview.md（決算説明会資料 2026年5月 p.4）",
+    "confidence": "一次",
+    "impact": "大",
+    "impact_reason": "売上89%=14,774百万円が既存顧客由来。同等の売上が維持されることで営業利益3,046百万円（目安「大」609百万円）を確保する基盤となる",
+    "evidence": [
+     {
+      "raw": "2026-10-11_business-overview.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "id": "S2",
+    "origin": "財務 超過収益力",
+    "fact": "2017-03〜2026-03の10年連続でROICが資本コスト7%を上回り、直近2026/03に経済的利益1,738百万円を創出している",
+    "basis": "ROIC中央値+26.4pt（2017-03〜2026-03）、直近ROIC 39.3%（2026/03）、経済的利益1,738百万円（2026/03）",
+    "source": "モート分析 2026-11-16（brief 0章）",
+    "confidence": "一次",
+    "impact": "大",
+    "impact_reason": "経済的利益1,738百万円（2026/03）はROICが資本コスト7%まで低下した場合に失われる営業利益の超過分に相当→ 現在の営業利益3,046百万円の57%、目安「大（609百万円）」を超える",
+    "evidence": []
+   },
+   {
+    "id": "S3",
+    "origin": "財務 資本政策",
+    "fact": "2026年3月期末の現金及び預金8,460百万円、有利子負債ゼロで、採用拡大・成長投資の自己資金余力がある",
+    "basis": "現金及び預金8,460百万円、有利子負債ゼロ（2026年3月31日）",
+    "source": "companies/3798_uls-group/raw/ir/2026-10-11_mid-term-plan.md（有報 p.24）",
+    "confidence": "一次",
+    "impact": "小",
+    "impact_reason": "金利費用はすでにゼロで利益への直接影響は発生しない。成長投資余力は将来的な機会だが現時点の営業利益への貢献は目安「小（5%未満=152百万円）」相当",
+    "evidence": [
+     {
+      "raw": "2026-10-11_mid-term-plan.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   }
+  ],
+  "W": [
+   {
+    "id": "W1",
+    "origin": "事業 顧客集中",
+    "fact": "最大顧客パソナが売上の14.6%（2,428百万円）を占め、上位5社合計で38%と集中度が高い（前期11.1%・34%からともに上昇）",
+    "basis": "パソナ2,428百万円（14.6%）（2026/03、前期1,463百万円=11.1%）、上位5社38%（前期34%）",
+    "source": "companies/3798_uls-group/raw/filings/2026-10-11_2026-03_yuho.md（有報 p.22）",
+    "confidence": "一次",
+    "impact": "中",
+    "impact_reason": "パソナ1社喪失で2,428百万円の売上減→ 同一利益率18.3%で444百万円の営業利益損失→ 目安「中（152〜609百万円）」の範囲",
+    "evidence": [
+     {
+      "raw": "2026-10-11_2026-03_yuho.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "id": "W2",
+    "origin": "財務 コスト構造",
+    "fact": "2026年3月期の売上原価率60.2%は競合5社単純平均52.9%より7.3pt高く、同一売上高で得られる利益が競合より少ないコスト構造にある",
+    "basis": "売上原価率60.2%（2026/03）、競合単純平均52.9%（ノースサンド・ライズ・ベイカレント・シグマクシス・LTS）",
+    "source": "companies/3798_uls-group/raw/market/2026-10-13_competitors.md「9. 売上原価率・販管費率（コスト構造の比較）」",
+    "confidence": "一次",
+    "impact": "大",
+    "impact_reason": "競合平均との差7.3pt×売上16,600=1,212百万円が余分に原価に回り、その分だけ営業利益が理論上低い（現在の営業利益3,046百万円の40%）→ 目安「大（609百万円）」を超える",
+    "evidence": [
+     {
+      "raw": "2026-10-13_competitors.md",
+      "section": "9",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "id": "W3",
+    "origin": "リスク 人員の確保と育成",
+    "fact": "コンサルタントの離職率が2026年3月期7.4%（前期6.4%から上昇）で採用費・育成コストが増加しており、質疑応答での「過去から5-6%で安定」という説明とも乖離している",
+    "basis": "離職率7.4%（2026/03、前期6.4%）、コンサルタント713名（2026/03）。有報 p.12",
+    "source": "companies/3798_uls-group/raw/filings/2026-10-11_2026-03_yuho.md（有報 p.12）",
+    "confidence": "一次",
+    "impact": "不明",
+    "impact_reason": "離職53名（713名×7.4%）の採用費・育成コストが原価率を押し上げる可能性があるが、採用費の単価が開示されておらず営業利益への影響を金額で示せない",
+    "evidence": [
+     {
+      "raw": "2026-10-11_2026-03_yuho.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "id": "W4",
+    "origin": "1-2 競合との比較",
+    "fact": "2026年3月期の営業利益率18.3%は競合6社中5位で、同業中央値21.2%より2.9pt低い",
+    "basis": "営業利益率18.3%（2026/03）、同業中央値21.2%（ノースサンド21.2%、競合6社中5位）",
+    "source": "3C分析 2026-11-16（brief 0章）",
+    "confidence": "一次",
+    "impact": "中",
+    "impact_reason": "同業中央値との差2.9pt×売上16,600=482百万円の営業利益機会損失→ 目安「中（152〜609百万円）」の範囲",
+    "evidence": []
+   }
+  ],
+  "O": [
+   {
+    "id": "O1",
+    "origin": "業界 市場規模と成長率",
+    "fact": "国内プロジェクトベース市場（ITコンサルティング／SI）が2024〜2029年にCAGR 9.1%で成長し、2029年には5兆5,159億円に達すると予測されている（IDC Japan、2025年6月23日発表）",
+    "basis": "CAGR 9.1%（2024〜2029年）、2024年市場規模3兆5,728億円",
+    "source": "companies/3798_uls-group/raw/market/2026-10-11_industry-overview.md「1-1. 国内プロジェクトベース市場（ITコンサルティング／SI）」",
+    "confidence": "二次",
+    "impact": "大",
+    "impact_reason": "市場CAGR 9.1%×現在売上16,600=1,511百万円/年の追加市場機会。市場成長に乗れば営業利益も目安「大（609百万円）」を超えやすい",
+    "evidence": [
+     {
+      "raw": "2026-10-11_industry-overview.md",
+      "section": "1-1. 国内プロジェクトベース市場（ITコンサルティング／SI）",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "id": "O2",
+    "origin": "中計 AI駆動開発の高付加価値化",
+    "fact": "Devinパートナーシップ（2025年5月締結）により200社超からの問い合わせがあり約2割が受注。有報「対処すべき課題」でAI駆動開発等の高付加価値サービスの開発・展開を重点施策に挙げており（会社は「50億円の裁量をもって価格決定できるか」と質疑応答で言及）、単価改善・成果報酬化の機会がある",
+    "basis": "Devinパートナーシップ2025年5月締結。200社超からの問い合わせ・約2割受注（2026年5月時点）。AI駆動開発50億円（会社の質疑応答での言及）",
+    "source": "companies/3798_uls-group/raw/ir/2026-10-11_business-overview.md（質疑応答 項番11・15）",
+    "confidence": "一次",
+    "impact": "不明",
+    "impact_reason": "AI駆動開発の売上規模は未開示、フィックスプライス化の実績もないため、営業利益への影響を金額で示せない",
+    "evidence": [
+     {
+      "raw": "2026-10-11_business-overview.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "id": "O3",
+    "origin": "地合い AI・半導体関連需要",
+    "fact": "地合いの中期展望の上振れ要因として「AI関連需要で輸出と設備投資が増える」が挙げられており、日本企業のIT投資が増加する場合にITコンサルティング需要が追加的に拡大しうる",
+    "basis": "地合い 中期展望 上振れ要因「AI関連需要で輸出と設備投資が増える」（2026-11-09）",
+    "source": "market/report/2026-11-09_outlook.md（地合い 中期展望）",
+    "confidence": "参考",
+    "impact": "不明",
+    "impact_reason": "AI投資増加がITコンサルティング需要に与える影響の数値が示されていない",
+    "evidence": []
+   }
+  ],
+  "T": [
+   {
+    "id": "T1",
+    "origin": "1-1 新規参入の脅威",
+    "fact": "ITコンサルティング業界は許認可不要・設備投資不要・特許なしで参入障壁が低く、INTLOOP・ライズが過去5年以内に上場するなど新規参入が続いており、採用競争の激化と価格競争圧力が高まっている",
+    "basis": "参入障壁なし（有報 p.16）、過去5年の新規上場: INTLOOP（2022年7月期以降）・ライズ（2024年2月期以降）。採用エージェントフィー「そろそろ高止まり」（質疑応答 項番14）",
+    "source": "five-forces 2026-11-16（brief 0章）",
+    "confidence": "一次",
+    "impact": "中",
+    "impact_reason": "採用費上昇が原価率を押し上げ、原価率1pt上昇で166百万円の営業利益影響（売上16,600×1%）→ 目安「中（152〜609百万円）」の範囲",
+    "evidence": []
+   },
+   {
+    "id": "T2",
+    "origin": "1-3 AI技術代替",
+    "fact": "生成AIの活用で開発工数が削減されると人月×単価の報酬モデルが成り立たなくなる可能性があり、会社自身も「IT業界で長らく続いてきた人月×単価のコストモデルは崩壊」と説明している（決算説明会資料 2026年5月）",
+    "basis": "準委任契約83.1%=13,793百万円（2026/03）が影響を受ける可能性。フィックスプライス化の実績は未開示（質疑応答 項番15）",
+    "source": "companies/3798_uls-group/raw/ir/2026-10-11_business-overview.md（決算説明会資料 2026年5月・質疑応答 項番15）",
+    "confidence": "一次",
+    "impact": "大",
+    "impact_reason": "準委任契約13,793百万円（売上の83.1%）が人月モデル崩壊で影響を受けうる→ 同利益率で2,524百万円の営業利益が潜在的リスク→ 目安「大（609百万円）」を大きく超える",
+    "evidence": [
+     {
+      "raw": "2026-10-11_business-overview.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "id": "T3",
+    "origin": "1-3 顧客の内製化",
+    "fact": "DX領域での顧客内製化が進むとITコンサルティング需要が縮小する可能性がある。会社は「内製化後一段上のステージで支援できる」と説明するが一段上での支援の実績は開示されていない（質疑応答 項番10）",
+    "basis": "代替品の脅威「中」（1-1）。5〜10年の時期（1-3モート崩しうる要因）",
+    "source": "companies/3798_uls-group/raw/ir/2026-10-13_business-overview.md（質疑応答 項番10）",
+    "confidence": "一次",
+    "impact": "不明",
+    "impact_reason": "内製化の進捗速度・規模が不明。「内製化後一段上で支援」の実績がなく、影響する売上を金額で示せない",
+    "evidence": [
+     {
+      "raw": "2026-10-13_business-overview.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "id": "T4",
+    "origin": "地合い AI・半導体株の調整の長期化",
+    "fact": "市場のストレスが高く（日経平均1年高値比−16.5%）、AI・半導体株の調整が長期化するとIT関連の企業投資が抑制されITコンサルティング需要が落ち込む可能性がある",
+    "basis": "地合いリスク「AI・半導体株の調整の長期化」影響度「大」（2026-11-09）、日経平均1年高値比−16.5%・20日変動率35.7%",
+    "source": "market/report/2026-11-09_outlook.md（地合い リスク要因）",
+    "confidence": "参考",
+    "impact": "不明",
+    "impact_reason": "IT企業の設備投資抑制によるITコンサルティング需要への影響の金額が示されていない",
+    "evidence": []
+   }
+  ]
+ },
+ "required": [
+  {
+   "quadrant": "T",
+   "tag": "1-1",
+   "name": "新規参入の脅威",
+   "detail": "強: 許認可不要、設備投資・研究開発費が数百億円規模に遠く及ばず資本障壁なし、特許なし・製造能力の押さえもなく技術的参入障壁の客観的証拠がない。ナレッジベース「ULBOK」は会社の主張（参考確度）だが、実際にINTLOOPとライズの2社が新規上場しており参入が続いている。強の3条件（許認可不要・参入障壁なし・過去5年の新規参入2件以上）をすべて満たす。前回（版1）は「迷った: 中と強で迷い不利な方の強とした」だったが、版2の明示的な条件確認により迷いなく強と判定できる。"
+  }
+ ],
+ "scale": {
+  "year": "2026-03",
+  "sales": 16600000000.0,
+  "profit": 3046000000.0,
+  "source": "data/*.csv（連結・実績）",
+  "yen": true
+ },
+ "top_strength": {
+  "id": "S1",
+  "fact": "2026年3月期の売上の89%（約14,774百万円）が前期取引実績のある既存顧客からの継続取引で占められている",
+  "impact": "大"
+ },
+ "top_threat": {
+  "id": "T2",
+  "fact": "生成AIの活用で開発工数が削減されると人月×単価の報酬モデルが成り立たなくなる可能性があり、会社自身も「IT業界で長らく続いてきた人月×単価のコストモデルは崩壊」と説明している（決算説明会資料 2026年5月）",
+  "impact": "大"
+ },
+ "answer": "条件付き",
+ "answer_reason": "最大の強み（S1 継続取引89%）は既存顧客との関係性を示すが、人月コストモデルが崩れると受注金額が低下するリスクがあり、継続取引があっても売上規模は維持できない。有報p.7-8「対処すべき課題」に「AI駆動開発等の拡充によるサービスの高付加価値化、外部企業との提携」が一次資料として記載されており、フィックスプライス化への移行が実現すれば単価低下を緩和できる可能性がある。ただしAI駆動開発のフィックスプライス案件の売上比率は未開示で、実行の兆しを示す数値がない。",
+ "measure": "有報 p.7-8「対処すべき課題」に記載の「AI駆動開発等の拡充によるサービスの高付加価値化、外部企業との提携」。具体的にはDevinパートナーシップを活用したAI駆動開発のフィックスプライス化（200社超から問い合わせ・約2割受注、質疑応答 項番11・15）。出典: companies/3798_uls-group/raw/ir/2026-10-11_mid-term-plan.md 「2. 中期経営計画に代わる開示」／companies/3798_uls-group/raw/ir/2026-10-11_business-overview.md（質疑応答 項番11・15）",
+ "sentence": "S1（2026年3月期の売上の89%（約14,774百万円）が前期取引実績のある既存顧客からの継続取引で占められている）により、T2（生成AIの活用で開発工数が削減されると人月×単価の報酬モデルが成り立たなくなる可能性があり、会社自身も「IT業界で長らく…）に対して条件付きで耐えられる。理由：最大の強み（S1 継続取引89%）は既存顧客との関係性を示すが、人月コストモデルが崩れると受注金額が低下するリスクがあり、継続取引があっても売上規模は維持できない",
+ "verdict": "条件付き",
+ "verdict_reason": "最大の強み（S1 継続取引89%）は既存顧客との関係性を示すが、人月コストモデルが崩れると受注金額が低下するリスクがあり、継続取引があっても売上規模は維持できない。有報p.7-8「対処すべき課題」に「AI駆動開発等の拡充によるサービスの高付加価値化、外部企業との提携」が一次資料として記載されており、フィックスプライス化への移行が実現すれば単価低下を緩和できる可能性がある。ただしAI駆動開発のフィックスプライス案件の売上比率は未開示で、実行の兆しを示す数値がない。",
+ "conservative": [
+  "影響度が不明の脅威（T3・T4）は「大」とみなした"
+ ],
+ "handoff": {
+  "step2_checks": "リピート率の推移（89%が維持・改善されるか→ S1の強みが保たれているか）。売上原価率の推移（60.2%が競合平均52.9%に近づくか→ W2の弱みが改善するか）。AI駆動開発（フィックスプライス案件）の売上比率の開示有無（T2への対策が進んでいるか）。外注費比率（2026年3月期11.9%→ 増加するとコスト構造がさらに悪化）。",
+  "summary": "最大の強みはS1（2026年3月期の売上の89%（約14,774百万円）が前期取引実績のある既存顧客からの継続取引で占められている）、最大の脅威はT2（生成AIの活用で開発工数が削減されると人月×単価の報酬モデルが成り立たなくなる可能性があり、会社自身も「IT業界で長らく…）。SWOT の結論は条件付き（最大の強み（S1 継続取引89%）は既存顧客との関係性を示すが、人月コストモデルが崩れると受注金額が低下するリスクがあり、継続取引があっても売上規模は維持できない）。",
+  "triggers": "AI駆動開発（フィックスプライス案件）の売上比率が開示され5%（830百万円）以上に達すれば条件付きの達成度として判断できる。リピート率が2年続けて85%を下回れば最大の強みS1が弱まりNoに近づく。競合新規参入の加速により営業利益率が2年続けて15%を下回れば条件付きからNoに変わる条件となる。"
+ },
+ "changes": [
+  "強みの項目: S1、S2、S3、S4 → S1、S2、S3（前回 2026-10-31）",
+  "脅威の項目: T1、T2、T3、T4、T5 → T1、T2、T3、T4（前回 2026-10-31）"
+ ],
+ "gaps": [
+  "中計: 重点施策: raw に無い",
+  "中計: 前回計画の達成状況: raw に無い",
+  "W3: 影響度が不明",
+  "O2: 影響度が不明",
+  "O3: 影響度が不明",
+  "T3: 影響度が不明",
+  "T4: 影響度が不明",
+  "O3: 根拠が参考情報だけ",
+  "T4: 根拠が参考情報だけ"
+ ],
+ "inputs": [
+  "companies/3798_uls-group/raw/filings/2026-10-11_2026-03_yuho.md",
+  "companies/3798_uls-group/raw/ir/2026-10-11_business-overview.md",
+  "companies/3798_uls-group/raw/ir/2026-10-11_mid-term-plan.md",
+  "companies/3798_uls-group/raw/market/2026-10-11_industry-overview.md"
+ ],
+ "input_digests": {
+  "segment": "b06193b26db999fef837e44971409775372452f2",
+  "customers": "9a68dd27ffda59295706c35d76c68299019f2b4c",
+  "risks": "5dddf0025403519f6851af9d6dc23b89398a0962",
+  "policy": "5b53a00b6a72f4552e7e1965f97c0171b7aaed1b",
+  "mtp": "9c6f11e14935986dfbacf040289db252766fc33d",
+  "mtp_alt": "2d78358241c07d5c1144b6264eee3169ba347b44",
+  "mtp_targets": "2d78358241c07d5c1144b6264eee3169ba347b44",
+  "mtp_actions": "",
+  "mtp_review": "",
+  "strategy": "87941b8ce63d51601f05e99db494a7d243f68ed6",
+  "market_size": "c07e634b93ffe302f85bf01f0ddb90e2a7e4297a",
+  "substitutes": "e7ea7b7132533af1761ccc572889f9f31593e77b",
+  "structural": "a82ff7591a058542c7f6e42bd6f89b5ae9cd511c"
+ },
+ "upstream": {
+  "five_forces": {
+   "date": "2026-11-16",
+   "verdict": "中"
+  },
+  "three_c": {
+   "date": "2026-11-16",
+   "verdict": "あいまい"
+  },
+  "moat": {
+   "date": "2026-11-16",
+   "verdict": "なし"
+  }
+ },
+ "outlook": "market/report/2026-11-09_outlook.md",
+ "previous": {
+  "date": "2026-10-31",
+  "verdict": "条件付き"
+ },
+ "md": "companies/3798_uls-group/analysis/swot/2026-11-16_swot.md",
+ "evidence": {
+  "claims": [
+   {
+    "claim": "強み S1",
+    "source": "companies/3798_uls-group/raw/ir/2026-10-11_business-overview.md（決算説明会資料 2026年5月 p.4）",
+    "evidence": [
+     {
+      "raw": "2026-10-11_business-overview.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "強み S2",
+    "source": "モート分析 2026-11-16（brief 0章）",
+    "evidence": []
+   },
+   {
+    "claim": "強み S3",
+    "source": "companies/3798_uls-group/raw/ir/2026-10-11_mid-term-plan.md（有報 p.24）",
+    "evidence": [
+     {
+      "raw": "2026-10-11_mid-term-plan.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "弱み W1",
+    "source": "companies/3798_uls-group/raw/filings/2026-10-11_2026-03_yuho.md（有報 p.22）",
+    "evidence": [
+     {
+      "raw": "2026-10-11_2026-03_yuho.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "弱み W2",
+    "source": "companies/3798_uls-group/raw/market/2026-10-13_competitors.md「9. 売上原価率・販管費率（コスト構造の比較）」",
+    "evidence": [
+     {
+      "raw": "2026-10-13_competitors.md",
+      "section": "9",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "弱み W3",
+    "source": "companies/3798_uls-group/raw/filings/2026-10-11_2026-03_yuho.md（有報 p.12）",
+    "evidence": [
+     {
+      "raw": "2026-10-11_2026-03_yuho.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "弱み W4",
+    "source": "3C分析 2026-11-16（brief 0章）",
+    "evidence": []
+   },
+   {
+    "claim": "機会 O1",
+    "source": "companies/3798_uls-group/raw/market/2026-10-11_industry-overview.md「1-1. 国内プロジェクトベース市場（ITコンサルティング／SI）」",
+    "evidence": [
+     {
+      "raw": "2026-10-11_industry-overview.md",
+      "section": "1-1. 国内プロジェクトベース市場（ITコンサルティング／SI）",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "機会 O2",
+    "source": "companies/3798_uls-group/raw/ir/2026-10-11_business-overview.md（質疑応答 項番11・15）",
+    "evidence": [
+     {
+      "raw": "2026-10-11_business-overview.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "機会 O3",
+    "source": "market/report/2026-11-09_outlook.md（地合い 中期展望）",
+    "evidence": []
+   },
+   {
+    "claim": "脅威 T1",
+    "source": "five-forces 2026-11-16（brief 0章）",
+    "evidence": []
+   },
+   {
+    "claim": "脅威 T2",
+    "source": "companies/3798_uls-group/raw/ir/2026-10-11_business-overview.md（決算説明会資料 2026年5月・質疑応答 項番15）",
+    "evidence": [
+     {
+      "raw": "2026-10-11_business-overview.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "脅威 T3",
+    "source": "companies/3798_uls-group/raw/ir/2026-10-13_business-overview.md（質疑応答 項番10）",
+    "evidence": [
+     {
+      "raw": "2026-10-13_business-overview.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "脅威 T4",
+    "source": "market/report/2026-11-09_outlook.md（地合い リスク要因）",
+    "evidence": []
+   }
+  ],
+  "summary": {
+   "verified": 0,
+   "unverified": 9,
+   "missing": 0,
+   "reasons": {
+    "Front Matter なし": 9
+   }
+  }
+ }
+}

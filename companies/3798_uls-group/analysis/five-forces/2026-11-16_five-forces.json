@@ -1,0 +1,580 @@
+{
+ "company": "3798_uls-group",
+ "name": "ULSグループ（3798）",
+ "date": "2026-11-16",
+ "valid_until": "2027-11-16",
+ "industry": "ITコンサルティング業界（主力セグメント：コンサルティング事業、単一セグメント）",
+ "industry_source": "2026-10-11_2026-03_yuho.md「2. 事業の内容・セグメント情報（p.5, 98）」",
+ "factors": [
+  {
+   "key": "entry",
+   "name": "新規参入の脅威",
+   "rating": "強",
+   "points": 0,
+   "seen": "ITコンサルティング固有の許認可なし（有報に記載なし）。設備投資392百万円・研究開発費67百万円（2026年3月期）、特許なし（数件の商標登録のみ）。ナレッジベース「ULBOK」を競合優位性の源泉として挙げる（有報 p.16）。過去5年の新規参入: INTLOOP（東証グロース、上場後初通期 2022年7月期）、ライズ・コンサルティング・グループ（東証グロース、上場後初通期 2024年2月期）。両社の上場年（IPO時期）は未確認。",
+   "source": "2026-10-11_2026-03_yuho.md「6. 研究開発・特許・許認可（p.18, 26, 80）」、raw/market/2026-10-11_industry-overview.md「3. 参入に必要な条件・過去5年の主な新規参入」",
+   "confidence": "参考",
+   "triggers": "業界特有の許認可義務化または特許競争の激化により参入障壁が生じた場合は中を検討。さらに有力な新規参入例がゼロになれば弱を検討。",
+   "reason": "許認可不要、設備投資・研究開発費が数百億円規模に遠く及ばず資本障壁なし、特許なし・製造能力の押さえもなく技術的参入障壁の客観的証拠がない。ナレッジベース「ULBOK」は会社の主張（参考確度）だが、実際にINTLOOPとライズの2社が新規上場しており参入が続いている。強の3条件（許認可不要・参入障壁なし・過去5年の新規参入2件以上）をすべて満たす。前回（版1）は「迷った: 中と強で迷い不利な方の強とした」だったが、版2の明示的な条件確認により迷いなく強と判定できる。",
+   "tie_break": true,
+   "candidate": "",
+   "previous": "強",
+   "evidence": [
+    {
+     "raw": "2026-10-11_2026-03_yuho.md",
+     "section": "6",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    },
+    {
+     "raw": "2026-10-11_industry-overview.md",
+     "section": "3",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    }
+   ]
+  },
+  {
+   "key": "substitutes",
+   "name": "代替品の脅威",
+   "rating": "中",
+   "points": 1,
+   "seen": "生成AIを活用した内製化（コード生成）が内製化を加速するとの論考（ブログ）。ULSグループ自身が「Devin」等の自律型AI開発ツールを活用したAI駆動開発を提供。会社は「人月×単価によるコストモデルは崩壊」と記載（決算説明会資料 2026年5月 p.11）。「大手SIer・総合系コンサルは現在のところ競合相手でない」（有報 p.16）。代替手段の普及を示す定量データ（導入率・市場規模の伸び等）は未取得。DX推進人材不足が85.1%との調査結果（原典未確認）。",
+   "source": "raw/market/2026-10-11_industry-overview.md「4. 代替製品・代替手段と普及状況」「8. 業界構造を変えうる要因」、ULS決算説明会資料 2026年5月 p.11",
+   "confidence": "参考",
+   "triggers": "AI開発ツールや内製化によるITコンサル市場の実質的な縮小を示す統計（例: 市場成長率が前年比で3pt以上下振れ、またはDX人材の自給率の大幅改善が示される調査公表）が確認されれば強を検討。",
+   "reason": "内製化・AI開発ツールという代替手段が存在し、会社自身も「人月コストモデルの崩壊」と言及している。ただし代替の普及を示す数値（導入率・市場シェアの伸び等）が brief に無いため「代替手段はあるが普及途上」に当たる。強の条件（普及の数値と同等以上の価格・性能の確認）を満たさず、弱の条件（代替手段の記載なし）も満たさないため中。",
+   "tie_break": false,
+   "candidate": "",
+   "previous": "中",
+   "evidence": [
+    {
+     "raw": "2026-10-11_industry-overview.md",
+     "section": "4",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    },
+    {
+     "raw": "2026-10-11_industry-overview.md",
+     "section": "8",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    }
+   ]
+  },
+  {
+   "key": "buyers",
+   "name": "買い手の交渉力",
+   "rating": "中",
+   "points": 1,
+   "seen": "最大顧客・株式会社パソナ 2026年3月期 2,428百万円（比率14.6%、前期11.1%から+3.5pt増加）。売上上位5社の割合38%（前期34%）。顧客数167社（うち新規60社）。リピート率89%（前期92%）。顧客層は「一定の大規模事業者」（有報 p.19）。サービス・情報通信・金融・自治体・製造等の複数業種に分散。ITコンサルティングの顧客選定要因の定量調査なし。",
+   "source": "2026-10-11_2026-03_yuho.md「3. 主要な販売先（p.22, 98）」、raw/ir/2026-10-11_business-overview.md「4. 顧客層」",
+   "confidence": "一次",
+   "triggers": "株式会社パソナの比率が20%以上に上昇した場合は強を検討。逆に最大顧客比率が10%を下回り顧客が一層分散した場合は弱を検討。",
+   "reason": "最大顧客比率が14.6%（10〜20%の範囲）でスクリプトの判定候補（中）と一致。弱の条件（単一顧客10%未満かつ差別化）はパソナ14.6%が10%以上のため満たさない。強の条件（20%以上または汎用品）は14.6%が20%未満かつリピート率89%と高付加価値への特化があるため満たさない。上位5社集中度が38%に上昇しており買い手の交渉力が緩和される傾向は見られない。",
+   "tie_break": false,
+   "candidate": "中",
+   "previous": "中",
+   "evidence": [
+    {
+     "raw": "2026-10-11_2026-03_yuho.md",
+     "section": "3",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    },
+    {
+     "raw": "2026-10-11_business-overview.md",
+     "section": "4",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    }
+   ]
+  },
+  {
+   "key": "suppliers",
+   "name": "売り手の交渉力",
+   "rating": "中",
+   "points": 1,
+   "seen": "粗利率の推移: 37.2%（2024-03）→39.8%（2026-03）→41.9%（2027-03予想）、3年間で+4.7pt改善。前年比最大低下: -2.3pt（2023-03 39.5%→2024-03 37.2%）。採用費: 440百万円（2025年3月期）→848百万円（2026年3月期、+92.7%）。理由として「シニアレベルのコンサルタント採用強化及び人材紹介料の上昇」。経営陣コメント「フィー料率がそろそろ高止まりかな」（質疑応答 項番14）。同業INTLOOP: 採用費・人件費が予算比で約17.3億円超過し通期予想を下方修正（2026年7月期）。コンサルティング事業向け外注費: 1,967百万円（2026年3月期）。",
+   "source": "data/financials.csv・raw/ir/2026-11-11_financials-historical.md（粗利率）、2026-10-11_2026-03_yuho.md「5. 主要な原材料・調達先（p.23）」、raw/market/2026-10-11_industry-overview.md「6. 原材料・部品の調達構造」、ULS決算説明会資料 2026年5月 p.4・質疑応答 項番14",
+   "confidence": "一次",
+   "triggers": "採用費が対売上比で上昇を続けて粗利率の前年比低下が5pt以上になった場合は強を検討。逆に複数の採用チャネルが開拓され粗利率低下が2pt未満で安定すれば弱を検討。",
+   "reason": "粗利率の3年間トレンドは+4.7ptと明確な改善で、スクリプトの判定候補（弱）はこの改善を反映している。しかし弱の条件（調達先が多数）は採用エージェント中心の限られた調達先のため満たさず、前年比最大低下2.3pt（2〜5ptの範囲）があるため弱の条件（2pt未満）も満たさない。採用エージェントへの依存は「調達先は限られるが代替可能」に相当し、最大2.3ptの低下は「高騰時に2〜5pt低下」の中の条件に当たると判断。粗利率の中期的改善は主に単価上昇（AI駆動開発の高付加価値化）によるものと判断し、IT人材の調達コスト圧力は継続中とみる。",
+   "tie_break": false,
+   "candidate": "弱",
+   "previous": "中",
+   "evidence": [
+    {
+     "raw": "2026-11-11_financials-historical.md",
+     "section": null,
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    },
+    {
+     "raw": "2026-10-11_2026-03_yuho.md",
+     "section": "5",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    },
+    {
+     "raw": "2026-10-11_industry-overview.md",
+     "section": "6",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    }
+   ]
+  },
+  {
+   "key": "rivalry",
+   "name": "業界内の競争",
+   "rating": "中",
+   "points": 1,
+   "seen": "市場成長率: 国内プロジェクトベース市場（ITコンサルティング・SI）CAGR 9.1%（2024〜2029年予測、IDC Japan）。上位企業のシェア: 非公表（ITコンサルティング市場の集中度データなし）。競合5社の最新期営業利益率（前年差）: ノースサンド21.2%（+4.3pt）、ライズ20.2%（-5.3pt）、ベイカレント34.3%（-2.4pt）、シグマクシス25.4%（+4.0pt）、LTS6.9%（+0.2pt）。5社中3社（ノースサンド・シグマクシス・LTS）が横ばい以上、2社（ライズ・ベイカレント）が低下。ULS18.3%（-1.6pt）。",
+   "source": "raw/market/2026-10-11_industry-overview.md「1. 市場規模と成長率」、raw/market/2026-10-13_competitors.md「2. 売上高・営業利益・営業利益率」「4. 市場シェア」",
+   "confidence": "二次",
+   "triggers": "ITコンサルティング市場の集中度（上位3社シェア合計）が公表され過半以上と確認でき、かつ成長率5%以上・利益率過半が横ばい以上を維持すれば弱を検討。逆に市場成長率が3%未満に鈍化し競合の過半が利益率を低下させれば強を検討。",
+   "reason": "市場成長率CAGR 9.1%は強の条件（3%未満または縮小）を満たさない。シェアデータが非公表で集中度を確認できず、弱の第1条件（上位2〜3社のシェア合計が過半）を満たさない。競合5社のうち3社（60%）が利益率横ばい以上で、強の第2条件（過半が低下）も満たさない。3条件のうち確認できた成長率（9.1%≧5%）と利益率（過半が横ばい以上）は弱方向を示すが、シェア集中度が確認できないため弱と判断できず中とする（判断基準「シェアが非公表で他の2条件でも弱と言えないときは中以上」）。",
+   "tie_break": false,
+   "candidate": "",
+   "previous": "中",
+   "evidence": [
+    {
+     "raw": "2026-10-11_industry-overview.md",
+     "section": "1",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    },
+    {
+     "raw": "2026-10-13_competitors.md",
+     "section": "2",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    },
+    {
+     "raw": "2026-10-13_competitors.md",
+     "section": "4",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    }
+   ]
+  }
+ ],
+ "version": 2,
+ "confidence": {
+  "primary": 2,
+  "reference": 2,
+  "unknown": 0,
+  "known": 5,
+  "total": 5,
+  "why": "一次資料 2/5・参考 2・不明 0/5",
+  "level": "中"
+ },
+ "counter": "新規参入の脅威を弱とみる解釈もある。ナレッジベース「ULBOK」や高付加価値の専門人材蓄積という技術的難度を「実質的な参入障壁」と重くみれば弱になり（新規参入 弱・代替品 中・買い手 中・売り手 弱・業界内競争 中で7点）、魅力度は高に変わる余地がある。また売り手交渉力についても、粗利率が3年で+4.7ptと明確に改善しており調達コスト圧力が管理できていると判断すれば弱（2点）となり、同様に高に近づく。",
+ "total": 4,
+ "attractiveness": "中",
+ "attractiveness_by_points": "中",
+ "conservative_attractiveness": "中",
+ "conservative_verdict": "中",
+ "weighted_total": 4.0,
+ "low": 4,
+ "high": 4,
+ "segments": [],
+ "unknown_count": 0,
+ "downgraded": false,
+ "swot_threats": [
+  "新規参入の脅威"
+ ],
+ "changes": [
+  "判定の基準が版 1 → 2 に更新されたが、各要因の評価は前回（2026-11-10）と同じ（新規参入 強、代替品 中、買い手 中、売り手 中、業界内競争 中）",
+  "新規参入の脅威: 前回は「迷った: 中と強で迷い不利な方の強とした」だったが、版 2 の3条件（許認可不要・参入障壁なし・新規参入2件以上）を確認し迷いなく強と判定。評価は変わらず",
+  "売り手の交渉力: 判定候補が「3年間 +0.3pt」から「3年間 +4.7pt（2024-03→2027-03）」に更新されたが、採用エージェントへの依存と最大2.3ptの低下を根拠に引き続き中"
+ ],
+ "gaps": [
+  "競合（INTLOOP・ライズ等）の知的財産（特許件数）: raw に無い。参入障壁の確度が参考にとどまる主因",
+  "ITコンサルティング市場のシェア（上位企業の集中度）: IDC Japan含め公表値なし。業界内競争の弱判定ができない要因",
+  "新規参入の例（INTLOOP・ライズ）の上場年（IPO時期）: IRBANKの上場後初通期から推定だが確認未了",
+  "代替品の普及率（内製化・AI開発ツールの導入率・市場シェアの伸び）: 定量データなし"
+ ],
+ "inputs": [
+  "companies/3798_uls-group/raw/filings/2026-10-11_2026-03_yuho.md",
+  "companies/3798_uls-group/raw/ir/2026-10-11_business-overview.md",
+  "companies/3798_uls-group/raw/market/2026-10-11_industry-overview.md",
+  "companies/3798_uls-group/raw/market/2026-10-13_competitors.md"
+ ],
+ "seen": [
+  "companies/3798_uls-group/raw/filings/2026-10-11_2026-03_yuho.md",
+  "companies/3798_uls-group/raw/market/2026-10-11_industry-overview.md",
+  "companies/3798_uls-group/raw/market/2026-10-13_competitors.md",
+  "companies/3798_uls-group/raw/market/2026-10-21_competitors.md",
+  "companies/3798_uls-group/raw/market/2026-10-31_competitors.md",
+  "companies/3798_uls-group/raw/market/2026-11-10_competitors.md"
+ ],
+ "input_digests": {
+  "segment": "b06193b26db999fef837e44971409775372452f2",
+  "customers": "9a68dd27ffda59295706c35d76c68299019f2b4c",
+  "procurement": "57151928ea3fe53d5801488d5f19e4bfcf0d2a6d",
+  "ip": "18e9b79576625eb1ee80bbb7457ec199e865a33d",
+  "patents": "",
+  "peer_patents": "",
+  "risks": "5dddf0025403519f6851af9d6dc23b89398a0962",
+  "customer_base": "6f5675a0c6321bf75e2a3a93d223e65780c8d82a",
+  "market_size": "c07e634b93ffe302f85bf01f0ddb90e2a7e4297a",
+  "share": "da06f552567929b163e4680fe2d4993c5d14e2f8",
+  "entry": "5ed9351e33e913b4ce722a0234092c2c32aeee0a",
+  "substitutes": "e7ea7b7132533af1761ccc572889f9f31593e77b",
+  "kbf": "c3892503a63d8c20978edd01c48bb35720cf27f2",
+  "supply": "9b04a95ac18d3f39bcf3d690ab23491d8012c74d",
+  "industry_margin": "793a739a61774603a061e9499976cc104cdf9f74",
+  "structural": "a82ff7591a058542c7f6e42bd6f89b5ae9cd511c",
+  "peers": "4c83f5e4f963e1364bc5c400742e4e27ade073cf",
+  "peer_share": "14bc0ba0d4fd6ec1ab395ba2841fa69010e4c2c1"
+ },
+ "outlook": "market/report/2026-11-09_outlook.md",
+ "previous": {
+  "date": "2026-11-10",
+  "attractiveness": "中"
+ },
+ "md": "companies/3798_uls-group/analysis/five-forces/2026-11-16_five-forces.md",
+ "industry_evidence": [
+  {
+   "raw": "2026-10-11_2026-03_yuho.md",
+   "section": "2",
+   "status": "未検証",
+   "reason": "Front Matter なし",
+   "doc_id": null,
+   "title": null,
+   "url": null,
+   "published": null,
+   "period": null,
+   "confidence": null,
+   "pages": null,
+   "local_path": null
+  }
+ ],
+ "evidence": {
+  "claims": [
+   {
+    "claim": "1. 業界の定義",
+    "source": "2026-10-11_2026-03_yuho.md「2. 事業の内容・セグメント情報（p.5, 98）」",
+    "evidence": [
+     {
+      "raw": "2026-10-11_2026-03_yuho.md",
+      "section": "2",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "2.1 新規参入の脅威",
+    "source": "2026-10-11_2026-03_yuho.md「6. 研究開発・特許・許認可（p.18, 26, 80）」、raw/market/2026-10-11_industry-overview.md「3. 参入に必要な条件・過去5年の主な新規参入」",
+    "evidence": [
+     {
+      "raw": "2026-10-11_2026-03_yuho.md",
+      "section": "6",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "raw": "2026-10-11_industry-overview.md",
+      "section": "3",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "2.2 代替品の脅威",
+    "source": "raw/market/2026-10-11_industry-overview.md「4. 代替製品・代替手段と普及状況」「8. 業界構造を変えうる要因」、ULS決算説明会資料 2026年5月 p.11",
+    "evidence": [
+     {
+      "raw": "2026-10-11_industry-overview.md",
+      "section": "4",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "raw": "2026-10-11_industry-overview.md",
+      "section": "8",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "2.3 買い手の交渉力",
+    "source": "2026-10-11_2026-03_yuho.md「3. 主要な販売先（p.22, 98）」、raw/ir/2026-10-11_business-overview.md「4. 顧客層」",
+    "evidence": [
+     {
+      "raw": "2026-10-11_2026-03_yuho.md",
+      "section": "3",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "raw": "2026-10-11_business-overview.md",
+      "section": "4",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "2.4 売り手の交渉力",
+    "source": "data/financials.csv・raw/ir/2026-11-11_financials-historical.md（粗利率）、2026-10-11_2026-03_yuho.md「5. 主要な原材料・調達先（p.23）」、raw/market/2026-10-11_industry-overview.md「6. 原材料・部品の調達構造」、ULS決算説明会資料 2026年5月 p.4・質疑応答 項番14",
+    "evidence": [
+     {
+      "raw": "2026-11-11_financials-historical.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "raw": "2026-10-11_2026-03_yuho.md",
+      "section": "5",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "raw": "2026-10-11_industry-overview.md",
+      "section": "6",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "2.5 業界内の競争",
+    "source": "raw/market/2026-10-11_industry-overview.md「1. 市場規模と成長率」、raw/market/2026-10-13_competitors.md「2. 売上高・営業利益・営業利益率」「4. 市場シェア」",
+    "evidence": [
+     {
+      "raw": "2026-10-11_industry-overview.md",
+      "section": "1",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "raw": "2026-10-13_competitors.md",
+      "section": "2",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "raw": "2026-10-13_competitors.md",
+      "section": "4",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   }
+  ],
+  "summary": {
+   "verified": 0,
+   "unverified": 13,
+   "missing": 0,
+   "reasons": {
+    "Front Matter なし": 13
+   }
+  }
+ }
+}

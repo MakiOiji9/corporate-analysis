@@ -8,7 +8,7 @@ Usage:
 
 --company takes '3798', '3798_uls-group' or part of the directory name.
 list:    companies under companies/ with the state of their growth result (for choosing one).
-check:   is the latest result still valid (180 days, the sections and the yearly numbers it used unchanged, no
+check:   is the latest result still valid (120 days, the sections and the yearly numbers it used unchanged, no
          newer 3C / SWOT result)? Which required inputs are missing (the own series needs 5 years of sales and
          EPS; the plan, the M&A section and the company's explanation of the decline years)? -> "next".
          STEP 1 is not required: 3C / SWOT results are only referred to when they exist.
@@ -33,6 +33,7 @@ sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "marke
 import an_brief as AB  # noqa: E402
 import an_common as A  # noqa: E402
 import an_fill as AF  # noqa: E402
+import an_quality as Q  # noqa: E402
 import gr_brief as B  # noqa: E402
 import gr_doc as D  # noqa: E402
 import gr_facts as F  # noqa: E402
@@ -91,6 +92,9 @@ def evaluate(company: P.Company, today: str) -> dict:
                            "json": company.rel(company.file(date, P.JSON_SUFFIX)),
                            "verdict": result.get("verdict"), "valid_until": P.valid_until(date)}
         state["newer_raw"] = T.triggers(company, date, "quarter", [("3C", TP), ("SWOT", SP)])
+        old_rules = Q.outdated(result, D.VERSION)
+        if old_rules:
+            state["newer_raw"] = state["newer_raw"] + [old_rules]
     if draft and (not latest or draft[0] >= latest[0]):
         state.update(result="draft", reason=f"作成途中の {company.rel(draft[1])} がある（続きから書く）")
     elif not latest:
@@ -255,7 +259,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
         **AF.prepare_fields(company, md_path),
         "candidate": {"verdict": cands["verdict"], "why": cands["why"], "step1": s1["rating"],
                       "step3": cands["step3"]["rating"], "quality": cands["step4"]["quality"],
-                      "downgraded": cands["downgraded"]},
+                      "investment": cands["step5"]["verdict"], "downgraded": cands["downgraded"]},
         "progress": F.progress_text(cands["progress"]),
         "cagr": {"sales": _round(s1["sales"]["value"]), "operating_income": _round(s1["operating_income"]["value"]),
                  "eps": _round(s1["eps"]["value"]), "net_income": _round(s1["net_income"]["value"])},
@@ -301,7 +305,22 @@ def _step_json(cands: dict) -> dict:
         "step4": {"quality": s4["quality"], "sentence": s4["sentence"], "problems": s4["problems"],
                   "unknown": s4["unknown"], "adjusted": s4["adjusted"],
                   "checks": [{k: c[k] for k in ("name", "status", "detail")} for c in s4["checks"]]},
+        "step5": _investment_json(cands["step5"]),
     }
+
+
+def _investment_json(s5: dict) -> dict:
+    """手順5 成長投資: the verdict, the ratio and the efficiency (the yearly rows rounded to 百万)."""
+    efficiency = s5.get("efficiency") or {}
+    return {"verdict": s5["verdict"], "sentence": s5["sentence"], "notes": s5.get("notes") or [],
+            "ratio": s5.get("ratio"),
+            "efficiency": {k: efficiency.get(k) for k in ("rating", "basis", "sentence")},
+            "incremental_roic": {k: (efficiency.get("roic") or {}).get(k)
+                                 for k in ("rating", "value", "span", "lag", "hurdle")},
+            "people": {k: (s5.get("people") or {}).get(k)
+                       for k in ("employees_cagr", "per_employee_cagr", "people_share", "intensive")},
+            "rows": [{k: (round(v) if isinstance(v, float) and k != "capex_to_dep" else v) for k, v in r.items()}
+                     for r in s5.get("rows") or []]}
 
 
 def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: dict,
@@ -318,7 +337,7 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: d
                  **{k: by_year.get(d["year"], {}).get(k, "") for k in ("reason", "class", "swot")}}
                 for d in cands["declines"]]
     return {
-        "company": company.dirname, "name": company.display_name(), "date": date,
+        "version": D.VERSION, "company": company.dirname, "name": company.display_name(), "date": date,
         "valid_until": P.valid_until(date), "verdict": verdict, "verdict_reason": why,
         **_step_json(cands), "step2": {"sentence": D.step2_sentence(cands, D.classes(parsed)),
                                        "structural": parsed["structural"]},
@@ -384,6 +403,7 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
         "progress": F.progress_text(cands["progress"]),
         "step1": cands["step1"]["sentence"], "step2": result["step2"]["sentence"],
         "step3": cands["step3"]["sentence"], "step4": cands["step4"]["sentence"],
+        "step5": cands["step5"]["sentence"],
         "consistency": [f"{c['check']}: {c['result']}" for c in consistency],
         "borderline": cands["borderline"], "valid_until": result["valid_until"], "previous": result["previous"],
         "three_c": result["three_c"], "swot": result["swot"], **D.flags(parsed),

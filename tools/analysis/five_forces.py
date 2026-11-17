@@ -31,7 +31,9 @@ sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "marke
 
 import an_brief as AB  # noqa: E402
 import an_common as A  # noqa: E402
+import an_evidence as EV  # noqa: E402
 import an_fill as F  # noqa: E402
+import an_quality as Q  # noqa: E402
 import ff_brief as B  # noqa: E402
 import ff_doc as D  # noqa: E402
 import ff_inputs as I  # noqa: E402
@@ -69,6 +71,9 @@ def evaluate(company: P.Company, today: str) -> dict:
                            "attractiveness": result.get("attractiveness"), "total": result.get("total"),
                            "valid_until": P.valid_until(date)}
         state["newer_raw"] = T.triggers(company, date, "annual")  # new 有報 period, industry data, mid-term plan
+        old_rules = Q.outdated(result, D.VERSION)
+        if old_rules:
+            state["newer_raw"] = state["newer_raw"] + [old_rules]
     if draft and (not latest or draft[0] >= latest[0]):
         state.update(result="draft", reason=f"作成途中の {company.rel(draft[1])} がある（続きから書く）")
     elif not latest:
@@ -221,8 +226,13 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, scored: 
         "valid_until": P.valid_until(date), "industry": parsed["industry"],
         "industry_source": parsed["industry_source"],
         "factors": [{k: f[k] for k in keep} for f in scored["factors"]],
+        "version": D.VERSION, "confidence": D.quality(parsed), "counter": parsed["counter"],
         "total": scored["total"], "attractiveness": scored["attractiveness"],
         "attractiveness_by_points": scored["attractiveness_by_points"],
+        "conservative_attractiveness": scored["conservative_attractiveness"],
+        "conservative_verdict": scored["conservative_attractiveness"],
+        "weighted_total": scored["weighted_total"], "low": scored["low"], "high": scored["high"],
+        "segments": scored["segments"],
         "unknown_count": scored["unknown_count"], "downgraded": scored["downgraded"],
         "swot_threats": scored["swot_threats"], "changes": parsed["changes"], "gaps": parsed["gaps"],
         "inputs": sorted({company.rel(f.path) for f in found.values() if f.path is not None}),
@@ -241,7 +251,7 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     if not target:
         return emit({"ok": False, "error": "five-forces.md が無い（先に prepare）"})
     date, md_path = target
-    text = md_path.read_text(encoding="utf-8")
+    text = EV.strip(md_path.read_text(encoding="utf-8"))  # 出典の連鎖 is the build's own chapter, not the template's
     issues = D.validate(text, _template(root))
     if issues:
         return emit({"ok": False, "md": company.rel(md_path), "issues": issues})
@@ -253,8 +263,9 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     if issues:
         return emit({"ok": False, "md": company.rel(md_path), "issues": issues})
     scored = D.score(parsed)
-    atomic_write_text(md_path, D.apply_scores(text, scored))
-    result = result_json(company, date, text, parsed, scored)
+    chain = EV.claims_evidence(company.path, D.claims(parsed))
+    atomic_write_text(md_path, EV.apply(D.apply_scores(text, scored), D.EVIDENCE_CHAPTER, chain))
+    result = D.with_evidence(result_json(company, date, text, parsed, scored), chain)
     json_path = company.file(date, P.JSON_SUFFIX)
     atomic_write_text(json_path, json.dumps(result, ensure_ascii=False, indent=1) + "\n")
     pruned = A.prune(company.analysis_dir, P.MD_SUFFIX)  # keep the latest result and the one before it
@@ -269,6 +280,7 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
         "tie_breaks": [f["name"] for f in scored["factors"] if f["tie_break"]],
         "low_confidence": [f["name"] for f in scored["factors"] if f["confidence"] == D.LOW_CONFIDENCE],
         "gaps": [g for g in parsed["gaps"] if not M.is_blank(g) and g != "なし"],
+        "evidence": chain["summary"], "missing_sources": EV.missing(chain),
     })
 
 

@@ -8,6 +8,7 @@ import json
 import re
 from pathlib import Path
 
+import cr_evidence as EVR
 import cr_extras as X
 import cr_factors as F
 import cr_judge as J
@@ -16,6 +17,7 @@ import cr_plain as P
 import cr_positioning as POS
 import cr_moves as MV
 import cr_phase as PH
+import cr_projection as PJ
 import cr_scenarios as SC
 import cr_winds as WI
 import news_table as NT
@@ -47,8 +49,8 @@ def market_of(company: S.Company) -> str:
 
 def _five_forces(r: dict) -> dict:
     return {"industry": r.get("industry"), "total": r.get("total"),
-            "factors": [{"name": f.get("name"), "rating": f.get("rating"), "reason": f.get("reason")}
-                        for f in r.get("factors") or []]}
+            "factors": [{"name": f.get("name"), "rating": f.get("rating"), "reason": f.get("reason"),
+                         "evidence": EVR.slim(f.get("evidence"))} for f in r.get("factors") or []]}
 
 
 def _three_c(r: dict) -> dict:
@@ -63,17 +65,28 @@ def _three_c(r: dict) -> dict:
             "comparison": [{k: c.get(k) for k in ("name", "self", "year", "sales", "margin", "share", "cagr")}
                            for c in r.get("comparison") or []],
             "strengths": _get(r, "handoff", "strengths"), "weaknesses": _get(r, "handoff", "weaknesses"),
-            "company_conclusion": r.get("company_conclusion")}
+            "company_conclusion": r.get("company_conclusion"),
+            "customer_evidence": EVR.slim(customer.get("evidence")),
+            "competitor_evidence": EVR.slim(_get(r, "competitor", "evidence"))}
 
 
 def _moat(r: dict) -> dict:
+    returns = r.get("returns") or {}
     return {"durability": r.get("durability"), "effective": r.get("effective_moats") or [],
-            "moats": [{"type": m.get("type"), "rating": m.get("rating")} for m in r.get("moats") or []],
-            "risks": r.get("risks") or []}
+            "moats": [{"type": m.get("type"), "group": m.get("group"), "rating": m.get("rating"),
+                       "mechanism": m.get("mechanism"),
+                       "evidence": EVR.slim(m.get("evidence"))}
+                      for m in r.get("moats") or []],
+            "risks": r.get("risks") or [], "trend": r.get("trend"),
+            "axes": {k: (v or {}).get("rating") for k, v in (r.get("axes") or {}).items()},
+            "returns": {"hurdle": returns.get("hurdle"), "rating": returns.get("rating"), "basis": returns.get("basis"),
+                        "rows": [{k: x.get(k) for k in ("year", "roic", "spread", "peer_median")}
+                                 for x in returns.get("rows") or []]}}
 
 
 def _swot(r: dict) -> dict:
-    quadrants = {key: [{"id": i.get("id"), "fact": i.get("fact"), "impact": i.get("impact")} for i in items]
+    quadrants = {key: [{"id": i.get("id"), "fact": i.get("fact"), "impact": i.get("impact"),
+                        "evidence": EVR.slim(i.get("evidence"))} for i in items]
                  for key, items in (r.get("quadrants") or {}).items()}
     return {"sentence": r.get("sentence"), "top_strength": r.get("top_strength"), "top_threat": r.get("top_threat"),
             "quadrants": quadrants}
@@ -85,7 +98,9 @@ def _profitability(r: dict) -> dict:
             "margin": {k: _get(r, "step2", k) for k in ("year", "self", "avg", "diff", "trend")},
             "peer_margins": [{"name": p.get("name"), "margin": p.get("margin")} for p in last.get("peers") or []],
             "source": _get(r, "step3", "source"),
-            "roe_rows": [{"year": x.get("year"), "roe": x.get("roe")} for x in r.get("roe_rows") or []]}
+            "roe_rows": [{"year": x.get("year"), "roe": x.get("roe")} for x in r.get("roe_rows") or []],
+            "dupont": [{k: x.get(k) for k in ("year", "margin", "turnover", "leverage", "roe")}
+                       for x in r.get("dupont") or []]}
 
 
 def _growth(r: dict) -> dict:
@@ -96,7 +111,26 @@ def _growth(r: dict) -> dict:
             "cagr": {k: _get(r, "step1", "cagr", k, "value") for k in ("sales", "operating_income", "eps")},
             "cagr_span": [_get(r, "step1", "cagr", "sales", "first"), _get(r, "step1", "cagr", "sales", "last")],
             "rows": [{k: x.get(k) for k in ("year", "sales", "operating_income", "net_income", "eps")}
-                     for x in r.get("rows") or []]}
+                     for x in r.get("rows") or []],
+            "investment": _investment(r.get("step5") or {})}
+
+
+def _investment(s5: dict) -> dict:
+    """手順5 成長投資 for the report: the verdict, the ratio, the efficiency and the yearly parts."""
+    if not s5:
+        return {}
+    ratio = s5.get("ratio") or {}
+    return {"verdict": s5.get("verdict"), "sentence": s5.get("sentence"),
+            "level": ratio.get("level"), "share": ratio.get("recent"), "earlier": ratio.get("earlier"),
+            "span": ratio.get("span"), "capex_to_dep": ratio.get("capex_to_dep"),
+            "peer_median": ratio.get("peer_median"), "peer_own": ratio.get("peer_own"),
+            "peer_level": ratio.get("peer_level"), "peer_count": ratio.get("peer_count"),
+            "underinvest": ratio.get("underinvest"),
+            "efficiency": (s5.get("efficiency") or {}).get("rating"),
+            "efficiency_basis": (s5.get("efficiency") or {}).get("basis"),
+            "roic": (s5.get("incremental_roic") or {}).get("value"),
+            "rows": [{k: x.get(k) for k in ("year", "capex", "depreciation", "rnd", "working_capital", "acquisition",
+                                            "growth")} for x in s5.get("rows") or []]}
 
 
 def _safety(r: dict) -> dict:
@@ -104,7 +138,8 @@ def _safety(r: dict) -> dict:
     return {"items": [{k: i.get(k) for k in ("name", "value", "peer_avg", "rating", "target")}
                       for i in s1.get("items") or []],
             "net_cash": s1.get("net_cash"), "debt_free": s1.get("debt_free"), "trend": _get(r, "step2", "rating"),
-            "peers": [{"name": p.get("name"), "equity_ratio": p.get("equity_ratio")} for p in s1.get("peers") or []]}
+            "peers": [{"name": p.get("name"), "equity_ratio": p.get("equity_ratio")} for p in s1.get("peers") or []],
+            "rows": [{k: x.get(k) for k in ("year", "equity_ratio", "net_cash", "debt")} for x in r.get("rows") or []]}
 
 
 def _cash_flow(r: dict) -> dict:
@@ -126,6 +161,9 @@ def _valuation(r: dict) -> dict:
             "pbr": _get(r, "pbr", "pbr"), "per_range": {k: axis.get(k) for k in ("low", "high", "position")},
             "cheap_reason": _get(r, "handoff", "cheap_reason"), "final_check": _get(r, "step3", "final_check"),
             "average": _get(r, "step3", "average"), "scored": len(_get(r, "step3", "scores") or {}) or None,
+            "scores": _get(r, "step3", "scores"),
+            "peg_standard": _get(r, "peg", "peg", "standard"),
+            "peg_cases": _get(r, "peg", "cases"), "pbr_fair": _get(r, "pbr", "fair"),
             "raw_verdict": _get(r, "step3", "raw_verdict"),
             "ev_ebitda": _get(r, "ev", "value"), "eps_used": _get(r, "per", "eps", "eps_used"),
             "peers": [{k: p.get(k) for k in ("name", "per_actual", "per_forecast", "pbr", "ev_ebitda_calc", "cagr", "roe")}
@@ -135,6 +173,20 @@ def _valuation(r: dict) -> dict:
 DETAILS = {"five_forces": _five_forces, "three_c": _three_c, "moat": _moat, "swot": _swot,
            "profitability": _profitability, "growth": _growth, "safety": _safety, "cash_flow": _cash_flow,
            "valuation": _valuation}
+
+
+def _ratings(r: dict, *paths: tuple[str, str]) -> list:
+    return [_get(r, *path) for path in paths]
+
+
+SUBS = {  # the STEP 2 analyses' step ratings, which move a verdict half a step (cr_factors.half_step)
+    "profitability": lambda r: _ratings(r, ("step1", "rating"), ("step2", "rating"), ("step3", "source")),
+    "growth": lambda r: _ratings(r, ("step1", "rating"), ("step3", "rating"), ("step4", "quality"),
+                                 ("step5", "verdict")),
+    "safety": lambda r: [i.get("rating") for i in _get(r, "step1", "items") or []]
+    + _ratings(r, ("step2", "rating"), ("step3", "rating")),
+    "cash_flow": lambda r: _ratings(r, *((k, "rating") for k in ("step1", "step2", "step3", "step4", "step5"))),
+}
 
 
 def analysis(step: S.Step, company: S.Company) -> dict:
@@ -149,7 +201,11 @@ def analysis(step: S.Step, company: S.Company) -> dict:
     words = P.plain_tree({"reason": r.get("verdict_reason") or "", "points": _get(r, "handoff", "report_points") or "",
                           "gaps": gaps, "conservative": r.get("conservative") or [],
                           "detail": DETAILS[step.key](r)}, step.key)
-    return {**base, "date": date, "verdict": r.get(step.verdict_key), "md": r.get("md"), **words}
+    subs = SUBS[step.key](r) if step.key in SUBS else []
+    quality = r.get("confidence") if isinstance(r.get("confidence"), dict) else {}
+    return {**base, "date": date, "verdict": r.get(step.verdict_key), "md": r.get("md"), "subs": subs,
+            "confidence": quality.get("level"), "confidence_why": quality.get("why"),
+            "counter": P.plain(r.get("counter") or ""), **words}
 
 
 # ---------------------------------------------------------------- outlook / review
@@ -183,20 +239,23 @@ def judgements(found: dict[str, dict], prices: dict, outlook: dict) -> dict:
     margin_diff = _get(found["profitability"], "detail", "margin", "diff")
     s1 = J.step1(v["five_forces"], v["three_c"], v["moat"], v["swot"])
     mismatch = J.mismatches(v["moat"], v["three_c"], v["profitability"], margin_diff)
-    flags = J.red_flags(_get(found["cash_flow"], "detail", "steps") or [], v["safety"],
-                        _get(found["safety"], "detail", "trend"))
+    cf_steps = _get(found["cash_flow"], "detail", "steps") or []
+    burn = J.cash_burn(_get(found["cash_flow"], "detail", "rows") or [], cf_steps) if v["cash_flow"] else []
+    flags = J.red_flags(cf_steps, v["safety"], _get(found["safety"], "detail", "trend"), burn)
+    cautions = [b for b in burn if b not in flags]
     s2 = J.step2({"収益性": v["profitability"], "成長性": v["growth"], "安全性": v["safety"],
                   "キャッシュフロー": v["cash_flow"]}, mismatch, flags)
     s3 = F.step3_verdict(found["valuation"])
-    factors = F.build(found, prices, outlook)
-    horizons = {h: {**J.horizon_score(h, factors[h], flags, s1["grade"]),
+    factors = F.build(found, prices, outlook, burn)
+    horizons = {h: {**J.horizon_score(h, factors[h], flags, s1["grade"], cautions),
                     "sensitivity": J.sensitivity(h, factors[h], flags, s1["grade"])} for h in factors}
     final_check = _get(found["valuation"], "detail", "final_check") or {}
     note = "割安だが理由あり（" + "・".join(final_check.get("concerns") or []) + "）" \
         if s3 == "割安" and final_check.get("concerns") else ""
-    return {"step1": s1, "step2": {**s2, "mismatch": mismatch, "flags": flags},
+    matrix = J.matrix_reference(s1, s2, s3)
+    return {"step1": s1, "step2": {**s2, "mismatch": mismatch, "flags": flags, "cautions": cautions},
             "step3": {"verdict": s3, "note": note}, "horizons": horizons,
-            "matrix": J.matrix_reference(s1, s2, s3)}
+            "matrix": {**matrix, "disagree": J.matrix_note(matrix, horizons["long"])}}
 
 
 def gaps(found: dict[str, dict]) -> list[dict]:
@@ -243,7 +302,8 @@ def build(root: Path, company: S.Company, today: str, status: dict) -> dict:
                          _get(found["valuation"], "detail", "flip_values") or {}, context)
     profile = _profile(company)
     winds = WI.evaluate(root, profile, status["outlook"], _get(found["five_forces"], "detail", "industry") or "")
-    return {**facts, "legends": L.evaluate(facts), "scenarios": scenarios, "winds": winds,
+    return {**facts, "legends": L.evaluate(facts), "scenarios": scenarios, "projection": PJ.build(facts),
+            "winds": winds,
             "moves": moves(root, company, profile, market, prices, winds), "phase": PH.evaluate(phase_context(facts)),
             "governance": governance(company), "management": management(company)}
 

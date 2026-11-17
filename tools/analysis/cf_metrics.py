@@ -264,9 +264,9 @@ def step3(rows: list[dict], series: dict) -> dict:
     cumulative = sum(r["cfo"] for r in window) / total_ni
     if all(r["net_income"] > 0 for r in window):
         average = sum(r["ratio"] for r in window) / len(window)
-        # both kept; the lower one judges (a tiny net income in one year would lift the plain average)
-        ratio, method = ((average, f"{WINDOW}年平均。累計 {cumulative:.2f}倍より低い方") if average <= cumulative
-                         else (cumulative, f"{WINDOW}年累計。平均 {average:.2f}倍より低い方"))
+        # the cumulative ratio judges: it is the cash actually earned against the profit over the window, and a
+        # tiny net income in one year cannot lift it the way it lifts the plain average (kept for reference)
+        ratio, method = cumulative, f"{WINDOW}年累計（平均 {average:.2f}倍は参考）"
     else:
         average = None
         ratio, method = cumulative, f"{WINDOW}年累計（純損失の年を含むため）"
@@ -417,8 +417,8 @@ def judge(s1: dict, s2: dict, s3: dict, s4: dict, s5: dict) -> tuple[str, str]:
     if s1["rating"] is None:
         return "判定保留", f"手順1を判定できない（{s1['basis']}）"
     missing = unjudged_steps(s1, s2, s3, s4)
-    if missing:  # a step that cannot be judged is read as 懸念 (never as the favourable side)
-        return "懸念", f"{'・'.join(missing)}を判定できず懸念とみなした（材料不足のため保守的に判定）"
+    if missing:  # a step that cannot be judged caps the verdict at 普通 (missing material is not a concern)
+        return "普通", f"{'・'.join(missing)}を判定できず、良好にはしない（材料不足）"
     if all(s["rating"] == "良好" for _, s in steps) and s5["rating"] in ("問題なし", "対象外"):
         return "良好", f"手順1〜4がすべて良好で、株主還元は{s5['rating']}"
     reasons = [f"{name}が普通" for name, s in steps if s["rating"] == "普通"]
@@ -555,7 +555,7 @@ def candidates(company) -> dict:
         verdict, why = "判定保留", SR.note(info, "預金・貸出などの資金の出入りが営業CF に入るため、キャッシュフロー分析の対象外")
     return {"series": series, "rows": rows, "step1": s1, "step2": s2, "step3": s3, "step4": s4, "step5": s5,
             "borderline": borderline(s2, s3, s5, rows), "verdict": verdict, "why": why, "offering": offering,
-            "conservative": [f"{name}を判定できず → 懸念とみなした" for name in unjudged_steps(s1, s2, s3, s4)]}
+            "conservative": [f"{name}を判定できず → 良好にはしない（普通が上限）" for name in unjudged_steps(s1, s2, s3, s4)]}
 
 
 def collect_requests(company, found: dict, cands: dict) -> list[dict]:

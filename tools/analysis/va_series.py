@@ -558,4 +558,5 @@ def base(company, found: dict[str, Found]) -> dict:
             "history": merged_history(price_history(company, years), history_data(found["history"])),
             "analyst": analyst_growth(found["analyst"]),
             "years": years, "latest_year": latest, "forecast_eps": forecast_eps(company, per_share, latest),
-            "market_cap": market_cap(price, years["unit"]), "peers": peers(company, found)}
+            "market_cap": market_cap(price, years["unit"]), "peers": peers(company, found),
+            "market": "japan" if SS.JAPAN_TICKER.match(company.ticker.upper()) else "us"}

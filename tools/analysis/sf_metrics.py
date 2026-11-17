@@ -336,7 +336,8 @@ def unknown_parts(s1: dict, s2: dict, s3: dict) -> list[str]:
 
 def judge(s1: dict, s2: dict, s3: dict) -> tuple[str, str]:
     """(良好/普通/懸念/判定保留, why). Every value an unknown could take is tried; when the outcomes differ the
-    worst one is taken (policy.md 行動指針6). 判定保留 only when none of the three indicators is known."""
+    unknowns decide, so the verdict is 普通 (not 良好 unverified, not 懸念 without evidence). 判定保留 only when
+    none of the three indicators is known."""
     ratings = {i["key"]: i["rating"] for i in s1["items"]}
     unknown = [NAMES[k] for k, r in ratings.items() if r == UNKNOWN]
     if ratings and len(unknown) == len(ratings):
@@ -347,10 +348,11 @@ def judge(s1: dict, s2: dict, s3: dict) -> tuple[str, str]:
                 for combo in itertools.product(*choices)
                 for trend in _options(s2["rating"], UNKNOWN, (STABLE, WORSE))
                 for purpose in _options(s3["rating"], UNKNOWN, (OK_PURPOSE, BAD_PURPOSE))}
-    verdict = next(v for v in WORST_FIRST if v in outcomes)
     if len(outcomes) > 1:
-        return verdict, (f"{'・'.join(unknown_parts(s1, s2, s3))}が不明で結論が分かれるため、最も悪い「{verdict}」を採った"
-                         "（材料不足のため保守的に判定）")
+        split = "か".join(v for v in WORST_FIRST if v in outcomes)
+        return "普通", (f"{'・'.join(unknown_parts(s1, s2, s3))}が不明で結論が{split}に分かれるため、普通とした"
+                      "（材料不足。確かめられないので良好にはせず、根拠が無いので懸念にもしない）")
+    verdict = next(iter(outcomes))
     return verdict, _why(verdict, s1, s2, s3, unknown)
 
 
@@ -455,8 +457,8 @@ def candidates(company, found: dict) -> dict:
     verdict, why = thin_equity(s1, *judge(s1, s2, s3))
     return {"series": series, "rows": rows, "peer_names": [p["name"] for p in peers],
             "step1": s1, "step2": s2, "step3": s3, "borderline": borderline(s1, s2), "verdict": verdict,
-            "why": why, "conservative": ([f"{p}が不明 → 結論が分かれ、最も悪い方を採った" for p in unknown_parts(s1, s2, s3)]
-                                         if "保守的" in why else [])}
+            "why": why, "conservative": ([f"{p}が不明 → 結論が分かれ、普通とした" for p in unknown_parts(s1, s2, s3)]
+                                         if "に分かれるため" in why else [])}
 
 
 def collect_requests(company, found: dict, cands: dict) -> list[dict]:

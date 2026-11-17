@@ -91,5 +91,6 @@ def test_replay_runs_on_a_small_repo(tmp_path: Path):
     (tmp_path / "market" / "data" / "us_series.csv").write_text("series_id,date,value,retrieved\n" + "\n".join(rows)
                                                                 + "\n", encoding="utf-8")
     weeks = BT.replay(Paths(tmp_path), 1, "2026-02-01")
-    assert weeks and all(w["us"]["labels"]["attention"] in ("平常", "注意", "警戒") for w in weeks)
+    # only the S&P 500 is in this repo: most axes lack material, so a week may be 判定保留 rather than 平常
+    assert weeks and all(w["us"]["labels"]["attention"] in ("平常", "注意", "警戒", "判定保留") for w in weeks)
     assert weeks[0]["us"]["after"]["vol"] is not None

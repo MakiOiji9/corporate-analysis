@@ -8,7 +8,7 @@ Usage:
 
 --company takes '3798', '3798_uls-group' or part of the directory name.
 list:    companies under companies/ with the state of their moat and 3C results (for choosing one).
-check:   is the latest moat result still valid (180 days, no newer yuho / financials-historical /
+check:   is the latest moat result still valid (365 days, no newer yuho / financials-historical /
          business-overview / industry / competitors raw, no newer 3C result)? Is the 3C result usable (STEP 1-2
          comes first; its verdict does not stop the analysis)? Which required inputs are missing? -> "next".
 prepare: analysis/moat/{date}_brief.md (what the writer reads) and the {date}_moat.md skeleton
@@ -32,7 +32,9 @@ sys.path[:0] = [str(HERE), str(TOOLS / "report"), str(TOOLS / "collect" / "marke
 
 import an_brief as AB  # noqa: E402
 import an_common as A  # noqa: E402
+import an_evidence as EV  # noqa: E402
 import an_fill as F  # noqa: E402
+import an_quality as Q  # noqa: E402
 import ff_paths as FP  # noqa: E402
 import mdparse as M  # noqa: E402
 import mt_brief as B  # noqa: E402
@@ -81,6 +83,9 @@ def evaluate(company: P.Company, today: str) -> dict:
                            "json": company.rel(company.file(date, P.JSON_SUFFIX)),
                            "verdict": result.get("verdict"), "valid_until": P.valid_until(date)}
         state["newer_raw"] = T.triggers(company, date, "annual", [("3C", TP)])
+        old_rules = Q.outdated(result, D.VERSION)
+        if old_rules:
+            state["newer_raw"] = state["newer_raw"] + [old_rules]
     if draft and (not latest or draft[0] >= latest[0]):
         state.update(result="draft", reason=f"作成途中の {company.rel(draft[1])} がある（続きから書く）")
     elif not latest:
@@ -280,12 +285,15 @@ def _header_path(text: str, pattern: re.Pattern) -> str | None:
     return None if M.is_blank(path) else path
 
 
-def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: dict, judged: dict) -> dict:
+def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: dict, judged: dict,
+                chain: dict) -> dict:
     found = I.gather_moat(company)
     previous = P.latest_result(company, before=date)
     three_c = TP.latest_result(_tc_company(company))
     effective = set(judged["effective"])
-    moats = [dict(m, effective=m["type"] in effective) for m in parsed["moats"]]
+    by_claim = {c["claim"]: c["evidence"] for c in chain["claims"]}
+    moats = [dict(m, effective=m["type"] in effective, evidence=by_claim.get(f"4. {m['type']}", []))
+             for m in parsed["moats"]]
     ret, pr = cands["returns"], cands["pricing"]
     return {
         "version": D.VERSION, "company": company.dirname, "name": company.display_name(), "date": date,
@@ -303,10 +311,12 @@ def result_json(company: P.Company, date: str, text: str, parsed: dict, cands: d
         "durability": parsed["durability"], "backing": judged["backing"], "backing_reason": judged["backing_why"],
         "effective_moats": judged["effective"], "corrected": judged["corrected"], "near_risks": judged["near_risks"],
         "verdict": judged["verdict"], "verdict_reason": judged["why"], "conservative": judged["conservative"],
+        "conservative_verdict": judged["verdict"],  # the moat rules read no unknown on the unfavourable side
+        "confidence": D.quality(parsed), "counter": parsed["counter"],
         "triggers": parsed["triggers"],
         "handoff": {"strengths": parsed["strengths"], "threats": parsed["threats"],
                     "step2_checks": parsed["step2_checks"]},
-        "changes": parsed["changes"], "gaps": parsed["gaps"],
+        "changes": parsed["changes"], "gaps": parsed["gaps"], "evidence": chain,
         "inputs": sorted({company.rel(f.path) for f in found.values() if f.path is not None}),
         "seen": I.raw_seen(company),
         "input_digests": {**I.input_digests(found), MARGIN_KEY: X.margin_digest(cands)},
@@ -328,7 +338,8 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     found = I.gather_moat(company)
     previous = P.latest_result(company, before=date)
     warnings = X.warnings(X.candidates(company, found))
-    text = F.fill_at_build(md_path.read_text(encoding="utf-8"), D.BUILD_KEYS,
+    # the 出典の連鎖 chapter is the build's own: it is not in the template, so it is taken off before the checks
+    text = F.fill_at_build(EV.strip(md_path.read_text(encoding="utf-8")), D.BUILD_KEYS,
                            lambda t: D.build_fills(t, found, previous, warnings))
     issues = D.validate(text, _template(root))
     if issues:
@@ -340,8 +351,10 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     # the ROIC gate is recomputed so edited cells in the md can't bypass the rules
     cands = X.candidates(company, I.gather_moat(company))
     judged = D.judge(parsed, cands["returns"])
-    atomic_write_text(md_path, D.apply_conclusion(text, judged, cands["returns"], parsed["share"]["trend"]))
-    result = result_json(company, date, text, parsed, cands, judged)
+    chain = EV.claims_evidence(company.path, D.claims(parsed))
+    concluded = D.apply_conclusion(text, judged, cands["returns"], parsed["share"]["trend"])
+    atomic_write_text(md_path, EV.apply(concluded, D.EVIDENCE_CHAPTER, chain))
+    result = result_json(company, date, text, parsed, cands, judged, chain)
     json_path = company.file(date, P.JSON_SUFFIX)
     atomic_write_text(json_path, json.dumps(result, ensure_ascii=False, indent=1) + "\n")
     pruned = A.prune(company.analysis_dir, P.MD_SUFFIX)  # keep the latest result and the one before it
@@ -356,6 +369,7 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
         "near_risks": judged["near_risks"], "durability": parsed["durability"],
         "valid_until": result["valid_until"], "previous": result["previous"], "three_c": result["three_c"],
         **D.flags(parsed), "gaps": [g for g in parsed["gaps"] if not M.is_blank(g) and g != "なし"],
+        "evidence": chain["summary"], "missing_sources": EV.missing(chain),
     })
 
 

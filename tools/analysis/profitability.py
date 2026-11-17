@@ -8,7 +8,7 @@ Usage:
 
 --company takes '3798', '3798_uls-group' or part of the directory name.
 list:    companies under companies/ with the state of their profitability result (for choosing one).
-check:   is the latest result still valid (180 days, the sections and the yearly numbers it used unchanged, no
+check:   is the latest result still valid (200 days, the sections and the yearly numbers it used unchanged, no
          newer moat / 3C result)? Which required inputs are missing (the own series needs 5 years; the peers need
          competitors.md「収益性の分解」)? -> "next". STEP 1 is not required: moat / three-c results are only used
          for the consistency check when they exist.
