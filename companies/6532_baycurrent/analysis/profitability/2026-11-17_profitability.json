@@ -1,0 +1,389 @@
+{
+ "company": "6532_baycurrent",
+ "name": "ベイカレント・コンサルティング（6532）",
+ "date": "2026-11-17",
+ "valid_until": "2027-06-05",
+ "verdict": "良好",
+ "verdict_reason": "手順1が良好、営業利益率が同業平均以上、ROE の源泉が本業由来",
+ "conservative": [],
+ "step1": {
+  "rating": "良好",
+  "basis": "平均 10% 以上かつ最低 5% 以上、赤字の年なし",
+  "sentence": "ROE は平均39.6%、最低35.8%（2026-02）で良好。直近3年は低下傾向（38.6% → 36.5% → 35.8%）",
+  "years": 6,
+  "first": "2021-02",
+  "last": "2026-02",
+  "average": 39.6,
+  "minimum": 35.8,
+  "minimum_year": "2026-02",
+  "losses": [],
+  "direction": "低下"
+ },
+ "step2": {
+  "rating": "上回る",
+  "basis": "2024-02〜2026-02 の3年の差の平均 +13.9pt（±1pt 以内は同等。直近 +8.8pt）。同業が1社で3社に満たず、参考の比較",
+  "sentence": "営業利益率は34.3%（2026-02）で同業中央値25.5%との差 +8.8pt。2024-02〜2026-02 の3年の差の平均 +13.9pt で上回る。4年の推移は悪化。同業が1社で3社に満たず、参考の比較",
+  "year": "2026-02",
+  "self": 34.3,
+  "avg": 25.5,
+  "diff": 8.8,
+  "trend": "悪化",
+  "rows": [
+   {
+    "year": "2023-02",
+    "self": 39.3,
+    "avg": 18.7,
+    "mean": 18.7,
+    "diff": 20.6,
+    "peers": [
+     {
+      "name": "シグマクシス・ホールディングス（6088、3月期）",
+      "year": "2023-03",
+      "margin": 18.7
+     }
+    ]
+   },
+   {
+    "year": "2024-02",
+    "self": 36.4,
+    "avg": 18.9,
+    "mean": 18.9,
+    "diff": 17.5,
+    "peers": [
+     {
+      "name": "シグマクシス・ホールディングス（6088、3月期）",
+      "year": "2024-03",
+      "margin": 18.9
+     }
+    ]
+   },
+   {
+    "year": "2025-02",
+    "self": 36.7,
+    "avg": 21.4,
+    "mean": 21.4,
+    "diff": 15.3,
+    "peers": [
+     {
+      "name": "シグマクシス・ホールディングス（6088、3月期）",
+      "year": "2025-03",
+      "margin": 21.4
+     }
+    ]
+   },
+   {
+    "year": "2026-02",
+    "self": 34.3,
+    "avg": 25.5,
+    "mean": 25.5,
+    "diff": 8.8,
+    "peers": [
+     {
+      "name": "シグマクシス・ホールディングス（6088、3月期）",
+      "year": "2026-03",
+      "margin": 25.5
+     }
+    ]
+   }
+  ],
+  "sources": [
+   "data/*.csv",
+   "competitors.md の自社欄"
+  ]
+ },
+ "step3": {
+  "source": "本業由来",
+  "drivers": [
+   "売上高純利益率"
+  ],
+  "basis": "売上高純利益率が同業平均を上回る（売上高純利益率 27.0% と同業平均 15.1%（+11.8pt、±1pt 以内は同等）、総資産回転率 1.07回 と同業平均 1.31回（比 0.82、±5% 以内は同等）、財務レバレッジ 1.34倍 と同業平均 1.34倍（比 1.00、±5% 以内は同等））",
+  "sentence": "ROE の源泉は売上高純利益率（本業の強さ）",
+  "latest_leverage": 1.3347872571931385,
+  "years": [
+   "2023-02",
+   "2024-02",
+   "2025-02",
+   "2026-02"
+  ],
+  "self": {
+   "margin": 26.95948233733361,
+   "turnover": 1.0745590129580929,
+   "leverage": 1.3367041187780229,
+   "roe": 38.794237542557745
+  },
+  "peers": [
+   {
+    "name": "シグマクシス HD",
+    "years": [
+     "2023-03",
+     "2024-03",
+     "2025-03",
+     "2026-03"
+    ],
+    "primary": false,
+    "margin": 15.127647896831679,
+    "turnover": 1.3111249812706185,
+    "leverage": 1.3412615919749116,
+    "roe": 26.736379253637786
+   }
+  ],
+  "peer_avg": {
+   "margin": 15.127647896831679,
+   "turnover": 1.3111249812706185,
+   "leverage": 1.3412615919749116,
+   "roe": 26.736379253637786
+  }
+ },
+ "roe_rows": [
+  {
+   "year": "2021-02",
+   "roe": 38.9,
+   "basis": "開示（一次）",
+   "reported": 38.9,
+   "reported_primary": true,
+   "computed": 33.3,
+   "net_income": 10014.0,
+   "avg_equity": 30040.0,
+   "averaged": false,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2022-02",
+   "roe": 43.3,
+   "basis": "開示（一次）",
+   "reported": 43.3,
+   "reported_primary": true,
+   "computed": 43.3,
+   "net_income": 15544.0,
+   "avg_equity": 35862.0,
+   "averaged": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2023-02",
+   "roe": 44.2,
+   "basis": "開示（一次）",
+   "reported": 44.2,
+   "reported_primary": true,
+   "computed": 44.2,
+   "net_income": 21910.0,
+   "avg_equity": 49518.0,
+   "averaged": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2024-02",
+   "roe": 38.6,
+   "basis": "開示（一次）",
+   "reported": 38.6,
+   "reported_primary": true,
+   "computed": 38.6,
+   "net_income": 25382.0,
+   "avg_equity": 65732.5,
+   "averaged": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2025-02",
+   "roe": 36.5,
+   "basis": "開示（一次）",
+   "reported": 36.5,
+   "reported_primary": true,
+   "computed": 36.5,
+   "net_income": 30760.0,
+   "avg_equity": 84242.0,
+   "averaged": true,
+   "source": "data/financials.csv（EDINET）"
+  },
+  {
+   "year": "2026-02",
+   "roe": 35.8,
+   "basis": "開示（一次）",
+   "reported": 35.8,
+   "reported_primary": true,
+   "computed": 35.8,
+   "net_income": 37840.0,
+   "avg_equity": 105691.0,
+   "averaged": true,
+   "source": "data/financials.csv（EDINET）"
+  }
+ ],
+ "dupont": [
+  {
+   "year": "2021-02",
+   "sales": 42873.0,
+   "net_income": 10014.0,
+   "avg_assets": 46003.0,
+   "avg_equity": 30040.0,
+   "margin": 23.3574,
+   "turnover": 0.932,
+   "leverage": 1.5314,
+   "roe": 33.3356,
+   "averaged": false,
+   "primary": true
+  },
+  {
+   "year": "2022-02",
+   "sales": 57642.0,
+   "net_income": 15544.0,
+   "avg_assets": 52069.5,
+   "avg_equity": 35862.0,
+   "margin": 26.9664,
+   "turnover": 1.107,
+   "leverage": 1.4519,
+   "roe": 43.3439,
+   "averaged": true,
+   "primary": true
+  },
+  {
+   "year": "2023-02",
+   "sales": 76090.0,
+   "net_income": 21910.0,
+   "avg_assets": 66700.5,
+   "avg_equity": 49518.0,
+   "margin": 28.7948,
+   "turnover": 1.1408,
+   "leverage": 1.347,
+   "roe": 44.2465,
+   "averaged": true,
+   "primary": true
+  },
+  {
+   "year": "2024-02",
+   "sales": 93909.0,
+   "net_income": 25382.0,
+   "avg_assets": 87574.0,
+   "avg_equity": 65732.5,
+   "margin": 27.0283,
+   "turnover": 1.0723,
+   "leverage": 1.3323,
+   "roe": 38.6141,
+   "averaged": true,
+   "primary": true
+  },
+  {
+   "year": "2025-02",
+   "sales": 116056.0,
+   "net_income": 30760.0,
+   "avg_assets": 112274.0,
+   "avg_equity": 84242.0,
+   "margin": 26.5044,
+   "turnover": 1.0337,
+   "leverage": 1.3328,
+   "roe": 36.5139,
+   "averaged": true,
+   "primary": true
+  },
+  {
+   "year": "2026-02",
+   "sales": 148332.0,
+   "net_income": 37840.0,
+   "avg_assets": 141075.0,
+   "avg_equity": 105691.0,
+   "margin": 25.5103,
+   "turnover": 1.0514,
+   "leverage": 1.3348,
+   "roe": 35.8025,
+   "averaged": true,
+   "primary": true
+  }
+ ],
+ "change_years": [
+  {
+   "year": "2022-02",
+   "from": 33.3,
+   "to": 43.3,
+   "main": "総資産回転率",
+   "moves": "売上高純利益率 23.4%→27.0%、総資産回転率 0.93回→1.11回、財務レバレッジ 1.53倍→1.45倍",
+   "background": "IFRS のため特別損益区分なし（raw/filings/2026-11-12_2026-02_yuho.md）。総資産回転率が0.93→1.11回に上昇した詳細要因は不明（brief に記載なし）"
+  },
+  {
+   "year": "2024-02",
+   "from": 44.2,
+   "to": 38.6,
+   "main": "売上高純利益率",
+   "moves": "売上高純利益率 28.8%→27.0%、総資産回転率 1.14回→1.07回、財務レバレッジ 1.35倍→1.33倍、営業利益率 39.3%→36.4%",
+   "background": "IFRS のため特別損益区分なし（raw/filings/2026-11-12_2026-02_yuho.md）。営業利益率が39.3%→36.4%（−2.9pt）と下落し純利益率低下を主導したが、詳細要因は不明（brief に記載なし）"
+  },
+  {
+   "year": "2025-02",
+   "from": 38.6,
+   "to": 36.5,
+   "main": "総資産回転率",
+   "moves": "売上高純利益率 27.0%→26.5%、総資産回転率 1.07回→1.03回、財務レバレッジ 1.33倍→1.33倍、営業利益率 36.4%→36.7%",
+   "background": "IFRS のため特別損益区分なし（raw/filings/2026-11-12_2026-02_yuho.md）。総資産回転率が1.07→1.03回に低下した詳細要因は不明（brief に記載なし）"
+  }
+ ],
+ "one_off": [],
+ "one_off_step1": null,
+ "one_off_assessment": "特別損益は各年とも当期純利益の10%未満で、ROE の水準を左右していない",
+ "peer_gap": "売上高純利益率がシグマクシスHDと最も差があり（27.0% vs 15.1%、+11.8pt）、コンサルティング事業単一で設備投資不要・仕入ゼロの原価構造により営業利益率が34.3%と高水準を維持していることが主因（raw/market/2026-11-13_competitors.md）。一方、総資産回転率（1.07回 vs 1.31回、比0.82）が低いのは、現金72,308百万円の大規模保有で総資産が膨らんでいるため（raw/filings/2026-11-12_2026-02_yuho.md）",
+ "borderline": [
+  "手順3: 財務レバレッジ 1.34倍 と同業平均 1.34倍（比 1.00、±5% 以内は同等）"
+ ],
+ "consistency": [
+  {
+   "check": "モートが広い ⇔ 高い利益率",
+   "step1": "モート なし",
+   "step2": "営業利益率 上回る",
+   "result": "対象外（モート なし）"
+  },
+  {
+   "check": "勝てる理由が明確 ⇔ 収益性",
+   "step1": "勝てる理由 あいまい",
+   "step2": "ROE 38.8%（同業平均 26.7%）、営業利益率 上回る",
+   "result": "対象外（勝てる理由 あいまい）"
+  }
+ ],
+ "consistency_comment": "該当する STEP 1 の結論なし",
+ "handoff": {
+  "report_points": "収益性は良好（手順1が良好、営業利益率が同業平均以上、ROE の源泉が本業由来）。ROE は平均39.6%、最低35.8%（2026-02）で良好。直近3年は低下傾向（38.6% → 36.5% → 35.8%）。営業利益率は34.3%（2026-02）で同業中央値25.5%との差 +8.8pt。2024-02〜2026-02 の3年の差の平均 +13.9pt で上回る。4年の推移は悪化。同業が1社で3社に満たず、参考の比較。ROE の源泉は本業由来（売上高純利益率が同業平均を上回る（売上高純利益率 27.0% と同業平均 15.1%（+11.8pt、±1pt 以内は同等）、総資産回転率 1.07回 と同業平均 1.31回（比 0.82、±5% 以内は同等）、財務レバレッジ 1.34倍 と同業平均 1.34倍（比 1.00、±5% 以内は同等）））。",
+  "targets": "2035年ロードマップでROE 80%以上を目標とするが（持続的企業価値向上資料 p.7、一次）、直近実績は35.8%（2026-02）で目標を大幅に下回る。配当性向40%目安・自社株買い継続の資本政策（raw/ir/2026-11-12_mid-term-plan.md）で自己資本の増加を抑制しながら、EBITDAマージン40〜45%（FY2030〜FY2035目標）の達成によるROEの引き上げを目指す構造",
+  "step2_checks": "財務レバレッジの低さが手元資金・自己資本の厚さによるものか（安全性）、利益率の水準が売上の成長を伴っているか（成長性）、純利益が営業CF で裏付けられているか（キャッシュフロー）",
+  "triggers": "平均 ROE が 10% を下回るか最低 ROE が 5% を下回れば手順1は普通、平均が 8% を下回るか赤字の年が出れば懸念。営業利益率が同業平均を 1pt 超下回れば手順2は下回る（収益性は普通以下）。境界に近い比較: 手順3: 財務レバレッジ 1.34倍 と同業平均 1.34倍（比 1.00、±5% 以内は同等）。"
+ },
+ "changes": [
+  "初回の分析"
+ ],
+ "gaps": [
+  "なし"
+ ],
+ "inputs": [
+  "companies/6532_baycurrent/raw/filings/2026-11-12_2026-02_yuho.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-12_financials-historical.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-12_mid-term-plan.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-13_financials-historical.md",
+  "companies/6532_baycurrent/raw/market/2026-11-13_competitors.md"
+ ],
+ "seen": [
+  "companies/6532_baycurrent/raw/filings/2026-11-12_2026-02_yuho.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-12_financials-historical.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-12_mid-term-plan.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-13_financials-historical.md",
+  "companies/6532_baycurrent/raw/market/2026-11-13_competitors.md"
+ ],
+ "input_digests": {
+  "self_pl": "d914e5d379d3e700d2031c166f7af297f977c394",
+  "self_return": "0cb4fca7c77ed49fa7a3e027a91b5ad3efe391b1",
+  "summary": "5e87ef374e84a3832ae8fec7c240f7dc8eba1fdc",
+  "special": "769b6435da5573a9c4b8e8a475bbac91d262c3f7",
+  "policy": "5edde25638f81b3eb3169e53fdfd7e6119978421",
+  "targets": "32ea5e73a43a1ddebeae7fe95cc2f0368f0541fc",
+  "capital": "6a3558db9f2066f22c2b44a48bbf2bc631b7b41c",
+  "peers": "d10829fd170b9bb13a159e72ce9340a16931e45a",
+  "peer_roe": "702203ea4f8fc678f5c3b094bbf1f66788222b53",
+  "peer_dupont": "ebecfa33e6a931572282198f0cf744f3596dabb3",
+  "yearly_series": "ef309b7b540ca1f244ac4a74fad39236e5551335"
+ },
+ "moat": {
+  "date": "2026-11-17",
+  "verdict": "なし"
+ },
+ "three_c": {
+  "date": "2026-11-17",
+  "verdict": "あいまい"
+ },
+ "outlook": "market/report/2026-11-16_outlook.md",
+ "previous": null,
+ "md": "companies/6532_baycurrent/analysis/profitability/2026-11-17_profitability.md"
+}
