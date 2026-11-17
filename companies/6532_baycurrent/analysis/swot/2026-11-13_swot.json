@@ -1,0 +1,807 @@
+{
+ "version": 2,
+ "company": "6532_baycurrent",
+ "name": "ベイカレント・コンサルティング（6532）",
+ "date": "2026-11-13",
+ "valid_until": "2027-11-13",
+ "confidence": {
+  "primary": 6,
+  "reference": 2,
+  "unknown": 1,
+  "known": 14,
+  "total": 15,
+  "why": "一次資料 6/14・参考 2・不明 1/15",
+  "level": "中"
+ },
+ "counter": "コンサルタント数がFY2025末に5,590名と目標4,000名を超過達成しており（raw/ir/2026-11-12_mid-term-plan.md）、採用難（T2）はこれまで顕在化していない。最大の脅威をT1（生成AI: コンサル業務の60%が自動化可能、raw/market/2026-11-11_industry-overview.md）に切り替えれば、S2は代替を直接打ち消せず判定が「条件付き」から「No」に変わる。",
+ "conservative_verdict": "条件付き",
+ "quadrants": {
+  "S": [
+   {
+    "id": "S1",
+    "origin": "財務 営業利益率",
+    "fact": "FY2026の営業利益率34.3%は同業シグマクシスの25.5%を8.8pt上回り、4期連続で同業中央値を上回る",
+    "basis": "ベイカレント34.3% vs シグマクシス25.5%（FY2026/2026年3月期）",
+    "source": "raw/market/2026-11-13_competitors.md「9. 売上原価率・販管費率（コスト構造の比較）」",
+    "confidence": "二次",
+    "impact": "大",
+    "impact_reason": "利益率優位が全営業利益50,931百万円の維持に寄与。競合比+8.8pt差は売上148,332百万円の8.8%相当で3章の営業利益20%目安10,186百万円を超えており大",
+    "evidence": [
+     {
+      "raw": "2026-11-13_competitors.md",
+      "section": "9",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "id": "S2",
+    "origin": "1-2 KBF 提案品質・実績",
+    "fact": "国内最大規模の案件実績（案件数YoY+20.7%）と16業種・21カテゴリーのCxOリレーションを持つ（会社は「コアクライアントとのリレーション拡大」を成長ドライバーと説明）",
+    "basis": "案件数YoY+20.7%（FY2027 Q2補足説明資料）、AI関連売上比50-60%（FY2026上期補足説明資料）",
+    "source": "raw/ir/2026-11-12_business-overview.md",
+    "confidence": "一次",
+    "impact": "大",
+    "impact_reason": "全事業の売上獲得基盤で、これが失われれば売上CAGR27%が停止し営業利益50,931百万円の全額に影響しうる。3章の営業利益20%目安10,186百万円を大幅に超えており大。ただし競合より優れるかは材料不足（3Cで同等判定）",
+    "evidence": [
+     {
+      "raw": "2026-11-12_business-overview.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "id": "S3",
+    "origin": "財務 財務健全性",
+    "fact": "自己資本比率74.3%・実質無借金（現金72,308百万円、有利子負債262百万円）で金利コスト最小かつ大規模投資余力を持つ",
+    "basis": "自己資本比率74.3%、現金72,308百万円、有利子負債262百万円（FY2026末）",
+    "source": "raw/filings/2026-11-12_2026-02_yuho.md「8. 財務3表」",
+    "confidence": "一次",
+    "impact": "中",
+    "impact_reason": "実質無借金（有利子負債262百万円）で金利費用がほぼゼロ、成長投資を自己資金でまかなうことで営業利益率34.3%の希薄化を防ぐ。外部調達コストが発生するシナリオと比べた営業利益50,931百万円への維持効果は3章の営業利益5%目安2,547百万円を超えると判断し中",
+    "evidence": [
+     {
+      "raw": "2026-11-12_2026-02_yuho.md",
+      "section": "8",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "id": "S4",
+    "origin": "中計 前回計画の達成状況",
+    "fact": "旧中計（FY2022〜FY2026）の5年目標を3年で概ね達成し、現中計（FY2024〜FY2028）も約1年前倒しで進捗（CAGR実績27%、目標20%）",
+    "basis": "売上CAGR実績27%（目標20%）、現中計FY2027中に概ね達成見込み（2026-10-15発表）",
+    "source": "raw/ir/2026-11-12_mid-term-plan.md「5. 前回計画の達成状況」",
+    "confidence": "一次",
+    "impact": "小",
+    "impact_reason": "計画達成力の直接的な財務インパクトは計量困難。将来の成長計画の信頼性に寄与するが現時点の売上・利益への影響は5%未満",
+    "evidence": [
+     {
+      "raw": "2026-11-12_mid-term-plan.md",
+      "section": "5",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   }
+  ],
+  "W": [
+   {
+    "id": "W1",
+    "origin": "1-2 弱み候補 生産性",
+    "fact": "コンサルタント一人当たり売上高がベイカレント2,654万円/人に対しシグマクシス3,813万円/人と低く、事業規模に比べた人材生産性が劣る（案件mix・外注比率の差を含む可能性あり）",
+    "basis": "ベイカレント2,654万円/人（FY2026）、シグマクシス3,813万円/人（2026年3月期）、差+1,159万円/人",
+    "source": "raw/market/2026-11-13_competitors.md「8. 顧客・人員のKPIと第三者評価」",
+    "confidence": "二次",
+    "impact": "中",
+    "impact_reason": "一人当たり売上高差+1,159万円/人 × 5,590名 = 潜在的収益ギャップ64,789百万円。案件mix・外注比率の差を含む可能性があるが、仮にこのギャップが人件費率の差を反映するなら営業利益率（現34.3%）への圧迫を通じ営業利益50,931百万円の5%超（2,547百万円）に影響しうる。迷った: 中と小の境界。5%超の影響可能性から中を採る",
+    "evidence": [
+     {
+      "raw": "2026-11-13_competitors.md",
+      "section": "8",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "id": "W2",
+    "origin": "1-2 弱み候補 顧客基盤の開示不足",
+    "fact": "顧客数・上位顧客比率・継続率・リピート率が全期間非開示で、顧客基盤の強さを数値で確認できない（FY2024-FY2026およびFY2027 Q2すべて非開示）",
+    "basis": "継続率・リピート率: 全期間非開示（確認した資料: 決算短信・補足資料・有報すべて）",
+    "source": "raw/ir/2026-11-12_business-overview.md「7. 継続率・解約率・ストック型売上の比率」",
+    "confidence": "一次",
+    "impact": "不明",
+    "impact_reason": "顧客継続がなければ全売上に影響するが非開示のため実態確認不可。迷った: 不明と小の境界。影響金額が確認できないため不明を採る",
+    "evidence": [
+     {
+      "raw": "2026-11-12_business-overview.md",
+      "section": "7",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "id": "W3",
+    "origin": "リスク のれんの減損",
+    "fact": "2014年MBO由来ののれん19,187百万円が計上されており、将来の収益性低下時に減損損失計上の可能性がある",
+    "basis": "のれん19,187百万円（FY2026末、連結BS）",
+    "source": "raw/filings/2026-11-12_2026-02_yuho.md「4. 事業等のリスク」",
+    "confidence": "一次",
+    "impact": "中",
+    "impact_reason": "のれん全額減損なら19,187百万円の損失。3章の営業利益20%目安10,186百万円を超えて大相当だが現状収益性から減損確率は低いと判断し中を採った。迷った: 大と中の境界",
+    "evidence": [
+     {
+      "raw": "2026-11-12_2026-02_yuho.md",
+      "section": "4",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "id": "W4",
+    "origin": "リスク 人材の採用・確保及び育成",
+    "fact": "採用費が年間45億円規模（報道）に膨らんでおり、人材依存の事業構造で採用費増加が販管費を押し上げている（FY2026販管費率22.3%、FY2025比+5.2pt）",
+    "basis": "採用費年間約45億円（報道）、FY2026販管費33,069百万円（22.3%）、FY2025販管費19,845百万円（17.1%）",
+    "source": "raw/filings/2026-11-12_2026-02_yuho.md「4. 事業等のリスク」",
+    "confidence": "二次",
+    "impact": "中",
+    "impact_reason": "採用費約4,500百万円/年（報道）が営業利益50,931百万円の8.8%相当で3章の営業利益5%目安2,547百万円を超え20%目安10,186百万円未満で中。FY2026販管費増（FY2025比+13,224百万円）が営業利益を直接圧迫",
+    "evidence": [
+     {
+      "raw": "2026-11-12_2026-02_yuho.md",
+      "section": "4",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   }
+  ],
+  "O": [
+   {
+    "id": "O1",
+    "origin": "業界 市場規模と成長率",
+    "fact": "国内コンサルティング市場はCAGR9.8〜13%で拡大中（IDC定義2024年7,987億円→2030年予測14,064億円）",
+    "basis": "IDC定義市場2024年7,987億円（+10.8%）、CAGR9.8%（2025-2030年）（二次）。広義市場2024年23,422億円（CAGR13%）（二次）",
+    "source": "raw/market/2026-11-11_industry-overview.md",
+    "confidence": "二次",
+    "impact": "大",
+    "impact_reason": "CAGR9.8〜13%の市場成長が自社成長（CAGR27%）の前提条件。会社計画FY2027売上190,000百万円と現在148,332百万円の差41,668百万円の追加売上が実現しなければ、34.3%の営業利益率を前提に14,292百万円の追加営業利益（全営業利益50,931百万円の28%相当）が失われる。3章の営業利益20%目安10,186百万円を超えており大",
+    "evidence": [
+     {
+      "raw": "2026-11-11_industry-overview.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "id": "O2",
+    "origin": "業界 構造を変えうる要因",
+    "fact": "生成AI・DX需要の拡大がAI変革コンサル需要を押し上げており、ベイカレントのAI関連売上比は50-60%に達している",
+    "basis": "AI関連売上比50-60%（FY2026上期補足説明資料、一次）。AIエージェント全社展開23%まで進展（業界データ、二次）",
+    "source": "raw/ir/2026-11-12_business-overview.md",
+    "confidence": "一次",
+    "impact": "大",
+    "impact_reason": "AI関連売上比50〜60%（74,166〜88,999百万円）が34.3%の営業利益率で25,439〜30,527百万円の営業利益を生む（全営業利益50,931百万円の49.9〜59.9%相当）。AI需要縮小で影響しうる営業利益が3章の営業利益20%目安10,186百万円を大幅に超えており大",
+    "evidence": [
+     {
+      "raw": "2026-11-12_business-overview.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "id": "O3",
+    "origin": "地合い 財政・政策",
+    "fact": "政府のサイバーセキュリティ強化政策（防衛・官公庁DX）とAI規制対応需要がコンサル市場を拡大させる",
+    "basis": "サイバーセキュリティ・防衛売上比約10%（FY2026上期補足説明資料、一次）。政府の予算編成・減税法案が企業IT投資の下支えになる（2026-11-09 outlook、参考）",
+    "source": "raw/ir/2026-11-12_business-overview.md",
+    "confidence": "参考",
+    "impact": "中",
+    "impact_reason": "サイバー・防衛売上比約10% × 148,332百万円 ≒ 14,833百万円が34.3%の営業利益率で約5,088百万円の営業利益を占める（全営業利益50,931百万円の9.9%相当）。3章の営業利益5%目安2,547百万円を超え20%目安10,186百万円未満で中。地合いの政策効果は参考情報",
+    "evidence": [
+     {
+      "raw": "2026-11-12_business-overview.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   }
+  ],
+  "T": [
+   {
+    "id": "T1",
+    "origin": "1-3 生成AI・LLMによるコンサル業務の代替",
+    "fact": "生成AI・LLMの普及がコンサルティング業務の一部自動化を進め企業の内製化を促進する（AIエージェント全社展開が23%まで進展。ファイブフォース「代替品の脅威: 中」）",
+    "basis": "AIエージェント全社展開23%（業界データ、二次）。内製化加速は2025〜2028年にかけて徐々に影響が顕在化との見通し（二次）",
+    "source": "raw/market/2026-11-11_industry-overview.md「8. 業界構造を変えうる要因」",
+    "confidence": "二次",
+    "impact": "大",
+    "impact_reason": "AI代替・内製化が顕在化すれば全事業の売上148,332百万円・営業利益50,931百万円が影響を受ける。現在23%のAIエージェント全社展開率が5年以内に高まることで需要の一部が代替されうる（業界二次情報）。3章の営業利益20%目安10,186百万円を大幅に超えており大",
+    "evidence": [
+     {
+      "raw": "2026-11-11_industry-overview.md",
+      "section": "8",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "id": "T2",
+    "origin": "リスク 人材の採用・確保及び育成",
+    "fact": "採用市場の逼迫とコンサル業界の人材争奪激化により採用計画が未達となるリスクがある（有報が最重要リスクと位置付け）",
+    "basis": "有報p.15「2. 人材の採用・確保及び育成」最重要リスク（一次）",
+    "source": "raw/filings/2026-11-12_2026-02_yuho.md「4. 事業等のリスク」",
+    "confidence": "一次",
+    "impact": "大",
+    "impact_reason": "採用未達が事業規模拡大（CAGR27%）の直接制約。FY2027計画売上190,000百万円と現在148,332百万円の差41,668百万円の追加売上が実現しなければ、34.3%の営業利益率で14,292百万円の追加営業利益（全営業利益50,931百万円の28%相当）が失われる。3章の営業利益20%目安10,186百万円を超えており大",
+    "evidence": [
+     {
+      "raw": "2026-11-12_2026-02_yuho.md",
+      "section": "4",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "id": "T3",
+    "origin": "業界 構造を変えうる要因",
+    "fact": "テクノロジー系企業（Salesforce・Google Cloud・AWS等）と戦略ファーム（McKinsey・BCG等）がコンサル市場に参入強化し、2024〜2026年に競合が顕在化",
+    "basis": "参入例: Salesforce・Google Cloud・AWS等のコンサル強化、McKinsey・BCGの実装側参入（業界動向サーチ、二次）",
+    "source": "raw/market/2026-11-11_industry-overview.md「8. 業界構造を変えうる要因」",
+    "confidence": "二次",
+    "impact": "中",
+    "impact_reason": "テクノロジー系企業の参入強化により市場シェアの5〜10%が侵食された場合、7,417〜14,833百万円の売上喪失リスク。34.3%の営業利益率で2,547〜5,088百万円（全営業利益50,931百万円の5〜10%相当）の影響しうる。3章の営業利益5%目安2,547百万円を超えており中",
+    "evidence": [
+     {
+      "raw": "2026-11-11_industry-overview.md",
+      "section": "8",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "id": "T4",
+    "origin": "リスク 景気変動リスク",
+    "fact": "国内外の景気変動・AI株調整により主要クライアントのIT投資が抑制された場合に業績影響（有報リスク。地合い「警戒」、AI・半導体株調整の長期化リスク「大」）",
+    "basis": "有報p.15「1. 景気変動リスク」（一次）。地合い（2026-11-09）: 日本 警戒、AI・半導体株調整長期化リスク（参考）",
+    "source": "raw/filings/2026-11-12_2026-02_yuho.md「4. 事業等のリスク」",
+    "confidence": "参考",
+    "impact": "中",
+    "impact_reason": "景気後退シナリオで企業IT予算10〜20%削減の場合、14,833〜29,666百万円の売上喪失リスク。34.3%の営業利益率で5,088〜10,186百万円（全営業利益50,931百万円の10〜20%相当）の影響しうる。3章の営業利益5%目安2,547百万円を超えており中。迷った: 中と大の境界。地合い「警戒」だが顕在化していないため中を採る",
+    "evidence": [
+     {
+      "raw": "2026-11-12_2026-02_yuho.md",
+      "section": "4",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   }
+  ]
+ },
+ "required": [],
+ "scale": {
+  "year": "2026-02",
+  "sales": 148332000000.0,
+  "profit": 50931000000.0,
+  "source": "data/*.csv（連結・実績）",
+  "yen": true
+ },
+ "top_strength": {
+  "id": "S2",
+  "fact": "国内最大規模の案件実績（案件数YoY+20.7%）と16業種・21カテゴリーのCxOリレーションを持つ（会社は「コアクライアントとのリレーション拡大」を成長ドライバーと説明）",
+  "impact": "大"
+ },
+ "top_threat": {
+  "id": "T2",
+  "fact": "採用市場の逼迫とコンサル業界の人材争奪激化により採用計画が未達となるリスクがある（有報が最重要リスクと位置付け）",
+  "impact": "大"
+ },
+ "answer": "条件付き",
+ "answer_reason": "国内最大規模の案件実績（案件数YoY+20.7%）とCxOリレーションは採用時の知名度・ブランドとして機能しうるが、市場全体での人材争奪激化を直接打ち消せない。ただし現中計に採用・育成強化の施策が明示され、コンサルタント数がFY2024: 3,837名→FY2025: 5,590名へと計画（4,000名）を超過達成しており、施策が継続して機能すれば採用競争に耐えられる",
+ "measure": "現中計重点施策「2. 優秀な人材の採用・育成: 継続採用・中長期人材育成の強化、採用体制・施策の強化」（raw/ir/2026-11-12_mid-term-plan.md「3. 重点施策」）。実行の兆し: コンサルタント数FY2024: 3,837名→FY2025: 5,590名（目標4,000名を超過達成、raw/ir/2026-11-12_mid-term-plan.md「5. 前回計画の達成状況」、一次）",
+ "sentence": "S2（国内最大規模の案件実績（案件数YoY+20.7%）と16業種・21カテゴリーのCxOリレーションを持つ（会社は「コアクラ…）により、T2（採用市場の逼迫とコンサル業界の人材争奪激化により採用計画が未達となるリスクがある（有報が最重要リスクと位置付け））に対して条件付きで耐えられる。理由：国内最大規模の案件実績（案件数YoY+20.7%）とCxOリレーションは採用時の知名度・ブランドとして機能しうるが、市場全体での人材争奪激化を直接打ち消せない",
+ "verdict": "条件付き",
+ "verdict_reason": "国内最大規模の案件実績（案件数YoY+20.7%）とCxOリレーションは採用時の知名度・ブランドとして機能しうるが、市場全体での人材争奪激化を直接打ち消せない。ただし現中計に採用・育成強化の施策が明示され、コンサルタント数がFY2024: 3,837名→FY2025: 5,590名へと計画（4,000名）を超過達成しており、施策が継続して機能すれば採用競争に耐えられる",
+ "conservative": [],
+ "handoff": {
+  "step2_checks": "①収益性: 営業利益率34.3%（S1）の推移とシグマクシスとの差（-5pt縮小傾向が継続するか）②成長性: AI関連売上比（現50-60%）の継続成長と売上CAGR（前倒し達成後の水準）③安全性: のれん19,187百万円（W3）の減損テスト、自己資本比率74.3%（S3）の維持④採用: コンサルタント採用数の計画達成率（T2悪化シグナル）",
+  "summary": "最大の強みはS2（国内最大規模の案件実績（案件数YoY+20.7%）と16業種・21カテゴリーのCxOリレーションを持つ（会社は「コアクラ…）、最大の脅威はT2（採用市場の逼迫とコンサル業界の人材争奪激化により採用計画が未達となるリスクがある（有報が最重要リスクと位置付け））。SWOT の結論は条件付き（国内最大規模の案件実績（案件数YoY+20.7%）とCxOリレーションは採用時の知名度・ブランドとして機能しうるが、市場全体での人材争奪激化を直接打ち消せない）。",
+  "triggers": "コンサルタント採用数が計画を2期連続で下回れば「No」。AI関連売上比が40%を下回るか、営業利益率が30%を下回れば（T1顕在化のシグナル）「No」に変わる"
+ },
+ "changes": [
+  "初回の分析"
+ ],
+ "gaps": [
+  "中計: 中期経営計画に代わる開示: raw に無い",
+  "W2: 影響度が不明",
+  "O3: 根拠が参考情報だけ",
+  "T4: 根拠が参考情報だけ"
+ ],
+ "inputs": [
+  "companies/6532_baycurrent/raw/filings/2026-11-12_2026-02_yuho.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-12_business-overview.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-12_mid-term-plan.md",
+  "companies/6532_baycurrent/raw/market/2026-11-11_industry-overview.md"
+ ],
+ "input_digests": {
+  "segment": "d00d38ea32a6f68b8fc2d1a2b7ccbfccf982db4e",
+  "customers": "e53a7ffb4ad3cf472c7aa2a64d041dd912a9a407",
+  "risks": "bf08c7c33bff1c4b3350fc9fd17c1bd3088c502d",
+  "policy": "5edde25638f81b3eb3169e53fdfd7e6119978421",
+  "mtp": "9ba4f9b5b90f31ca27bdd0a0381bd55ceb888dd8",
+  "mtp_alt": "",
+  "mtp_targets": "32ea5e73a43a1ddebeae7fe95cc2f0368f0541fc",
+  "mtp_actions": "39f7ada58f89a62acff88836f41f60d224617e00",
+  "mtp_review": "4739a77495d9677683c3873d10ae4099cb630bf4",
+  "strategy": "fe7528a6150b38c4114d27f7f8f1e8a2a69524b8",
+  "market_size": "ba02607174fb7d3ec54addaaed14f4e7664bb7e0",
+  "substitutes": "ac9fe08ecd18527554b2e2af914ea85eb07519c0",
+  "structural": "20d2eadeb1cc1d95e6bbd6d663ffd6ecccaf74ac"
+ },
+ "upstream": {
+  "five_forces": {
+   "date": "2026-11-17",
+   "verdict": "高"
+  },
+  "three_c": {
+   "date": "2026-11-17",
+   "verdict": "あいまい"
+  },
+  "moat": {
+   "date": "2026-11-17",
+   "verdict": "なし"
+  }
+ },
+ "outlook": "market/report/2026-11-09_outlook.md",
+ "previous": null,
+ "md": "companies/6532_baycurrent/analysis/swot/2026-11-13_swot.md",
+ "evidence": {
+  "claims": [
+   {
+    "claim": "強み S1",
+    "source": "raw/market/2026-11-13_competitors.md「9. 売上原価率・販管費率（コスト構造の比較）」",
+    "evidence": [
+     {
+      "raw": "2026-11-13_competitors.md",
+      "section": "9",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "強み S2",
+    "source": "raw/ir/2026-11-12_business-overview.md",
+    "evidence": [
+     {
+      "raw": "2026-11-12_business-overview.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "強み S3",
+    "source": "raw/filings/2026-11-12_2026-02_yuho.md「8. 財務3表」",
+    "evidence": [
+     {
+      "raw": "2026-11-12_2026-02_yuho.md",
+      "section": "8",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "強み S4",
+    "source": "raw/ir/2026-11-12_mid-term-plan.md「5. 前回計画の達成状況」",
+    "evidence": [
+     {
+      "raw": "2026-11-12_mid-term-plan.md",
+      "section": "5",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "弱み W1",
+    "source": "raw/market/2026-11-13_competitors.md「8. 顧客・人員のKPIと第三者評価」",
+    "evidence": [
+     {
+      "raw": "2026-11-13_competitors.md",
+      "section": "8",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "弱み W2",
+    "source": "raw/ir/2026-11-12_business-overview.md「7. 継続率・解約率・ストック型売上の比率」",
+    "evidence": [
+     {
+      "raw": "2026-11-12_business-overview.md",
+      "section": "7",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "弱み W3",
+    "source": "raw/filings/2026-11-12_2026-02_yuho.md「4. 事業等のリスク」",
+    "evidence": [
+     {
+      "raw": "2026-11-12_2026-02_yuho.md",
+      "section": "4",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "弱み W4",
+    "source": "raw/filings/2026-11-12_2026-02_yuho.md「4. 事業等のリスク」",
+    "evidence": [
+     {
+      "raw": "2026-11-12_2026-02_yuho.md",
+      "section": "4",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "機会 O1",
+    "source": "raw/market/2026-11-11_industry-overview.md",
+    "evidence": [
+     {
+      "raw": "2026-11-11_industry-overview.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "機会 O2",
+    "source": "raw/ir/2026-11-12_business-overview.md",
+    "evidence": [
+     {
+      "raw": "2026-11-12_business-overview.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "機会 O3",
+    "source": "raw/ir/2026-11-12_business-overview.md",
+    "evidence": [
+     {
+      "raw": "2026-11-12_business-overview.md",
+      "section": null,
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "脅威 T1",
+    "source": "raw/market/2026-11-11_industry-overview.md「8. 業界構造を変えうる要因」",
+    "evidence": [
+     {
+      "raw": "2026-11-11_industry-overview.md",
+      "section": "8",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "脅威 T2",
+    "source": "raw/filings/2026-11-12_2026-02_yuho.md「4. 事業等のリスク」",
+    "evidence": [
+     {
+      "raw": "2026-11-12_2026-02_yuho.md",
+      "section": "4",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "脅威 T3",
+    "source": "raw/market/2026-11-11_industry-overview.md「8. 業界構造を変えうる要因」",
+    "evidence": [
+     {
+      "raw": "2026-11-11_industry-overview.md",
+      "section": "8",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "脅威 T4",
+    "source": "raw/filings/2026-11-12_2026-02_yuho.md「4. 事業等のリスク」",
+    "evidence": [
+     {
+      "raw": "2026-11-12_2026-02_yuho.md",
+      "section": "4",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   }
+  ],
+  "summary": {
+   "verified": 0,
+   "unverified": 15,
+   "missing": 0,
+   "reasons": {
+    "Front Matter なし": 15
+   }
+  }
+ }
+}

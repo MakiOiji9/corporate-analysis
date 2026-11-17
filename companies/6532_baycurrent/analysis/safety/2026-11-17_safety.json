@@ -1,0 +1,241 @@
+{
+ "company": "6532_baycurrent",
+ "name": "ベイカレント・コンサルティング（6532）",
+ "date": "2026-11-17",
+ "valid_until": "2027-03-17",
+ "verdict": "良好",
+ "verdict_reason": "3指標とも目安または同業平均をクリアし、悪化傾向なし",
+ "conservative": [],
+ "step1": {
+  "year": "2026-02",
+  "sentence": "2026-02: 自己資本比率 74.3% クリア、D/E レシオ 0.00倍 クリア、流動比率 322.1% クリア（クリア 3・未達 0・不明 0）。ネットキャッシュ 75,066 百万円で実質無借金。インタレスト・カバレッジ 808.4倍（利払いに余裕あり。5倍以上で余裕、1.5倍未満で注意）",
+  "counts": {
+   "クリア": 3,
+   "未達": 0,
+   "不明": 0
+  },
+  "excluded": false,
+  "net_cash": 75066.0,
+  "debt_free": true,
+  "items": [
+   {
+    "key": "equity_ratio",
+    "name": "自己資本比率",
+    "value": 74.2998,
+    "peer_avg": 83.555,
+    "target": "40%以上",
+    "by_target": true,
+    "by_peer": false,
+    "rating": "クリア",
+    "basis": "74.3%（40%以上、同業平均 83.6%）で目安をクリア"
+   },
+   {
+    "key": "de",
+    "name": "D/E レシオ",
+    "value": 0.0022,
+    "peer_avg": 0.0,
+    "target": "1倍以下",
+    "by_target": true,
+    "by_peer": true,
+    "rating": "クリア",
+    "basis": "ネットキャッシュ 75,066 百万円で実質無借金"
+   },
+   {
+    "key": "current_ratio",
+    "name": "流動比率",
+    "value": 322.0763,
+    "peer_avg": 353.5654,
+    "target": "120%以上",
+    "by_target": true,
+    "by_peer": false,
+    "rating": "クリア",
+    "basis": "322.1%（120%以上、同業平均 353.6%）で目安をクリア。150%以上で余裕あり"
+   }
+  ],
+  "peers": [
+   {
+    "name": "シグマクシス HD",
+    "year": "2026-03",
+    "primary": false,
+    "equity_ratio": 83.555,
+    "de": 0.0,
+    "current_ratio": 353.5654,
+    "net_cash": 5140.0,
+    "insolvent": false
+   }
+  ],
+  "peer_avg": {
+   "equity_ratio": 83.555,
+   "de": 0.0,
+   "current_ratio": 353.5654
+  }
+ },
+ "step2": {
+  "rating": "悪化傾向なし",
+  "basis": "自己資本比率の低下 10pt 未満、D/E の継続的な上昇なし",
+  "sentence": "2022-02〜2026-02（5年）: 自己資本比率 71.7%→74.3%（+2.6pt）、D/E 0.11→0.00倍。悪化傾向なし",
+  "years": [
+   "2022-02",
+   "2023-02",
+   "2024-02",
+   "2025-02",
+   "2026-02"
+  ],
+  "drop": -2.6,
+  "de_rising": false
+ },
+ "step3": {
+  "rating": "許容",
+  "basis": "2021-02〜2026-02 に有利子負債が総資産の1%以上増えた年なし",
+  "sentence": "借入の目的: 2021-02〜2026-02 に有利子負債が目立って増えた年はない（許容）",
+  "years": []
+ },
+ "rows": [
+  {
+   "year": "2021-02",
+   "total_assets": 46003.0,
+   "equity": 30040.0,
+   "equity_ratio": 65.3001,
+   "debt": 5513.0,
+   "de": 0.1835,
+   "current_ratio": null,
+   "cash": 16295.0,
+   "net_cash": 10782.0,
+   "cfo": 12135.0,
+   "cfi": -364.0,
+   "cff": -3504.0,
+   "primary": true,
+   "debt_source": "2026-11-12_financials-historical.md「8. 貸借・CF の主要項目（安全性）」"
+  },
+  {
+   "year": "2022-02",
+   "total_assets": 58136.0,
+   "equity": 41684.0,
+   "equity_ratio": 71.7008,
+   "debt": 4463.0,
+   "de": 0.1071,
+   "current_ratio": null,
+   "cash": 26056.0,
+   "net_cash": 21593.0,
+   "cfo": 16018.0,
+   "cfi": -147.0,
+   "cff": -6110.0,
+   "primary": true,
+   "debt_source": "2026-11-12_financials-historical.md「8. 貸借・CF の主要項目（安全性）」"
+  },
+  {
+   "year": "2023-02",
+   "total_assets": 75265.0,
+   "equity": 57352.0,
+   "equity_ratio": 76.2001,
+   "debt": 3413.0,
+   "de": 0.0595,
+   "current_ratio": null,
+   "cash": 36606.0,
+   "net_cash": 33193.0,
+   "cfo": 21635.0,
+   "cfi": -2256.0,
+   "cff": -8829.0,
+   "primary": true,
+   "debt_source": "2026-11-12_financials-historical.md「8. 貸借・CF の主要項目（安全性）」"
+  },
+  {
+   "year": "2024-02",
+   "total_assets": 99883.0,
+   "equity": 74113.0,
+   "equity_ratio": 74.1998,
+   "debt": 2356.0,
+   "de": 0.0318,
+   "current_ratio": 358.8061,
+   "cash": 45778.0,
+   "net_cash": 44215.0,
+   "cfo": 24348.0,
+   "cfi": -3754.0,
+   "cff": -11422.0,
+   "primary": true,
+   "debt_source": "2026-11-12_financials-historical.md「8. 貸借・CF の主要項目（安全性）」"
+  },
+  {
+   "year": "2025-02",
+   "total_assets": 124665.0,
+   "equity": 94371.0,
+   "equity_ratio": 75.6997,
+   "debt": 1311.0,
+   "de": 0.0139,
+   "current_ratio": 366.7329,
+   "cash": 60552.0,
+   "net_cash": 62241.0,
+   "cfo": 32648.0,
+   "cfi": -3532.0,
+   "cff": -14342.0,
+   "primary": true,
+   "debt_source": "2026-11-12_financials-historical.md「8. 貸借・CF の主要項目（安全性）」"
+  },
+  {
+   "year": "2026-02",
+   "total_assets": 157485.0,
+   "equity": 117011.0,
+   "equity_ratio": 74.2998,
+   "debt": 262.0,
+   "de": 0.0022,
+   "current_ratio": 322.0763,
+   "cash": 72308.0,
+   "net_cash": 75066.0,
+   "cfo": 37616.0,
+   "cfi": -6508.0,
+   "cff": -19352.0,
+   "primary": true,
+   "debt_source": "2026-11-12_financials-historical.md「8. 貸借・CF の主要項目（安全性）」"
+  }
+ ],
+ "borderline": [],
+ "level_background": "コンサルティング事業単一で設備投資が不要（物的資産を保有しない）なため借入の必要がなく、高い営業利益率から生み出される利益が内部留保として積み上がり、現金72,308百万円・自己資本比率74.3%の水準に至っている（raw/filings/2026-11-12_2026-02_yuho.md）。2014年MBOに伴う銀行借入（残高262百万円）は2027年2月期完済予定で、有報の「多額の借入金」リスク項目は実態としてほぼ消滅している",
+ "handoff": {
+  "report_points": "安全性は良好（3指標とも目安または同業平均をクリアし、悪化傾向なし）。2026-02: 自己資本比率 74.3% クリア、D/E レシオ 0.00倍 クリア、流動比率 322.1% クリア（クリア 3・未達 0・不明 0）。ネットキャッシュ 75,066 百万円で実質無借金。インタレスト・カバレッジ 808.4倍（利払いに余裕あり。5倍以上で余裕、1.5倍未満で注意）。2022-02〜2026-02（5年）: 自己資本比率 71.7%→74.3%（+2.6pt）、D/E 0.11→0.00倍。悪化傾向なし。借入の目的: 2021-02〜2026-02 に有利子負債が目立って増えた年はない（許容）。",
+  "policy": "2026年10月に資本政策を改定し、手元キャッシュの目標を予想売上の最大40%から約25%（運転資金3か月分）に引き下げ、余剰キャッシュを成長投資と自社株買いに機動的に配分する方針に変更した（raw/ir/2026-11-12_mid-term-plan.md）。現在の現金72,308百万円は新目標水準を上回っており、今後の成長投資・自社株買いによる資本効率改善への余地が生まれている",
+  "step2_checks": "厚い手元資金が営業CF で積み上がったものか（キャッシュフロー）、低い財務レバレッジが ROE を押し下げていないか（収益性）",
+  "triggers": "自己資本比率が40%以上を満たさず同業平均も下回れば未達、有利子負債が現金及び現金同等物を上回れば実質無借金でなくなる、流動比率が120%以上を満たさず同業平均も下回れば未達、未達が2指標以上になれば懸念、自己資本比率が直近5年で10pt以上下がれば悪化傾向。"
+ },
+ "changes": [
+  "初回の分析"
+ ],
+ "gaps": [
+  "財務時系列: キャッシュ・フロー: raw に無い"
+ ],
+ "inputs": [
+  "companies/6532_baycurrent/raw/filings/2026-11-12_2026-02_yuho.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-12_financials-historical.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-12_mid-term-plan.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-13_financials-historical.md",
+  "companies/6532_baycurrent/raw/market/2026-11-13_competitors.md"
+ ],
+ "seen": [
+  "companies/6532_baycurrent/raw/filings/2026-11-12_2026-02_yuho.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-12_financials-historical.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-12_mid-term-plan.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-13_financials-historical.md",
+  "companies/6532_baycurrent/raw/market/2026-11-13_competitors.md"
+ ],
+ "input_digests": {
+  "self_bscf": "d914e5d379d3e700d2031c166f7af297f977c394",
+  "self_bs": "d914e5d379d3e700d2031c166f7af297f977c394",
+  "self_cf": "",
+  "self_return": "0cb4fca7c77ed49fa7a3e027a91b5ad3efe391b1",
+  "summary": "5e87ef374e84a3832ae8fec7c240f7dc8eba1fdc",
+  "statements": "8d83987e9db30a866b93cb9fcad3bc889368c25e",
+  "risks": "bf08c7c33bff1c4b3350fc9fd17c1bd3088c502d",
+  "policy": "5edde25638f81b3eb3169e53fdfd7e6119978421",
+  "capital": "6a3558db9f2066f22c2b44a48bbf2bc631b7b41c",
+  "peer_safety": "ae7df35928b2ba3391ffefd5f205dd21a0339f97",
+  "peer_roe": "702203ea4f8fc678f5c3b094bbf1f66788222b53",
+  "peer_dupont": "ebecfa33e6a931572282198f0cf744f3596dabb3",
+  "yearly_series": "5545079d45bc942aafed9b5697ccb6d8bdbe7dc1"
+ },
+ "profitability": {
+  "date": "2026-11-17",
+  "verdict": "良好"
+ },
+ "outlook": "market/report/2026-11-16_outlook.md",
+ "previous": null,
+ "md": "companies/6532_baycurrent/analysis/safety/2026-11-17_safety.md"
+}

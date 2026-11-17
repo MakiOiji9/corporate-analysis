@@ -1,0 +1,757 @@
+{
+ "version": 3,
+ "company": "6532_baycurrent",
+ "name": "ベイカレント・コンサルティング（6532）",
+ "date": "2026-11-17",
+ "valid_until": "2027-11-17",
+ "strength": "3Cの勝てる理由は「あいまい（材料不足）」で、強み候補も確認できていない。代わりにモート分析では、圧倒的な超過収益（ROIC差中央値+57.6pt・6年連続で資本コスト7%超）の背景にある仕組み——コンサルタント一人当たり売上の成長（FY2026上期 YoY+6.6%）と国内最大規模の案件実績（FY2027 Q2 案件数 YoY+25.5%・コンサルタント6,339名体制）——のうち、競合参入を阻む持続的な要因がどこかを確かめる",
+ "moats": [
+  {
+   "type": "ブランド",
+   "group": "無形資産",
+   "rating": "弱",
+   "mechanism": "国内最大規模の案件実績（FY2027 Q2 案件数 YoY+25.5%）と16業種のカバレッジで実績ブランドは形成されているが、価格プレミアムを示す証拠（値上げ実績・粗利率の同業比較）が確認できない。粗利率は5年未満（3年分）で価格決定力が不明判定",
+   "trace": "—",
+   "basis": "国内最大規模の案件実績（FY2027 Q2 案件数 YoY+25.5%）と16業種のカバレッジで実績ブランドは形成されているが、価格プレミアムを示す証拠（値上げ実績・粗利率の同業比較）が確認できない。粗利率は5年未満（3年分）で価格決定力が不明判定 数値: —",
+   "source": "2026-11-12_business-overview.md「8. 値上げ・価格改定の実績」",
+   "confidence": "一次",
+   "effective": false,
+   "evidence": [
+    {
+     "raw": "2026-11-12_business-overview.md",
+     "section": "8",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    }
+   ]
+  },
+  {
+   "type": "規制・特許・許認可",
+   "group": "無形資産",
+   "rating": "該当なし",
+   "mechanism": "コンサルティング業態のため特別な許認可不要（有報 p.23）。研究開発活動なし（有報 p.23 「該当事項はありません」）",
+   "trace": "—",
+   "basis": "コンサルティング業態のため特別な許認可不要（有報 p.23）。研究開発活動なし（有報 p.23 「該当事項はありません」） 数値: —",
+   "source": "2026-11-12_2026-02_yuho.md「6. 研究開発・特許・許認可（p.23）」",
+   "confidence": "一次",
+   "effective": false,
+   "evidence": [
+    {
+     "raw": "2026-11-12_2026-02_yuho.md",
+     "section": "6",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    }
+   ]
+  },
+  {
+   "type": "スイッチングコスト",
+   "group": "スイッチングコスト",
+   "rating": "弱",
+   "mechanism": "大企業CxOとの長期リレーション（コアクライアント戦略）で業務への組み込みは進んでいると推測されるが、継続率・リピート率・ストック型売上比率のいずれも非開示で数値の痕跡が確認できない",
+   "trace": "—",
+   "basis": "大企業CxOとの長期リレーション（コアクライアント戦略）で業務への組み込みは進んでいると推測されるが、継続率・リピート率・ストック型売上比率のいずれも非開示で数値の痕跡が確認できない 数値: —",
+   "source": "2026-11-12_business-overview.md「7. 継続率・解約率・ストック型売上の比率」",
+   "confidence": "一次",
+   "effective": false,
+   "evidence": [
+    {
+     "raw": "2026-11-12_business-overview.md",
+     "section": "7",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    }
+   ]
+  },
+  {
+   "type": "ネットワーク効果",
+   "group": "ネットワーク効果",
+   "rating": "該当なし",
+   "mechanism": "プロジェクト型コンサルティングは各案件が独立しており、利用者の増加で価値が高まる構造を持たない",
+   "trace": "—",
+   "basis": "プロジェクト型コンサルティングは各案件が独立しており、利用者の増加で価値が高まる構造を持たない 数値: —",
+   "source": "2026-11-12_business-overview.md「3. 主力製品・サービス」",
+   "confidence": "一次",
+   "effective": false,
+   "evidence": [
+    {
+     "raw": "2026-11-12_business-overview.md",
+     "section": "3",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    }
+   ]
+  },
+  {
+   "type": "コスト優位",
+   "group": "コスト優位",
+   "rating": "弱",
+   "mechanism": "自社営業利益率34.3%（FY2026）はシグマクシスHD 25.5%を+8.8pt上回るが、比較対象の売上原価率・販管費率が取得不可のため、コスト構造優位を数値で示せない",
+   "trace": "—",
+   "basis": "自社営業利益率34.3%（FY2026）はシグマクシスHD 25.5%を+8.8pt上回るが、比較対象の売上原価率・販管費率が取得不可のため、コスト構造優位を数値で示せない 数値: —",
+   "source": "2026-11-13_competitors.md「9. コスト構造の比較」",
+   "confidence": "二次",
+   "effective": false,
+   "evidence": [
+    {
+     "raw": "2026-11-13_competitors.md",
+     "section": "9",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    }
+   ]
+  },
+  {
+   "type": "効率的規模",
+   "group": "効率的規模",
+   "rating": "該当なし",
+   "mechanism": "市場プレイヤー約67社（constep.jp 二次情報）、上位3社合計シェア約34%と分散。AIスタートアップ・新興日系ファームの新規参入が続いており、少数企業のみ採算が合う構造ではない",
+   "trace": "—",
+   "basis": "市場プレイヤー約67社（constep.jp 二次情報）、上位3社合計シェア約34%と分散。AIスタートアップ・新興日系ファームの新規参入が続いており、少数企業のみ採算が合う構造ではない 数値: —",
+   "source": "2026-11-11_industry-overview.md「3. 参入に必要な条件・過去10年の新規参入と撤退」",
+   "confidence": "二次",
+   "effective": false,
+   "evidence": [
+    {
+     "raw": "2026-11-11_industry-overview.md",
+     "section": "3",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    }
+   ]
+  }
+ ],
+ "returns": {
+  "rating": "弱い",
+  "basis": "2021-02〜2026-02 の 6 年中 6 年で ROIC が資本コスト 7% を上回る（景気の一巡を通した差の中央値 +57.6pt、直近3年平均 +56.9pt）。目安: 7年以上・8割以上の年で上回り中央値 +5pt 以上 強い / 上回った年が半分未満か中央値が0以下 なし / ほか 弱い",
+  "years": 6,
+  "above": 6,
+  "hurdle": 7.0,
+  "tax": 30.6,
+  "median_spread": 57.6,
+  "recent_spread": 56.9,
+  "border_years": [],
+  "width": "大",
+  "trend": "安定",
+  "rows": [
+   {
+    "year": "2021-02",
+    "operating": 13551.0,
+    "invested": 21401.65,
+    "roic": 43.9,
+    "spread": 36.9,
+    "peer_median": null,
+    "peer_count": 0
+   },
+   {
+    "year": "2022-02",
+    "operating": 21518.0,
+    "invested": 22237.575,
+    "roic": 67.2,
+    "spread": 60.2,
+    "peer_median": null,
+    "peer_count": 0
+   },
+   {
+    "year": "2023-02",
+    "operating": 29916.0,
+    "invested": 26728.0,
+    "roic": 77.7,
+    "spread": 70.7,
+    "peer_median": 41.4,
+    "peer_count": 1
+   },
+   {
+    "year": "2024-02",
+    "operating": 34219.0,
+    "invested": 36137.475,
+    "roic": 65.7,
+    "spread": 58.7,
+    "peer_median": 46.7,
+    "peer_count": 1
+   },
+   {
+    "year": "2025-02",
+    "operating": 42615.0,
+    "invested": 46559.475,
+    "roic": 63.5,
+    "spread": 56.5,
+    "peer_median": 49.5,
+    "peer_count": 1
+   },
+   {
+    "year": "2026-02",
+    "operating": 50931.0,
+    "invested": 56509.75,
+    "roic": 62.5,
+    "spread": 55.5,
+    "peer_median": 44.5,
+    "peer_count": 1
+   }
+  ],
+  "peers": [
+   "シグマクシス HD"
+  ],
+  "economic_profit": {
+   "latest": 31363,
+   "year": "2026-02",
+   "sum5": 111165,
+   "years5": 5
+  },
+  "unit": "百万円"
+ },
+ "pricing_power": {
+  "rating": null,
+  "basis": "粗利率を計算できた年が 3 年（5 年未満）",
+  "years": 3,
+  "range": null,
+  "inflation_change": null,
+  "peer_gross": null,
+  "latest": 56.6,
+  "rows": {
+   "2024-02": 54.6,
+   "2025-02": 53.8,
+   "2026-02": 56.6
+  },
+  "sources": [
+   "companies/6532_baycurrent/data/financials.csv"
+  ]
+ },
+ "margin": {
+  "candidate": "弱い",
+  "years_above": 4,
+  "compared_years": 4,
+  "basis": "2023-02〜2026-02 の比較できた 4 年中 4 年で同業中央値を上回る（直近 2026-02 は上回る）。比較できる年が 7 年に満たないため「強い」にはならない。目安: 7年以上を比べて8割以上の年で上回る 強い / 上回った年が半分未満 なし / ほか 弱い（連続年数ではなく上回った年の割合で見る）",
+  "rows": [
+   {
+    "year": "2023-02",
+    "self": 39.3,
+    "avg": 18.7,
+    "mean": 18.7,
+    "diff": 20.6,
+    "peers": [
+     {
+      "name": "シグマクシス・ホールディングス（6088、3月期）",
+      "year": "2023-03",
+      "margin": 18.7
+     }
+    ]
+   },
+   {
+    "year": "2024-02",
+    "self": 36.4,
+    "avg": 18.9,
+    "mean": 18.9,
+    "diff": 17.5,
+    "peers": [
+     {
+      "name": "シグマクシス・ホールディングス（6088、3月期）",
+      "year": "2024-03",
+      "margin": 18.9
+     }
+    ]
+   },
+   {
+    "year": "2025-02",
+    "self": 36.7,
+    "avg": 21.4,
+    "mean": 21.4,
+    "diff": 15.3,
+    "peers": [
+     {
+      "name": "シグマクシス・ホールディングス（6088、3月期）",
+      "year": "2025-03",
+      "margin": 21.4
+     }
+    ]
+   },
+   {
+    "year": "2026-02",
+    "self": 34.3,
+    "avg": 25.5,
+    "mean": 25.5,
+    "diff": 8.8,
+    "peers": [
+     {
+      "name": "シグマクシス・ホールディングス（6088、3月期）",
+      "year": "2026-03",
+      "margin": 25.5
+     }
+    ]
+   }
+  ],
+  "sources": [
+   "data/*.csv",
+   "competitors.md の自社欄"
+  ]
+ },
+ "costs": [
+  {
+   "name": "ベイカレント",
+   "self": true,
+   "year": "2024年2月期",
+   "cost": 45.4,
+   "sga": 18.2,
+   "margin": 36.4,
+   "source": "有報 第12期 p.50（一次）"
+  },
+  {
+   "name": "ベイカレント",
+   "self": true,
+   "year": "2025年2月期",
+   "cost": 46.2,
+   "sga": 17.1,
+   "margin": 36.7,
+   "source": "有報 第12期 p.50（一次）"
+  },
+  {
+   "name": "ベイカレント",
+   "self": true,
+   "year": "2026年2月期",
+   "cost": 43.4,
+   "sga": 22.3,
+   "margin": 34.3,
+   "source": "有報 第12期 p.50（一次）"
+  },
+  {
+   "name": "シグマクシス HD",
+   "self": false,
+   "year": "2024年3月期",
+   "cost": null,
+   "sga": null,
+   "margin": 18.9,
+   "source": "二次（WebSearch）"
+  },
+  {
+   "name": "シグマクシス HD",
+   "self": false,
+   "year": "2025年3月期",
+   "cost": null,
+   "sga": null,
+   "margin": 21.4,
+   "source": "二次（WebSearch）"
+  },
+  {
+   "name": "シグマクシス HD",
+   "self": false,
+   "year": "2026年3月期",
+   "cost": null,
+   "sga": null,
+   "margin": 25.4,
+   "source": "二次（WebSearch）"
+  }
+ ],
+ "share": {
+  "trend": "不明",
+  "reason": "同一基準での自社シェア数値が取得不可のため「不明」。売上高成長率（+23%前後）は市場成長率（9.8〜13%）を上回ることからシェア拡大の可能性はあるが、同一調査での推移が確認できない（2026-11-11_industry-overview.md「2. 上位企業とシェア分布・推移」）",
+  "seen": "自社シェアの明示的な数値は取得不可（constep.jp・consul.global・IDCプレスリリース等を確認したが記載なし）。代替として売上高推移（FY2024: 939億円・+23.4%、FY2025: 1,160億円・+23.6%）は取得できているが市場定義が異なりシェアとしての推移は計算不可",
+  "source": "2026-11-11_industry-overview.md「2. 上位企業とシェア分布・推移」、2026-11-13_competitors.md「4. 市場シェア」",
+  "confidence": "—"
+ },
+ "risks": [
+  {
+   "factor": "生成AI・AIエージェントによるコンサルタント業務の自動化",
+   "category": "破壊的イノベーション",
+   "timing": "5年以内",
+   "moat": "3Cの強み",
+   "basis": "McKinseyによれば現行コンサルタント業務の約60%が既存AI技術で自動化可能。2026年以降AIエージェントが業務プロセスへ本格組み込みへ移行中",
+   "source": "2026-11-11_industry-overview.md「8. 業界構造を変えうる要因」（二次情報）"
+  },
+  {
+   "factor": "企業の内製化加速（コンサル支援後のリピート案件減少）",
+   "category": "顧客行動",
+   "timing": "5〜10年",
+   "moat": "3Cの強み",
+   "basis": "生成AIが企業の自走・内製化を促進し、コンサル支援終了後のリピート案件が減少するリスク",
+   "source": "2026-11-11_industry-overview.md「8. 業界構造を変えうる要因」（二次情報）"
+  },
+  {
+   "factor": "テクノロジー系企業（Salesforce・Google Cloud・AWS等）のコンサル参入",
+   "category": "技術",
+   "timing": "5年以内",
+   "moat": "3Cの強み",
+   "basis": "AI・クラウド企業がコンサルティングサービスを提供開始し、既存コンサルファームと競合する案件が増加",
+   "source": "2026-11-11_industry-overview.md「8. 業界構造を変えうる要因」（二次情報）"
+  }
+ ],
+ "axes": {
+  "width": {
+   "rating": "大",
+   "reason": "直近3年の ROIC と資本コストの差の平均 +56.9pt。経済的利益 2026-02 31,363（百万円）。目安: +10pt 以上 大 / +3pt 以上 中 / 0超 小 / 0以下 なし（スクリプトが判定）"
+  },
+  "depth": {
+   "rating": "浅い",
+   "reason": "新興日系ファームがベイカレクローンと称されて2022年以降急成長している事実（2026-11-11_industry-overview.md 二次情報）から、競合が同等モデルを構築する障壁は相対的に低い。モートの「強」「中」が確認できずモートの重なり数ゼロ。迷った: 国内最大規模の案件実績（6,339名・FY2026上期末）と10年超の経験蓄積は一定の障壁だが、数値の痕跡が確認できず「不明」と「浅い」の間で不利な方を採った"
+  },
+  "reach": {
+   "rating": "限定的",
+   "reason": "新中計（FY2027〜FY2030）でAI・サイバーセキュリティ・防衛・エネルギー等の新領域への展開を計画し（20261009548488.pdf）、AI関連はすでに売上の50〜60%を占める（FY2026上期）。ただし4章でモートの「強」「中」が確認できないため、新領域での同じ仕組みの持続的優位も現時点では確認できない。SWOTの機会として引き継ぐ"
+  }
+ },
+ "trend": "安定",
+ "durability": "持続を見込むモートなし。ROICは資本コスト（7%）を6年連続で上回る超過収益が確認されるが、仕組みの事実と数値の痕跡の両方が揃う源泉を特定できないため、競合に対する参入障壁として確認できない。3Cの強み（案件実績・CxOリレーション）は生成AI・テクノロジー系企業の参入（5年以内）および内製化加速（5〜10年）によって崩れうる",
+ "backing": "弱い",
+ "backing_reason": "2021-02〜2026-02 の 6 年中 6 年で ROIC が資本コスト 7% を上回る（景気の一巡を通した差の中央値 +57.6pt、直近3年平均 +56.9pt）。目安: 7年以上・8割以上の年で上回り中央値 +5pt 以上 強い / 上回った年が半分未満か中央値が0以下 なし / ほか 弱い",
+ "effective_moats": [],
+ "corrected": false,
+ "near_risks": [
+  "生成AI・AIエージェントによるコンサルタント業務の自動化",
+  "テクノロジー系企業（Salesforce・Google Cloud・AWS等）のコンサル参入"
+ ],
+ "verdict": "なし",
+ "verdict_reason": "超過収益はある（弱い）が、それを守る「強」「中」の源泉が無い（業態に共通する収益性や一時的な要因の可能性）",
+ "conservative": [],
+ "conservative_verdict": "なし",
+ "confidence": {
+  "primary": 2,
+  "reference": 0,
+  "unknown": 1,
+  "known": 3,
+  "total": 4,
+  "why": "一次資料 2/3・参考 0・不明 1/4",
+  "level": "中"
+ },
+ "counter": "この結論（モートなし）が間違っているとしたら: 6年連続ROIC差+57.6ptという圧倒的な超過収益が続くことは、開示されていない形のスイッチングコストまたはブランドプレミアムが実在する可能性を示す（2026-11-17_brief.md 1章）。また、コンサルタント一人当たり売上がYoY+6.6%と成長していることは（2026-11-12_business-overview.md「5. 主要KPI」）、単価上昇が持続していることを示唆しており、価格決定力の間接証拠として読める可能性がある",
+ "triggers": "ROICが2年連続で資本コスト（7%）を下回れば超過収益が「なし」に転じ結論の見直しが必要。反対に、継続率・リピート率（現在非開示）が90%以上と確認されればスイッチングコストが「中」以上になり、結論が「狭い」に変わりうる",
+ "handoff": {
+  "strengths": "なし",
+  "threats": "生成AI・AIエージェントによるコンサルタント業務の自動化（5年以内。影響するモート: 3Cの強み）／企業の内製化加速（コンサル支援後のリピート案件減少）（5〜10年。影響するモート: 3Cの強み）／テクノロジー系企業（Salesforce・Google Cloud・AWS等）のコンサル参入（5年以内。影響するモート: 3Cの強み）",
+  "step2_checks": "ROICが資本コスト（7%）を上回り続けるか（現在差+55.5pt）、営業利益率がシグマクシスHD（FY2026: 25.5%）を上回り続けるか、コンサルタント一人当たり売上（稼働率・単価の代理指標）が成長を維持しているか、持株会社移行後の販管費率（FY2026: 22.3%。FY2025: 17.1%から+5.2ptの増加）が一時要因か恒常化するかを確認する"
+ },
+ "changes": [
+  "判定の基準を改めた（景気の一巡で見る超過収益・同業比較は上回った年の割合・暦年の原価高の局面）ため、前回の判定とは比べない"
+ ],
+ "gaps": [
+  "事業概要: 知的財産（特許の件数）: raw に無い",
+  "競合: 知的財産（特許の件数）: raw に無い",
+  "シェアの推移: 不明（業界のシェアの時系列が無い）"
+ ],
+ "evidence": {
+  "claims": [
+   {
+    "claim": "4. ブランド",
+    "source": "2026-11-12_business-overview.md「8. 値上げ・価格改定の実績」",
+    "evidence": [
+     {
+      "raw": "2026-11-12_business-overview.md",
+      "section": "8",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "4. 規制・特許・許認可",
+    "source": "2026-11-12_2026-02_yuho.md「6. 研究開発・特許・許認可（p.23）」",
+    "evidence": [
+     {
+      "raw": "2026-11-12_2026-02_yuho.md",
+      "section": "6",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "4. スイッチングコスト",
+    "source": "2026-11-12_business-overview.md「7. 継続率・解約率・ストック型売上の比率」",
+    "evidence": [
+     {
+      "raw": "2026-11-12_business-overview.md",
+      "section": "7",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "4. ネットワーク効果",
+    "source": "2026-11-12_business-overview.md「3. 主力製品・サービス」",
+    "evidence": [
+     {
+      "raw": "2026-11-12_business-overview.md",
+      "section": "3",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "4. コスト優位",
+    "source": "2026-11-13_competitors.md「9. コスト構造の比較」",
+    "evidence": [
+     {
+      "raw": "2026-11-13_competitors.md",
+      "section": "9",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "4. 効率的規模",
+    "source": "2026-11-11_industry-overview.md「3. 参入に必要な条件・過去10年の新規参入と撤退」",
+    "evidence": [
+     {
+      "raw": "2026-11-11_industry-overview.md",
+      "section": "3",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "5. シェアの推移",
+    "source": "2026-11-11_industry-overview.md「2. 上位企業とシェア分布・推移」、2026-11-13_competitors.md「4. 市場シェア」",
+    "evidence": [
+     {
+      "raw": "2026-11-11_industry-overview.md",
+      "section": "2",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "raw": "2026-11-13_competitors.md",
+      "section": "4",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "6. 生成AI・AIエージェントによるコンサルタント業務の自動化",
+    "source": "2026-11-11_industry-overview.md「8. 業界構造を変えうる要因」（二次情報）",
+    "evidence": [
+     {
+      "raw": "2026-11-11_industry-overview.md",
+      "section": "8",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "6. 企業の内製化加速（コンサル支援後のリピート案件減少）",
+    "source": "2026-11-11_industry-overview.md「8. 業界構造を変えうる要因」（二次情報）",
+    "evidence": [
+     {
+      "raw": "2026-11-11_industry-overview.md",
+      "section": "8",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "6. テクノロジー系企業（Salesforce・Google Cloud・AWS等）のコンサル参入",
+    "source": "2026-11-11_industry-overview.md「8. 業界構造を変えうる要因」（二次情報）",
+    "evidence": [
+     {
+      "raw": "2026-11-11_industry-overview.md",
+      "section": "8",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   }
+  ],
+  "summary": {
+   "verified": 0,
+   "unverified": 11,
+   "missing": 0,
+   "reasons": {
+    "Front Matter なし": 11
+   }
+  }
+ },
+ "inputs": [
+  "companies/6532_baycurrent/raw/filings/2026-11-12_2026-02_yuho.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-12_business-overview.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-13_financials-historical.md",
+  "companies/6532_baycurrent/raw/market/2026-11-11_industry-overview.md",
+  "companies/6532_baycurrent/raw/market/2026-11-13_competitors.md"
+ ],
+ "seen": [
+  "companies/6532_baycurrent/raw/filings/2026-11-12_2026-02_yuho.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-12_business-overview.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-12_financials-historical.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-13_financials-historical.md",
+  "companies/6532_baycurrent/raw/market/2026-11-11_industry-overview.md",
+  "companies/6532_baycurrent/raw/market/2026-11-13_competitors.md",
+  "companies/6532_baycurrent/raw/market/2026-11-13_industry-overview.md"
+ ],
+ "input_digests": {
+  "self_financials": "d914e5d379d3e700d2031c166f7af297f977c394",
+  "ip": "6bad7c07420edc6a65518f320f74d73bc2ebe00c",
+  "risks": "bf08c7c33bff1c4b3350fc9fd17c1bd3088c502d",
+  "customer_base": "98d46be12dd54b724ea255e92d7d7364c6d6fcfe",
+  "kpi": "49bf81e7a7d5b620269321d56e31891439bac163",
+  "retention": "dc299da03c84009fb7ad00afdf3cd6477874e5fc",
+  "pricing": "8a585b67a967446f359df65612c322ef3d32c3f8",
+  "share": "5597b09052c852808dbbfff6fab1ded6679d3080",
+  "industry_margin": "3ae294f0ba5b37c2b729ad1d03dd6822ca7036d7",
+  "structural": "20d2eadeb1cc1d95e6bbd6d663ffd6ecccaf74ac",
+  "peers": "d10829fd170b9bb13a159e72ce9340a16931e45a",
+  "peer_share": "c2e981661ff2ad56c5c8cd7eee43b2edebc15571",
+  "peer_cost": "3aca551f8c14e197c554688961d5bc5d4a24265c",
+  "peer_claims": "d79ec7fb064452d914f4a9e3916c7158ec02261d",
+  "peer_kpi": "6fbbf9319531818d95fd782c1970c8805143aae8",
+  "installed_base": "4b2c1f842461ee3fe78cb3024a0a831c8165e6c6",
+  "segments": "d00d38ea32a6f68b8fc2d1a2b7ccbfccf982db4e",
+  "market_size": "ba02607174fb7d3ec54addaaed14f4e7664bb7e0",
+  "entry": "7473f3401228c9b5653c08236b7bd13a233e29a9",
+  "outside_rating": "f2f4204145dd4c8d055d726ee1d9f7cb2543c549",
+  "patents": "",
+  "peer_patents": "",
+  "peer_safety": "ae7df35928b2ba3391ffefd5f205dd21a0339f97",
+  "peer_dupont": "ebecfa33e6a931572282198f0cf744f3596dabb3",
+  "peer_roe": "702203ea4f8fc678f5c3b094bbf1f66788222b53",
+  "margin_series": "860c8f021f276a2de2d7450e25bf55b78e2fbdf4"
+ },
+ "three_c": {
+  "date": "2026-11-17",
+  "verdict": "あいまい"
+ },
+ "outlook": "market/report/2026-11-16_outlook.md",
+ "previous": {
+  "date": "2026-11-13",
+  "verdict": "なし"
+ },
+ "md": "companies/6532_baycurrent/analysis/moat/2026-11-17_moat.md"
+}
