@@ -1,6 +1,6 @@
 # データ鮮度・未取得項目 — ベイカレント・コンサルティング
 
-**最終更新**: 2026-11-13（mode=update: 財務時系列 FY2021-FY2023 営業利益）
+**最終更新**: 2026-11-17（mode=update: 競合の成長投資の材料 competitors.md 14章）
 
 > collect-company-info を実行するたびに上書きする。`mode=update` はまずこのファイルと `sources/manifest.csv` を読む。
 
@@ -20,9 +20,8 @@
 
 | 項目 | 理由 | 次回試す取得方法 |
 |---|---|---|
-| シグマクシス（6088）の減価償却費 | 決算短信 PDF がバイナリで読み取り不可 | collect-peers-valuation: EDINET API でシグマクシス有報（XBRL）を取得し data 抽出 |
 | シグマクシスの売上原価・販管費の詳細内訳 | 決算説明資料・WebSearch 経由で取得できず | collect-peers-valuation: EDINET API でシグマクシス有報（XBRL）を取得 |
-| シグマクシスの EV/EBITDA（正確な計算値） | 減価償却費が取得できないため EBITDA 算出不可 | 上記シグマクシス有報 XBRL 取得後に計算 |
+| シグマクシスの EV/EBITDA（正確な計算値） | competitors.md 12章に未計算（減価償却費は 2026-11-17_competitors.md 14章で取得済み。設備投資 475百万円、減価償却費 251百万円 (2026年3月期)。EBITDA = 営業利益 6,065 + 減価償却費 251 = 6,316百万円。EV は時価総額 − ネットキャッシュで別途計算要） | collect-peers-valuation: 次回 competitors.md 更新時に12章に記入 |
 | ベイカレント Q2中間短信（2026-10-15）時点の正確な発行済株式数・自己株式数・BPS | Q2短信 PDF がバイナリで取得不可（20261009548418.pdf） | collect-filings: `pdf_text.py --kind pages` で 20261009548418.pdf をテキスト変換 |
 | アナリスト目標株価の中央値・個社別詳細 | 有料データ（アイフィス株予報 Pro 等）のためログイン不可 | 取得手段なし（有料サービス） |
 | 2017年2月期〜2020年2月期 売上高 | J-GAAP 時代の XBRL サマリーに RevenueIFRS 要素なし | collect-filings: 各年度有報 PDF（EDINET）の P&L ページ |
