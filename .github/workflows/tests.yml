@@ -5,7 +5,12 @@ name: tests
 on:
   push:
     branches: [main]
+  # The report workflows push only companies/ and market/ (an Issue's draft PR gets one push per Claude run):
+  # a PR that changes nothing else has no code to test.
   pull_request:
+    paths-ignore:
+      - "companies/**"
+      - "market/**"
   workflow_dispatch: {}
 
 permissions:
