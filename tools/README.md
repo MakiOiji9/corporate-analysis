@@ -260,6 +260,8 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 5. 情報収集は担当（collect-ir・collect-filings・collect-market・collect-peers-valuation）ごとに別の Claude 実行で進め、1担当終わるたびにブランチへコミット＆push する。Claude の実行中も5分ごとに途中保存する（`.github/scripts/autosave.sh`）。どこまで済んだかは `tools/collect/collect_progress.py` が raw の有無で判定し、済んだ担当は飛ばす
 6. 成功すると PR を Ready にして main にスカッシュマージし（Issue は自動で閉じる）、3期間の判定とレポートへのリンクをコメントする。失敗したとき（利用枠の上限など）はコメントして PR はドラフト・Issue は**開いたまま**にする。その実行の **Re-run failed jobs**、またはラベルの付け直しで、ブランチの続きから進む
 7. 1社あたり数十分〜数時間（1回の上限5時間。枠切れなら何回かに分けて進む）。Issue ごとに別に動くので、定期実行と同時に走ることがある
+   - Claude の1回の実行は `.github/scripts/run-claude.sh` が `--max-turns`（環境変数 `MAX_TURNS`、既定 100）で区切り、1回で利用枠を使い切らないようにしている。企業分析レポートのループ（`run-company-report.sh`）は上限で切れた回の続きを1回だけ同じ分析で進め、2回続けて切れたら失敗にする。情報収集と地合いレポートは上限で切れると失敗になる（Re-run failed jobs で続きから）
+   - `ci-settings.json` が拒否するコマンドの形（パイプ・cat・sleep など）を試してターンを無駄にしないよう、`run-claude.sh` が CI 用の制約を `--append-system-prompt` で伝えている
 8. 定期実行に入れるときは、レポートができてから `/favorites` で登録する
 
 ### 初回セットアップ（1回）

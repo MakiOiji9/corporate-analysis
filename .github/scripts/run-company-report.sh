@@ -5,7 +5,8 @@
 # A headless run often ends after the first analysis skill it calls (that skill's completion report reads as the
 # end of the turn), so this loop calls the command again until company_report.py check says report_existing.
 # Analyses that are fresh are skipped by the command itself, so every round goes on from where the last one
-# stopped. A round that leaves `next` unchanged (usage limit, a skill stopped to ask) ends the loop as a failure.
+# stopped. A round that leaves `next` unchanged (usage limit, a skill stopped to ask) ends the loop as a failure,
+# except a round cut by MAX_TURNS (run-claude.sh exits 3): the same step gets one more round.
 # Needs CLAUDE_CODE_OAUTH_TOKEN and PUSH_TOKEN (each round is committed and pushed: BRANCH, default main).
 set -uo pipefail
 
@@ -14,6 +15,7 @@ label="$2"
 out="${3:-${RUNNER_TEMP:-/tmp}/report.json}"
 here="$(cd "$(dirname "$0")" && pwd)"
 max_rounds="${MAX_ROUNDS:-15}"
+EXIT_MAX_TURNS=3  # run-claude.sh: the run was cut by MAX_TURNS
 
 next_step() {
   .venv/bin/python -I tools/report/company_report.py check --company "$dir" 2>/dev/null \
@@ -21,6 +23,7 @@ next_step() {
 }
 
 prev=""
+cut=""
 for round in $(seq 1 "$max_rounds"); do
   next="$(next_step)"
   echo "company_report check: next=${next:-（不明）}（${round} 回目）"
@@ -36,7 +39,18 @@ for round in $(seq 1 "$max_rounds"); do
   bash "$here/run-claude.sh" "/company-report $dir" "${label}（${round} 回目・next: ${next}）" "$out" || status=$?
   bash "$here/commit-outputs.sh" "chore: ${dir} の企業分析（${next}・自動実行 $(date +%F)）" \
     || echo "::warning::${dir}: コミットに失敗した"
+  if [ "$status" -eq "$EXIT_MAX_TURNS" ]; then
+    # Cut by MAX_TURNS: the next round may go on with the same step, but only once.
+    if [ -n "$cut" ] && [ "$next" = "$cut" ]; then
+      echo "::error::${dir}: ${next} が2回続けてターン上限で止まった（拒否されたツールを確かめるか MAX_TURNS を上げる）"
+      exit 1
+    fi
+    cut="$next"
+    prev=""
+    continue
+  fi
   [ "$status" -eq 0 ] || exit "$status"
+  cut=""
   prev="$next"
 done
 echo "::error::${dir}: ${max_rounds} 回実行してもレポートができなかった"
