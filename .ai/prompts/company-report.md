@@ -82,6 +82,7 @@ $PY -I tools/report/company_report.py check --company {company} [--redo] [--use-
 - check と prepare を1つのコマンドにつなげない（check の `next` を見てから次へ進む）。prepare も鮮度を確かめ、新しくない分析があれば `ok: false` で拒否する
 - 材料の収集（`collect-company-info` / 材料による `market-report`）も1回の実行で1回まで。実行したのにまだ同じ `next` が出たら、check・run・prepare に **`--use-stale`** を付けて進み（レポートに「古い材料」と基準日が出る）、完了報告の「警告」行に古い材料と `why` を書く
 - `materials` の基準日は完了報告の「材料」行に「材料の基準日: …」として書く
+- **レポートの株価は作成日の最新の確定終値にそろえる**。STEP 1・2 の8つが使える状態になると、check・run・prepare は先に `tools/collect/refresh_valuation.py` で自社と競合の最新の確定終値を取り直す（`price_sync`。エージェントなし）。valuation の結果がそれより古い株価で作られていれば、7日の有効期間内でも `expired`（「より新しい … の確定終値がある」）になり、手順 1.5 の run が最新の株価で作り直す（バリュエーションの数値・判定とレポートの株価が同じ基準日になる）。`price_sync.state` が `updated` なら完了報告の「材料」行に「株価をスクリプトで更新（基準日 {base_date}）」、`failed` なら「警告」行に `error` と「バリュエーションは前回の株価のまま」を書く（取り直しを再試行しない。`unchanged` は最新の終値が取得済みで、書かない）
 
 ### 1.5 STEP 2・3 の一括実行（スクリプト ⇄ 執筆）
 

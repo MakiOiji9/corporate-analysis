@@ -604,6 +604,21 @@ def test_new_price_waits_for_the_validity_period(repo, capsys):
     assert out["result"] == "expired"
 
 
+def test_the_report_redoes_the_valuation_on_a_newer_close(repo, capsys):
+    md = prepared(repo, capsys)
+    fill(md)
+    assert run(repo, "build", "--company", "7203", capsys=capsys)[0] == 0
+    _, out = run(repo, "check", "--company", "7203", "--date", DAY, "--latest-price", capsys=capsys)
+    assert out["result"] == "fresh", out  # the raw has no newer close yet
+    newer = repo / "companies" / "7203_toyota" / "raw" / "ir" / f"{DAY}_valuation-data.md"
+    newer.write_text(valuation_data(price=1100, price_date=DAY), encoding="utf-8")
+    _, out = run(repo, "check", "--company", "7203", "--date", DAY, "--latest-price", capsys=capsys)
+    assert out["result"] == "expired" and f"より新しい {DAY} の確定終値" in out["reason"], out
+    assert out["next"] == "prepare"
+    code, prep = run(repo, "prepare", "--company", "7203", "--date", DAY, "--latest-price", capsys=capsys)
+    assert code == 0, prep
+
+
 def test_a_new_upstream_result_triggers_a_reanalysis(repo, capsys):
     md = prepared(repo, capsys)
     fill(md)

@@ -144,7 +144,16 @@ def repo(tmp_path, monkeypatch):
                 "date": found[0] if found else None, "verdict": found[1].get(step.verdict_key) if found else None}
 
     monkeypatch.setattr(S, "step_state", step_state)
+    SYNCS.clear()
+
+    def refresh(root, company, today):  # no network: the raw already has the newest close
+        SYNCS.append(company)
+        return {"ok": False, "error": "更新不要", "fallback": None}
+    monkeypatch.setattr(S.RV, "run", refresh)
     return tmp_path
+
+
+SYNCS: list[str] = []
 
 
 def _run(root: Path, capsys, *argv: str) -> dict:
@@ -203,6 +212,35 @@ def test_check_reports_first_not_fresh_skill(repo, capsys):
     assert [s["skill"] for s in out["steps"]] == [s.skill for s in S.STEPS]
     gate = _prepare(repo, capsys)
     assert not gate["ok"] and "moat" in gate["error"]
+
+
+def test_the_newest_close_is_taken_only_after_step1_and_step2(repo, capsys):
+    _company(repo)
+    STALE["key"] = "moat"
+    out = _run(repo, capsys, "check", "--company", "3798", "--date", TODAY)
+    assert out["price_sync"] is None and SYNCS == []  # the valuation waits for its upstream anyway
+    STALE["key"] = "valuation"
+    out = _run(repo, capsys, "check", "--company", "3798", "--date", TODAY)
+    assert out["price_sync"] == {"state": "unchanged", "reason": "更新不要"} and SYNCS == ["3798_uls-group"]
+    out = _run(repo, capsys, "check", "--company", "3798", "--date", TODAY, "--skip-prices")
+    assert out["price_sync"] is None and len(SYNCS) == 1
+
+
+def test_a_new_close_re_evaluates_the_valuation_before_prepare(repo, capsys, monkeypatch):
+    _company(repo)
+    taken: list[str] = []
+
+    def refresh(root, company, today):
+        taken.append(today)
+        STALE.update(key="valuation", result="expired")  # the valuation now sees a newer close in the raw
+        return {"ok": True, "base_date": TODAY, "price": 1000.0}
+    monkeypatch.setattr(S.RV, "run", refresh)
+    gate = _run(repo, capsys, "prepare", "--company", "3798", "--date", TODAY)
+    assert not gate["ok"] and gate["next"] == "valuation" and "valuation" in gate["error"]
+    assert taken == [TODAY]
+    monkeypatch.setattr(S.RV, "run", lambda root, company, today: {"ok": False, "error": "e", "fallback": "f"})
+    out = _run(repo, capsys, "check", "--company", "3798", "--date", TODAY)
+    assert out["price_sync"] == {"state": "failed", "error": "e", "fallback": "f"}
 
 
 def test_use_existing_skips_triggered_analyses(repo, capsys):

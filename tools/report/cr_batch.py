@@ -4,7 +4,8 @@ Each call goes as far as the scripts can without the writer, then stops:
   - an analysis whose writer's JSON ({date}_fills.json) is there is filled (the JSON is then removed) and built
   - an analysis that is not fresh and whose upstream is ready is prepared (cash-flow waits for profitability,
     growth and safety; valuation for all four, since its final check reads them), and its fields are returned in `write` (brief, fill_spec, rules)
-  - valuation whose only gap is the price gets new closes from refresh_valuation.py (no agent)
+  - valuation whose only gap is the price gets new closes from refresh_valuation.py (no agent); with sync the
+    newest close is taken first even within the 7 days, and the valuation is checked with --latest-price
   - an analysis that needs collecting is returned in `collect` (the writer runs that skill)
 STEP 1 (five-forces → three-c → moat → swot) is not run here: while one of them is not usable, `next` is its skill.
 The analysis scripts are called in-process through their own main(), so every gate and check of theirs applies.
@@ -34,8 +35,9 @@ MAX_ROUNDS = 12  # every round builds or refreshes something, or stops
 
 def call(step: S.Step, root: Path, *argv: str) -> dict:
     out = io.StringIO()
+    extra = ["--latest-price"] if argv[0] in ("check", "prepare") and getattr(step, "latest_price", False) else []
     with contextlib.redirect_stdout(out):
-        step.script.main(list(argv), root)
+        step.script.main(list(argv) + extra, root)
     return json.loads(out.getvalue().strip().splitlines()[-1])
 
 
@@ -124,13 +126,20 @@ def _pending_step1(status: dict, use_existing: bool) -> str | None:
     return None
 
 
-def run(root: Path, company: S.Company, today: str, use_existing: bool = False, use_stale: bool = False) -> dict:
+def run(root: Path, company: S.Company, today: str, use_existing: bool = False, use_stale: bool = False,
+        sync: bool = False) -> dict:
+    """sync: take the newest close once STEP 1・2 are usable (cr_status.sync_price), at most once per run."""
     by_skill = {s.skill: s for s in S.STEPS}
     out: dict[str, list] = {"built": [], "write": [], "collect": [], "errors": [], "refreshed": [], "blocked": []}
     refreshed: set[str] = set()
+    synced: list[dict] = []
 
     def check() -> dict:
-        return S.check(root, company, today, use_existing=use_existing, use_stale=use_stale)
+        status = S.check(root, company, today, use_existing=use_existing, use_stale=use_stale,
+                         sync=sync and not synced)
+        if status.get("price_sync"):
+            synced.append(status["price_sync"])
+        return {**status, "price_sync": synced[0] if synced else None}
     for _ in range(MAX_ROUNDS):
         status = check()
         step1 = _pending_step1(status, use_existing)
@@ -168,5 +177,6 @@ def _result(status: dict, out: dict, step1: str | None) -> dict:
         nxt = status["next"]
     return {"ok": not out["errors"], "next": nxt, "built": out["built"], "write": out["write"],
             "collect": out["collect"], "errors": out["errors"], "blocked": out["blocked"], "price_refreshed": out["refreshed"],
+            "price_sync": status.get("price_sync"),
             "collect_request": status.get("collect"),
             "steps": [{k: s[k] for k in ("skill", "result", "date", "verdict")} for s in status["steps"]]}

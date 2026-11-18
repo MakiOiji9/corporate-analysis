@@ -2,7 +2,7 @@
 
 Usage:
   company_report.py list
-  company_report.py check   --company X [--redo]
+  company_report.py check   --company X [--redo] [--skip-prices]
   company_report.py prepare --company X [--redo] [--skip-prices] [--skip-market-report]
   company_report.py build   --company X [--date YYYY-MM-DD]
 
@@ -10,7 +10,9 @@ Usage:
 list:    companies with how many of the nine analyses are not fresh and the state of their latest report.
 check:   the nine analyses in dependency order (each script's own evaluate()), the market outlook and today's
          report -> "next": the skill to run (five-forces ... valuation, market-report), prepare, write (FILL left),
-         build (filled, not built) or report_existing.
+         build (filled, not built) or report_existing. Once every analysis but the valuation is usable, check
+         (and prepare, run) first take the newest close of the company and its peers (refresh_valuation.py,
+         "price_sync"); a valuation built on an older close is then expired, so the report's price is the newest.
 prepare: fetch the share prices (tools/collect/stock_prices.py), compute every judgement into
          reports/{date}_company-report_facts.json, write {date}_company-report_brief.md (what the writer reads)
          and the {date}_company-report.md skeleton (conclusion table by script, FILL markers for the words).
@@ -104,9 +106,10 @@ def cmd_check(args: argparse.Namespace, root: Path) -> int:
     if error:
         return emit(error)
     today = _today(args)
-    status = S.check(root, company, today, args.redo, args.use_existing, args.use_stale)
+    status = S.check(root, company, today, args.redo, args.use_existing, args.use_stale, sync=not args.skip_prices)
     return emit({"ok": True, "company": company.dirname, "name": company.display_name(), "date": today,
                  "steps": _compact(status["steps"]), "outlook": status["outlook"], "report": status["report"],
+                 "price_sync": status["price_sync"],
                  "materials": _materials(status["materials"]), "collect": status["collect"],
                  "next": status["next"]})
 
@@ -164,7 +167,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     if error:
         return emit(error)
     today = _today(args)
-    status = S.check(root, company, today, args.redo, args.use_existing, args.use_stale)
+    status = S.check(root, company, today, args.redo, args.use_existing, args.use_stale, sync=not args.skip_prices)
     gate = _prepare_gate(status, args)
     if gate:
         return emit({"ok": False, "error": gate, "next": status["next"], "steps": _compact(status["steps"])})
@@ -189,7 +192,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
         "superseded": company.rel(superseded) if superseded else None,
         "md": company.rel(md_path), "kept": kept, **AF.prepare_fields(company, md_path),
         "prices": {k: prices[k] for k in ("ok", "skipped", "rows", "first", "last", "error") if k in prices},
-        "price_source": facts["prices"]["source"], "step1": _grade(facts["step1"]), "step2": _grade(facts["step2"]),
+        "price_sync": status["price_sync"], "price_source": facts["prices"]["source"], "step1": _grade(facts["step1"]), "step2": _grade(facts["step2"]),
         "step3": facts["step3"]["verdict"],
         "horizons": {k: D.verdict_label(h) for k, h in facts["horizons"].items()}, "legends": _legends(facts),
         "technical": _technical(facts),
@@ -264,7 +267,8 @@ def cmd_run(args: argparse.Namespace, root: Path) -> int:
     company, error = _resolve(root, args.company)
     if error:
         return emit(error)
-    return emit({"company": company.dirname, **B.run(root, company, _today(args), args.use_existing, args.use_stale)})
+    return emit({"company": company.dirname, **B.run(root, company, _today(args), args.use_existing, args.use_stale,
+                                                     sync=not args.skip_prices)})
 
 
 def cmd_fill(args: argparse.Namespace, root: Path) -> int:
@@ -290,8 +294,9 @@ def main(argv: list[str] | None = None, root: Path = A.REPO_ROOT) -> int:
             p.add_argument("--use-stale", action="store_true",
                            help="古い材料（直近のニュース・アナリスト予想・地合い）を収集し直さずに進む。"
                                 "収集を1回試しても新しくならなかったときだけ（レポートに「古い材料」と出る）")
+            p.add_argument("--skip-prices", action="store_true",
+                           help="株価を取りに行かない（バリュエーションの株価と data/prices.csv をそのまま使う）")
         if name == "prepare":
-            p.add_argument("--skip-prices", action="store_true", help="株価を取りに行かない（data/prices.csv をそのまま使う）")
             p.add_argument("--skip-market-report", action="store_true",
                            help="地合い判断が古いまま進む（market-report を実行しても作れなかったときだけ）")
         if name == "fill":

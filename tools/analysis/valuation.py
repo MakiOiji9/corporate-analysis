@@ -2,15 +2,16 @@
 
 Usage:
   valuation.py list
-  valuation.py check   --company X
-  valuation.py prepare --company X [--redo] [--skip-collect]
+  valuation.py check   --company X [--latest-price]
+  valuation.py prepare --company X [--redo] [--skip-collect] [--latest-price]
   valuation.py build   --company X [--date YYYY-MM-DD]
 
 --company takes '3798', '3798_uls-group' or part of the directory name.
 list:    companies under companies/ with the state of their valuation result (for choosing one).
 check:   is the latest result still valid (7 days, the sections and the numbers it used unchanged)? Is the growth
          analysis finished and valid (required upstream)? Which inputs are missing, and is the price older than
-         7 days? -> "next".
+         7 days? -> "next". --latest-price (the company report): a result whose price is older than the newest
+         close in the raw is expired, so the report shows and judges the newest price.
 prepare: analysis/valuation/{date}_brief.md (what the writer reads) and the {date}_valuation.md skeleton
          (every table and judgement computed, FILL markers for the background only).
 build:   check the filled md, write the conclusion (STEP 3 割安/妥当/割高/判定保留) and {date}_valuation.json.
@@ -43,6 +44,7 @@ import va_inputs as I  # noqa: E402
 import va_metrics as X  # noqa: E402
 import va_paths as P  # noqa: E402
 import va_rules as R  # noqa: E402
+import va_series as VS  # noqa: E402
 from common import atomic_write_text, utf8_stdout  # noqa: E402
 
 TEMPLATE = A.REPO_ROOT / ".ai" / "templates" / "valuation" / "valuation.md"
@@ -82,8 +84,17 @@ def _upstream_changes(company: P.Company, result: dict) -> list[str]:
             out.append(f"{labels.get(key, key)}分析の結論が {before or '未実施'} → {after or '未実施'} に変わった")
     return out
 
-def evaluate(company: P.Company, today: str) -> dict:
-    """result: fresh / expired / triggered / draft / none, with the latest result and draft."""
+def _newer_price(company: P.Company, result: dict) -> str | None:
+    """The raw's newest close when it is newer than the one the result used (refresh_valuation.py, a collection)."""
+    raw = VS.price_data(I.gather(company, (I.SPEC["price"],))["price"])["date"]
+    used = (result.get("price") or {}).get("date")
+    return f"株価の基準日 {used} より新しい {raw} の確定終値がある" if raw and used and raw > used else None
+
+
+def evaluate(company: P.Company, today: str, latest_price: bool = False) -> dict:
+    """result: fresh / expired / triggered / draft / none, with the latest result and draft.
+    latest_price (the company report): a newer close in the raw expires the result even within its validity;
+    on its own the valuation keeps the 7-day validity as the unit of the price."""
     latest = P.latest_result(company)
     draft = P.latest_draft(company)
     state: dict = {"latest": None, "draft": company.rel(draft[1]) if draft else None, "newer_raw": []}
@@ -97,6 +108,9 @@ def evaluate(company: P.Company, today: str) -> dict:
         state.update(result="draft", reason=f"作成途中の {company.rel(draft[1])} がある（続きから書く）")
     elif not latest:
         state.update(result="none", reason="バリュエーション分析の結果が無い")
+    elif latest_price and (newer := _newer_price(company, latest[1])):
+        state.update(result="expired", reason="; ".join([newer, *state["newer_raw"]])
+                     + "（企業分析レポートは最新の株価で作り直す）")
     elif state["newer_raw"]:
         state.update(result="triggered", reason="; ".join(state["newer_raw"]))
     elif today > state["latest"]["valid_until"]:
@@ -161,7 +175,7 @@ def cmd_check(args: argparse.Namespace, root: Path) -> int:
     if error:
         return emit(error)
     today = args.date or dt.date.today().isoformat()
-    state = evaluate(company, today)
+    state = evaluate(company, today, args.latest_price)
     growth = GR.evaluate(_growth_company(company), today)
     found = I.gather_valuation(company)
     cands = X.candidates(company, found, today)
@@ -225,7 +239,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     if error:
         return emit(error)
     today = args.date or dt.date.today().isoformat()
-    state = evaluate(company, today)
+    state = evaluate(company, today, args.latest_price)
     if state["result"] == "fresh" and not args.redo:
         return emit({"ok": False, "error": state["reason"] + "。作り直すのはユーザーが指示したときだけ（--redo）",
                      "latest": state["latest"]})
@@ -419,6 +433,9 @@ def main(argv: list[str] | None = None, root: Path = A.REPO_ROOT) -> int:
         p = sub.add_parser(name)
         p.add_argument("--company", help="銘柄コード・企業ディレクトリ名・社名の一部")
         p.add_argument("--date", help="YYYY-MM-DD（check/prepare: 今日の代わり、build: 対象の分析日。省略時は今日／最新）")
+        if name in ("check", "prepare"):
+            p.add_argument("--latest-price", action="store_true",
+                           help="raw に結果より新しい確定終値があれば有効期間内でも作り直す（企業分析レポートから）")
         if name == "prepare":
             p.add_argument("--redo", action="store_true", help="有効な結果・作成途中の結果があっても作り直す")
             p.add_argument("--skip-collect", action="store_true",

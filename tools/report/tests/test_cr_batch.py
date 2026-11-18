@@ -31,6 +31,7 @@ class FakeAnalysis:
         self.root, self.skill, self.keys, self.collect = root, skill, keys, collect
         self.dir = root / "companies" / "1111_x" / "analysis" / skill
         self.calls: list[str] = []
+        self.argvs: list[list[str]] = []
 
     def md(self, date: str = DAY) -> Path:
         return self.dir / f"{date}_{self.skill}.md"
@@ -41,6 +42,7 @@ class FakeAnalysis:
     def main(self, argv: list[str], root: Path) -> int:
         cmd = argv[0]
         self.calls.append(cmd)
+        self.argvs.append(list(argv))
         if cmd == "check":
             out = {"ok": True, "next": "collect", **self.collect} if self.collect else {"ok": True, "next": "prepare"}
         elif cmd == "prepare":
@@ -77,16 +79,20 @@ def setup(tmp_path, monkeypatch):
     fakes = {k: FakeAnalysis(tmp_path, k, ("a", "b")) for k in B.BATCH}
     fakes["valuation"].keys = ()
     step1 = {k: "fresh" for k in STEP1}
-    monkeypatch.setattr(S, "STEPS", tuple(SimpleNamespace(skill=k, script=fakes[k], paths=_paths_for(k))
-                                          for k in B.BATCH))
+    monkeypatch.setattr(S, "STEPS", tuple(SimpleNamespace(skill=k, script=fakes[k], paths=_paths_for(k),
+                                                          latest_price=k == "valuation") for k in B.BATCH))
+    syncs: list[bool] = []
 
-    def check(root, company, today, redo=False, use_existing=False, use_stale=False):
+    def check(root, company, today, redo=False, use_existing=False, use_stale=False, sync=False):
+        syncs.append(sync)
         rows = [{"skill": k, "result": step1[k], "date": None, "verdict": None} for k in STEP1]
         rows += [{"skill": k, "result": "fresh" if fakes[k].built() else "none", "date": None, "verdict": None}
                  for k in B.BATCH]
-        return {"steps": rows, "next": next((r["skill"] for r in rows if r["result"] != "fresh"), "prepare")}
+        return {"steps": rows, "next": next((r["skill"] for r in rows if r["result"] != "fresh"), "prepare"),
+                "price_sync": {"state": "updated", "base_date": "2026-10-30"} if sync else None}
     monkeypatch.setattr(S, "check", check)
-    return SimpleNamespace(root=tmp_path, company=FakeCompany(tmp_path, path), fakes=fakes, step1=step1)
+    return SimpleNamespace(root=tmp_path, company=FakeCompany(tmp_path, path), fakes=fakes, step1=step1,
+                           syncs=syncs)
 
 
 def _fills(fake: FakeAnalysis, values: dict) -> None:
@@ -168,6 +174,22 @@ def test_a_failed_refresh_goes_to_collect_once(setup, monkeypatch):
     monkeypatch.setattr(B.RV, "run", lambda root, company, today: {"ok": False, "error": "e", "fallback": "f"})
     out = B.run(setup.root, setup.company, DAY)
     assert out["next"] == "collect" and out["collect"][0]["fallback"] == "f"
+
+
+def test_the_newest_close_is_taken_once_and_the_valuation_is_checked_against_it(setup):
+    for k in ("profitability", "growth", "safety", "cash-flow"):
+        _built(setup.fakes[k])
+    out = B.run(setup.root, setup.company, DAY, sync=True)
+    assert setup.syncs.count(True) == 1 and out["price_sync"] == {"state": "updated", "base_date": "2026-10-30"}
+    val = setup.fakes["valuation"].argvs
+    assert [a[0] for a in val] == ["check", "prepare", "build"]
+    assert all("--latest-price" in a for a in val[:2]) and "--latest-price" not in val[2]
+    assert all("--latest-price" not in a for a in setup.fakes["growth"].argvs)
+
+
+def test_no_sync_by_default(setup):
+    out = B.run(setup.root, setup.company, DAY)
+    assert True not in setup.syncs and out["price_sync"] is None
 
 
 def test_another_gap_is_returned_to_collect(setup):

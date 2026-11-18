@@ -27,6 +27,7 @@ import moat  # noqa: E402
 import mt_paths  # noqa: E402
 import pf_paths  # noqa: E402
 import profitability  # noqa: E402
+import refresh_valuation as RV  # noqa: E402
 import safety  # noqa: E402
 import sf_paths  # noqa: E402
 import sw_paths  # noqa: E402
@@ -49,6 +50,7 @@ class Step:
     script: ModuleType
     paths: ModuleType
     verdict_key: str = "verdict"
+    latest_price: bool = False  # the report re-runs it when a newer close is in the raw (--latest-price)
 
 
 STEPS = (
@@ -60,7 +62,7 @@ STEPS = (
     Step("growth", "growth", "成長性", "2-2", growth, gr_paths),
     Step("safety", "safety", "安全性", "2-3", safety, sf_paths),
     Step("cash_flow", "cash-flow", "キャッシュフロー", "2-4", cash_flow, cf_paths),
-    Step("valuation", "valuation", "バリュエーション", "3", valuation, va_paths),
+    Step("valuation", "valuation", "バリュエーション", "3", valuation, va_paths, latest_price=True),
 )
 
 
@@ -82,7 +84,8 @@ def latest(step: Step, company: Company) -> tuple[str, dict] | None:
 
 
 def step_state(step: Step, company: Company, today: str) -> dict:
-    state = step.script.evaluate(step.paths.Company(company.root, company.path), today)
+    pc = step.paths.Company(company.root, company.path)
+    state = step.script.evaluate(pc, today, True) if step.latest_price else step.script.evaluate(pc, today)
     found = latest(step, company)
     return {"key": step.key, "skill": step.skill, "label": step.label, "step": step.number,
             "result": state["result"], "reason": state.get("reason", ""),
@@ -129,12 +132,35 @@ def next_step(steps: list[dict], outlook: dict, report: dict, today: str, redo: 
     return (MT.next_for(materials) if materials else None) or "prepare"
 
 
+def sync_price(root: Path, company: Company, today: str, steps: list[dict], use_existing: bool) -> dict | None:
+    """Once every analysis but the valuation is usable, take the newest common close of the company and its peers
+    (refresh_valuation.py, no agent), so the valuation and the report use the price of the day the report is made.
+    None: not yet (the valuation waits for its upstream anyway). updated: new raw files were written; unchanged:
+    the raw already has the newest close (or today's files); failed: the valuation keeps its price (a warning)."""
+    if not all(usable(s, use_existing) for s in steps if not _latest_price(s)):
+        return None
+    result = RV.run(root, company.dirname, today)
+    if result.get("ok"):
+        return {"state": "updated", "base_date": result["base_date"], "price": result["price"]}
+    if result.get("fallback") is None:  # not newer than the raw, or already taken today
+        return {"state": "unchanged", "reason": result.get("error")}
+    return {"state": "failed", "error": result.get("error"), "fallback": result.get("fallback")}
+
+
+def _latest_price(state: dict) -> bool:
+    return any(step.latest_price and step.skill == state["skill"] for step in STEPS)
+
+
 def check(root: Path, company: Company, today: str, redo: bool = False, use_existing: bool = False,
-          use_stale: bool = False) -> dict:
+          use_stale: bool = False, sync: bool = False) -> dict:
+    """sync: take the newest close first (sync_price) — the report's check and prepare, not the tests' fakes."""
     steps = [step_state(step, company, today) for step in STEPS]
+    price_sync = sync_price(root, company, today, steps, use_existing) if sync else None
+    if price_sync and price_sync["state"] == "updated":
+        steps = [step_state(step, company, today) for step in STEPS]
     outlook = A.latest_outlook(root, today)
     report = report_state(company)
     materials = MT.evaluate(company.path, outlook, today)
     nxt = next_step(steps, outlook, report, today, redo, use_existing, None if use_stale else materials)
-    return {"steps": steps, "outlook": outlook, "report": report, "materials": materials,
+    return {"steps": steps, "outlook": outlook, "report": report, "materials": materials, "price_sync": price_sync,
             "collect": MT.collect_request(materials) if nxt == MT.COLLECT_SKILL else None, "next": nxt}
