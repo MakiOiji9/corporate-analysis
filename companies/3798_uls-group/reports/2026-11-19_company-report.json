@@ -2,7 +2,7 @@
  "rules_version": 2,
  "company": "3798_uls-group",
  "name": "ULSグループ（3798）",
- "date": "2026-11-17",
+ "date": "2026-11-19",
  "market": "日本",
  "horizons": {
   "short": {
@@ -43,8 +43,8 @@
   "note": "割安だが理由あり（キャッシュフロー）"
  },
  "price": {
-  "value": 483.0,
-  "date": "2026-11-10",
+  "value": 478.0,
+  "date": "2026-11-17",
   "currency": "円"
  },
  "legends": {
@@ -67,10 +67,10 @@
  },
  "price_range": {
   "source": "prices",
-  "current": 490.0,
+  "current": 478.0,
   "first": "2016-10-24",
-  "last": "2026-11-13",
-  "position_52w": 7.6
+  "last": "2026-11-17",
+  "position_52w": 2.5
  },
  "analyses": {
   "five_forces": {
@@ -106,16 +106,14 @@
    "verdict": "懸念"
   },
   "valuation": {
-   "date": "2026-11-11",
+   "date": "2026-11-19",
    "verdict": "割安"
   }
  },
  "outlook": "market/report/2026-11-16_outlook.md",
  "review": "2027年3月期 第3四半期決算の発表（日付は IR カレンダーで要確認）",
- "warnings": [
-  "6.2 が 322 字（目安 300 字以内）"
- ],
+ "warnings": [],
  "used_existing": [],
- "md": "companies/3798_uls-group/reports/2026-11-17_company-report.md",
- "html": "companies/3798_uls-group/reports/2026-11-17_company-report.html"
+ "md": "companies/3798_uls-group/reports/2026-11-19_company-report.md",
+ "html": "companies/3798_uls-group/reports/2026-11-19_company-report.html"
 }
