@@ -93,3 +93,5 @@ fetched_date,doc_type,period,published_date,doc_id,url,sha256,local_path,note
 2026-11-16,peer-yuho,,,northsand_ipo,https://www.jpx.co.jp/listing/stocks/new/um3qrc0000027zdk-att/11Northsand-1s.pdf,d527b975e57ad5fa9799fe86ea1e4b35de86b928e3f7728070c4100a4a01bc8c,sources/2026-11-16/northsand_ipo.pdf,
 2026-11-16,peer-presentation,,,rise_finance,https://www.rise-cg.co.jp/ir/finance/,ec443d43d3e00e767ca1bba26136bd4e20c1921e9e282b7cbd3a15284a5ee378,sources/2026-11-16/rise_finance.htm,
 2026-11-16,peer-yuho,,,rise_ipo,https://www.jpx.co.jp/english/listing/stocks/new/p6b22i0000003ty6-att/09RiseConsultingGroup-1s.pdf,22a8d3c05db513d8d6f0ab66156c203a246737db5830d3142e11424166852d78,sources/2026-11-16/rise_ipo.pdf,
+2026-11-20,ir_list,,,ir-docs,https://edinetdb.jp/company/E05521/ir-docs/,38cc12ef6d4ea1430fea2816f9730f050d81bf6848766185c4c2607cec3c1c41,sources/2026-11-20/ir-docs.htm,
+2026-11-20,presentation,2027-03,2026-11-13,20261106567616,https://finance-frontend-pc-dist.west.edge.storage-yahoo.jp/disclosure/20261113/20261106567616.pdf,77e7f62da8379ef372a91f6c4ddd48360402c3d1f931b76f535cc660016b7869,sources/2026-11-20/20261106567616.pdf,
