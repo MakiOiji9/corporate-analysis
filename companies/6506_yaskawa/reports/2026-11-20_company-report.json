@@ -2,7 +2,7 @@
  "rules_version": 2,
  "company": "6506_yaskawa",
  "name": "安川電機（6506）",
- "date": "2026-11-18",
+ "date": "2026-11-20",
  "market": "日本",
  "horizons": {
   "short": {
@@ -43,8 +43,8 @@
   "note": ""
  },
  "price": {
-  "value": 3773.0,
-  "date": "2026-11-10",
+  "value": 3505.0,
+  "date": "2026-11-18",
   "currency": "円"
  },
  "legends": {
@@ -67,10 +67,10 @@
  },
  "price_range": {
   "source": "prices",
-  "current": 3561.0,
+  "current": 3505.0,
   "first": "2016-10-24",
-  "last": "2026-11-16",
-  "position_52w": 4.6
+  "last": "2026-11-18",
+  "position_52w": 3.4
  },
  "analyses": {
   "five_forces": {
@@ -106,14 +106,16 @@
    "verdict": "普通"
   },
   "valuation": {
-   "date": "2026-11-15",
+   "date": "2026-11-20",
    "verdict": "妥当"
   }
  },
  "outlook": "market/report/2026-11-16_outlook.md",
  "review": "次回決算発表予定日: 未告知（第3四半期は例年1月上旬〜中旬。2026-01-09、2025-01-10）",
- "warnings": [],
+ "warnings": [
+  "6.2 が 301 字（目安 300 字以内）"
+ ],
  "used_existing": [],
- "md": "companies/6506_yaskawa/reports/2026-11-18_company-report.md",
- "html": "companies/6506_yaskawa/reports/2026-11-18_company-report.html"
+ "md": "companies/6506_yaskawa/reports/2026-11-20_company-report.md",
+ "html": "companies/6506_yaskawa/reports/2026-11-20_company-report.html"
 }
