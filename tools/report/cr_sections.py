@@ -135,19 +135,20 @@ def _mark(mark: str | None) -> str:
     return f'<span class="mk {MARK_CLASS.get(mark or "", "")}">{esc(mark or "—")}</span>'
 
 
-def _sources_line(evidence: list[dict] | None) -> str:
-    """'出典: …' under a 3C card; nothing for a result built before BL-01."""
-    return f'<p class="small"><b>出典</b>: {EVR.cell(evidence)}</p>' if evidence else ""
+def _sources_line(evidence: list[dict] | None, quiet: bool = False) -> str:
+    """'出典: …' under a 3C card; nothing for a result built before BL-01 (or, quiet, when nothing is verified)."""
+    shown = EVR.cell(evidence, quiet) if evidence else "—"
+    return f'<p class="small"><b>出典</b>: {shown}</p>' if evidence and shown != "—" else ""
 
 
-def _three_c_cards(detail: dict) -> str:
+def _three_c_cards(detail: dict, quiet: bool = False) -> str:
     kbf = "".join(f'<li{" class=top" if i == 0 else ""}>{esc(k)}</li>' for i, k in enumerate(detail.get("kbf") or []))
     customer = (f'<div class="c3 c-customer"><div class="c3-h">Customer（顧客・市場）</div>'
                 f'<p class="small">{esc(detail.get("customers") or detail.get("customer") or "—")}</p>'
                 f'<p class="small"><b>選ぶときに重視すること（KBF。上ほど重要）</b></p><ol class="kbf">{kbf}</ol>'
                 f'<p class="small"><b>市場の成長性</b>: {esc(detail.get("growth") or "—")}。'
                 f'{esc(detail.get("growth_reason") or "")}</p>'
-                f'{_sources_line(detail.get("customer_evidence"))}</div>')
+                f'{_sources_line(detail.get("customer_evidence"), quiet)}</div>')
     comp_rows = [[esc(short_name(c["name"])) + (" <b>（対象）</b>" if c.get("self") else ""),
                   esc(num(c["sales"] / YEN_OKU, "億円", 0) if c.get("sales") else "—"),
                   esc(num(c.get("margin"), "%")), esc(num(c.get("cagr"), "%")), esc(num(c.get("share"), "%"))]
@@ -157,14 +158,14 @@ def _three_c_cards(detail: dict) -> str:
                           right=frozenset({1, 2, 3, 4}))
                   + f'<p class="small"><b>比較の結論</b>: {esc(_competitor_conclusion(detail))}。'
                     f'{esc(detail.get("competitor_reason") or "")}</p>'
-                  + f'{_sources_line(detail.get("competitor_evidence"))}</div>')
+                  + f'{_sources_line(detail.get("competitor_evidence"), quiet)}</div>')
     company = (f'<div class="c3 c-company"><div class="c3-h">Company（自社）</div>'
                f'<p class="small"><b>強み</b>: {esc(detail.get("strengths") or "—")}</p>'
                f'<p class="small"><b>弱み</b>: {esc(detail.get("weaknesses") or "—")}</p></div>')
     return f'<div class="c3-grid">{customer}{competitor}{company}</div>'
 
 
-def three_c_block(detail: dict, analysis: dict) -> str:
+def three_c_block(detail: dict, analysis: dict, quiet: bool = False) -> str:
     if not detail:
         return '<h3>3C分析</h3><p class="muted">3C分析が未実施。</p>'
     peers = list(((detail.get("kbf_table") or [{}])[0] or {}).get("peers", {}).keys())
@@ -177,11 +178,11 @@ def three_c_block(detail: dict, analysis: dict) -> str:
     conservative = "".join(f"<li>{esc(c)}</li>" for c in analysis.get("conservative") or [])
     conclusion = (f'<p><b>勝てる理由</b>: {badge(analysis.get("verdict"))} {esc(analysis.get("reason"))}</p>'
                   + (f'<ul class="plain small">{conservative}</ul>' if conservative else ""))
-    return (f'<h3>3C分析（顧客・競合・自社）</h3>{_three_c_cards(detail)}'
+    return (f'<h3>3C分析（顧客・競合・自社）</h3>{_three_c_cards(detail, quiet)}'
             f'<h4>KBF ごとの比較（○ 優れる・△ 同程度・× 劣る・？ 比べる材料なし）</h4>{kbf_table}{conclusion}')
 
 
-def swot_grid(detail: dict, analysis: dict) -> str:
+def swot_grid(detail: dict, analysis: dict, quiet: bool = False) -> str:
     if not detail:
         return '<h3>SWOT分析</h3><p class="muted">SWOT分析が未実施。</p>'
     top = {(detail.get("top_strength") or {}).get("id"), (detail.get("top_threat") or {}).get("id")}
@@ -196,13 +197,15 @@ def swot_grid(detail: dict, analysis: dict) -> str:
     return (f'<h3>SWOT分析</h3><div class="swot">{cells}</div>'
             f'<p class="small muted">影響度: 大・中・小（枠で囲んだ項目は最大の強み・最大の脅威）</p>'
             f'<p><b>強みで脅威に対抗できるか</b>: {badge(analysis.get("verdict"))} {esc(detail.get("sentence"))}</p>'
-            + _swot_sources(detail))
+            + _swot_sources(detail, quiet))
 
 
-def _swot_sources(detail: dict) -> str:
+def _swot_sources(detail: dict, quiet: bool = False) -> str:
     """Each item's 出典 in a folded table under the grid (the grid itself stays short); nothing before BL-01."""
-    rows = [[f"<b>{esc(i.get('id'))}</b>", esc(i.get("fact")), EVR.cell(i.get("evidence"))]
+    rows = [[f"<b>{esc(i.get('id'))}</b>", esc(i.get("fact")), EVR.cell(i.get("evidence"), quiet)]
             for key, _, _ in QUADRANTS for i in (detail.get("quadrants") or {}).get(key) or [] if i.get("evidence")]
+    if quiet:  # nothing verified: a table of names only adds nothing the section note does not say
+        rows = [r for r in rows if r[2] != "—"]
     if not rows:
         return ""
     return (f'<details><summary>SWOT の各項目の出典</summary><div class="inner">'

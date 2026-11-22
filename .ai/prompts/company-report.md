@@ -174,6 +174,8 @@ $PY -I tools/report/company_report.py build --company {company}
 
 - `ok: true` → HTML と json を作る。返り値の `html`・`horizons`・`step1`〜`step3`・`warnings`（文字数の目安超え）を完了報告に使う。`warnings` があれば該当の欄を短く直して build し直してよい（1回まで）
 - `ok: false` → `issues` の指摘箇所だけを Edit で直し、もう一度 build（2回まで。それでも残れば未完了として、指摘をそのまま報告する）
+- `issues` の「章どうしの食い違い（スクリプトの不具合…）」は md では直せない（スクリプトの不具合）。直さずに未完了として報告する
+- `warnings` の「自動チェック（読みにくい書き方…）」はレポートには出ない。書いた欄にあれば直してよい（分析の側の文章なら報告するだけ）
 
 ---
 

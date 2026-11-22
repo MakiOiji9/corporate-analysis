@@ -53,3 +53,22 @@ def test_wording_finds_internal_words_repeats_and_nested_brackets():
     assert any(x.startswith("2重の括弧が 1 か所") for x in found)
     assert not any("版N" in x for x in found)
     assert LT.wording("<main><p>普通（内訳から +0.5）。良好、良好</p></main>") == []
+
+
+def test_mismatches_stop_and_wording_does_not():
+    facts = _facts(resistance=549.0)
+    assert LT.mismatches(facts) and all("食い違う" in x for x in LT.mismatches(facts))
+    page = "<main><p>スクリプトの判定候補</p></main>"
+    assert LT.check(page, facts) == LT.mismatches(facts) + LT.wording(page)
+    assert not any("スクリプト" in x for x in LT.mismatches(facts))
+
+
+def test_an_all_unverified_section_says_so_once():
+    import cr_evidence as EVR
+    unverified = [{"status": "未検証", "reason": "Front Matter なし", "title": "業界の資料"}]
+    verified = [{"status": "検証済み", "title": "有価証券報告書", "pages": "7"}]
+    assert EVR.all_unverified([unverified, None, unverified]) and not EVR.all_unverified([unverified, verified])
+    assert not EVR.all_unverified([None, []])
+    assert "未検証" in EVR.section_note([unverified]) and EVR.section_note([verified]) == ""
+    assert "未検証" not in EVR.cell(unverified, quiet=True) and "業界の資料" in EVR.cell(unverified, quiet=True)
+    assert "未検証" in EVR.cell(unverified)

@@ -13,7 +13,7 @@ CHEAP_PER, RICH_PER = 33, 67          # position in the PER range (%)
 HOT_RSI, HOT_MA_GAP, AHEAD_PT = 70.0, 15.0, 5.0
 GOOD_GRADES = ("A", "B")
 
-DIP_GOOD = "優良企業の押し目（買い場の候補）"
+DIP_GOOD = "優良企業が値下がりした局面（押し目の条件を満たす）"  # not 買い場: the verdict decides (2026-11-22)
 DIP_TRAP = "値下がりしているが買い場とは言えない（割安だが事業・財務が弱く、バリュートラップの疑い）"
 DIP_WEAK = "値下がりしているが買い場とは言えない（事業・財務の弱さ）"
 DIP_NOT_CHEAP = "値下がりしているが買い場とは言えない（まだ割安ではない）"
@@ -59,6 +59,16 @@ def _phase(c: dict) -> tuple[str, list[dict]]:
     return (DOWN if fall else UP if rise else NONE), checks
 
 
+CONSIDER = "投資検討"
+
+
+def verdict_note(verdict: str, long_verdict: str | None) -> str:
+    """A dip that meets the conditions still is not a time to buy unless the long horizon says 投資検討."""
+    if verdict != DIP_GOOD or not long_verdict or long_verdict == CONSIDER:
+        return ""
+    return f"ただし長期の判定は{long_verdict}で、買いの条件はそろっていない（判定は 01章）"
+
+
 def evaluate(c: dict) -> dict:
     """{phase, verdict, checks: [{item, value, ok}]}; c is built by cr_facts (see BASE in the tests)."""
     phase, checks = _phase(c)
@@ -67,7 +77,8 @@ def evaluate(c: dict) -> dict:
         cheap, c_check = _cheap(c)
         verdict = (DIP_GOOD if quality and cheap else DIP_TRAP if cheap and quality is not True
                    else DIP_WEAK if quality is False else DIP_NOT_CHEAP)
-        return {"phase": phase, "verdict": verdict, "checks": checks + [q_check, c_check]}
+        return {"phase": phase, "verdict": verdict, "checks": checks + [q_check, c_check],
+                "note": verdict_note(verdict, c.get("long_verdict"))}
     if phase == UP:
         pos = c.get("per_position")
         rich = c.get("step3") == "割高" or (pos is not None and pos >= RICH_PER)

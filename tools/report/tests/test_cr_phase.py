@@ -62,3 +62,12 @@ def test_checks_are_listed_with_their_result():
 def test_missing_material_is_unknown_not_good():
     out = _ev(from_high=-30.0, step1=None, step3="割安")
     assert out["verdict"] != PH.DIP_GOOD
+
+
+def test_a_good_dip_does_not_read_as_a_time_to_buy_when_the_long_verdict_is_not_consider():
+    assert "買い場" not in PH.DIP_GOOD
+    dip = {**BASE, "from_high": -34.2, "step1": "B", "step2": "B", "step3": "割安", "long_verdict": "ウォッチ"}
+    out = PH.evaluate(dip)
+    assert out["verdict"] == PH.DIP_GOOD and out["note"].startswith("ただし長期の判定はウォッチ")
+    assert PH.evaluate({**dip, "long_verdict": "投資検討"})["note"] == ""
+    assert PH.verdict_note(PH.DIP_WEAK, "ウォッチ") == ""

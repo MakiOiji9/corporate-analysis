@@ -87,12 +87,20 @@ def test_buying_in_three_parts_lists_three_prices():
     assert len(steps) == 3 and all("円" in s for s in steps) and "3,600" in steps[1]
 
 
-def test_watch_lists_price_alerts_and_movers():
+def test_watch_lists_price_alerts_and_leaves_movers_to_the_conditions_table():
     mover = {"key": "growth", "label": "成長性", "direction": "1段良くなれば", "verdict": "投資検討", "to": 1.0}
     facts = _facts(long="ウォッチ", price=4500.0)
     facts["horizons"]["long"] = _h("ウォッチ", 0.1, [mover])
     alerts = ST.action(facts)["alerts"]
-    assert any("以下になれば" in a for a in alerts) and any("成長性" in a for a in alerts)
+    assert any("以下になれば" in a for a in alerts) and not any("成長性" in a for a in alerts)
+    assert any("成長性" in r["condition"] for r in ST.conditions(facts, []))
+
+
+def test_a_watch_names_its_buy_prices_as_conditional():
+    facts = _facts(scenarios=SCENARIOS)
+    facts["horizons"]["short"] = _h("ウォッチ", 0.0)
+    html = ST.html(facts, [])
+    assert "条件がそろったときに買いを考える価格（今の判定はウォッチ）" in html
 
 
 # ---------------------------------------------------------------- sizing (a conditional guide, 3 levels)

@@ -42,8 +42,29 @@ def item(e: dict) -> str:
     return f'<span class="ok-yes">✓</span> {named}{pages}'
 
 
-def cell(evidence: list[dict] | None) -> str:
+def cell(evidence: list[dict] | None, quiet: bool = False) -> str:
     """Every document of one claim, once each (two sections may cite the same one); '—' when there is none
-    (a result built before BL-01, or a claim whose 情報源 names no raw file)."""
-    items = list(dict.fromkeys(item(e) for e in evidence or []))
+    (a result built before BL-01, or a claim whose 情報源 names no raw file). quiet: the section already says that
+    nothing is verified (section_note), so an unverified document shows its name only."""
+    items = list(dict.fromkeys(_quiet(e) if quiet and e.get("status") != VERIFIED else item(e)
+                               for e in evidence or []))
+    items = [i for i in items if i]
     return "<br>".join(items) if items else "—"
+
+
+def _quiet(e: dict) -> str:
+    return esc(e.get("title") or e.get("doc_id") or "")
+
+
+def all_unverified(lists: list[list[dict] | None]) -> bool:
+    """True when the section cites something and none of it is verified (the per-row 未検証 is then noise)."""
+    entries = [e for lst in lists for e in lst or []]
+    return bool(entries) and all(e.get("status") != VERIFIED for e in entries)
+
+
+SECTION_NOTE = ("この章の業界・3C・モート・SWOT の評価は、出典（原典・ページ）の記録がまだ無い（未検証）。"
+                "判定の確度を一段下げて読む")
+
+
+def section_note(lists: list[list[dict] | None]) -> str:
+    return f'<p class="notice">{esc(SECTION_NOTE)}</p>' if all_unverified(lists) else ""

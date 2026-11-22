@@ -38,14 +38,6 @@ TOC = (("conclusion", "結論"), ("reasons", "良い点・悪い点"), ("thesis"
 APPENDIX = (("market", "付録A", "株価の動き"), ("tech", "付録B", "テクニカル分析"), ("legends", "付録C", "投資の神"))
 APPENDIX_LEAD = ("点数への影響が小さい参考の章。株価の動き・チャートの見立て・投資の神の視点を、必要なときに開いて読む。"
                  "点数に入るのは、付録B の日足のトレンド（短期）と、付録A の 13・26・52週線のテクニカル（中期）だけ。")
-def check_notice(checks: list[str]) -> str:
-    """The build's automatic checks (cr_lint) at the top of the report: what a reader should cross-check."""
-    items = "".join(f"<li>{esc(c)}</li>" for c in checks)
-    return (f'<div class="wrap"><div class="notice"><b>作成時の自動チェック</b>: 章どうしの食い違いや読みにくい書き方が '
-            f'{len(checks)} 件見つかった。数字や判定の言葉を読むときは注意する。'
-            f'<details><summary>内容を見る</summary><ul>{items}</ul></details></div></div>')
-
-
 LEGEND_LEAD = ("3人の投資哲学をこの会社の分析結果に当てはめた参考の視点。評価は資料に書かれた条件から機械的に決め、"
                "結論の判定の点数には入らない。本人が実際にこの会社をこう評価したという意味ではない。")
 PLAIN_HORIZONS = (("短期", "〜3ヶ月", "地合い・株価のテクニカル（流れ・勢い・位置）・直近の決算の進み具合・割安さを重く見る。値動きの影響が大きく、根拠は弱い。"),
@@ -173,15 +165,18 @@ def _stephead(grade: dict, title: str) -> str:
 def step1(facts: dict) -> str:
     d = facts["analyses"]
     ff = d["five_forces"]["detail"]
+    cited = _cited_evidence(d)
+    quiet = EVR.all_unverified(cited)  # nothing verified: one note at the top, not 未検証 on every row (4.10)
     forces = table(["要因", "強さ", "理由", "出典"],
-                   [[esc(f["name"]), esc(f["rating"]), esc(f["reason"]), EVR.cell(f.get("evidence"))]
+                   [[esc(f["name"]), esc(f["rating"]), esc(f["reason"]), EVR.cell(f.get("evidence"), quiet)]
                     for f in ff.get("factors") or []])
-    inner = (_conditions(facts["step1"]["rows"]) + f"<h3>業界の5つの力（{esc(ff.get('industry'))}）</h3>" + forces
+    inner = (_conditions(facts["step1"]["rows"]) + f"<h3>{esc('業界の5つの力（' + str(ff.get('industry') or '—') + '）')}</h3>" + forces
              + f"<h3>モート（強みの持続性）</h3><p>{esc(d['moat']['detail'].get('durability'))}</p>"
-             + _moat_sources(d["moat"]["detail"]) + _conservative(d["moat"]) + _counters(d))
-    body = (_stephead(facts["step1"], "STEP 1 総合") + _stepcards(facts, ("five_forces", "three_c", "moat", "swot"))
-            + _roic_chart(d["moat"]["detail"]) + X.swot_grid(d["swot"]["detail"], d["swot"])
-            + _details("勝てる理由（3C）を詳しく見る", X.three_c_block(d["three_c"]["detail"], d["three_c"]))
+             + _moat_sources(d["moat"]["detail"], quiet) + _conservative(d["moat"]) + _counters(d))
+    body = (_stephead(facts["step1"], "STEP 1 総合") + EVR.section_note(cited)
+            + _stepcards(facts, ("five_forces", "three_c", "moat", "swot"))
+            + _roic_chart(d["moat"]["detail"]) + X.swot_grid(d["swot"]["detail"], d["swot"], quiet)
+            + _details("勝てる理由（3C）を詳しく見る", X.three_c_block(d["three_c"]["detail"], d["three_c"], quiet))
             + _details("経営と株主", X.governance_block(facts))
             + _details("詳しく見る（A の条件・業界の5つの力・モートの源泉）", inner))
     return _section("step1", "04", "STEP 1 事業と競争環境", "儲けやすい業界か、選ばれる理由があるか、その強みは続くか。", body)
@@ -202,9 +197,17 @@ def _roic_chart(moat: dict) -> str:
                   "モート分析（有報・決算短信から計算）", "%", ROIC_NOTE)
 
 
-def _moat_sources(moat: dict) -> str:
+def _cited_evidence(d: dict) -> list:  # every evidence list the STEP 1 chapter shows
+    ff, tc, mo, sw = (d[k]["detail"] or {} for k in ("five_forces", "three_c", "moat", "swot"))
+    return ([f.get("evidence") for f in ff.get("factors") or []]
+            + [tc.get("customer_evidence"), tc.get("competitor_evidence")]
+            + [m.get("evidence") for m in mo.get("moats") or []]
+            + [i.get("evidence") for q in (sw.get("quadrants") or {}).values() for i in q or []])
+
+
+def _moat_sources(moat: dict, quiet: bool = False) -> str:
     rows = [[esc(m.get("type")), esc(m.get("group") or ""), esc(m.get("rating")), esc(m.get("mechanism") or ""),
-             EVR.cell(m.get("evidence"))]
+             EVR.cell(m.get("evidence"), quiet)]
             for m in moat.get("moats") or []]
     if not rows:
         return ""

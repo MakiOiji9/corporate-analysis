@@ -132,3 +132,27 @@ def test_worst_year_looks_back_ten_years_and_skips_a_loss_base():
     assert PJ.worst_eps_growth(facts)["rate"] > 0
     assert PJ.worst_eps_growth(_with_eps(_facts(), [-5.0, 2.0, 1.0]))["rate"] == pytest.approx(-50.0)
     assert PJ.worst_eps_growth(_with_eps(_facts(), [3.0])) is None
+
+
+def test_a_one_off_falling_year_is_left_out_and_a_large_threat_keeps_eps_flat():
+    # 3798: the 2024-03 fall came from a one-off gain the year before, and the largest threat (T2) weighs 大
+    facts = _with_eps(_facts(), [9.4, 9.68, 12.15, 12.87, 15.94, 17.83, 22.46, 20.58, 25.0, 30.0])
+    facts["analyses"]["growth"]["detail"]["declines"] = [{"year": "2017-03", "class": "一時"}]
+    facts["analyses"]["swot"] = {"detail": {"top_threat": {"id": "T2", "impact": "大"}}}
+    bear = _case(PJ.build(facts), "悲観")
+    assert bear["rate"] == 0.0 and "EPS 横ばい" in bear["basis"] and "T2" in bear["basis"]
+    assert "2017-03 の減益は一時要因のため除いた" in bear["basis"]
+    facts["analyses"]["swot"]["detail"]["top_threat"]["impact"] = "中"
+    bear = _case(PJ.build(facts), "悲観")  # without a large threat: the slowest year (+3.0%) is below half the base
+    assert bear["rate"] == pytest.approx((9.68 / 9.4 - 1) * 100) and "伸びの小さかった" in bear["basis"]
+    facts["analyses"]["growth"]["detail"]["declines"] = [{"year": "2017-03", "class": "構造"}]
+    assert _case(PJ.build(facts), "悲観")["rate"] < 0  # a structural fall stays the floor
+
+
+def test_case_labels_name_the_growth_candidates():
+    facts = _facts(standard=12.2928, optimistic=15.9)
+    facts["analyses"]["valuation"]["detail"]["peg_candidates"] = [
+        {"name": "過去の EPS CAGR（成長性分析）", "value": 15.9}, {"name": "会社計画（予想EPS ÷ 実績EPS − 1）", "value": 12.2928}]
+    p = PJ.build(facts)
+    assert _case(p, "楽観")["basis"] == "成長率の候補の最大: 過去の EPS CAGR（成長性分析）"
+    assert "会社計画" in _case(p, "基本")["basis"] and "会社計画" not in _case(p, "楽観")["basis"]

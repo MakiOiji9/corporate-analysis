@@ -553,3 +553,12 @@ def test_write_guard_report_files(repo):
     (repo / (old + ".md")).write_text("x", encoding="utf-8")
     (repo / (old + ".json")).write_text("{}", encoding="utf-8")
     assert "変更禁止" in WG.decide("Edit", old + ".md", repo, TODAY)
+
+
+def test_an_old_cash_flow_text_names_only_what_was_flagged():
+    import cr_facts as CFX
+    old = "売上債権の増加率が売上高を上回る（売れていない在庫・回収できていない売上の可能性。要確認）"
+    words = CFX._flag_words({"reason": old, "detail": {"x": [old]}}, ["売上債権"])
+    assert "在庫" not in json.dumps(words, ensure_ascii=False)
+    assert words["reason"].endswith("（回収できていない売上の可能性。要確認）")
+    assert CFX._flag_words({"reason": old}, []) == {"reason": old}

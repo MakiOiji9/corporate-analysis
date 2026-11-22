@@ -21,7 +21,7 @@ def test_investment_table_shows_the_yearly_parts_and_the_incremental_roic():
 
 def test_step_number_becomes_what_the_step_checks():
     assert P.plain("手順1が良好、営業利益率が同業平均以上", "profitability") == "「ROE の水準と安定性」が良好、営業利益率が同業平均以上"
-    assert "「利益の質」（営業CF対純利益比率 0.77倍（5年平均））が懸念" == P.plain(
+    assert "「利益の質」（営業CF対純利益比率 0.77倍、5年平均）が懸念" == P.plain(
         "手順3（営業CF対純利益比率 0.77倍（5年平均））が懸念", "cash_flow")
 
 
@@ -212,3 +212,17 @@ def test_governance_block_shows_the_owner_and_the_targets():
     assert "オーナー企業（創業者・親族の保有が 20% 以上）" in html and "横山" in html and "52歳" in html
     assert "株式分割" in html and "101.5%" in html
     assert "集めていない" in CS.governance_block({})
+
+
+def test_brackets_inside_brackets_read_as_commas():
+    assert P.flatten("488円（以前の安値（2026-06-26）（今は上値の抵抗になりやすい））付近") == \
+        "488円（以前の安値、2026-06-26、今は上値の抵抗になりやすい）付近"
+    assert P.flatten("比率 0.77倍（5年平均（累計は 0.82倍））。次") == "比率 0.77倍（5年平均、累計は 0.82倍）。次"
+    assert P.flatten("A（B）と C（D）") == "A（B）と C（D）"  # side by side, not nested
+    assert P.flatten("閉じ忘れ（A（B） の後") == "閉じ忘れ（A、B、 の後"
+
+
+def test_a_sentence_comparing_with_an_earlier_rule_version_is_dropped():
+    text = "条件をすべて満たす。前回（版1）は中と強で迷い強とした。版2の条件確認により強と判定。理由は次。"
+    assert P.plain(text) == "条件をすべて満たす。理由は次。"
+    assert P.plain("出版社 2社が参入した。") == "出版社 2社が参入した。"

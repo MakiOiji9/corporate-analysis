@@ -107,6 +107,39 @@ def _sources(text: str) -> str:
     return _LABEL_SPACE.sub(r"\1", text)
 
 
+# a sentence comparing with an earlier version of the analysis rules (「前回（版1）は…、版2の…」): the reader has
+# no earlier version to compare with (出版 is not a version)
+_VERSION_SENTENCE = re.compile(r"[^。]*(?<!出)版\s*\d[^。]*。?")
+FLAT_SKIP = "）、。"  # after an inner bracket closes, these need no 「、」 to join what follows
+
+
+def drop_version_sentences(text: str) -> str:
+    return _VERSION_SENTENCE.sub("", text)
+
+
+def flatten(text: str) -> str:
+    """Brackets inside brackets read as 「、」: '488円（以前の安値（2026-06-26）（今は抵抗））' ->
+    '488円（以前の安値、2026-06-26、今は抵抗）'. Only the outermost pair stays (docs/proposals 5.3)."""
+    out: list[str] = []
+    depth = 0
+    for i, ch in enumerate(text):
+        if ch == "（":
+            depth += 1
+            if depth == 1:
+                out.append(ch)
+            elif out and out[-1] not in "（、":
+                out.append("、")
+        elif ch == "）" and depth:
+            depth -= 1
+            if depth == 0:
+                out.append(ch)
+            elif i + 1 < len(text) and text[i + 1] not in FLAT_SKIP:
+                out.append("、")
+        else:
+            out.append(ch)
+    return "".join(out)
+
+
 def plain(text: str | None, key: str | None = None) -> str | None:
     """text in the reader's words; key is the analysis whose 「手順N」 the text refers to (cr_status step keys)."""
     if not text or not isinstance(text, str):
@@ -114,7 +147,7 @@ def plain(text: str | None, key: str | None = None) -> str | None:
     for old, new in PHRASES:
         text = text.replace(old, new)
     text = _BRIEF.sub("収集した資料", text)
-    return _sources(_steps(text, key))
+    return flatten(drop_version_sentences(_sources(_steps(text, key))))
 
 
 def plain_tree(value: object, key: str | None = None) -> object:
