@@ -117,9 +117,9 @@ def test_thresholds(score, verdict):
 
 
 def test_missing_factors_are_left_out_and_reweighted():
-    factors = {**_all(1.0), "price": _f(None), "progress": _f(None)}
+    factors = {**_all(1.0), "trend_daily": _f(None), "progress": _f(None)}
     result = J.horizon_score("short", factors)
-    assert result["score"] == pytest.approx(1.0) and set(result["unknown"]) == {"株価のテクニカル（トレンド・勢い・位置）", "直近の決算の進捗"}
+    assert result["score"] == pytest.approx(1.0) and set(result["unknown"]) == {"株価のテクニカル（日足のトレンド）", "直近の決算の進捗"}
     assert J.horizon_score("short", {k: _f(None) for k in factors})["verdict"] == "判定保留"
 
 
@@ -350,3 +350,22 @@ def test_distance_text_has_no_signs_or_repeats():
     assert consider.startswith("投資検討の境目（+0.25）を 0.03 点上回っている（下回るとウォッチ）")
     assert J.distance_text(_distance(-0.4)).startswith("見送りの境目（-0.25）を 0.15 点下回っている")
     assert J.distance_text({}) == ""
+
+
+def test_half_step_dependence_names_the_verdict_without_the_half_points():
+    factors = {**_all(0.0), "valuation": _f(1.0), "growth": {**_f(0.5), "whole": 0.0}}  # mid +0.275
+    assert J.horizon_score("mid", factors)["verdict"] == J.CONSIDER
+    dep = J.half_step_dependence("mid", factors)
+    assert dep["verdict"] == J.WATCH and dep["labels"] == ["成長性"] and dep["score"] == pytest.approx(0.2)
+    assert J.half_step_text(dep) == "この判定は成長性の内訳による半点の加減に頼っている（半点を外すとウォッチ、点数 +0.20）"
+    assert J.half_step_dependence("mid", {**factors, "growth": _f(0.0)}) is None
+    assert J.half_step_text(None) == ""
+
+
+def test_daily_trend_moves_name_the_trend():
+    rows = [{"key": "trend_daily", "score": -1.0, "value": "下降トレンド（確度 中）"}]
+    up = {"key": "trend_daily", "label": "株価のテクニカル（日足のトレンド）", "direction": "1段良くなれば", "verdict": "ウォッチ"}
+    assert J.mover_text(up, rows) == "日足のトレンドが下降トレンドでなくなれば（今は「下降トレンド（確度 中）」）ウォッチ"
+    rows = [{"key": "trend_daily", "score": 0.0, "value": "方向感のないもみ合い（確度 低）"}]
+    down = {**up, "direction": "1段悪くなれば", "verdict": "見送り"}
+    assert J.mover_text(down, rows).startswith("日足のトレンドが下降トレンドに変われば")

@@ -183,7 +183,6 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     prices = ({"ok": False, "skipped": True} if args.skip_prices
               else SP.run(root, company.dirname, SP.DEFAULT_YEARS, today))
     facts = F.build(root, company, today, status)
-    facts["technical_analysis"] = TC.ensure(company.path, CP.load(company.path / "data" / "prices.csv"))
     md_path, brief_path = company.file(today, S.MD_SUFFIX), company.file(today, S.BRIEF_SUFFIX)
     kept = md_path.exists() and A.is_draft(md_path) and not args.redo
     atomic_write_text(company.file(today, S.FACTS_SUFFIX), json.dumps(facts, ensure_ascii=False, indent=1) + "\n")

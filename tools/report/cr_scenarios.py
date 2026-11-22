@@ -117,6 +117,20 @@ def _risks(entry: dict, t: dict, context: dict, stop: dict) -> list[str]:
     return out
 
 
+RR_MIN = 1.0  # below it the fall to the stop is larger than the rise to the first target
+
+
+def rr_note(rr: float | None) -> str:
+    return "利益確定までの上げ幅より損切りまでの下げ幅が大きい" if rr is not None and rr < RR_MIN else ""
+
+
+def rr_summary(buys: list[dict]) -> str:
+    """When every candidate's reward-to-risk is under 1, one line says so (the candidates stay: 決定 Q3)."""
+    known = [b["rr"] for b in buys if b.get("rr") is not None]
+    return ("どの候補もリスクリワードが 1 未満で、チャートの上では今は買いの条件が良くない"
+            if known and all(r < RR_MIN for r in known) else "")
+
+
 def build(t: dict, flips: dict, context: dict) -> dict:
     """{ok, buys: [{label, price, basis, stop, target1, target2, down, up1, up2, rr, risks}], holder: {take, exit}}."""
     levels = (t or {}).get("levels") or {}

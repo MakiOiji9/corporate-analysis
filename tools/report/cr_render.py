@@ -82,8 +82,14 @@ def _card(key: str, h: dict) -> str:
     bad = "・".join(r["label"].split("（")[0] for r in h["bad"][:2]) or "なし"
     return (f'<div class="vcard {VERDICT_CLASS.get(word, "")}"><div class="period">{esc(PERIODS[key])}'
             f'（{esc(SPANS[key])}）</div><div class="word">{esc(word)}<span class="vscore">{esc(score)}</span></div>'
-            f'{X.gauge(h["score"])}{_knockout_line(h)}<p class="why"><span class="ok-yes">＋</span> {esc(good)}<br>'
+            f'{X.gauge(h["score"])}{_knockout_line(h)}{_half_step_line(h)}<p class="why"><span class="ok-yes">＋</span> {esc(good)}<br>'
             f'<span class="ok-no">−</span> {esc(bad)}</p></div>')
+
+
+def _half_step_line(h: dict) -> str:
+    """The card says when the verdict rests on half points (cr_judge.half_step_dependence)."""
+    text = J.half_step_text(h.get("half_step"))
+    return f'<p class="small"><span class="ok-no">!</span> {esc(text)}</p>' if text else ""
 
 
 def _knockout_line(h: dict) -> str:

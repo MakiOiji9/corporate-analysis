@@ -89,6 +89,8 @@ def horizon_block(label: str, span: str, h: dict, prose: str, matrix: dict | Non
     good = "".join(_point(r) for r in h["good"]) or '<li class="muted">なし</li>'
     bad = "".join(_point(r) for r in h["bad"]) or '<li class="muted">なし</li>'
     knock = f'<p class="notice"><b>足切り</b>: {esc("、".join(h["knockout"]))}</p>' if h.get("knockout") else ""
+    if h.get("half_step"):
+        knock += f'<p class="notice"><b>判定の頑健さ</b>: {esc(J.half_step_text(h["half_step"]))}</p>'
     knock += (f'<p class="notice"><b>注意</b>: {esc("、".join(h["cautions"]))}（判定は止めないが、確かめる）</p>'
               if h.get("cautions") else "")
     unknown = (f'<p class="small muted">材料が無く点数から外した要素: {esc("・".join(h["unknown"]))}</p>'

@@ -13,6 +13,7 @@ import charts as C
 import cr_judge as J
 import cr_legends as L
 import cr_materials as MT
+import cr_scenarios as SC
 import cr_technicals as T
 import mdparse as M
 import outlook as O
@@ -140,6 +141,8 @@ def _horizon_lines(facts: dict, key: str, label: str) -> list[str]:
     lines += ["", "悪い点（点数を押し下げた要素）:"] + (_points(h["bad"]) or ["- なし"])
     s = h.get("sensitivity") or {}
     movers = [f"{m['label']}が{m['direction']} {m['verdict']}" for m in s.get("movers") or []]
+    if h.get("half_step"):
+        lines += ["", "判定の頑健さ: " + J.half_step_text(h["half_step"])]
     lines += ["", "判定を動かす要因: " + (J.distance_text(s) or "—")
               + ("。" + "、".join(movers) if movers else "。1段の変化で判定が変わる要素は無い"), ""]
     return lines
@@ -291,7 +294,11 @@ def _scenario_lines(s: dict) -> list[str]:
         lines.append(f"- {C.fmt(b['price'], 0)}（{b['basis']}）: 損切り {C.fmt(b['stop']['price'], 0)}"
                      f"（{C.fmt(b['down'], 1, True)}%）、利益確定1 {C.fmt(t1.get('price'), 0)}（{t1.get('label') or '—'}）、"
                      f"利益確定2 {C.fmt(t2.get('price'), 0)}（{t2.get('label') or '—'}）、リスクリワード "
-                     f"{'—' if b['rr'] is None else format(b['rr'], '.2f')}。リスク: {'／'.join(b['risks'])}")
+                     f"{'—' if b['rr'] is None else format(b['rr'], '.2f')}"
+                     + (f"（{SC.rr_note(b['rr'])}）" if SC.rr_note(b["rr"]) else "")
+                     + f"。リスク: {'／'.join(b['risks'])}")
+    if SC.rr_summary(s["buys"]):
+        lines.append(f"- {SC.rr_summary(s['buys'])}")
     holder = s.get("holder") or {}
     lines.append("- 保有者の目安: 利益確定 " + "、".join(f"{C.fmt(x['price'], 0)}（{x['label']}）" for x in holder.get("take") or [])
                  + "。撤退 " + "、".join(f"{C.fmt(x['price'], 0)}（{x['label']}）" for x in holder.get("exit") or []))
@@ -330,6 +337,8 @@ def _move_lines(m: dict) -> list[str]:
               f"（差 {_pct_or_dash(r['vs_index'])}）、業種 {_pct_or_dash(r['sector'])}（差 {_pct_or_dash(r['vs_sector'])}）"
               for r in m["returns"]]
     s = m.get("split")
+    if m.get("weak_link"):
+        lines.append(f"- 市場の動きで説明できる分: {m['weak_link']}（β を使った分解は書かない）")
     if s:
         lines.append(f"- 市場の動きで説明できる分と、できない分（{s['span']}、β {s['beta']:.2f}。β は過去1年の週ごとの値動きから"
                      f"推計）: 株価 {_pct_or_dash(s['stock'])} のうち、市場の動きで説明できる分 {_pct_or_dash(s['market'])}、"

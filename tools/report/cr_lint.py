@@ -8,7 +8,7 @@ top (docs/proposals/company-report-review-feedback.md 6., 決定 Q7).
 
   verdict_words()  each "（今は「X」）" of 判定を動かす要因 names the analysis' own verdict word
   take_profits()   03 章の売買シナリオ (the current price's first target) and 07 章の利益確定の目安 name one price
-  trend()          the scored technical (weekly) and 08 章's daily trend: a different reading is named
+  trend()          the short horizon's technical factor and 08 章's daily trend name one state
   wording()        internal words (raw・スクリプト・判定候補・json・版N), a sentence repeated back to back,
                    brackets nested two deep
 """
@@ -67,18 +67,16 @@ def take_profits(facts: dict) -> list[str]:
 
 
 def trend(facts: dict) -> list[str]:
-    scored = (((facts.get("prices") or {}).get("technicals") or {}).get("state") or "")
+    """The short horizon's technical factor is 08 章's daily trend (判定ルールの改定 3): the two name one state."""
     daily = ((((facts.get("technical_analysis") or {}).get("daily") or {}).get("aspects") or {})
              .get("trend") or {}).get("state") or ""
-    if not scored or not daily:
+    rows = ((facts.get("horizons") or {}).get("short") or {}).get("rows") or []
+    row = next((r for r in rows if r.get("key") == "trend_daily"), None)
+    if not daily or not row or row.get("score") is None:
         return []
-    words = ("上昇", "下降")
-    a = next((w for w in words if w in scored), "もみ合い")
-    b = next((w for w in words if w in daily), "もみ合い")
-    if a == b:
-        return []
-    return [f"トレンドの読みが食い違う: 点数のテクニカル（週足）は「{scored}」、08章の日足のトレンドは「{daily}」。"
-            "時間軸が違うことが本文に書かれているか確かめる"]
+    if not str(row.get("value") or "").startswith(daily):
+        return [f"トレンドの読みが食い違う: 短期の点数のテクニカルは「{row.get('value')}」、08章の日足のトレンドは「{daily}」"]
+    return []
 
 
 def _nested(text: str) -> list[tuple[int, int]]:

@@ -100,7 +100,7 @@ def _company(root: Path, verdicts: dict | None = None) -> Path:
     day = dt.date(2025, 10, 1)
     lines = ["date,open,high,low,close,adj_close,volume,retrieved"]
     for i in range(400):
-        close = 549 - (i % 50)  # a sawtooth that ends low in its 52-week range
+        close = round(420 + i * 0.4 - (i % 50), 1)  # a rising sawtooth: the daily trend is up (the short horizon's factor)
         lines.append(f"{(day + dt.timedelta(days=i)).isoformat()},{close},{close + 5},{close - 5},{close},{close},"
                      f"100,{TODAY}")
     (company / "data").mkdir()

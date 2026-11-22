@@ -55,3 +55,12 @@ def test_atr_unit_follows_the_timeframe():
     texts = {tf: " ".join(e["text"] for e in V.volatility(rows, tf)["evidence"]) for tf in (P.DAILY, P.WEEKLY)}
     assert "ATR（1日あたり" in texts[P.DAILY]
     assert "ATR（1週あたり" in texts[P.WEEKLY] and "日あたり" not in texts[P.WEEKLY]
+
+
+def test_a_trend_with_a_line_that_does_not_line_up_is_not_high():
+    import math
+    # a straight fall: the averages, the slope and the price all point down, but Dow's highs and lows do not line up
+    v = V.view(_rows(DOWN), P.DAILY)["aspects"]["trend"]
+    assert [e["vote"] for e in v["evidence"]] == [-1, -1, -1, 0] and v["confidence"] == "中"
+    wave = V.view(_rows([300 - i * 0.4 + 8 * math.sin(i / 6) for i in range(400)]), P.DAILY)["aspects"]["trend"]
+    assert 0 not in [e["vote"] for e in wave["evidence"]] and wave["confidence"] == "高"

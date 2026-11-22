@@ -82,3 +82,11 @@ def test_targets_keep_the_role_names_of_the_lines():
              {"label": "52週安値", "price": 800.0}]
     s = SC.build({**TECH, "levels": {**TECH["levels"], "lines": lines}}, {}, CONTEXT)
     assert s["buys"][0]["target1"]["label"] == "以前の安値（2026-07-01）（今は上値の抵抗になりやすい）"
+
+
+def test_reward_under_one_is_noted_and_summed_up():
+    assert SC.rr_note(0.87) == "利益確定までの上げ幅より損切りまでの下げ幅が大きい"
+    assert SC.rr_note(1.0) == "" and SC.rr_note(None) == ""
+    assert SC.rr_summary([{"rr": 0.87}, {"rr": 0.67}]).startswith("どの候補もリスクリワードが 1 未満")
+    assert SC.rr_summary([{"rr": 0.87}, {"rr": 1.4}]) == ""
+    assert SC.rr_summary([{"rr": None}]) == ""

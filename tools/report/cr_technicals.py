@@ -446,7 +446,7 @@ def brief_lines(t: dict, long_verdict: str | None, positioning: dict | None = No
             + positioning_lines(positioning) + [""]
     lv, band, vol = t["levels"], t.get("band") or {}, t["volume"]
     stop = lv.get("stop")
-    lines += [f"- 状態: **{t['state']}**（テクニカル点数 {t['score']:+.2f}。短期・中期の「株価のテクニカル」の点数）",
+    lines += [f"- 状態: **{t['state']}**（テクニカル点数 {t['score']:+.2f}。中期の「株価のテクニカル」の点数。短期は 08 章の日足のトレンド）",
               f"- トレンド: {t['trend']['value']}", f"- 勢い: {t['momentum']['value']}",
               f"- 位置: {t['position']['value']}",
               "- 移動平均: " + "、".join(f"{k} {v:,.0f}" for k, v in t["averages"].items() if v is not None),

@@ -59,6 +59,7 @@ def fair_rows(facts: dict) -> list[dict]:
     peg = detail.get("peg_standard")
     if peg and peg > 0 and price:
         rows.append({"label": "PEG（1倍〜2倍）", "low": price / peg, "high": 2 * price / peg,
+                     "fair": price / peg,  # the price the growth rate pays for (PEG 1): the scenarios' 基本 (改定 3)
                      "note": "成長率に見合う株価（PEG 1倍）から2倍まで"})
     week = next((w for w in (facts.get("prices") or {}).get("ranges") or [] if w.get("label") == "52週"), None)
     if week and week.get("low") is not None and week.get("high") is not None:

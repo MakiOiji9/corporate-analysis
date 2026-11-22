@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import charts as C
 import cr_doc as D
+import cr_scenarios as SC
 import cr_technicals as T
 from cr_html import OK_HTML, esc
 from cr_html import bullet_list as _list
@@ -157,6 +158,8 @@ def _move_tables(m: dict) -> str:
     out = table(["期間", "株価", esc(m["index_name"]), "市場との差", esc(f"業種（{m.get('sector_name') or '—'}）"),
                  "業種との差"], rows, right=frozenset({1, 2, 3, 4, 5}))
     s = m.get("split")
+    if m.get("weak_link"):
+        out += f'<p><b>市場の動きで説明できる分</b>: {esc(m["weak_link"])}</p>'
     if s:
         out += (f'<p><b>市場の動きで説明できる分と、できない分（{esc(s["span"])}）</b>: 株価 {_pct_cell(s["stock"])} のうち、'
                 f'市場の動きで説明できる分 {_pct_cell(s["market"])}（β {s["beta"]:.2f} × 市場。β は過去1年の週ごとの値動き'
@@ -251,7 +254,8 @@ def _scenarios(s: dict) -> str:
         return ""
     rows = [[f'<b>{esc(C.fmt(b["price"], 0))}</b><br><span class="small">{esc(b["basis"])}</span>',
              _price_cell(b["stop"], b["down"]), _price_cell(b["target1"], b["up1"]), _price_cell(b["target2"], b["up2"]),
-             esc("—" if b["rr"] is None else f'{b["rr"]:.2f}'),
+             esc("—" if b["rr"] is None else f'{b["rr"]:.2f}')
+             + (f'<br><span class="small ok-no">{esc(SC.rr_note(b["rr"]))}</span>' if SC.rr_note(b["rr"]) else ""),
              '<ul class="plain small">' + "".join(f"<li>{esc(r)}</li>" for r in b["risks"]) + "</ul>"]
             for b in s["buys"]]
     holder = s.get("holder") or {}
@@ -260,6 +264,7 @@ def _scenarios(s: dict) -> str:
     return (f'<h3>売買シナリオ（参考）</h3><p class="small">{esc(SCENARIO_LEAD)}</p>'
             + table(["買いを検討する価格（根拠）", "損切り", "利益確定1", "利益確定2", "リスクリワード",
                      "その価格で買った場合のリスク"], rows, right=frozenset({4}))
+            + (f'<p class="notice">{esc(SC.rr_summary(s["buys"]))}</p>' if SC.rr_summary(s["buys"]) else "")
             + ("<h4>保有している場合の目安</h4>" + table(["目安", "価格"], hold_rows) if hold_rows else ""))
 
 
@@ -274,7 +279,7 @@ def technical_section(facts: dict, parsed: dict) -> str:
              + _level_box("res", "利益確定の目安（上の抵抗線）", lv["resistances"])
              + _level_box("stop", "損切りの目安", [stop] if stop else [], stop["basis"] if stop else "") + "</div>")
     head = (f'<p><b>今の状態</b>: <span class="badge v-watch">{esc(t["state"])}</span>'
-            f'　テクニカル点数 {esc(D.score_text(t["score"]))}（短期・中期の判定の「株価のテクニカル」）</p>')
+            f'　テクニカル点数 {esc(D.score_text(t["score"]))}（中期の判定の「株価のテクニカル」。短期は 08 章の日足のトレンドを使う）</p>')
     positioning = facts["prices"].get("positioning") or {}
     rows = [["トレンド", t["trend"]["value"]], ["勢い", t["momentum"]["value"]], ["位置", t["position"]["value"]],
             ["出来高", t["volume"]["value"]], ["シグナル", "、".join(t["signals"]) or "なし"],

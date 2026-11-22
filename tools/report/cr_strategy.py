@@ -61,6 +61,12 @@ def _band(facts: dict) -> tuple[list[dict], dict | None]:
     return rows, DB.fair_band(rows, _price(facts)[0])
 
 
+def _bear_line(bear: float) -> str:
+    if bear < 0:
+        return f"決算ごとの EPS の減り方が悲観ケースの年 {bear:.1f}% より大きい年が続いたら、保有の理由を見直す"
+    return f"決算ごとの EPS の伸びが悲観ケースの年 {bear:.1f}% を下回り続けたら、保有の理由を見直す"
+
+
 # ---------------------------------------------------------------- scenarios
 
 FALL = 0.9  # the bear case when the price is already below the band: at least a tenth lower
@@ -74,16 +80,23 @@ def _lower_floor(facts: dict, price: float) -> float:
     return min(p for p in (stop, week, price * FALL) if p is not None and p < price)
 
 
+def _fair(row: dict) -> float:
+    """A band's fair price: PEG 1 for PEG (改定 3), the fair PBR for PBR, else the middle of the band."""
+    for key in ("fair", "mid"):
+        if row.get(key) is not None:
+            return row[key]
+    return (row["low"] + row["high"]) / 2
+
+
 def scenarios(facts: dict) -> dict | None:
     rows, band = _band(facts)
     price, _ = _price(facts)
     if not band:
         return None
     used = [r for r in rows if not r.get("alt")]
-    mids = [(r["label"].split("（", 1)[0], r["mid"] if r.get("mid") is not None else (r["low"] + r["high"]) / 2)
-            for r in used]
+    mids = [(r["label"].split("（", 1)[0], _fair(r)) for r in used]
     base = median(m for _, m in mids)
-    base_reading = ("指標ごとの帯の中央の中央値（" + "・".join(f"{name} {m:,.0f}" for name, m in mids)
+    base_reading = ("指標ごとの目安の株価の中央値（PER は帯の中央・PBR は適正PBR・PEG は 1倍の株価。" + "・".join(f"{name} {m:,.0f}" for name, m in mids)
                     + f" → {base:,.0f}）")
     bear, bear_reading = band["low"], "指標が割安と見る水準まで評価が下がった場合"
     if price and price < band["low"]:  # already cheaper than the band: the bear case is a further fall
@@ -255,7 +268,7 @@ def long_plan(facts: dict) -> dict:
         exits = [f"基本ケースの3年後の水準 {_yen(base3, currency)} に届いたら一部の利益確定を考える"
                  "（3年より早く届くほど、業績より先に株価の評価が上がっている）",
                  f"楽観ケースの5年後の水準 {_yen(bull5, currency)} を超えたら、残りも持ち続ける理由を見直す",
-                 f"決算ごとの EPS の伸びが悲観ケースの年 {PJ.rate(p, '悲観'):.1f}% を下回り続けたら、保有の理由を見直す"]
+                 _bear_line(PJ.rate(p, '悲観'))]
         if price and price >= base3:
             notes.append("今の株価はすでに基本ケースの3年後の水準を上回っている（成長を先取りした株価）")
     else:

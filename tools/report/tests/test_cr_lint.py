@@ -25,9 +25,13 @@ def test_take_profits_agree_or_are_warned():
     assert LT.take_profits(fair) == []  # a valuation target is not a chart line
 
 
-def test_trend_readings_that_differ_are_named():
-    assert LT.trend(_facts()) == []
-    assert "下降トレンド" in LT.trend(_facts(daily="下降トレンド"))[0]
+def test_the_short_technical_names_the_daily_trend():
+    facts = _facts(daily="下降トレンド")
+    facts["horizons"] = {"short": {"rows": [{"key": "trend_daily", "score": -1.0, "value": "下降トレンド（確度 中）"}]}}
+    assert LT.trend(facts) == []
+    facts["horizons"]["short"]["rows"][0]["value"] = "方向感のないもみ合い（確度 低）"
+    assert "08章の日足のトレンドは「下降トレンド」" in LT.trend(facts)[0]
+    assert LT.trend(_facts()) == []  # no short row: nothing to compare
 
 
 def test_verdict_words_catch_a_mover_that_names_another_word():

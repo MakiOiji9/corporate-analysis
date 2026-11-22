@@ -46,8 +46,14 @@ def test_scenarios_bear_base_bull_from_the_price_band():
     assert bear == pytest.approx(3930.0) and bull == pytest.approx(5570.0)  # medians of the two bands' edges
     assert bear < base < bull and s["rows"][1]["change"] == pytest.approx((base / 4500 - 1) * 100)
     reading = s["rows"][1]["reading"]
-    assert reading.startswith("指標ごとの帯の中央の中央値（") and f"→ {base:,.0f}）" in reading
-    assert "適正" not in reading
+    assert reading.startswith("指標ごとの目安の株価の中央値（") and f"→ {base:,.0f}）" in reading
+
+
+def test_the_base_case_reads_peg_at_one():
+    rows = [{"label": "PER（過去5年の位置）", "low": 750.0, "high": 1035.0},
+            {"label": "PBR（適正PBR ±20%）", "low": 589.0, "high": 883.0, "mid": 736.0},
+            {"label": "PEG（1倍〜2倍）", "low": 500.0, "high": 999.0, "fair": 500.0}]
+    assert [ST._fair(r) for r in rows] == [892.5, 736.0, 500.0]  # 3798: the base case is 736, not 750
 
 
 def test_bear_stays_below_the_price_when_the_price_is_already_under_the_band():

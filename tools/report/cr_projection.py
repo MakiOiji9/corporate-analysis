@@ -1,8 +1,8 @@
 """長期の株価の水準: where the price would sit in 3 and 5 years if EPS kept growing at the rate of each case and the
 market paid the past five years' average PER for it. A condition, never a forecast; every number comes from facts.json.
 
-  rates()  悲観・基本・楽観 growth rates from valuation's PEG cases (基本 = the lowest growth candidate, 悲観 = half of
-           it, 楽観 = the highest candidate capped at OPTIMISTIC_MULT × 基本 and OPTIMISTIC_CAP); without PEG cases, the
+  rates()  悲観・基本・楽観 growth rates from valuation's PEG cases (基本 = the lowest growth candidate, 悲観 = the lower
+           of half of it and the worst yearly EPS change of the last ten years (判定ルールの改定 3), 楽観 = the highest candidate capped at OPTIMISTIC_MULT × 基本 and OPTIMISTIC_CAP); without PEG cases, the
            growth analysis' EPS CAGR is 基本
   build()  {ok, reason, eps0, per, per_basis, years, cases: [{name, rate, basis}],
             rows: [{years, case, eps, price, change, annual}], note}
@@ -19,6 +19,19 @@ NOTE = ("今の EPS が各ケースの率で伸び、株価が過去5年の平�
 
 def _detail(facts: dict, key: str) -> dict:
     return ((facts.get("analyses") or {}).get(key) or {}).get("detail") or {}
+
+
+WORST_YEARS = 10  # the pessimistic case looks back this many yearly EPS changes
+
+
+def worst_eps_growth(facts: dict) -> dict | None:
+    """{rate, year} of the worst year-on-year EPS change over the last WORST_YEARS years (the growth analysis'
+    split-adjusted rows); None with fewer than two years. A year after a loss or zero EPS has no rate."""
+    rows = [r for r in _detail(facts, "growth").get("rows") or [] if r.get("eps") is not None]
+    rows = sorted(rows, key=lambda r: r["year"])[-(WORST_YEARS + 1):]
+    changes = [{"rate": (b["eps"] / a["eps"] - 1) * 100, "year": b["year"]}
+               for a, b in zip(rows, rows[1:]) if a["eps"] > 0]
+    return min(changes, key=lambda c: c["rate"]) if changes else None
 
 
 def rates(facts: dict) -> list[dict] | None:
@@ -39,7 +52,14 @@ def rates(facts: dict) -> list[dict] | None:
                                  f"{OPTIMISTIC_CAP:.0f}% の低い方）をかけた率")
     else:
         bull, bull_basis = plan, "成長率の候補の最大（会社計画など）"
-    return [{"name": "悲観", "rate": base / 2, "basis": "基本の半分"},
+    worst = worst_eps_growth(facts)
+    if worst is None:
+        bear, bear_basis = base / 2, "基本の半分（過去10年の EPS の伸び率が取れない）"
+    elif worst["rate"] < base / 2:
+        bear, bear_basis = worst["rate"], f"過去10年で最も悪かった EPS の伸び率（{worst['year']}）"
+    else:  # every year grew at least half the base rate (so no year of falling EPS)
+        bear, bear_basis = base / 2, "基本の半分（過去10年に減益の年が無い）"
+    return [{"name": "悲観", "rate": bear, "basis": bear_basis},
             {"name": "基本", "rate": base, "basis": basis},
             {"name": "楽観", "rate": max(bull, base), "basis": bull_basis}]
 
