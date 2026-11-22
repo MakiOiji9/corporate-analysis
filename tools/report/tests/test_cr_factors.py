@@ -39,7 +39,8 @@ def test_pending_and_missing_analyses_are_not_moved():
 
 def test_the_reason_says_when_the_score_was_moved():
     factor = F.analysis_factor(_analysis("普通", ["良好", "下回る", "本業由来"]))
-    assert "+0.5" in factor["value"] and "内訳" in factor["reason"]
+    assert "+0.5" in factor["value"] and "内訳" in factor["note"] and "（" not in factor["note"]
+    assert "内訳" not in factor["reason"]  # the counting note is not nested in the analysis' reason
 
 
 def _moat(verdict: str, returns: str | None) -> dict:
@@ -58,7 +59,7 @@ def test_moat_score_separates_no_source_from_no_excess_return(verdict, returns, 
 
 def test_a_neutral_moat_says_why():
     factor = F.moat_factor(_moat("なし", "弱い"))
-    assert "源泉" in factor["value"] and "中立" in factor["reason"]
+    assert "源泉" in factor["value"] and "中立" in factor["note"] and factor["reason"] == "r"
 
 
 def test_build_uses_the_moat_factor():

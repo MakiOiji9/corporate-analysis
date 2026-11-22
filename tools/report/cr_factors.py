@@ -37,8 +37,15 @@ ONE_SIDED = "ネットキャッシュ比率"  # valuation indicator that can nev
 MIN_INDICATORS = 2
 
 
-def _factor(score: float | None, value: str, reason: str, source: str, pending: bool = False) -> dict:
-    return {"score": score, "value": value, "reason": reason, "source": source, "pending": pending}
+def _factor(score: float | None, value: str, reason: str, source: str, pending: bool = False,
+            note: str = "") -> dict:
+    """note: how the report counted the factor (a half step, a conservative reading). It is shown on a line of
+    its own under the reason, not in brackets inside it."""
+    return {"score": score, "value": value, "reason": reason, "source": source, "pending": pending, "note": note}
+
+
+def _join(*notes: str) -> str:
+    return "。".join(n for n in notes if n)
 
 
 def half_step(verdict_score: float, subs: list) -> float:
@@ -62,17 +69,17 @@ def analysis_factor(a: dict, hold: bool = False) -> dict:
     reason = a.get("reason") or ""
     # most analyses already end their verdict_reason with this note: add it only when it is missing
     # the conservative list names assumed items, not necessarily the ones that decided the verdict
-    note = "（一部の項目は材料不足のため保守的に扱った）" if a.get("conservative") and "保守的" not in reason else ""
+    note = "一部の項目は材料不足のため保守的に扱った" if a.get("conservative") and "保守的" not in reason else ""
     score = J.score_of(verdict)
     value = verdict or "未実施"
     if score is not None and verdict != J.PENDING and not hold:
         moved = half_step(score, a.get("subs") or [])
         if moved != score:
             value = f"{verdict}（内訳から {moved:+.1f}）"
-            note += f"（内訳の評価が{'良い' if moved > score else '悪い'}側に寄るため {moved:+.1f} 点で数えた）"
+            note = _join(note, f"内訳の評価が{'良い' if moved > score else '悪い'}側に寄るため {moved:+.1f} 点で数えた")
             score = moved
-    return _factor(score, value, reason + note,
-                   f"{a['step']} {a['label']}分析（{a.get('date') or '未実施'}）", verdict == J.PENDING)
+    return _factor(score, value, reason, f"{a['step']} {a['label']}分析（{a.get('date') or '未実施'}）",
+                   verdict == J.PENDING, note)
 
 
 MOAT_SCORE = {"広い": 1.0, "狭い": 0.5}
@@ -89,8 +96,8 @@ def moat_factor(a: dict) -> dict:
     returns = ((a.get("detail") or {}).get("returns") or {}).get("rating")
     if verdict == "なし" and returns in EXCESS_RETURN:
         return {**factor, "score": 0.0, "value": f"なし（超過収益は{returns}。それを守る源泉は特定できない）",
-                "reason": factor["reason"] + "（資本コストを上回る利益はあるため、モートが無いことは点数では中立に"
-                                             "数えた。マイナスにするのは超過収益そのものが無いとき）"}
+                "note": _join(factor.get("note", ""), "資本コストを上回る利益はあるため、モートが無いことは点数では中立に"
+                                                       "数えた。マイナスにするのは超過収益そのものが無いとき")}
     return factor
 
 

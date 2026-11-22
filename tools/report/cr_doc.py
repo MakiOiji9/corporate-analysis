@@ -125,7 +125,7 @@ def _horizons(facts: dict) -> list[str]:
 
 def _points(rows: list[dict]) -> list[str]:
     return [f"- {r['label']}（重み {r['weight']}%、点数 {r['score']:+.1f}、寄与 {r['contribution']:+.3f}）: {r['value']}。"
-            f"{r['reason']}（{r['source']}）" for r in rows]
+            f"{r['reason']}（{r['source']}）" + (f" 点数の数え方: {r['note']}。" if r.get("note") else "") for r in rows]
 
 
 def _horizon_lines(facts: dict, key: str, label: str) -> list[str]:
@@ -140,11 +140,7 @@ def _horizon_lines(facts: dict, key: str, label: str) -> list[str]:
     lines += ["", "悪い点（点数を押し下げた要素）:"] + (_points(h["bad"]) or ["- なし"])
     s = h.get("sensitivity") or {}
     movers = [f"{m['label']}が{m['direction']} {m['verdict']}" for m in s.get("movers") or []]
-    near = s.get("nearest")
-    distance = [f"最も近い境目: {near['text']}" if near else "",
-                f"投資検討まであと {s['to_up']:+.2f}" if s.get("to_up") is not None else "",
-                f"見送りまであと {s['to_down']:.2f}" if s.get("to_down") is not None else ""]
-    lines += ["", "判定を動かす要因: " + ("、".join(d for d in distance if d) or "—")
+    lines += ["", "判定を動かす要因: " + (J.distance_text(s) or "—")
               + ("。" + "、".join(movers) if movers else "。1段の変化で判定が変わる要素は無い"), ""]
     return lines
 

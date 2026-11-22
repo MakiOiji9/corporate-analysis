@@ -48,3 +48,10 @@ def test_evidence_carries_style_and_vote():
         for e in a["evidence"]:
             assert e["style"] in ("順張り", "逆張り", None, "") or isinstance(e["style"], str)
             assert e["vote"] in (-1, 0, 1)
+
+
+def test_atr_unit_follows_the_timeframe():
+    rows = _rows([100 + (i % 7) for i in range(400)])
+    texts = {tf: " ".join(e["text"] for e in V.volatility(rows, tf)["evidence"]) for tf in (P.DAILY, P.WEEKLY)}
+    assert "ATR（1日あたり" in texts[P.DAILY]
+    assert "ATR（1週あたり" in texts[P.WEEKLY] and "日あたり" not in texts[P.WEEKLY]

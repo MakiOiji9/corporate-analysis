@@ -80,13 +80,17 @@ def scenarios(facts: dict) -> dict | None:
     if not band:
         return None
     used = [r for r in rows if not r.get("alt")]
-    base = median(r["mid"] if r.get("mid") is not None else (r["low"] + r["high"]) / 2 for r in used)
+    mids = [(r["label"].split("（", 1)[0], r["mid"] if r.get("mid") is not None else (r["low"] + r["high"]) / 2)
+            for r in used]
+    base = median(m for _, m in mids)
+    base_reading = ("指標ごとの帯の中央の中央値（" + "・".join(f"{name} {m:,.0f}" for name, m in mids)
+                    + f" → {base:,.0f}）")
     bear, bear_reading = band["low"], "指標が割安と見る水準まで評価が下がった場合"
     if price and price < band["low"]:  # already cheaper than the band: the bear case is a further fall
         bear, bear_reading = _lower_floor(facts, price), "割安なまま評価が戻らず、さらに下がった場合（損切りの目安・52週安値・1割安の低い方）"
     out = []
     for name, value, reading in (("弱気", bear, bear_reading),
-                                 ("基本", base, "各指標の中心（適正）の水準"),
+                                 ("基本", base, base_reading),
                                  ("強気", band["high"], "指標が割高と見る水準まで評価が上がった場合")):
         out.append({"name": name, "price": value, "reading": reading,
                     "change": (value / price - 1) * 100 if price else None})

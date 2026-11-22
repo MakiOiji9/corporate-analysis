@@ -333,7 +333,7 @@ def test_prepare_fill_build_flow(repo, capsys):
     assert result["horizons"]["long"]["verdict"] == "投資検討" and result["price_range"]["source"] == "prices"
     assert result["rules_version"] == CJ.RULES_VERSION and 0 < result["horizons"]["long"]["coverage"] <= 1
     html = (company / "reports" / f"{TODAY}_company-report.html").read_text(encoding="utf-8")
-    assert f"判定規則の版 {CJ.RULES_VERSION}" in html and "確率ではない" in html
+    assert f"判定ルールの改定 {CJ.RULES_VERSION}" in html and "確率ではない" in html
     assert _run(repo, capsys, "check", "--company", "3798", "--date", TODAY)["next"] == "report_existing"
     again = _prepare(repo, capsys)
     assert not again["ok"] and "--redo" in again["error"]
@@ -375,17 +375,18 @@ def test_conservative_note_is_not_doubled():
     import cr_factors as CF
     a = {"verdict": "懸念", "reason": "不明の年を構造とみなした（材料不足のため保守的に判定）", "conservative": ["x"],
          "step": "2-2", "label": "成長性"}
-    assert CF.analysis_factor(a)["reason"].count("保守的に判定") == 1
-    assert "保守的" in CF.analysis_factor({**a, "reason": "理由"})["reason"]
+    factor = CF.analysis_factor(a)
+    assert (factor["reason"] + factor["note"]).count("保守的") == 1
+    assert "保守的" in CF.analysis_factor({**a, "reason": "理由"})["note"]
 
 
 def test_conservative_note_does_not_claim_the_verdict_came_from_missing_material():
     import cr_factors as CF
     a = {"verdict": "懸念", "reason": "手順1が停滞・縮小", "conservative": ["M&A が分からない"],
          "step": "2-2", "label": "成長性"}
-    reason = CF.analysis_factor(a)["reason"]
-    assert "材料不足のため保守的に判定" not in reason
-    assert "一部の項目は材料不足のため保守的に扱った" in reason
+    factor = CF.analysis_factor(a)
+    assert "材料不足のため保守的に判定" not in factor["reason"] + factor["note"]
+    assert factor["note"] == "一部の項目は材料不足のため保守的に扱った"
 
 
 def test_valuation_factor_counts_only_the_scored_indicators():
@@ -406,7 +407,7 @@ def test_html_shows_3c_swot_peers_dividends_and_tooltips(repo, capsys):
     assert "期間ごとの良い点・悪い点" in html and 'class="gauge"' in html
     assert 'class="swot"' in html and "SWOT分析" in html
     assert "同業比較" in html and "株主還元" in html and "成長の見通し" in html
-    assert "同業の平均" in html and "同業の中央値" in html and "最も近い境目" in html
+    assert "同業の平均" in html and "同業の中央値" in html and "の境目（+0.25）" in html
     assert 'class="term"' in html
     assert not re.search(r'data-tip="[^"]*<span', html)  # a tooltip never lands inside an attribute
     assert '<svg' in html and not re.search(r"<svg[^>]*>[^<]*<span class=\"term\"", html)

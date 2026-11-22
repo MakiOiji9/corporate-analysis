@@ -34,7 +34,15 @@ from slides import table
 TOC = (("conclusion", "結論"), ("reasons", "良い点・悪い点"), ("thesis", "行動計画"), ("step1", "STEP 1 事業"),
        ("step2", "STEP 2 財務"), ("step3", "STEP 3 株価"), ("market", "株価の動き"),
        ("tech", "テクニカル分析"), ("legends", "投資の神"), ("gaps", "材料不足"), ("glossary", "用語集"))
-LEGEND_LEAD = ("3人の投資哲学をこの会社の分析結果に当てはめた参考の視点。評価はスクリプトが資料の条件で決め、"
+def check_notice(checks: list[str]) -> str:
+    """The build's automatic checks (cr_lint) at the top of the report: what a reader should cross-check."""
+    items = "".join(f"<li>{esc(c)}</li>" for c in checks)
+    return (f'<div class="wrap"><div class="notice"><b>作成時の自動チェック</b>: 章どうしの食い違いや読みにくい書き方が '
+            f'{len(checks)} 件見つかった。数字や判定の言葉を読むときは注意する。'
+            f'<details><summary>内容を見る</summary><ul>{items}</ul></details></div></div>')
+
+
+LEGEND_LEAD = ("3人の投資哲学をこの会社の分析結果に当てはめた参考の視点。評価は資料に書かれた条件から機械的に決め、"
                "結論の判定の点数には入らない。本人が実際にこの会社をこう評価したという意味ではない。")
 PLAIN_HORIZONS = (("短期", "〜3ヶ月", "地合い・株価のテクニカル（流れ・勢い・位置）・直近の決算の進み具合・割安さを重く見る。値動きの影響が大きく、根拠は弱い。"),
                   ("中期", "6ヶ月〜1年", "割安さと業績の勢い（成長性・決算の進捗）を重く見て、財務と地合いも加える。"),
@@ -368,6 +376,6 @@ def render(template: str, facts: dict, parsed: dict, md_text: str) -> str:
     body = (masthead(facts) + "<main>" + main
             + glossary(md_text + D.render_brief(facts, "").split(D.WRITING_RULES)[0])
             + f'</main><footer><div class="wrap"><p>{esc(DISCLAIMER)}</p>'
-              f'<p>作成: 企業分析レポートの作成スクリプト（{esc(facts["date"])}、判定規則の版 {J.RULES_VERSION}。'
-              '過去のレポートは作成時の版の規則で判定している）</p></div></footer>')
+              f'<p>作成日 {esc(facts["date"])}。判定ルールの改定 {J.RULES_VERSION}'
+              '（判定の基準は改定ごとに見直しており、過去のレポートとは判定の基準が違うことがある）</p></div></footer>')
     return Template(template).safe_substitute(title=esc(f"{facts['name']} 企業分析レポート {facts['date']}"), body=body)

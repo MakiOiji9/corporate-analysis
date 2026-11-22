@@ -311,3 +311,42 @@ def test_half_scores_move_to_the_next_whole_word():
 def test_mover_text_with_a_fractional_valuation_score():
     m = {"key": "valuation", "label": "株価の割安さ（STEP 3）", "direction": "1段良くなれば", "verdict": "投資検討"}
     assert J.mover_text(m, _rows(valuation=0.6)) == "株価の割安さ（STEP 3）が「割安」で揃えば投資検討"
+
+
+def test_half_score_text_names_the_verdict_word():
+    m = {"key": "growth", "label": "成長性", "direction": "1段悪くなれば", "verdict": "ウォッチ", "to": 0.0}
+    rows = [{"key": "growth", "score": 0.5, "value": "普通（内訳から +0.5）"}]
+    assert J.mover_text(m, rows) == "成長性の内訳の寄りが無くなれば（今は「普通」を +0.5 点で数えている）ウォッチ"
+    m = {"key": "cash_flow", "label": "キャッシュフロー", "direction": "1段良くなれば", "verdict": "投資検討", "to": 0.0}
+    rows = [{"key": "cash_flow", "score": -0.5, "value": "懸念（内訳から -0.5）"}]
+    assert J.mover_text(m, rows) == "キャッシュフローが「普通」になれば（今は「懸念」を -0.5 点で数えている）投資検討"
+
+
+def test_moat_moves_on_its_own_four_steps():
+    factors = {**_all(0.0), "valuation": _f(1.0), "growth": _f(0.5)}
+    moves = {(m["key"], m["direction"]): m for m in J.sensitivity("long", factors)["movers"]}
+    for (key, _), m in moves.items():
+        if key == "moat":
+            assert m["to"] in (-1.0, 0.5)
+    assert J._next_word(0.0, 1, "moat") == 0.5 and J._next_word(0.0, -1, "moat") == -1.0
+    assert J._next_word(0.5, 1, "moat") == 1.0 and J._next_word(1.0, 1, "moat") == 1.0
+    rows = [{"key": "moat", "score": 0.0, "value": "なし（超過収益は強い。それを守る源泉は特定できない）"}]
+    down = {"key": "moat", "label": "強みの持続性（モート）", "direction": "1段悪くなれば", "verdict": "ウォッチ", "to": -1.0}
+    text = J.mover_text(down, rows)
+    assert "狭い" not in text and text.startswith("資本コストを上回る利益（超過収益）が無くなれば")
+    up = {**down, "direction": "1段良くなれば", "verdict": "投資検討", "to": 0.5}
+    assert J.mover_text(up, rows) == "強みの持続性（モート）が「狭い」になれば（今は「なし」）投資検討"
+
+
+def _distance(score):
+    return {"nearest": J.nearest(score), "to_up": round(J.UP - score, 3) if score < J.UP else None,
+            "to_down": round(score - J.DOWN, 3) if score > J.DOWN else None}
+
+
+def test_distance_text_has_no_signs_or_repeats():
+    watch = J.distance_text(_distance(0.05))
+    assert watch == "投資検討の境目（+0.25）まであと 0.20 点。見送りの境目（-0.25）までは 0.30 点の余裕がある"
+    consider = J.distance_text(_distance(0.28))
+    assert consider.startswith("投資検討の境目（+0.25）を 0.03 点上回っている（下回るとウォッチ）")
+    assert J.distance_text(_distance(-0.4)).startswith("見送りの境目（-0.25）を 0.15 点下回っている")
+    assert J.distance_text({}) == ""

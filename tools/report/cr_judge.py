@@ -184,7 +184,7 @@ def _weighted(weights: dict[str, int], factors: dict[str, dict]) -> tuple[float 
         f = factors.get(key) or {}
         rows.append({"key": key, "label": FACTOR_LABELS[key], "weight": weight, "score": f.get("score"),
                      "value": f.get("value") or "—", "reason": f.get("reason") or "", "source": f.get("source") or "",
-                     "pending": bool(f.get("pending"))})
+                     "note": f.get("note") or "", "pending": bool(f.get("pending"))})
     used = [r for r in rows if r["score"] is not None]
     total = sum(r["weight"] for r in used)
     # a 判定保留 analysis scores 0 in the average but is no evidence: it does not count toward the coverage
@@ -257,9 +257,31 @@ def nearest(score: float | None) -> dict | None:
     return {"to": to, "gap": gap, "text": f"{to}まであと {gap:+.2f}（{rule}）"}
 
 
-def _next_word(score: float, step: int) -> float:
+MOAT_STEPS = (-1.0, 0.0, 0.5, 1.0)  # なし（超過収益なし）・なし（超過収益あり）・狭い・広い (cr_factors.moat_factor)
+MOAT_WORDS = {-1.0: "なし", 0.0: "なし", 0.5: "狭い", 1.0: "広い"}
+
+
+def distance_text(s: dict) -> str:
+    """The distance to the thresholds in words, without signs: '投資検討の境目（+0.25）まであと 0.20 点。
+    見送りの境目（-0.25）までは 0.30 点の余裕がある' (nearest first)."""
+    up, down, near = s.get("to_up"), s.get("to_down"), s.get("nearest") or {}
+    gap = near.get("gap")
+    if up is None and down is None:
+        return ""
+    to_up = (f"投資検討の境目（{UP:+.2f}）まであと {up:.2f} 点" if up is not None
+             else f"投資検討の境目（{UP:+.2f}）を {abs(gap or 0):.2f} 点上回っている（下回ると{WATCH}）")
+    to_down = (f"見送りの境目（{DOWN:+.2f}）までは {down:.2f} 点の余裕がある" if down is not None
+               else f"見送りの境目（{DOWN:+.2f}）を {abs(gap or 0):.2f} 点下回っている（上回ると{WATCH}）")
+    first, second = (to_down, to_up) if near.get("to") == PASS or down is None else (to_up, to_down)
+    return f"{first}。{second}"
+
+
+def _next_word(score: float, step: int, key: str | None = None) -> float:
     """One step of a factor: a whole score moves a whole word; a half or fractional score moves to the next
-    whole word in that direction (−0.5 up is 0, not +0.5)."""
+    whole word in that direction (−0.5 up is 0, not +0.5). The moat has its own four steps (MOAT_STEPS)."""
+    if key == "moat" and score in MOAT_STEPS:
+        i = MOAT_STEPS.index(score) + step
+        return MOAT_STEPS[max(0, min(len(MOAT_STEPS) - 1, i))]
     if float(score).is_integer():
         return max(-1.0, min(1.0, score + step))
     return float(math.ceil(score) if step > 0 else math.floor(score))
@@ -281,7 +303,7 @@ def sensitivity(horizon: str, factors: dict[str, dict], flags: list[str] | tuple
         if key not in WEIGHTS[horizon] or f.get("score") is None:
             continue
         for step, word in ((1, "1段良くなれば"), (-1, "1段悪くなれば")):
-            moved = _next_word(f["score"], step)
+            moved = _next_word(f["score"], step, key)
             if moved == f["score"]:
                 continue
             other = horizon_score(horizon, {**factors, key: {**f, "score": moved}}, flags, step1_grade)
@@ -302,6 +324,21 @@ NUMERIC_MOVES = {
     ("progress", -1): "次の決算で営業利益の進捗が前年同期の90%を下回れば"}
 
 
+def _moat_text(label: str, score: float, to: float) -> str:
+    """The moat's steps in words: its 0 is なし with a return above the cost of capital, not 狭い."""
+    if score == 0.0 and to == -1.0:
+        return "資本コストを上回る利益（超過収益）が無くなれば（今はモート「なし」・超過収益あり）"
+    if score == -1.0 and to == 0.0:
+        return "資本コストを上回る利益（超過収益）が出れば（今はモート「なし」・超過収益なし）"
+    return f"{label}が「{MOAT_WORDS[to]}」になれば（今は「{MOAT_WORDS[score]}」）"
+
+
+def _verdict_word(row: dict) -> str | None:
+    """The analysis' own verdict as the row shows it ('普通（内訳から +0.5）' -> '普通')."""
+    value = str(row.get("value") or "")
+    return value.split("（", 1)[0] or None
+
+
 def mover_text(mover: dict, rows: list[dict]) -> str:
     """'成長性が「良好」になれば（今は「普通」）投資検討': the one-step move of sensitivity() as a condition."""
     step = 1 if mover["direction"] == "1段良くなれば" else -1
@@ -309,9 +346,18 @@ def mover_text(mover: dict, rows: list[dict]) -> str:
     ladder = LADDERS.get(mover["key"])
     row = next((r for r in rows if r["key"] == mover["key"]), None)
     score, to = (row or {}).get("score"), mover.get("to")
+    if text is None and mover["key"] == "moat" and score in MOAT_STEPS and to in MOAT_STEPS:
+        text = _moat_text(mover["label"], score, to)
     if text is None and ladder and score is not None and to is not None and not float(score).is_integer() \
             and not (mover["key"] == "valuation" and abs(to) == 1):
-        text = f"{mover['label']}が「{ladder[int(to) + 1]}」になれば（今は {score:+.1f} 点）"
+        target = ladder[int(to) + 1]
+        word = _verdict_word(row) if row else None
+        if word not in ladder:  # −0.5 is a 懸念 moved up or a 普通 moved down: without the word, only the score
+            text = f"{mover['label']}が「{target}」になれば（今は {score:+.1f} 点）"
+        elif word == target:  # the half point came from the analysis' sub-ratings: the move takes it away
+            text = (f"{mover['label']}の内訳の寄りが無くなれば（今は「{word}」を {score:+.1f} 点で数えている）")
+        else:
+            text = f"{mover['label']}が「{target}」になれば（今は「{word}」を {score:+.1f} 点で数えている）"
     if text is None and ladder and row and row["score"] is not None:
         now = max(-1, min(1, round(row["score"])))
         if -1 <= now + step <= 1:

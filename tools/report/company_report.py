@@ -43,6 +43,7 @@ import cr_doc as D  # noqa: E402
 import cr_facts as F  # noqa: E402
 import cr_judge as J  # noqa: E402
 import cr_legends as L  # noqa: E402
+import cr_lint as LT  # noqa: E402
 import cr_plain as P  # noqa: E402
 import cr_prices as CP  # noqa: E402
 import cr_projection as PJ  # noqa: E402
@@ -258,6 +259,10 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     if leaks:  # the page is read on its own: no step numbers, file paths or tool names
         return emit({"ok": False, "md": company.rel(md_path), "warnings": warnings,
                      "issues": [f"読み手に通じない内部の言葉が本文に残っている（書いた欄なら言い換える）: {x}" for x in leaks]})
+    checks = LT.check(page, facts)  # chapters that disagree, wording: warned, the build goes on (決定 Q7)
+    if checks:
+        page = page.replace("<main>", "<main>" + R.check_notice(checks), 1)
+        warnings = warnings + [f"自動チェック: {c}" for c in checks]
     atomic_write_text(html_path, page)
     result = result_json(company, facts, date, warnings)
     atomic_write_text(json_path, json.dumps(result, ensure_ascii=False, indent=1) + "\n")

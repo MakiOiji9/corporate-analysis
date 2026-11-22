@@ -19,16 +19,6 @@ FAIR_LABEL = "適正PBR の株価"
 LOW_52 = "52週安値"
 
 
-def _role(line: dict, current: float) -> dict:
-    """A past low above the price is now a ceiling, a past high below it a floor: the label says so."""
-    label = line["label"]
-    if label.startswith("直近の安値") and line["price"] > current:
-        label = label.replace("直近の安値", "以前の安値", 1) + "（今は上値の抵抗になりやすい）"
-    elif label.startswith("直近の高値") and line["price"] < current:
-        label = label.replace("直近の高値", "以前の高値", 1) + "（今は下値の支えになりやすい）"
-    return {**line, "label": label}
-
-
 def _level(label: str, price: float) -> dict:
     return {"label": label, "price": round(price, 2)}
 
@@ -133,8 +123,7 @@ def build(t: dict, flips: dict, context: dict) -> dict:
     if not (t or {}).get("ok") or not levels.get("atr") or not levels.get("lines"):
         return {"ok": False, "buys": [], "holder": {"take": [], "exit": []}}
     atr, current = levels["atr"], t["current"]
-    lines = [_role(x, current) for x in levels["lines"]]
-    t = {**t, "levels": {**levels, "lines": lines}}
+    lines = levels["lines"]  # already named by their role now (cr_technicals.role)
     buys = []
     for e in _entries(t, flips or {}):
         stop = _stop(e["price"], lines, atr)

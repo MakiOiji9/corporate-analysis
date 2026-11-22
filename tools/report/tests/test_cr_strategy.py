@@ -45,6 +45,9 @@ def test_scenarios_bear_base_bull_from_the_price_band():
     bear, base, bull = (r["price"] for r in s["rows"])
     assert bear == pytest.approx(3930.0) and bull == pytest.approx(5570.0)  # medians of the two bands' edges
     assert bear < base < bull and s["rows"][1]["change"] == pytest.approx((base / 4500 - 1) * 100)
+    reading = s["rows"][1]["reading"]
+    assert reading.startswith("指標ごとの帯の中央の中央値（") and f"→ {base:,.0f}）" in reading
+    assert "適正" not in reading
 
 
 def test_bear_stays_below_the_price_when_the_price_is_already_under_the_band():

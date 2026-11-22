@@ -17,6 +17,7 @@ MA = {P.DAILY: (25, 75, 200), P.WEEKLY: (13, 26, 52)}
 SLOPE = {P.DAILY: 20, P.WEEKLY: 8}
 CHART = {P.DAILY: 250, P.WEEKLY: 156}
 YEAR = {P.DAILY: 250, P.WEEKLY: 52}
+UNIT = {P.DAILY: "日", P.WEEKLY: "週"}  # one bar of the timeframe (ATR の値幅の単位)
 RECENT = {P.DAILY: 60, P.WEEKLY: 26}      # the window of "recent high / low" and the OBV comparison
 SHORT_VOL = {P.DAILY: 5, P.WEEKLY: 2}
 STOCH = 14
@@ -177,7 +178,7 @@ def volatility(rows: list[dict], tf: str) -> dict:
     a = T.atr(rows)
     ev: list[tuple[str, int, str]] = [(f"ボリンジャーバンドの幅は直近 1 年の下位 {pct:.0f}% の位置", 0, "順張り")]
     if a:
-        ev.append((f"ATR（1 日あたりの平均的な値幅）は {P.px(a)}、株価の {a / closes[-1] * 100:.1f}%", 0, "順張り"))
+        ev.append((f"ATR（1{UNIT[tf]}あたりの平均的な値幅）は {P.px(a)}、株価の {a / closes[-1] * 100:.1f}%", 0, "順張り"))
     if pct <= SQUEEZE:
         state, outlook = "収縮（スクイーズ）", "値動きが小さく縮んでいる。大きく動く前の静けさになりやすいが、向きは示さない。"
     elif pct >= EXPAND:
