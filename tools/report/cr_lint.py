@@ -2,9 +2,9 @@
 
 The report's judgements and prices come from one facts.json, but several chapters render them through their own
 code; a reviewer found the same thing named two ways (moat なし / 狭い, take-profit 488 / 549, もみ合い / 下降).
-check() looks for that kind of disagreement and for wording that is not wrong but hard to read. Unlike
-cr_plain.leaks() (which stops the build), these are warnings: the build goes on and the report shows them at the
-top (docs/proposals/company-report-review-feedback.md 6., 決定 Q7).
+mismatches() looks for that kind of disagreement and stops the build (a script bug, fixed rather than shown to
+the reader); wording() finds what is not wrong but hard to read and is only a build warning (the log), never
+shown in the report (決定 2026-11-22, which replaced Q7's notice at the top).
 
   verdict_words()  each "（今は「X」）" of 判定を動かす要因 names the analysis' own verdict word
   take_profits()   03 章の売買シナリオ (the current price's first target) and 付録A の利益確定の目安 name one price
@@ -116,5 +116,10 @@ def wording(page: str) -> list[str]:
     return out
 
 
+def mismatches(facts: dict) -> list[str]:
+    """Chapters that name one thing two ways: a bug of the report scripts, so build stops (決定 2026-11-22)."""
+    return verdict_words(facts) + take_profits(facts) + trend(facts)
+
+
 def check(page: str, facts: dict) -> list[str]:
-    return verdict_words(facts) + take_profits(facts) + trend(facts) + wording(page)
+    return mismatches(facts) + wording(page)

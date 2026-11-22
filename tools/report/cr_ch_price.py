@@ -184,7 +184,8 @@ def _phase_card(p: dict, prose: str) -> str:
     checks = table(["確かめたこと", "値", "結果"], [[esc(c["item"]), esc(c["value"]), OK_HTML[c["ok"]]]
                                                    for c in p["checks"]], nowrap=frozenset({2}))
     return (f'<h3>株価の局面の見方（参考）</h3><p><span class="badge {PHASE_CLASS.get(p["phase"], "")}">'
-            f'{esc(p["phase"])}</span> <b>{esc(p["verdict"])}</b></p>{prose}{checks}'
+            f'{esc(p["phase"])}</span> <b>{esc(p["verdict"])}</b></p>'
+            + (f'<p class="notice">{esc(p["note"])}</p>' if p.get("note") else "") + f'{prose}{checks}'
             '<p class="small muted">下落局面では「優良企業が割安になったか」、上昇局面では「業績が伴っているか、期待が先行して'
             "いないか」を見る参考の視点。判定の点数には入らない。</p>")
 

@@ -63,6 +63,8 @@ def _band(facts: dict) -> tuple[list[dict], dict | None]:
 
 
 def _bear_line(bear: float) -> str:
+    if bear == 0:
+        return "決算ごとの EPS が前の年を下回る（悲観ケースの横ばいより悪い）年が続いたら、保有の理由を見直す"
     if bear < 0:
         return f"決算ごとの EPS の減り方が悲観ケースの年 {bear:.1f}% より大きい年が続いたら、保有の理由を見直す"
     return f"決算ごとの EPS の伸びが悲観ケースの年 {bear:.1f}% を下回り続けたら、保有の理由を見直す"
@@ -128,16 +130,6 @@ def _three_parts(facts: dict, price: float, band: dict, base: float) -> list[flo
     return [price, second, max(lower) if lower else price * DEEP_DOWN]
 
 
-def _mover_lines(facts: dict) -> list[str]:
-    out = []
-    for key in ("long", "mid"):
-        h = facts["horizons"].get(key) or {}
-        for m in (h.get("sensitivity") or {}).get("movers") or []:
-            if m["direction"] == "1段良くなれば":
-                out.append(f"{'長期' if key == 'long' else '中期'}: {J.mover_text(m, h.get('rows') or [])}")
-    return list(dict.fromkeys(out))[:4]
-
-
 def action(facts: dict) -> dict:
     price, currency = _price(facts)
     s = scenarios(facts)
@@ -153,9 +145,10 @@ def action(facts: dict) -> dict:
         return {"stance": stance, "steps": steps, "alerts": alerts if position == DB.ABOVE else []}
     if long == J.WATCH:
         stance = "条件がそろうのを待つ" if position == DB.BELOW else "価格と条件の両方を待つ"
-        return {"stance": stance, "steps": [], "alerts": ([] if position == DB.BELOW else alerts) + _mover_lines(facts)}
+        # the single-step movers are rows of the 判断が変わる条件 table (conditions_html): not repeated here
+        return {"stance": stance, "steps": [], "alerts": [] if position == DB.BELOW else alerts}
     if long == J.PASS:
-        return {"stance": "今は買わない", "steps": [], "alerts": _mover_lines(facts)}
+        return {"stance": "今は買わない", "steps": [], "alerts": []}
     return {"stance": "判断の材料がそろうのを待つ", "steps": [], "alerts": alerts}
 
 
@@ -467,8 +460,10 @@ def _plan_block(plan: dict, facts: dict, currency: str) -> str:
                     f"{esc(C.fmt(p['per'], 1))}倍 を起点に、成長が続いた場合の水準</p>"
                     + _projection_table(p, currency) + f'<p class="small muted">{esc(p["note"])}。</p>')
     if plan["entries"]:
-        out += ("<h5>分けて買う場合の価格の目安</h5>" if key == "long" else "<h5>買いを考える価格</h5>") \
-            + bullet_list(plan["entries"])
+        head = "分けて買う場合の価格の目安" if key == "long" else "買いを考える価格"
+        if plan["verdict"] != J.CONSIDER:  # a ウォッチ lists the prices for when its conditions are met, not for now
+            head = f"条件がそろったときに{head}（今の判定は{plan['verdict']}）"
+        out += f"<h5>{esc(head)}</h5>" + bullet_list(plan["entries"])
     if plan.get("alerts"):
         out += "<h5>判断を変える条件（価格・事業）</h5>" + bullet_list(plan["alerts"])
     out += "<h5>売り・見直しの目安</h5>" + bullet_list(plan["exits"])

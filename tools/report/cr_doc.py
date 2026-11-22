@@ -380,6 +380,7 @@ def _phase_lines(p: dict) -> list[str]:
     marks = {True: "○", False: "×", None: "不明"}
     return (["## 4.5 株価の局面（6.3 の材料。参考の見方で点数に入らない）", "",
              f"- 局面: {p['phase']}。結論: {p['verdict']}"]
+            + ([f"- {p['note']}（6.3 で必ず触れる）"] if p.get("note") else [])
             + [f"  - {c['item']}: {c['value']} → {marks[c['ok']]}" for c in p["checks"]] + [""])
 
 
@@ -472,7 +473,7 @@ def _break_lines(facts: dict) -> list[str]:
 
 def _watch_lines(facts: dict) -> list[str]:
     """4.3: the next results and the first gap of each analysis (one line per analysis, at most the range)."""
-    lines = [f"次の決算（{facts['review']}）の決算短信で、決算の進捗と 4.2 の条件を確かめる"]
+    lines = [f"次の決算（{facts['review']}）の決算短信で、決算の進捗と 03章の「判断が変わる条件」を確かめる"]
     lines += [f"{s['label']}（{s['date']}）は分析後に材料が変わった（{s['reason']}）。作り直して結論が変わるかを確かめる"
               for s in facts.get("stale") or []]
     seen = set()

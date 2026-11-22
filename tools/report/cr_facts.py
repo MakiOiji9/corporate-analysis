@@ -8,6 +8,7 @@ import json
 import re
 from pathlib import Path
 
+import cf_metrics as CF
 import cr_evidence as EVR
 import cr_extras as X
 import cr_factors as F
@@ -113,7 +114,8 @@ def _growth(r: dict) -> dict:
             "cagr_span": [_get(r, "step1", "cagr", "sales", "first"), _get(r, "step1", "cagr", "sales", "last")],
             "rows": [{k: x.get(k) for k in ("year", "sales", "operating_income", "net_income", "eps")}
                      for x in r.get("rows") or []],
-            "investment": _investment(r.get("step5") or {})}
+            "investment": _investment(r.get("step5") or {}),
+            "declines": [{"year": d.get("year"), "class": d.get("class")} for d in r.get("declines") or []]}
 
 
 def _investment(s5: dict) -> dict:
@@ -165,6 +167,8 @@ def _valuation(r: dict) -> dict:
             "scores": _get(r, "step3", "scores"),
             "peg_standard": _get(r, "peg", "peg", "standard"),
             "peg_cases": _get(r, "peg", "cases"), "pbr_fair": _get(r, "pbr", "fair"),
+            "peg_candidates": [{"name": c.get("name"), "value": c.get("value")}
+                               for c in _get(r, "peg", "candidates") or []],
             "raw_verdict": _get(r, "step3", "raw_verdict"),
             "ev_ebitda": _get(r, "ev", "value"), "eps_used": _get(r, "per", "eps", "eps_used"),
             "peers": [{k: p.get(k) for k in ("name", "per_actual", "per_forecast", "pbr", "ev_ebitda_calc", "cagr", "roe")}
@@ -190,6 +194,17 @@ SUBS = {  # the STEP 2 analyses' step ratings, which move a verdict half a step 
 }
 
 
+OLD_FLAG = "売れていない在庫・回収できていない売上の可能性"  # cash-flow analyses built before 2026-11-22 wrote both
+
+
+def _flag_words(words: dict, flagged: list[str]) -> dict:
+    """An older cash-flow analysis says 在庫 even when only 売上債権 grew faster than sales: name what was flagged."""
+    meaning = "・".join(CF.FLAG_MEANING[n] for n in flagged if n in CF.FLAG_MEANING)
+    if not meaning:
+        return words
+    return json.loads(json.dumps(words, ensure_ascii=False).replace(OLD_FLAG, f"{meaning}の可能性"))
+
+
 def analysis(step: S.Step, company: S.Company) -> dict:
     found = S.latest(step, company)
     base = {"key": step.key, "label": step.label, "step": step.number, "skill": step.skill}
@@ -202,6 +217,8 @@ def analysis(step: S.Step, company: S.Company) -> dict:
     words = P.plain_tree({"reason": r.get("verdict_reason") or "", "points": _get(r, "handoff", "report_points") or "",
                           "gaps": gaps, "conservative": r.get("conservative") or [],
                           "detail": DETAILS[step.key](r)}, step.key)
+    if step.key == "cash_flow":
+        words = _flag_words(words, _get(r, "step3", "flagged") or [])
     subs = SUBS[step.key](r) if step.key in SUBS else []
     quality = r.get("confidence") if isinstance(r.get("confidence"), dict) else {}
     return {**base, "date": date, "verdict": r.get(step.verdict_key), "md": r.get("md"), "subs": subs,
@@ -379,7 +396,8 @@ def phase_context(facts: dict) -> dict:
             "step1": facts["step1"]["grade"], "step2": facts["step2"]["grade"], "flags": facts["step2"].get("flags"),
             "step3": facts["step3"]["verdict"], "per_position": _get(a["valuation"], "detail", "per_range", "position"),
             "price_rate": (trend.get("windows") or {}).get(trend.get("basis"), {}).get("annual"),
-            "eps_rate": _get(a["growth"], "detail", "cagr", "eps")}
+            "eps_rate": _get(a["growth"], "detail", "cagr", "eps"),
+            "long_verdict": (facts.get("horizons") or {}).get("long", {}).get("verdict")}
 
 
 def _profile(company: S.Company) -> dict:
