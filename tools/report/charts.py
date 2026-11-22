@@ -12,6 +12,7 @@ from html import escape
 EMPTY = '<div class="chart-empty">データ未取得</div>'
 LABEL_GAP = 13  # px between end-of-line labels
 HIT_POINTS = 130  # hover dots only up to this many points per series
+X_LABEL_MIN = 110  # px between date labels on the x axis (a "2026-11" label is about 50px wide)
 
 
 def fmt(value: float | None, decimals: int = 1, signed: bool = False) -> str:
@@ -62,9 +63,11 @@ def _y_axis(ticks: list[float], y, left: float, right: float) -> list[str]:
 
 
 def _x_axis(positions: list[tuple[str, float]], bottom: float, count: int = 5) -> list[str]:
-    """positions: (date, x) in drawing order; up to `count` evenly spaced labels."""
+    """positions: (date, x) in drawing order; up to `count` evenly spaced labels (fewer on a narrow chart, so the
+    labels do not run into each other)."""
     if not positions:
         return []
+    count = min(count, max(2, int((positions[-1][1] - positions[0][1]) // X_LABEL_MIN) + 1))
     n = len(positions)
     picks = sorted({round(i * (n - 1) / (count - 1)) for i in range(count)}) if n > 1 else [0]
     span_days = _ordinal(positions[-1][0]) - _ordinal(positions[0][0])
@@ -88,10 +91,10 @@ def _spread_labels(items: list[tuple[float, str]], top: float, bottom: float) ->
     return placed
 
 
-def _hlines(hlines: list[dict], y, left: float, right: float, decimals: int) -> list[str]:
-    """Horizontal reference lines ({label, value, cls}) with their labels at the left end, pushed apart vertically
-    so lines close together keep readable labels."""
-    out, labels = [], []
+def _hlines(hlines: list[dict], y, left: float, right: float, decimals: int) -> tuple[list[str], list[str]]:
+    """Horizontal reference lines ({label, value, cls}) and, separately, their labels at the left end, pushed apart
+    vertically so lines close together keep readable labels. The caller draws the labels last, over the data lines."""
+    out, labels, texts = [], [], []
     for h in hlines:
         yy = y(h["value"])
         cls = escape(h.get("cls") or "")
@@ -100,13 +103,14 @@ def _hlines(hlines: list[dict], y, left: float, right: float, decimals: int) -> 
         labels.append((yy - 4, f'class="hl-l {cls}">{escape(h["label"])} {fmt(h["value"], decimals)}'))
     top = min((yy for yy, _ in labels), default=0) - LABEL_GAP * len(labels)
     for yy, html in _spread_labels(labels, top, float("inf")):
-        out.append(f'<text x="{left + 4}" y="{yy:.1f}" {html}</text>')
-    return out
+        texts.append(f'<text x="{left + 4}" y="{yy:.1f}" {html}</text>')
+    return out, texts
 
 
 def line_chart(series: list[dict], title: str, decimals: int = 1, width: int = 720, height: int = 300,
                hlines: list[dict] | None = None) -> str:
-    """series: [{"label", "points": [[date, value], ...], "cls"?}]; the mark class is cls or s{i} (series index).
+    """series: [{"label", "points": [[date, value], ...], "cls"?, "markers"?}]; the mark class is cls or s{i} (series
+    index). markers: True draws a visible dot at every point (the peaks and troughs of a chart pattern).
     hlines: horizontal reference lines [{label, value, cls}] drawn across the chart and kept inside the scale.
     Hover dots are drawn only for series of up to HIT_POINTS points (a daily series would make the file heavy)."""
     drawn = [(i, s) for i, s in enumerate(series) if s.get("points")]
@@ -126,13 +130,16 @@ def line_chart(series: list[dict], title: str, decimals: int = 1, width: int = 7
         return bottom - (bottom - top) * (v - ticks[0]) / (ticks[-1] - ticks[0])
 
     body = _y_axis(ticks, y, left, right) + _x_axis([(d, x(d)) for d in dates], bottom)
-    body += _hlines(hlines, y, left, right, decimals)
+    hl_lines, hl_labels = _hlines(hlines, y, left, right, decimals)
+    body += hl_lines
     labels = []
     for i, s in drawn:
         pts = s["points"]
         cls = escape(s.get("cls") or f"s{i}")
         path = "M" + " L".join(f"{x(d):.1f},{y(v):.1f}" for d, v in pts)
         body.append(f'<path class="ln {cls}" d="{path}"><title>{escape(s["label"])}</title></path>')
+        if s.get("markers"):
+            body += [f'<circle class="pt {cls}" cx="{x(d):.1f}" cy="{y(v):.1f}" r="3.2"/>' for d, v in pts]
         if len(pts) <= HIT_POINTS:
             body += [f'<circle class="hit" cx="{x(d):.1f}" cy="{y(v):.1f}" r="5">'
                      f'<title>{escape(s["label"])} {escape(d)}: {fmt(v, decimals)}</title></circle>' for d, v in pts]
@@ -143,7 +150,7 @@ def line_chart(series: list[dict], title: str, decimals: int = 1, width: int = 7
         labels.append((y(v_last), f'class="end {cls}">{fmt(v_last, decimals)}'))
     for yy, html in _spread_labels(labels, top, bottom):
         body.append(f'<text x="{right + 8}" y="{yy + 4:.1f}" {html}</text>')
-    return _frame(width, height, title, body)
+    return _frame(width, height, title, body + hl_labels)
 
 
 def bar_chart(points: list, title: str, decimals: int = 0, width: int = 720, height: int = 260) -> str:
