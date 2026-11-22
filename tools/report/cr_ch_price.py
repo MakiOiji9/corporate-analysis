@@ -222,13 +222,14 @@ def _tech_charts(t: dict) -> str:
               {"label": "26週線", "points": ch["ma_mid"]},
               {"label": "ボリンジャーバンド +2σ", "points": ch["bb_upper"], "cls": "band"},
               {"label": "ボリンジャーバンド −2σ", "points": ch["bb_lower"], "cls": "band"}]
-    legend = _legend_row([("s0", "終値"), ("s1", "13週線"), ("s2", "26週線"), ("band", "ボリンジャーバンド ±2σ")])
     drawn = {h["cls"] for h in hlines}
-    colours = "、".join(text for cls, text in (("sup", "緑の点線＝押し目の目安"), ("res", "紫＝利益確定の目安"),
-                                               ("stop", "赤＝損切りの目安")) if cls in drawn)
-    price = (f'<figure class="chartbox"><figcaption><b>直近1年の株価と目安の水準</b>{legend}</figcaption>'
+    levels = [("hl " + cls, text) for cls, text in (("sup", "押し目の目安"), ("res", "利益確定の目安"),
+                                                     ("stop", "損切りの目安")) if cls in drawn]
+    legend = _legend_row([("s0", "終値"), ("s1", "13週線"), ("s2", "26週線"), ("band", "ボリンジャーバンド ±2σ"),
+                          *levels])
+    price = (f'<figure class="chartbox tech"><figcaption><b>直近1年の株価と目安の水準</b>{legend}</figcaption>'
              f'{C.line_chart(series, "直近1年の株価と目安の水準", 0, hlines=hlines)}'
-             f'<div class="source">{esc(colours + "。" if colours else "")}出典: 日々の株価（Yahoo Finance）</div></figure>')
+             '<div class="source">出典: 日々の株価（Yahoo Finance）</div></figure>')
     # drawn narrow so the text stays readable when two charts share a row
     rsi = C.line_chart([{"label": "RSI(14)", "points": ch["rsi"]}], "RSI", 0, width=SMALL_CHART_WIDTH, height=220,
                        hlines=[{"label": "買われすぎ", "value": T.RSI_HIGH, "cls": "ref"},

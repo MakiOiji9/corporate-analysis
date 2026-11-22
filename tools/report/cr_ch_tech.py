@@ -71,6 +71,16 @@ def _breakdown(v: dict) -> str:
     return (f'<p><b>総合</b>: {esc(o["headline"])}</p>' + table(["切り口", "向き", "状態"], rows) + note)
 
 
+def _legend(items: list[tuple[str, str]]) -> str:
+    """One swatch per mark class; lines of the same class (a triangle's upper and lower lines) share it."""
+    merged: dict[str, list[str]] = {}
+    for cls, text in items:
+        if text not in merged.setdefault(cls, []):
+            merged[cls].append(text)
+    return '<div class="legend">' + "".join(
+        f'<span><i class="sw {c}"></i>{esc("・".join(t))}</span>' for c, t in merged.items()) + "</div>"
+
+
 def _chart(v: dict) -> str:
     ch, tf = v["chart"], v["timeframe"]
     start = ch["close"][0][0]
@@ -90,7 +100,7 @@ def _chart(v: dict) -> str:
         p = pats[0]
         pts = [[q["date"], q["price"]] for q in p["pivots"] if q["date"] >= start]
         if len(pts) >= 2:
-            series.append({"label": p["name"] + "の山谷", "points": pts, "cls": "zig"})
+            series.append({"label": p["name"] + "の山谷", "points": pts, "cls": "zig", "markers": True})
             legend.append(("zig", p["name"] + "の山谷"))
         for ln in p["lines"]:
             lp = [[q["date"], q["price"]] for q in ln["points"] if q["date"] >= start]
@@ -101,14 +111,12 @@ def _chart(v: dict) -> str:
             hlines.append({"label": "目標", "value": p["target"], "cls": "ref"})
         if p.get("invalidation") is not None:
             hlines.append({"label": "失敗の線", "value": p["invalidation"], "cls": "stop"})
-    seen = set()
-    legend_html = '<div class="legend">' + "".join(
-        f'<span><i class="sw {c}"></i>{esc(t)}</span>' for c, t in legend if not (c in seen or seen.add(c))) + "</div>"
+    legend += [("hl " + h["cls"], h["label"]) for h in hlines]
     title = f"{v['label']}の株価とチャートパターン"
-    return (f'<figure class="chartbox"><figcaption><b>{esc(title)}</b>{legend_html}</figcaption>'
+    return (f'<figure class="chartbox tech"><figcaption><b>{esc(title)}</b>{_legend(legend)}</figcaption>'
             f'{C.line_chart(series, title, 0, hlines=hlines)}'
-            f'<div class="source">緑＝支持線、紫＝抵抗線、赤＝パターンが失敗となる価格、灰＝パターンの目標。'
-            f'出典: 日々の株価（Yahoo Finance）</div></figure>')
+            '<div class="source">支持線・抵抗線は直近の水準、目標・失敗の線は上のチャートパターンの値。'
+            '出典: 日々の株価（Yahoo Finance）</div></figure>')
 
 
 def _aspect(a: dict) -> str:
