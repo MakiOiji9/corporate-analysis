@@ -109,9 +109,9 @@ def wording(page: str) -> list[str]:
         segments = [s.strip() for s in _SEGMENT.findall(line)]
         repeats += [a for a, b in zip(segments, segments[1:]) if a == b and len(a) >= REPEAT_MIN]
     out += [f"同じ文の繰り返し: {s}" for s in repeats[:EXAMPLES]]
-    nested = _nested(text)
+    nested = _nested(blocks)  # per element: one bracket left open does not carry over the rest of the page
     if nested:
-        examples = "／".join(text[a:b] for a, b in nested[:EXAMPLES])
+        examples = "／".join(blocks[a:b] for a, b in nested[:EXAMPLES])
         out.append(f"2重の括弧が {len(nested)} か所（例: {examples}）")
     return out
 

@@ -353,7 +353,7 @@ def test_brief_shows_nearest_boundary_recent_material_median_and_directions(repo
     company = _company(repo, PEER_MARGINS)
     out = _prepare(repo, capsys)
     brief = (company / "reports" / f"{TODAY}_company-report_brief.md").read_text(encoding="utf-8")
-    assert "まであと" in brief.split("## 3.")[1].split("## 4.")[0]  # every horizon names its nearest boundary
+    assert "の境目（" in brief.split("## 3.")[1].split("## 4.")[0]  # every horizon names its nearest boundary
     assert "## 直近の材料" in brief and "52週高値から" in brief and "S1" in brief  # SWOT strengths and the drop
     assert "同業平均 16.3%（中央値 14.0%）" in brief
     assert "### 5.1 判定が上がる条件" in brief and "### 5.2 判定が下がる条件" in brief

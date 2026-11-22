@@ -212,11 +212,21 @@ def test_conditions_gather_movers_breaks_and_monitors_in_one_table():
               "【改善】営業利益率が同業の中央値を上回る。次の決算短信で確認"]
     rows = ST.conditions(facts, breaks)
     conds = [r["condition"] for r in rows]
-    assert "営業利益率が2期続けて8%を下回る（2026-03 は 18.3%）" in conds
+    assert "営業利益率が2期続けて8%を下回る" in conds
     bad = next(r for r in rows if r["condition"].startswith("営業利益率が2期続けて"))
     assert bad["result"] == "持ち続ける理由を見直す（悪化の条件）" and bad["when"] == "次の決算短信"
+    assert bad["now"] == "2026-03 は 18.3%"
+    mover = "【改善】中期（6ヶ月〜1年）の判定: 成長性が「良好」になれば（今は「普通」）投資検討。次の決算短信で確認"
+    assert len(ST.conditions(facts, breaks + [mover])) == len(rows)  # a mover line is not repeated
+    assert ST._split_now("同業平均 21.2%（中央値 21.2%）を下回る（今は 18.3%（2026-03））") == (
+        "同業平均 21.2%（中央値 21.2%）を下回る", "今は 18.3%（2026-03）")
     assert sum(r["result"] == ST.MONITOR_RESULT for r in rows) == len(ST.monitors(facts, []))
     html = ST.conditions_html(facts, breaks)
     assert "<h3>判断が変わる条件</h3>" in html and "変わったときの判定" in html
     for r in rows:
         assert not r["condition"].endswith(("投資検討", "ウォッチ", "見送り"))  # the verdict is its own column
+
+
+def test_the_now_value_keeps_its_brackets_whole():
+    assert ST._first_sentence("なし（超過収益は強い。それを守る源泉は特定できない）") == "なし（超過収益は強い。それを守る源泉は特定できない）"
+    assert ST._first_sentence("もみ合い（方向感なし）。移動平均の並びがそろわない") == "もみ合い（方向感なし）"

@@ -235,15 +235,15 @@ def test_nearest_boundary(score, to, gap):
 
 def test_nearest_at_the_exact_thresholds_says_which_way():
     down = J.nearest(J.DOWN)  # exactly −0.25 is still 見送り: it has to rise above it
-    assert down["to"] == "ウォッチ" and "+0.00" in down["text"] and "超えれば" in down["text"]
+    assert down["to"] == "ウォッチ" and down["text"] == "見送りの境目（-0.25）ちょうど（上回るとウォッチ）"
     up = J.nearest(J.UP)  # exactly +0.25 is 投資検討 until it falls below it
-    assert up["to"] == "ウォッチ" and "-0.00" not in up["text"] and "下回れば" in up["text"]
+    assert up["to"] == "ウォッチ" and up["text"] == "投資検討の境目（+0.25）ちょうど（下回るとウォッチ）"
 
 
 def test_why_names_the_nearest_boundary():
     factors = {**_all(0.0), "market": _f(-1.0), "safety": _f(0.5)}  # short: −0.20
     why = J.horizon_score("short", factors)["why"]
-    assert "見送りまであと -0.05" in why
+    assert "見送りの境目（-0.25）まであと 0.05 点" in why and "-0.05" not in why
 
 
 def test_sensitivity_lists_single_movers():

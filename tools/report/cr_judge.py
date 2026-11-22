@@ -249,16 +249,23 @@ def nearest(score: float | None) -> dict | None:
     needed; + upward, − downward), text}. A 見送り or 投資検討 has one neighbour, a ウォッチ the nearer of two."""
     if score is None:
         return None
+    score = round(score, 2)  # the distance from the score as the report shows it (+0.23 and あと 0.02 would not add up)
+    # the text names the boundary and the distance in words, without a sign (「あと -0.03」 reads badly)
     if score <= DOWN:
-        to, gap, rule = WATCH, DOWN - score, f"{DOWN:+.2f} を超えれば{WATCH}"  # must rise above DOWN
+        to, gap = WATCH, DOWN - score  # must rise above DOWN
+        text = (f"見送りの境目（{DOWN:+.2f}）" + ("ちょうど" if abs(gap) < 0.005 else f"を {abs(gap):.2f} 点下回っている")
+                + f"（上回ると{WATCH}）")
     elif score >= UP:
-        to, gap, rule = WATCH, -(score - UP), f"{UP:+.2f} を下回れば{WATCH}"  # 投資検討 until it falls below UP
+        to, gap = WATCH, -(score - UP)  # 投資検討 until it falls below UP
+        text = (f"投資検討の境目（{UP:+.2f}）" + ("ちょうど" if abs(gap) < 0.005 else f"を {abs(gap):.2f} 点上回っている")
+                + f"（下回ると{WATCH}）")
     else:
         up, down = UP - score, score - DOWN
-        to, gap, rule = ((CONSIDER, up, f"{UP:+.2f} 以上で{CONSIDER}") if up <= down
-                         else (PASS, -down, f"{DOWN:+.2f} 以下で{PASS}"))
+        to, gap = (CONSIDER, up) if up <= down else (PASS, -down)
+        text = (f"投資検討の境目（{UP:+.2f}）まであと {up:.2f} 点" if to == CONSIDER
+                else f"見送りの境目（{DOWN:+.2f}）まであと {down:.2f} 点")
     gap = round(gap, 3) + 0.0  # + 0.0 turns −0.0 into 0.0
-    return {"to": to, "gap": gap, "text": f"{to}まであと {gap:+.2f}（{rule}）"}
+    return {"to": to, "gap": gap, "text": text}
 
 
 MOAT_STEPS = (-1.0, 0.0, 0.5, 1.0)  # なし（超過収益なし）・なし（超過収益あり）・狭い・広い (cr_factors.moat_factor)
@@ -324,8 +331,9 @@ def sensitivity(horizon: str, factors: dict[str, dict], flags: list[str] | tuple
         return out
     score = current["score"]
     out["nearest"] = nearest(score)
-    out["to_up"] = round(UP - score, 3) if score < UP else None
-    out["to_down"] = round(score - DOWN, 3) if score > DOWN else None
+    shown = round(score, 2)  # as the report shows it, so the distance adds up with the score
+    out["to_up"] = round(UP - shown, 3) if score < UP else None
+    out["to_down"] = round(shown - DOWN, 3) if score > DOWN else None
     for key, f in factors.items():
         if key not in WEIGHTS[horizon] or f.get("score") is None:
             continue

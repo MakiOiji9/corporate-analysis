@@ -320,6 +320,16 @@ BREAK_RESULT = {"改善": "判定が上がりうる（改善の条件）", "悪�
 MONITOR_RESULT = "点数の外で見る（変化があれば分析を作り直す）"
 
 
+def _first_sentence(text: str) -> str:
+    """Up to the first 「。」 outside brackets ('なし（超過収益は強い。…）' stays whole)."""
+    depth = 0
+    for i, ch in enumerate(text):
+        depth += {"（": 1, "）": -1}.get(ch, 0)
+        if ch == "。" and depth == 0:
+            return text[:i]
+    return text
+
+
 def _mover_rows(facts: dict) -> list[dict]:
     """判定を動かす要因 of every horizon; the same condition in several horizons is one row."""
     rows: dict[str, dict] = {}
@@ -329,11 +339,23 @@ def _mover_rows(facts: dict) -> list[dict]:
             text = J.mover_text(m, h.get("rows") or [])
             condition = text[: -len(m["verdict"])] if text.endswith(m["verdict"]) else text
             row = next((r for r in h.get("rows") or [] if r["key"] == m["key"]), {})
-            now = (row.get("value") or "—").split("。", 1)[0]  # the state word, not the evidence behind it
+            now = _first_sentence(row.get("value") or "—")  # the state word, not the evidence behind it
             entry = rows.setdefault(condition, {"condition": condition, "now": now,
                                                 "results": [], "when": CHECK_WHEN.get(m["key"], "—")})
             entry["results"].append(f"{PERIOD_WORDS[key]}が{m['verdict']}")
     return [{**r, "result": "・".join(r.pop("results"))} for r in rows.values()]
+
+
+def _split_now(condition: str) -> tuple[str, str]:
+    """'営業利益率が同業の中央値を上回る（2026-03 は 18.3%、中央値 21.2%）' -> the condition and its value in brackets."""
+    if not condition.endswith("）"):
+        return condition, "—"
+    depth = 0
+    for i in range(len(condition) - 1, -1, -1):
+        depth += {"）": 1, "（": -1}.get(condition[i], 0)
+        if depth == 0:
+            return condition[:i], condition[i + 1:-1]
+    return condition, "—"
 
 
 def _break_rows(breaks: list[str]) -> list[dict]:
@@ -342,11 +364,13 @@ def _break_rows(breaks: list[str]) -> list[dict]:
         text = line.strip().lstrip("-").strip()
         kind = next((w for w in BREAK_RESULT if text.startswith(f"【{w}】")), None)
         condition = text[len(kind) + 2:] if kind else text
+        if "の判定: " in condition:  # a horizon's single-step mover: already a row of _mover_rows
+            continue
         when = "株価" if condition.endswith("株価で確認") else "次の決算短信" if "決算短信" in condition else "—"
         for tail in ("。次の決算短信で確認", "。株価で確認"):
             condition = condition.removesuffix(tail)
-        out.append({"condition": condition, "now": "（条件の中）", "result": BREAK_RESULT.get(kind, "見直す"),
-                    "when": when})
+        condition, now = _split_now(condition)
+        out.append({"condition": condition, "now": now, "result": BREAK_RESULT.get(kind, "見直す"), "when": when})
     return out
 
 
