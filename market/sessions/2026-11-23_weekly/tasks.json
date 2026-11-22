@@ -1,0 +1,111 @@
+{
+ "session": "market/sessions/2026-11-23_weekly",
+ "collected": "2026-11-23",
+ "markets": [
+  "japan",
+  "us"
+ ],
+ "mode": "update",
+ "tasks": [
+  {
+   "type": "summarize-doc",
+   "docs": [
+    {
+     "market": "us",
+     "title": "Minutes of the Federal Open Market Committee, October 27-28, 2026",
+     "doc_key": "fomc-minutes-2026-11-18",
+     "output": "market/policy/us/raw/2026-11-23_fomc-minutes-2026-11-18.md",
+     "inputs": [
+      "market/policy/us/sources/2026-11-23/fomcminutes20261028.htm.excerpt.txt",
+      "market/policy/us/raw/2026-10-11_fomc-minutes-2026-10-07.md"
+     ],
+     "template": ".ai/templates/collect-market-info/raw/monetary-doc.md"
+    }
+   ],
+   "allowed_files": [
+    "market/policy/us/raw/2026-11-23_fomc-minutes-2026-11-18.md"
+   ],
+   "id": "T01"
+  },
+  {
+   "type": "search-calendar",
+   "market": "japan",
+   "title": "政治・イベント日程（日本）",
+   "output": "market/sessions/2026-11-23_weekly/raw/calendar-japan.md",
+   "inputs": [],
+   "max_searches": 12,
+   "template": ".ai/templates/collect-market-info/raw/calendar.md",
+   "allowed_files": [
+    "market/sessions/2026-11-23_weekly/raw/calendar-japan.md"
+   ],
+   "id": "T02"
+  },
+  {
+   "type": "search-calendar",
+   "market": "us",
+   "title": "政治・イベント日程（米国）",
+   "output": "market/sessions/2026-11-23_weekly/raw/calendar-us.md",
+   "inputs": [],
+   "max_searches": 12,
+   "template": ".ai/templates/collect-market-info/raw/calendar.md",
+   "allowed_files": [
+    "market/sessions/2026-11-23_weekly/raw/calendar-us.md"
+   ],
+   "id": "T03"
+  }
+ ],
+ "new_docs": [
+  {
+   "doc_key": "presidential-actions-2026-11-21",
+   "watch_key": "presidential-actions",
+   "layer": "A",
+   "title": "NATIONAL ADOPTION MONTH, 2026",
+   "published": "2026-11-21",
+   "url": "https://www.whitehouse.gov/presidential-actions/2026/11/national-adoption-month-2026/",
+   "page_url": "",
+   "raw_path": "market/policy/us/raw/2026-11-23_presidential-actions.md",
+   "collected": "2026-11-23",
+   "status": "listed",
+   "market": "us"
+  },
+  {
+   "doc_key": "presidential-actions-2026-11-21-2",
+   "watch_key": "presidential-actions",
+   "layer": "A",
+   "title": "PROTECTING THE EXECUTIVE’S PRIVILEGES AND ENHANCING EFFICIENCIES IN FEDERAL CONTRACTING",
+   "published": "2026-11-21",
+   "url": "https://www.whitehouse.gov/presidential-actions/2026/11/protecting-the-executives-privileges-and-enhancing-efficiencies-in-federal-contracting/",
+   "page_url": "",
+   "raw_path": "market/policy/us/raw/2026-11-23_presidential-actions.md",
+   "collected": "2026-11-23",
+   "status": "listed",
+   "market": "us"
+  },
+  {
+   "doc_key": "presidential-actions-2026-11-16",
+   "watch_key": "presidential-actions",
+   "layer": "A",
+   "title": "Nominations Sent to the Senate",
+   "published": "2026-11-16",
+   "url": "https://www.whitehouse.gov/presidential-actions/2026/11/nominations-sent-to-the-senate-a864/",
+   "page_url": "",
+   "raw_path": "market/policy/us/raw/2026-11-23_presidential-actions.md",
+   "collected": "2026-11-23",
+   "status": "listed",
+   "market": "us"
+  },
+  {
+   "doc_key": "fomc-minutes-2026-11-18",
+   "watch_key": "fomc-minutes",
+   "layer": "C",
+   "title": "Minutes of the Federal Open Market Committee, October 27-28, 2026",
+   "published": "2026-11-18",
+   "url": "https://www.federalreserve.gov/monetarypolicy/fomcminutes20261028.htm",
+   "page_url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261118a.htm",
+   "raw_path": "market/policy/us/raw/2026-11-23_fomc-minutes-2026-11-18.md",
+   "collected": "2026-11-23",
+   "status": "pending",
+   "market": "us"
+  }
+ ]
+}

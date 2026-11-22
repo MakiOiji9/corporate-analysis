@@ -1,6 +1,6 @@
-# 地合い情報の最新版 — 2026-11-16_weekly
+# 地合い情報の最新版 — 2026-11-23_weekly
 
-**更新日時**: 2026-11-16T00:17
+**更新日時**: 2026-11-23T00:19
 
 > market_collect.py finalize が、セッションが完了するたびに上書きする。手で編集しない。
 > 地合い分析はここから始める。時系列は `market/data/`、文書の要旨は `market/policy/` が常に最新で、日程と指標表は下のセッションが最新。
@@ -9,15 +9,15 @@
 
 | 種類 | ファイル |
 |---|---|
-| 指標（日本） | market/sessions/2026-11-16_weekly/raw/indicators-japan.md |
-| 日程・市場指標（日本） | market/sessions/2026-11-16_weekly/raw/calendar-japan.md |
-| 文書ダイジェスト（日本 を含む） | market/sessions/2026-11-16_weekly/raw/policy-digest.md |
-| 収集ステータス（日本） | market/sessions/2026-11-16_weekly/status.md |
+| 指標（日本） | market/sessions/2026-11-23_weekly/raw/indicators-japan.md |
+| 日程・市場指標（日本） | market/sessions/2026-11-23_weekly/raw/calendar-japan.md |
+| 文書ダイジェスト（日本 を含む） | market/sessions/2026-11-23_weekly/raw/policy-digest.md |
+| 収集ステータス（日本） | market/sessions/2026-11-23_weekly/status.md |
 | 時系列 CSV（日本） | market/data/japan_series.csv |
-| 指標（米国） | market/sessions/2026-11-16_weekly/raw/indicators-us.md |
-| 日程・市場指標（米国） | market/sessions/2026-11-16_weekly/raw/calendar-us.md |
-| 文書ダイジェスト（米国 を含む） | market/sessions/2026-11-16_weekly/raw/policy-digest.md |
-| 収集ステータス（米国） | market/sessions/2026-11-16_weekly/status.md |
+| 指標（米国） | market/sessions/2026-11-23_weekly/raw/indicators-us.md |
+| 日程・市場指標（米国） | market/sessions/2026-11-23_weekly/raw/calendar-us.md |
+| 文書ダイジェスト（米国 を含む） | market/sessions/2026-11-23_weekly/raw/policy-digest.md |
+| 収集ステータス（米国） | market/sessions/2026-11-23_weekly/status.md |
 | 時系列 CSV（米国） | market/data/us_series.csv |
 
 ## 2. 監視項目ごとの最新の文書
@@ -38,6 +38,6 @@
 | 日本 | A | pm-speech | 2026-10-05 | 第２２２回国会における高市内閣総理大臣所信表明演説 令和8年10月5日 | market/policy/japan/raw/2026-10-11_pm-speech-2026-10-05.md |
 | 日本 | B | tax-reform | 2025-12-26 | 税制改正の大綱（2025-12-26） | market/policy/japan/raw/2026-10-11_tax-reform-2025-12-26.md |
 | 米国 | C | beige-book | 2026-10-01 | ベージュブック（Beige Book）（2026-10-01） | market/policy/us/raw/2026-10-19_beige-book-2026-10-01.md |
-| 米国 | C | fomc-minutes | 2026-10-07 | Minutes of the Federal Open Market Committee, September 15-16, 2026 | market/policy/us/raw/2026-10-11_fomc-minutes-2026-10-07.md |
+| 米国 | C | fomc-minutes | 2026-11-18 | Minutes of the Federal Open Market Committee, October 27-28, 2026 | market/policy/us/raw/2026-11-23_fomc-minutes-2026-11-18.md |
 | 米国 | C | fomc-statement | 2026-10-28 | Federal Reserve issues FOMC statement | market/policy/us/raw/2026-10-29_fomc-statement-2026-10-28.md |
-| 米国 | A | presidential-actions | 2026-11-12 | Nominations Sent to the Senate | market/policy/us/raw/2026-11-16_presidential-actions.md |
+| 米国 | A | presidential-actions | 2026-11-21 | PROTECTING THE EXECUTIVE’S PRIVILEGES AND ENHANCING EFFICIENCIES IN FEDERAL CONTRACTING | market/policy/us/raw/2026-11-23_presidential-actions.md |

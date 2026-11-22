@@ -1,0 +1,74 @@
+{
+ "week": "2026-11-23",
+ "session": "2026-11-23_weekly",
+ "judgments": {
+  "japan": "警戒",
+  "us": "警戒"
+ },
+ "candidates": {
+  "japan": "警戒",
+  "us": "警戒"
+ },
+ "axes": {
+  "japan": {
+   "money": {
+    "name": "金融環境",
+    "candidate": "中立",
+    "total": 1.0,
+    "adopted": "中立",
+    "reason": ""
+   },
+   "economy": {
+    "name": "景気",
+    "candidate": "横ばい",
+    "total": -0.5,
+    "adopted": "横ばい",
+    "reason": ""
+   },
+   "stress": {
+    "name": "市場のストレス",
+    "candidate": "高い",
+    "total": 4.0,
+    "adopted": "高い",
+    "reason": ""
+   }
+  },
+  "us": {
+   "money": {
+    "name": "金融環境",
+    "candidate": "引き締め",
+    "total": 3.5,
+    "adopted": "引き締め",
+    "reason": ""
+   },
+   "economy": {
+    "name": "景気",
+    "candidate": "拡大",
+    "total": -2.0,
+    "adopted": "拡大",
+    "reason": ""
+   },
+   "stress": {
+    "name": "市場のストレス",
+    "candidate": "高い",
+    "total": 2.0,
+    "adopted": "高い",
+    "reason": ""
+   }
+  }
+ },
+ "periods": {
+  "短期": {
+   "japan": "警戒",
+   "us": "警戒"
+  },
+  "中期": {
+   "japan": "注意",
+   "us": "注意"
+  },
+  "長期": {
+   "japan": "平常",
+   "us": "注意"
+  }
+ }
+}
