@@ -5,7 +5,7 @@ Charts are inline SVG from charts.py. One vertical page, overview first and deta
   01 ひと目でわかる結論 (verdict cards, the nine analyses, the price band, key figures, the 3-line summary)
   02 期間ごとの良い点・悪い点   03 投資判断と行動計画 (thesis, break conditions, buy-price scenarios)
   04 STEP 1 事業   05 STEP 2 財務   06 STEP 3 株価の妥当性   07 株価の動きとタイミング (cr_ch_price.py)
-  08 投資の神の視点   09 材料不足と使った分析   10 用語集
+  08 テクニカル分析（切り口別, cr_ch_tech.py）   09 投資の神の視点   10 材料不足と使った分析   11 用語集
 """
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ from string import Template
 
 import charts as C
 import cr_ch_price as CP
+import cr_ch_tech as CT
 import cr_dashboard as DB
 import cr_doc as D
 import cr_evidence as EVR
@@ -32,7 +33,7 @@ from slides import table
 
 TOC = (("conclusion", "結論"), ("reasons", "良い点・悪い点"), ("thesis", "行動計画"), ("step1", "STEP 1 事業"),
        ("step2", "STEP 2 財務"), ("step3", "STEP 3 株価"), ("market", "株価の動き"),
-       ("legends", "投資の神"), ("gaps", "材料不足"), ("glossary", "用語集"))
+       ("tech", "テクニカル分析"), ("legends", "投資の神"), ("gaps", "材料不足"), ("glossary", "用語集"))
 LEGEND_LEAD = ("3人の投資哲学をこの会社の分析結果に当てはめた参考の視点。評価はスクリプトが資料の条件で決め、"
                "結論の判定の点数には入らない。本人が実際にこの会社をこう評価したという意味ではない。")
 PLAIN_HORIZONS = (("短期", "〜3ヶ月", "地合い・株価のテクニカル（流れ・勢い・位置）・直近の決算の進み具合・割安さを重く見る。値動きの影響が大きく、根拠は弱い。"),
@@ -322,7 +323,7 @@ def legends(facts: dict, parsed: dict) -> str:
         return ""
     actions = ST.legend_actions(facts)["actions"]
     cards = "".join(_legend_card(v, _paragraphs(parsed.get(k) or ""), actions.get(k, "")) for k, v in found.items())
-    return _section("legends", "08", "投資の神の視点（参考）", LEGEND_LEAD,
+    return _section("legends", "09", "投資の神の視点（参考）", LEGEND_LEAD,
                     ST.legend_summary(facts) + f'<div class="steps">{cards}</div>')
 
 
@@ -349,19 +350,20 @@ def gaps(facts: dict) -> str:
     body = (_list([f"{g['label']}: {g['gap']}" for g in facts["gaps"]]) + stale_html + material_html
             + "<h3>このレポートが使った分析</h3>"
             + table(["STEP", "分析", "分析日", "結論", "ファイル"], rows, nowrap=frozenset({2})))
-    return _section("gaps", "09", "材料不足と使った分析", "判定に影響しうる、まだ確かめられていない点。", body)
+    return _section("gaps", "10", "材料不足と使った分析", "判定に影響しうる、まだ確かめられていない点。", body)
 
 
 def glossary(text: str) -> str:
     terms = G.terms_in(text)
     body = (f'<dl class="gloss">{"".join(f"<dt>{esc(t)}</dt><dd>{esc(d)}</dd>" for t, d in terms)}</dl>' if terms
             else '<p class="muted">なし</p>')
-    return _section("glossary", "10", "用語集", "このレポートに出てくる言葉の意味。", body)
+    return _section("glossary", "11", "用語集", "このレポートに出てくる言葉の意味。", body)
 
 
 def render(template: str, facts: dict, parsed: dict, md_text: str) -> str:
     main = X.annotate(conclusion(facts, parsed) + reasons(facts, parsed) + thesis(facts, parsed) + step1(facts)
-                      + step2(facts) + step3(facts) + CP.chapter(facts, parsed, "07") + legends(facts, parsed)
+                      + step2(facts) + step3(facts) + CP.chapter(facts, parsed, "07") + CT.chapter(facts, "08")
+                      + legends(facts, parsed)
                       + gaps(facts))
     body = (masthead(facts) + "<main>" + main
             + glossary(md_text + D.render_brief(facts, "").split(D.WRITING_RULES)[0])

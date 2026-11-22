@@ -5,6 +5,7 @@ Usage:
   company_report.py check   --company X [--redo] [--skip-prices]
   company_report.py prepare --company X [--redo] [--skip-prices] [--skip-market-report]
   company_report.py build   --company X [--date YYYY-MM-DD]
+  company_report.py technical --company X [--redo] [--skip-prices]
 
 --company takes '3798', '3798_uls-group' or part of the directory name.
 list:    companies with how many of the nine analyses are not fresh and the state of their latest report.
@@ -18,6 +19,8 @@ prepare: fetch the share prices (tools/collect/stock_prices.py), compute every j
          and the {date}_company-report.md skeleton (conclusion table by script, FILL markers for the words).
 build:   check the filled md against the template and facts.json, then write {date}_company-report.html and
          {date}_company-report.json.
+technical: the technical analysis (cr_tech_cache.py) alone: analysis/technical/technical.{json,md}, redone only when the
+         latest close date moved on (prepare does the same and the report's chapter 08 draws it).
 stdout is one JSON line so the calling agent spends few tokens. Exit 1 when not ok.
 """
 from __future__ import annotations
@@ -41,9 +44,11 @@ import cr_facts as F  # noqa: E402
 import cr_judge as J  # noqa: E402
 import cr_legends as L  # noqa: E402
 import cr_plain as P  # noqa: E402
+import cr_prices as CP  # noqa: E402
 import cr_projection as PJ  # noqa: E402
 import cr_render as R  # noqa: E402
 import cr_status as S  # noqa: E402
+import cr_tech_cache as TC  # noqa: E402
 import cr_technicals as T  # noqa: E402
 import stock_prices as SP  # noqa: E402
 from common import atomic_write_text, utf8_stdout  # noqa: E402
@@ -177,6 +182,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
     prices = ({"ok": False, "skipped": True} if args.skip_prices
               else SP.run(root, company.dirname, SP.DEFAULT_YEARS, today))
     facts = F.build(root, company, today, status)
+    facts["technical_analysis"] = TC.ensure(company.path, CP.load(company.path / "data" / "prices.csv"))
     md_path, brief_path = company.file(today, S.MD_SUFFIX), company.file(today, S.BRIEF_SUFFIX)
     kept = md_path.exists() and A.is_draft(md_path) and not args.redo
     atomic_write_text(company.file(today, S.FACTS_SUFFIX), json.dumps(facts, ensure_ascii=False, indent=1) + "\n")
@@ -271,6 +277,20 @@ def cmd_run(args: argparse.Namespace, root: Path) -> int:
                                                      sync=not args.skip_prices)})
 
 
+def cmd_technical(args: argparse.Namespace, root: Path) -> int:
+    """テクニカル分析だけを作る・更新する（prepare でも同じ関数が走る）。終値の日付が変わらなければ既存を使う。"""
+    company, error = _resolve(root, args.company)
+    if error:
+        return emit(error)
+    prices = ({"ok": False, "skipped": True} if args.skip_prices
+              else SP.run(root, company.dirname, SP.DEFAULT_YEARS, _today(args)))
+    t = TC.ensure(company.path, CP.load(company.path / "data" / "prices.csv"), force=args.redo)
+    return emit({"ok": t["ok"], "company": company.dirname, "price_asof": t["price_asof"], "reused": t["reused"],
+                 "generated_at": t.get("generated_at"), "path": company.rel(company.path / TC.DIR / TC.JSON_NAME),
+                 "prices": {k: prices[k] for k in ("ok", "skipped", "rows", "last", "error") if k in prices},
+                 "alignment": t.get("alignment")})
+
+
 def cmd_fill(args: argparse.Namespace, root: Path) -> int:
     return AF.cmd_fill(args, root, resolve=_resolve, target=_target, build=cmd_build, name="company-report.md",
                        emit=emit, write=atomic_write_text)
@@ -282,11 +302,11 @@ def main(argv: list[str] | None = None, root: Path = A.REPO_ROOT) -> int:
     sub = parser.add_subparsers(dest="cmd", required=True)
     lister = sub.add_parser("list")
     lister.add_argument("--date", help="YYYY-MM-DD（今日の代わり）")
-    for name in ("check", "prepare", "run", "fill", "build"):
+    for name in ("check", "prepare", "run", "fill", "build", "technical"):
         p = sub.add_parser(name)
         p.add_argument("--company", help="銘柄コード・企業ディレクトリ名・社名の一部")
         p.add_argument("--date", help="YYYY-MM-DD（check/prepare: 今日の代わり、build: 対象のレポートの日付）")
-        if name in ("check", "prepare", "run"):
+        if name in ("check", "prepare", "run", "technical"):
             p.add_argument("--redo", action="store_true", help="今日の build 済み・作成途中のレポートがあっても作り直す")
             p.add_argument("--use-existing", action="store_true",
                            help="分析後に材料が変わった（triggered）分析を作り直さず既存の結果で進む（レポートに明記）。"
@@ -308,7 +328,7 @@ def main(argv: list[str] | None = None, root: Path = A.REPO_ROOT) -> int:
         except ValueError:
             return emit({"ok": False, "error": f"--date は YYYY-MM-DD で指定する: {args.date}"})
     handler = {"list": cmd_list, "check": cmd_check, "prepare": cmd_prepare, "run": cmd_run, "fill": cmd_fill,
-               "build": cmd_build}[args.cmd]
+               "build": cmd_build, "technical": cmd_technical}[args.cmd]
     return handler(args, root)
 
 
