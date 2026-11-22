@@ -1,29 +1,29 @@
 {
- "rules_version": 2,
+ "rules_version": 3,
  "company": "3798_uls-group",
  "name": "ULSグループ（3798）",
- "date": "2026-11-20",
+ "date": "2026-11-23",
  "market": "日本",
  "horizons": {
   "short": {
    "verdict": "ウォッチ",
    "provisional": null,
-   "why": "重み付けの点数 +0.05（+0.25 以上 投資検討、-0.25 以下 見送り。投資検討まであと +0.20（+0.25 以上で投資検討））。プラス: 株価の割安さ（STEP 3）・安全性／マイナス: 地合い",
-   "score": 0.05,
+   "why": "重み付けの点数 -0.20（+0.25 以上 投資検討、-0.25 以下 見送り。見送りの境目（-0.25）まであと 0.05 点）。プラス: 株価の割安さ（STEP 3）・安全性／マイナス: 地合い・株価のテクニカル（日足のトレンド）",
+   "score": -0.2,
    "coverage": 1.0
   },
   "mid": {
-   "verdict": "投資検討",
+   "verdict": "ウォッチ",
    "provisional": null,
-   "why": "重み付けの点数 +0.28（+0.25 以上 投資検討、-0.25 以下 見送り。ウォッチまであと -0.03（+0.25 を下回ればウォッチ））。プラス: 株価の割安さ（STEP 3）・成長性／マイナス: キャッシュフロー",
-   "score": 0.275,
+   "why": "重み付けの点数 +0.17（+0.25 以上 投資検討、-0.25 以下 見送り。投資検討の境目（+0.25）まであと 0.08 点）。プラス: 株価の割安さ（STEP 3）・安全性／マイナス: キャッシュフロー・株価のテクニカル（13・26・52週線・勢い・位置）",
+   "score": 0.167,
    "coverage": 1.0
   },
   "long": {
-   "verdict": "投資検討",
+   "verdict": "ウォッチ",
    "provisional": null,
-   "why": "重み付けの点数 +0.33（+0.25 以上 投資検討、-0.25 以下 見送り。ウォッチまであと -0.07（+0.25 を下回ればウォッチ））。プラス: 株価の割安さ（STEP 3）・成長性／マイナス: キャッシュフロー",
-   "score": 0.325,
+   "why": "重み付けの点数 +0.23（+0.25 以上 投資検討、-0.25 以下 見送り。投資検討の境目（+0.25）まであと 0.02 点）。プラス: 株価の割安さ（STEP 3）・地合い／マイナス: キャッシュフロー",
+   "score": 0.225,
    "coverage": 1.0
   }
  },
@@ -43,8 +43,8 @@
   "note": "割安だが理由あり（キャッシュフロー）"
  },
  "price": {
-  "value": 467.0,
-  "date": "2026-11-18",
+  "value": 458.0,
+  "date": "2026-11-20",
   "currency": "円"
  },
  "legends": {
@@ -53,8 +53,8 @@
   "rogers": "好む"
  },
  "technical": {
-  "state": "もみ合い（方向感なし）",
-  "score": 0.0
+  "state": "下降トレンド",
+  "score": -0.333
  },
  "projection": {
   "ok": true,
@@ -67,10 +67,10 @@
  },
  "price_range": {
   "source": "prices",
-  "current": 467.0,
+  "current": 458.0,
   "first": "2016-10-24",
-  "last": "2026-11-18",
-  "position_52w": 2.0
+  "last": "2026-11-20",
+  "position_52w": 2.7
  },
  "analyses": {
   "five_forces": {
@@ -106,16 +106,14 @@
    "verdict": "懸念"
   },
   "valuation": {
-   "date": "2026-11-20",
+   "date": "2026-11-23",
    "verdict": "割安"
   }
  },
- "outlook": "market/report/2026-11-16_outlook.md",
+ "outlook": "market/report/2026-11-23_outlook.md",
  "review": "2027年3月期 第3四半期決算の発表（日付は IR カレンダーで要確認）",
- "warnings": [
-  "4.1 が 218 字（目安 200 字以内）"
- ],
+ "warnings": [],
  "used_existing": [],
- "md": "companies/3798_uls-group/reports/2026-11-20_company-report.md",
- "html": "companies/3798_uls-group/reports/2026-11-20_company-report.html"
+ "md": "companies/3798_uls-group/reports/2026-11-23_company-report.md",
+ "html": "companies/3798_uls-group/reports/2026-11-23_company-report.html"
 }
