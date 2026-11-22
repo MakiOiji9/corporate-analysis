@@ -319,10 +319,11 @@ def scenarios(aspects: dict, rows: list[dict], pat: dict) -> dict:
     r2 = (up_pat["target"] if up_pat else res[1]["price"] if len(res) > 1 else round(r1 + 2 * a, 2))
     s1 = sup[0]["price"] if sup else round(min(r["low"] for r in rows[-RECENT[pat["timeframe"]]:]), 2)
     s2 = (down_pat["target"] if down_pat else sup[1]["price"] if len(sup) > 1 else round(s1 - 2 * a, 2))
+    r2, s2 = (r2 if r2 > r1 else round(r1 + 2 * a, 2)), (s2 if s2 < s1 else round(s1 - 2 * a, 2))
     bull = {"name": "強気", "trigger": r1, "target": r2, "invalidation": s1, "confidence": _share(cnt[P.UP], n),
-            "text": f"終値で {P.px(r1)} を上抜けると上昇が続く形。目安は {P.px(r2)}。終値で {P.px(s1)} を割り込むと、この見方は崩れる。"}
+            "text": f"終値で {P.px(r1)} を上抜けると上昇に向かう形。目安は {P.px(r2)}。終値で {P.px(s1)} を割り込むと、この見方は崩れる。"}
     bear = {"name": "弱気", "trigger": s1, "target": s2, "invalidation": r1, "confidence": _share(cnt[P.DOWN], n),
-            "text": f"終値で {P.px(s1)} を割り込むと下落が続く形。目安は {P.px(s2)}。終値で {P.px(r1)} を上抜けると、この見方は崩れる。"}
+            "text": f"終値で {P.px(s1)} を割り込むと下落に向かう形。目安は {P.px(s2)}。終値で {P.px(r1)} を上抜けると、この見方は崩れる。"}
     base = {"name": "基本（もみ合い）", "trigger": None, "target": None, "invalidation": None, "confidence": _share(cnt[P.FLAT], n),
             "text": f"{P.px(s1)} から {P.px(r1)} の範囲で推移し、どちらにも抜けない見方。"}
     order = sorted((bull, base, bear), key=lambda s: -{HIGH: 2, MID: 1, LOW: 0}[s["confidence"]])
