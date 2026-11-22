@@ -67,9 +67,9 @@ def _point(row: dict) -> str:
 
 def _movers(h: dict) -> str:
     s = h.get("sensitivity") or {}
-    movers = [J.mover_text(m, h["rows"]) for m in s.get("movers") or []]
     text = J.distance_text(s) or "—"
-    text += "。" + ("、".join(movers) if movers else "1つの要素が1段変わっても判定は変わらない")
+    text += "。" + ("1段変わると判定が変わる要素は、03章の「判断が変わる条件」の表にまとめた" if s.get("movers")
+                   else "1つの要素が1段変わっても判定は変わらない")
     return f'<p class="small"><b>判定を動かす要因</b>: {esc(text)}</p>'
 
 

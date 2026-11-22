@@ -154,6 +154,12 @@ details > summary::before { content: "＋"; display: inline-block; width: 1.4em;
 details[open] > summary::before { content: "−"; }
 details > summary:hover, details > summary:focus-visible { color: var(--ink); outline: none; }
 details > .inner { padding: 0 14px 14px; }
+/* ---------- appendix (付録: chapters that barely move the scores, folded) ---------- */
+details.appendix { margin: 0; border: 0; border-bottom: 1px solid var(--rule-soft); border-radius: 0; background: none; }
+details.appendix > summary { padding: 18px 0; font-size: var(--step-1); color: var(--ink); }
+details.appendix > summary .num { display: inline; margin-right: 10px; }
+details.appendix > section { border-bottom: 0; padding-top: 0; }
+.toc .toc-sep { flex: none; align-self: center; font-size: var(--step--1); color: var(--ink-3); padding: 0 4px; }
 
 /* ---------- price ---------- */
 .ranges { display: grid; gap: 14px; }
@@ -368,6 +374,14 @@ ${body}
     root.setAttribute("data-theme", next);
     try { localStorage.setItem(key, next); } catch (e) {}
   });
+  // a link into the folded appendix opens it first
+  function openTarget() {
+    var id = decodeURIComponent(location.hash.slice(1)), el = id && document.getElementById(id);
+    for (var d = el; d; d = d.parentElement) { if (d.tagName === "DETAILS") { d.open = true; } }
+    if (el) { el.scrollIntoView(); }
+  }
+  window.addEventListener("hashchange", openTarget);
+  openTarget();
   window.addEventListener("beforeprint", function () {
     document.querySelectorAll("details").forEach(function (d) { d.setAttribute("open", ""); });
   });

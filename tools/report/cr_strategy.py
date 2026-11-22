@@ -23,6 +23,7 @@ from statistics import median
 import charts as C
 import cr_dashboard as DB
 import cr_judge as J
+import cr_notes as N
 import cr_projection as PJ
 from cr_html import badge, bullet_list, esc
 from slides import table
@@ -33,7 +34,7 @@ LEVELS = ("0", "小", "中", "大")
 VOLATILE_ATR, VOLATILE_BETA = 0.03, 1.5
 STEP_DOWN, DEEP_DOWN = 0.93, 0.86  # buying steps when there is no support below the price
 SIZING_NOTE = ("1銘柄に入れる金額の上限の目安。確信度（判定・STEP 1・2・注意点）と値動きの大きさから3段階で示す。"
-               "資産の状況や他の保有銘柄によって変わる一般的な目安で、売買の推奨ではない。")
+               "資産の状況や他の保有銘柄によって変わる一般的な目安。")
 LEGEND_ACTIONS = {
     "buffett": {"好む": "長く持つ前提で、株価が目安の帯の下限 {low} 近くまで下がるのを待って買う",
                 "保留": "事業の強さが数字で確かめられ、株価が {low} 以下になれば検討する",
@@ -200,7 +201,7 @@ def sizing(facts: dict) -> dict:
 
 # ---------------------------------------------------------------- plans by horizon
 
-BREAKS = "上の「判断が崩れる条件」に当たれば、持ち続ける理由を見直す"
+BREAKS = "この章の頭の「判断が変わる条件」に当たれば、持ち続ける理由を見直す"
 SHORT_STANCE = {J.CONSIDER: "押し目で買い、上の抵抗線で利益を確定する短い売買を考えられる",
                 J.WATCH: "短期の材料（株価の流れ・地合い・決算の進み具合）がそろうまで様子を見る",
                 J.PASS: "短期では手を出さない", J.PENDING: "判断の材料がそろうのを待つ"}
@@ -306,6 +307,72 @@ def monitors(facts: dict, breaks: list[str]) -> list[str]:
     return out + list(breaks)
 
 
+# ---------------------------------------------------------------- 判断が変わる条件 (one table, 5.5)
+
+PERIOD_WORDS = {"short": "短期", "mid": "中期", "long": "長期"}
+CHECK_WHEN = {  # when the factor's material is renewed (the analyses' validity, CLAUDE.md)
+    "market": "毎週の地合いレポート", "trend_daily": "日々の終値", "price": "日々の終値", "progress": "次の決算短信",
+    "valuation": "株価の更新・本決算", "growth": "次の決算短信", "safety": "次の決算短信",
+    "profitability": "中間・本決算", "cash_flow": "中間・本決算", "five_forces": "新しい有報・中期経営計画",
+    "three_c": "新しい有報・中期経営計画", "moat": "新しい有報・中期経営計画", "swot": "新しい有報・中期経営計画"}
+BREAK_RESULT = {"改善": "判定が上がりうる（改善の条件）", "悪化": "持ち続ける理由を見直す（悪化の条件）",
+                "株価": "STEP 3 の判定が変わる"}
+MONITOR_RESULT = "点数の外で見る（変化があれば分析を作り直す）"
+
+
+def _mover_rows(facts: dict) -> list[dict]:
+    """判定を動かす要因 of every horizon; the same condition in several horizons is one row."""
+    rows: dict[str, dict] = {}
+    for key in ("short", "mid", "long"):
+        h = facts["horizons"].get(key) or {}
+        for m in (h.get("sensitivity") or {}).get("movers") or []:
+            text = J.mover_text(m, h.get("rows") or [])
+            condition = text[: -len(m["verdict"])] if text.endswith(m["verdict"]) else text
+            row = next((r for r in h.get("rows") or [] if r["key"] == m["key"]), {})
+            now = (row.get("value") or "—").split("。", 1)[0]  # the state word, not the evidence behind it
+            entry = rows.setdefault(condition, {"condition": condition, "now": now,
+                                                "results": [], "when": CHECK_WHEN.get(m["key"], "—")})
+            entry["results"].append(f"{PERIOD_WORDS[key]}が{m['verdict']}")
+    return [{**r, "result": "・".join(r.pop("results"))} for r in rows.values()]
+
+
+def _break_rows(breaks: list[str]) -> list[dict]:
+    out = []
+    for line in breaks:
+        text = line.strip().lstrip("-").strip()
+        kind = next((w for w in BREAK_RESULT if text.startswith(f"【{w}】")), None)
+        condition = text[len(kind) + 2:] if kind else text
+        when = "株価" if condition.endswith("株価で確認") else "次の決算短信" if "決算短信" in condition else "—"
+        for tail in ("。次の決算短信で確認", "。株価で確認"):
+            condition = condition.removesuffix(tail)
+        out.append({"condition": condition, "now": "（条件の中）", "result": BREAK_RESULT.get(kind, "見直す"),
+                    "when": when})
+    return out
+
+
+def _monitor_rows(facts: dict) -> list[dict]:
+    when = {"次の決算": "次の決算短信", "最大の脅威": "決算説明会・有報", "顧客が最も重視": "新しい有報・中期経営計画",
+            "ROIC": "本決算（有報）"}
+    return [{"condition": m, "now": "—", "result": MONITOR_RESULT,
+             "when": next((w for k, w in when.items() if m.startswith(k) or k in m[:12]), "—")}
+            for m in monitors(facts, [])]
+
+
+def conditions(facts: dict, breaks: list[str]) -> list[dict]:
+    """判断が変わる条件: the single-step movers of the three horizons, the writer's 判断が崩れる条件 and the
+    things to watch, as {condition, now, result, when} (docs/proposals/company-report-review-feedback.md 5.5)."""
+    return _mover_rows(facts) + _break_rows(breaks) + _monitor_rows(facts)
+
+
+def conditions_html(facts: dict, breaks: list[str]) -> str:
+    rows = [[esc(r["condition"]), esc(r["now"]), esc(r["result"]), esc(r["when"])] for r in conditions(facts, breaks)]
+    if not rows:
+        return ""
+    return ("<h3>判断が変わる条件</h3><p class=\"small\">点数の上で1段変わると判定が変わる要素、数字で見る悪化・改善の条件、"
+            "点数の外で見ておく項目を1つの表にまとめた。</p>"
+            + table(["条件", "今の値", "変わったときの判定", "確かめる時期"], rows))
+
+
 def catalysts(facts: dict) -> list[str]:
     out = [f"{facts.get('review')}（次の決算。判定を見直す）"] if facts.get("review") else []
     rows = (facts.get("outlook") or {}).get("rows") or {}
@@ -334,7 +401,7 @@ def _scenario_table(s: dict, currency: str) -> str:
 
 
 HORIZON_TITLES = {"short": "短期（〜3ヶ月）", "mid": "中期（6ヶ月〜1年）", "long": "長期（3年以上）"}
-HORIZON_LEADS = {"short": "チャートの支持線・抵抗線で入り、出る。価格は 07 章の売買シナリオと同じ。",
+HORIZON_LEADS = {"short": "チャートの支持線・抵抗線で入り、出る。価格は下の「チャートから見た買いの候補の価格」と同じ。",
                  "mid": "指標の割安・割高の帯と、次の決算の進み具合で判断する。",
                  "long": "事業と成長が続く前提で持ち、成長の前提で描いた3年後・5年後の水準を売りの目安にする。"}
 
@@ -367,8 +434,8 @@ def _plan_block(plan: dict, facts: dict, currency: str) -> str:
            f'<p class="small muted">{esc(HORIZON_LEADS[key])}</p><p>今の行動の目安: <b>{esc(plan["stance"])}</b></p>')
     if key == "mid":
         s = scenarios(facts)
-        out += (_scenario_table(s, currency) + '<p class="small muted">指標の割安・割高の境目から計算した今の目安で、'
-                "株価の予想ではない。</p>") if s else '<p class="muted">株価の指標が足りず、目安の帯を計算できない。</p>'
+        out += (_scenario_table(s, currency) + '<p class="small muted">指標の割安・割高の境目から計算した'
+                f"{N.PRICE}。</p>") if s else '<p class="muted">株価の指標が足りず、目安の帯を計算できない。</p>'
     if key == "long":
         p = plan["projection"]
         if p.get("ok"):
@@ -392,7 +459,6 @@ def html(facts: dict, breaks: list[str]) -> str:
     out = "<h3>期間別の行動計画</h3>" + "".join(_plan_block(p, facts, currency) for p in plans(facts))
     out += (f"<h3>配分の目安: {esc(z['cap'])}</h3>" + bullet_list(z["why"])
             + f'<p class="small muted">{esc(SIZING_NOTE)}</p>')
-    out += "<h3>見ておく項目</h3>" + bullet_list(monitors(facts, breaks))
     out += "<h3>近い予定</h3>" + bullet_list(catalysts(facts))
     return out
 

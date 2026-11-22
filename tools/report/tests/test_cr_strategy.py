@@ -155,7 +155,7 @@ def test_long_plan_sells_at_the_projected_levels():
     p = ST.long_plan(_facts())
     assert p["projection"]["ok"] and len(p["entries"]) == 3
     assert "基本ケースの3年後の水準 5,50" in p["exits"][0] and "楽観ケースの5年後の水準 8,5" in p["exits"][1]
-    assert "5.4%" in p["exits"][2] and "判断が崩れる条件" in p["exits"][-1] and p["notes"] == []
+    assert "5.4%" in p["exits"][2] and "判断が変わる条件" in p["exits"][-1] and p["notes"] == []
 
 
 def test_long_plan_notes_a_price_already_above_the_base_level():
@@ -187,8 +187,9 @@ def test_legend_actions_and_split():
 def test_html_has_every_part_and_no_recommendation_words():
     html = ST.html(_facts(), ["【悪化】営業利益率が2期続けて8%を下回る"])
     for part in ("期間別の行動計画", "今の行動の目安", "売り・見直しの目安", "3年後の水準", "5年後の水準",
-                 "配分の目安", "見ておく項目", "近い予定"):
+                 "配分の目安", "近い予定"):
         assert part in html
+    assert "見ておく項目" not in html  # moved into the 判断が変わる条件 table (conditions_html)
     assert html.index("短期（〜3ヶ月）") < html.index("中期（6ヶ月〜1年）") < html.index("長期（3年以上）")
     assert "推奨" not in html.replace("推奨ではない", "")
 
@@ -203,3 +204,19 @@ def test_strategy_words_are_conditions_not_forecasts_or_advice():
 def test_action_card_shows_the_three_horizons():
     card = ST.action_card(_facts())
     assert all(f"{h}: " in card for h in ("短期", "中期", "長期"))
+
+
+def test_conditions_gather_movers_breaks_and_monitors_in_one_table():
+    facts = _facts()
+    breaks = ["【悪化】営業利益率が2期続けて8%を下回る（2026-03 は 18.3%）。次の決算短信で確認",
+              "【改善】営業利益率が同業の中央値を上回る。次の決算短信で確認"]
+    rows = ST.conditions(facts, breaks)
+    conds = [r["condition"] for r in rows]
+    assert "営業利益率が2期続けて8%を下回る（2026-03 は 18.3%）" in conds
+    bad = next(r for r in rows if r["condition"].startswith("営業利益率が2期続けて"))
+    assert bad["result"] == "持ち続ける理由を見直す（悪化の条件）" and bad["when"] == "次の決算短信"
+    assert sum(r["result"] == ST.MONITOR_RESULT for r in rows) == len(ST.monitors(facts, []))
+    html = ST.conditions_html(facts, breaks)
+    assert "<h3>判断が変わる条件</h3>" in html and "変わったときの判定" in html
+    for r in rows:
+        assert not r["condition"].endswith(("投資検討", "ウォッチ", "見送り"))  # the verdict is its own column

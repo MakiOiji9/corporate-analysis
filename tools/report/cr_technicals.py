@@ -272,12 +272,12 @@ def levels(rows: list[dict], mas: dict[int, list], upper: float | None, atr_valu
     above = [(f"直近の高値（{d}）", p) for d, p in highs] + [("52週高値", hi52)]
     if upper is not None:
         above.append(("ボリンジャーバンド +2σ", upper))
-    # one list of lines for every chapter (03 章の売買シナリオ・07 章の目安): a past low above the close is now a
+    # one list of lines for every chapter (03 章の売買シナリオ・付録A の目安): a past low above the close is now a
     # ceiling and a past high below it a floor, each named so
     every = [role(label, price, current) for label, price in below + above]
     supports = _nearest([x for x in every if x[1] < current], current, below=True)
     # a take-profit line is at least 1% and one ATR above the close (a closer one is within a day's move): the same
-    # floor as the trading scenarios' targets (cr_scenarios._targets), so 03 章と 07 章 name the same prices
+    # floor as the trading scenarios' targets (cr_scenarios._targets), so 03 章と付録A name the same prices
     floor = max(current * TAKE_MIN, current + (atr_value or 0))
     resistances = _nearest([x for x in every if x[1] > floor], current, below=False, same=TAKE_MERGE)
     stop = None
@@ -446,7 +446,7 @@ def brief_lines(t: dict, long_verdict: str | None, positioning: dict | None = No
             + positioning_lines(positioning) + [""]
     lv, band, vol = t["levels"], t.get("band") or {}, t["volume"]
     stop = lv.get("stop")
-    lines += [f"- 状態: **{t['state']}**（テクニカル点数 {t['score']:+.2f}。中期の「株価のテクニカル」の点数。短期は 08 章の日足のトレンド）",
+    lines += [f"- 状態: **{t['state']}**（テクニカル点数 {t['score']:+.2f}。中期の「株価のテクニカル」の点数。短期は付録B の日足のトレンド）",
               f"- トレンド: {t['trend']['value']}", f"- 勢い: {t['momentum']['value']}",
               f"- 位置: {t['position']['value']}",
               "- 移動平均: " + "、".join(f"{k} {v:,.0f}" for k, v in t["averages"].items() if v is not None),

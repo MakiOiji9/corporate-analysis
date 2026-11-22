@@ -30,7 +30,7 @@ def test_the_short_technical_names_the_daily_trend():
     facts["horizons"] = {"short": {"rows": [{"key": "trend_daily", "score": -1.0, "value": "下降トレンド（確度 中）"}]}}
     assert LT.trend(facts) == []
     facts["horizons"]["short"]["rows"][0]["value"] = "方向感のないもみ合い（確度 低）"
-    assert "08章の日足のトレンドは「下降トレンド」" in LT.trend(facts)[0]
+    assert "付録B の日足のトレンドは「下降トレンド」" in LT.trend(facts)[0]
     assert LT.trend(_facts()) == []  # no short row: nothing to compare
 
 

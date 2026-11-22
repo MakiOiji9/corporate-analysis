@@ -285,7 +285,7 @@ def build(root: Path, company: S.Company, today: str, status: dict) -> dict:
     prices = with_earnings({**CP.summarize(company.path), "positioning": POS.summarize(company.path)},
                            _get(found["growth"], "detail", "cagr", "eps"))
     outlook = {**status["outlook"], **outlook_rows(root, status["outlook"], market)}
-    # the technical analysis (08 章) before the judgements: its daily trend is the short horizon's technical factor
+    # the technical analysis (付録B) before the judgements: its daily trend is the short horizon's technical factor
     technical = TC.ensure(company.path, CP.load(company.path / "data" / "prices.csv"))
     prices["daily_trend"] = (((technical.get("daily") or {}).get("aspects") or {}).get("trend")
                              if technical.get("ok") else None)

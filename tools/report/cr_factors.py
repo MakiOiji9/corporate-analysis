@@ -13,7 +13,7 @@ Each factor is {score: +1..−1 or None (no material), value, reason, source, pe
   market     the outlook's row for the horizon (平常 +1, 注意 0, 警戒 −1)
   price      中期: the technical score of cr_technicals (13・26・52週線 trend, momentum and position averaged; −1..+1);
              left out without a year of prices (no trend: the position and momentum alone are not a reading)
-  trend_daily  短期: the daily trend of the technical analysis (08 章, cr_tech_views): 上昇 +1, もみ合い 0, 下降 −1,
+  trend_daily  短期: the daily trend of the technical analysis (付録B, cr_tech_views): 上昇 +1, もみ合い 0, 下降 −1,
              0 when its confidence is 低 (判定ルールの改定 3)
   progress   the latest quarter's operating-income progress against the same quarter a year earlier (or the
              standard pace): ≥110% +1, <90% −1, else 0
@@ -163,7 +163,7 @@ LOW_CONFIDENCE = "低"
 
 
 def daily_trend_factor(prices: dict) -> dict:
-    """短期: 08 章の日足の「トレンド」切り口（cr_tech_views.trend）. 上昇 +1 / もみ合い 0 / 下降 −1, and 0 when its
+    """短期: 付録B の日足の「トレンド」切り口（cr_tech_views.trend）. 上昇 +1 / もみ合い 0 / 下降 −1, and 0 when its
     confidence is 低 (判定ルールの改定 3). Left out without the daily analysis."""
     a = prices.get("daily_trend") or {}
     source = "テクニカル分析（日足のトレンド）"

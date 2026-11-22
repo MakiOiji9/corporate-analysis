@@ -7,8 +7,8 @@ cr_plain.leaks() (which stops the build), these are warnings: the build goes on 
 top (docs/proposals/company-report-review-feedback.md 6., 決定 Q7).
 
   verdict_words()  each "（今は「X」）" of 判定を動かす要因 names the analysis' own verdict word
-  take_profits()   03 章の売買シナリオ (the current price's first target) and 07 章の利益確定の目安 name one price
-  trend()          the short horizon's technical factor and 08 章's daily trend name one state
+  take_profits()   03 章の売買シナリオ (the current price's first target) and 付録A の利益確定の目安 name one price
+  trend()          the short horizon's technical factor and 付録B's daily trend name one state
   wording()        internal words (raw・スクリプト・判定候補・json・版N), a sentence repeated back to back,
                    brackets nested two deep
 """
@@ -59,15 +59,15 @@ def take_profits(facts: dict) -> list[str]:
     if not target or str(target.get("label", "")).startswith(FAIR_LABEL_PREFIX):
         return []
     if not resistances:
-        return [f"利益確定の目安が食い違う: 03章は {target['price']:,.0f}、07章は抵抗線なし"]
+        return [f"利益確定の目安が食い違う: 03章は {target['price']:,.0f}、付録A は抵抗線なし"]
     if abs(resistances[0]["price"] - target["price"]) > 0.5:
         return [f"利益確定の目安が食い違う: 03章の売買シナリオは {target['price']:,.0f}、"
-                f"07章の目安は {resistances[0]['price']:,.0f}"]
+                f"付録A の目安は {resistances[0]['price']:,.0f}"]
     return []
 
 
 def trend(facts: dict) -> list[str]:
-    """The short horizon's technical factor is 08 章's daily trend (判定ルールの改定 3): the two name one state."""
+    """The short horizon's technical factor is 付録B's daily trend (判定ルールの改定 3): the two name one state."""
     daily = ((((facts.get("technical_analysis") or {}).get("daily") or {}).get("aspects") or {})
              .get("trend") or {}).get("state") or ""
     rows = ((facts.get("horizons") or {}).get("short") or {}).get("rows") or []
@@ -75,7 +75,7 @@ def trend(facts: dict) -> list[str]:
     if not daily or not row or row.get("score") is None:
         return []
     if not str(row.get("value") or "").startswith(daily):
-        return [f"トレンドの読みが食い違う: 短期の点数のテクニカルは「{row.get('value')}」、08章の日足のトレンドは「{daily}」"]
+        return [f"トレンドの読みが食い違う: 短期の点数のテクニカルは「{row.get('value')}」、付録B の日足のトレンドは「{daily}」"]
     return []
 
 

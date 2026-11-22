@@ -14,7 +14,7 @@ OPTIMISTIC_MULT = 1.5   # a one-year company plan compounded for five years over
 OPTIMISTIC_CAP = 25.0   # and at most 25% a year
 MIN_RATE = 5.0          # PEG treats growth under 5% as 評価対象外: no growth path is drawn either
 NOTE = ("今の EPS が各ケースの率で伸び、株価が過去5年の平均PER で評価されると仮定した水準。"
-        "売りを考える目安の一つで、株価の予想ではない")
+        "売りを考える目安の一つ（条件の目安。予想ではない）")
 
 
 def _detail(facts: dict, key: str) -> dict:
