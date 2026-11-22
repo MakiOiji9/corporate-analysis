@@ -90,3 +90,26 @@ def test_without_index_data():
     out = MV.evaluate(rows, [], None, [], {}, "日経平均", None)
     assert out["ok"] and out["beta"] is None and out["split"] is None
     assert all(r["index"] is None for r in out["returns"])
+
+
+def test_a_stock_unlinked_to_the_index_gets_no_market_split():
+    import math
+    moves = [0.01 if i % 3 else -0.012 for i in range(300)]
+    dates, rows, index = _series(moves, beta=0.0)
+    # the stock's own moves, unrelated to the index (3798 on 2026-11-18: R² about 0.00)
+    own = [0.02 * math.sin(i * 1.7) for i in range(len(rows))]
+    price = 100.0
+    for r, m in zip(rows, own):
+        price *= 1 + m
+        r.update(close=price, high=price * 1.005, low=price * 0.995)
+    fit = MV.beta_fit(rows, index)
+    assert fit["r2"] < MV.R2_MIN and fit["n"] >= MV.BETA_MIN
+    out = MV.evaluate(rows, index, None, [], {"state": "もみ合い（方向感なし）"}, "日経平均", None)
+    assert out["split"] is None and "連動がほとんどない" in out["weak_link"] and out["r2"] == fit["r2"]
+
+
+def test_a_linked_stock_keeps_its_split():
+    moves = [0.01 if i % 3 else -0.012 for i in range(300)]
+    _, rows, index = _series(moves, beta=1.5)
+    out = MV.evaluate(rows, index, None, [], {"state": "もみ合い（方向感なし）"}, "日経平均", None)
+    assert out["r2"] > 0.9 and out["split"] and out["weak_link"] == ""

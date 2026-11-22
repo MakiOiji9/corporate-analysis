@@ -117,9 +117,9 @@ def test_thresholds(score, verdict):
 
 
 def test_missing_factors_are_left_out_and_reweighted():
-    factors = {**_all(1.0), "price": _f(None), "progress": _f(None)}
+    factors = {**_all(1.0), "trend_daily": _f(None), "progress": _f(None)}
     result = J.horizon_score("short", factors)
-    assert result["score"] == pytest.approx(1.0) and set(result["unknown"]) == {"株価のテクニカル（トレンド・勢い・位置）", "直近の決算の進捗"}
+    assert result["score"] == pytest.approx(1.0) and set(result["unknown"]) == {"株価のテクニカル（日足のトレンド）", "直近の決算の進捗"}
     assert J.horizon_score("short", {k: _f(None) for k in factors})["verdict"] == "判定保留"
 
 
@@ -235,15 +235,15 @@ def test_nearest_boundary(score, to, gap):
 
 def test_nearest_at_the_exact_thresholds_says_which_way():
     down = J.nearest(J.DOWN)  # exactly −0.25 is still 見送り: it has to rise above it
-    assert down["to"] == "ウォッチ" and "+0.00" in down["text"] and "超えれば" in down["text"]
+    assert down["to"] == "ウォッチ" and down["text"] == "見送りの境目（-0.25）ちょうど（上回るとウォッチ）"
     up = J.nearest(J.UP)  # exactly +0.25 is 投資検討 until it falls below it
-    assert up["to"] == "ウォッチ" and "-0.00" not in up["text"] and "下回れば" in up["text"]
+    assert up["to"] == "ウォッチ" and up["text"] == "投資検討の境目（+0.25）ちょうど（下回るとウォッチ）"
 
 
 def test_why_names_the_nearest_boundary():
     factors = {**_all(0.0), "market": _f(-1.0), "safety": _f(0.5)}  # short: −0.20
     why = J.horizon_score("short", factors)["why"]
-    assert "見送りまであと -0.05" in why
+    assert "見送りの境目（-0.25）まであと 0.05 点" in why and "-0.05" not in why
 
 
 def test_sensitivity_lists_single_movers():
@@ -311,3 +311,61 @@ def test_half_scores_move_to_the_next_whole_word():
 def test_mover_text_with_a_fractional_valuation_score():
     m = {"key": "valuation", "label": "株価の割安さ（STEP 3）", "direction": "1段良くなれば", "verdict": "投資検討"}
     assert J.mover_text(m, _rows(valuation=0.6)) == "株価の割安さ（STEP 3）が「割安」で揃えば投資検討"
+
+
+def test_half_score_text_names_the_verdict_word():
+    m = {"key": "growth", "label": "成長性", "direction": "1段悪くなれば", "verdict": "ウォッチ", "to": 0.0}
+    rows = [{"key": "growth", "score": 0.5, "value": "普通（内訳から +0.5）"}]
+    assert J.mover_text(m, rows) == "成長性の内訳の寄りが無くなれば（今は「普通」を +0.5 点で数えている）ウォッチ"
+    m = {"key": "cash_flow", "label": "キャッシュフロー", "direction": "1段良くなれば", "verdict": "投資検討", "to": 0.0}
+    rows = [{"key": "cash_flow", "score": -0.5, "value": "懸念（内訳から -0.5）"}]
+    assert J.mover_text(m, rows) == "キャッシュフローが「普通」になれば（今は「懸念」を -0.5 点で数えている）投資検討"
+
+
+def test_moat_moves_on_its_own_four_steps():
+    factors = {**_all(0.0), "valuation": _f(1.0), "growth": _f(0.5)}
+    moves = {(m["key"], m["direction"]): m for m in J.sensitivity("long", factors)["movers"]}
+    for (key, _), m in moves.items():
+        if key == "moat":
+            assert m["to"] in (-1.0, 0.5)
+    assert J._next_word(0.0, 1, "moat") == 0.5 and J._next_word(0.0, -1, "moat") == -1.0
+    assert J._next_word(0.5, 1, "moat") == 1.0 and J._next_word(1.0, 1, "moat") == 1.0
+    rows = [{"key": "moat", "score": 0.0, "value": "なし（超過収益は強い。それを守る源泉は特定できない）"}]
+    down = {"key": "moat", "label": "強みの持続性（モート）", "direction": "1段悪くなれば", "verdict": "ウォッチ", "to": -1.0}
+    text = J.mover_text(down, rows)
+    assert "狭い" not in text and text.startswith("資本コストを上回る利益（超過収益）が無くなれば")
+    up = {**down, "direction": "1段良くなれば", "verdict": "投資検討", "to": 0.5}
+    assert J.mover_text(up, rows) == "強みの持続性（モート）が「狭い」になれば（今は「なし」）投資検討"
+
+
+def _distance(score):
+    return {"nearest": J.nearest(score), "to_up": round(J.UP - score, 3) if score < J.UP else None,
+            "to_down": round(score - J.DOWN, 3) if score > J.DOWN else None}
+
+
+def test_distance_text_has_no_signs_or_repeats():
+    watch = J.distance_text(_distance(0.05))
+    assert watch == "投資検討の境目（+0.25）まであと 0.20 点。見送りの境目（-0.25）までは 0.30 点の余裕がある"
+    consider = J.distance_text(_distance(0.28))
+    assert consider.startswith("投資検討の境目（+0.25）を 0.03 点上回っている（下回るとウォッチ）")
+    assert J.distance_text(_distance(-0.4)).startswith("見送りの境目（-0.25）を 0.15 点下回っている")
+    assert J.distance_text({}) == ""
+
+
+def test_half_step_dependence_names_the_verdict_without_the_half_points():
+    factors = {**_all(0.0), "valuation": _f(1.0), "growth": {**_f(0.5), "whole": 0.0}}  # mid +0.275
+    assert J.horizon_score("mid", factors)["verdict"] == J.CONSIDER
+    dep = J.half_step_dependence("mid", factors)
+    assert dep["verdict"] == J.WATCH and dep["labels"] == ["成長性"] and dep["score"] == pytest.approx(0.2)
+    assert J.half_step_text(dep) == "この判定は成長性の内訳による半点の加減に頼っている（半点を外すとウォッチ、点数 +0.20）"
+    assert J.half_step_dependence("mid", {**factors, "growth": _f(0.0)}) is None
+    assert J.half_step_text(None) == ""
+
+
+def test_daily_trend_moves_name_the_trend():
+    rows = [{"key": "trend_daily", "score": -1.0, "value": "下降トレンド（確度 中）"}]
+    up = {"key": "trend_daily", "label": "株価のテクニカル（日足のトレンド）", "direction": "1段良くなれば", "verdict": "ウォッチ"}
+    assert J.mover_text(up, rows) == "日足のトレンドが下降トレンドでなくなれば（今は「下降トレンド（確度 中）」）ウォッチ"
+    rows = [{"key": "trend_daily", "score": 0.0, "value": "方向感のないもみ合い（確度 低）"}]
+    down = {**up, "direction": "1段悪くなれば", "verdict": "見送り"}
+    assert J.mover_text(down, rows).startswith("日足のトレンドが下降トレンドに変われば")

@@ -17,7 +17,11 @@ def _analysis(verdict: str | None, subs: list | None = None) -> dict:
 # ---------------------------------------------------------------- half steps from the analysis' own sub-ratings
 
 @pytest.mark.parametrize("verdict, subs, score", [
-    ("普通", ["良好", "下回る", "本業由来"], 0.5),           # ROE good, margin behind peers: leans good
+    ("普通", ["良好", "下回る", "本業由来"], 0.0),           # leans good, but a −1 sub keeps a 普通 from rising (改定 3)
+    ("普通", ["良好", "普通"], 0.5),                         # leans good with no concern
+    ("普通", ["高成長", "信頼できる", "問題あり", "普通"], 0.0),  # 3798's growth: +0.25 exactly and a −1 sub
+    ("普通", ["良好", "普通", "普通", "普通"], 0.0),          # +0.25 exactly: not moved (改定 3)
+    ("普通", ["懸念", "普通", "普通", "普通"], 0.0),          # −0.25 exactly: not moved either
     ("普通", ["懸念", "同等", "借入依存"], -0.5),            # leans bad
     ("普通", ["良好", "下回る"], 0.0),                       # balanced
     ("懸念", ["良好", "良好", "懸念", "良好", "問題なし"], -0.5),  # one narrow concern among good steps
@@ -38,8 +42,9 @@ def test_pending_and_missing_analyses_are_not_moved():
 
 
 def test_the_reason_says_when_the_score_was_moved():
-    factor = F.analysis_factor(_analysis("普通", ["良好", "下回る", "本業由来"]))
-    assert "+0.5" in factor["value"] and "内訳" in factor["reason"]
+    factor = F.analysis_factor(_analysis("普通", ["良好", "普通"]))
+    assert "+0.5" in factor["value"] and "内訳" in factor["note"] and "（" not in factor["note"]
+    assert "内訳" not in factor["reason"]  # the counting note is not nested in the analysis' reason
 
 
 def _moat(verdict: str, returns: str | None) -> dict:
@@ -58,7 +63,7 @@ def test_moat_score_separates_no_source_from_no_excess_return(verdict, returns, 
 
 def test_a_neutral_moat_says_why():
     factor = F.moat_factor(_moat("なし", "弱い"))
-    assert "源泉" in factor["value"] and "中立" in factor["reason"]
+    assert "源泉" in factor["value"] and "中立" in factor["note"] and factor["reason"] == "r"
 
 
 def test_build_uses_the_moat_factor():
@@ -113,3 +118,22 @@ def test_price_without_a_year_of_trend_is_left_out():
     assert F.price_factor(short)["score"] is None
     full = {**short, "technicals": {**short["technicals"], "trend": {"score": 0.5, "value": "t"}}}
     assert F.price_factor(full)["score"] == 0.75
+
+
+def test_a_moved_factor_keeps_its_whole_score():
+    assert F.analysis_factor(_analysis("普通", ["良好", "普通"]))["whole"] == 0.0
+    assert "whole" not in F.analysis_factor(_analysis("普通", ["良好", "下回る"]))
+
+
+def _trend(direction, confidence, state="下降トレンド"):
+    return {"daily_trend": {"direction": direction, "confidence": confidence, "state": state,
+                            "evidence": [{"text": "75日線の傾きは 20日前比 -1.3%", "vote": -1, "style": "順張り"}]}}
+
+
+def test_daily_trend_factor_scores_the_short_horizon():
+    assert F.daily_trend_factor(_trend("down", "中"))["score"] == -1.0
+    assert F.daily_trend_factor(_trend("up", "高", "上昇トレンド"))["score"] == 1.0
+    low = F.daily_trend_factor(_trend("down", "低"))
+    assert low["score"] == 0.0 and "確度が低い" in low["reason"] and low["value"] == "下降トレンド（確度 低）"
+    assert F.daily_trend_factor({})["score"] is None
+    assert F.daily_trend_factor(_trend(None, "低", "判定できない"))["score"] is None

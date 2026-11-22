@@ -88,6 +88,7 @@ def cf_rows(series: dict) -> list[dict]:
 
 # ---------- 純利益と営業CF の差の内訳 ----------
 
+FLAG_MEANING = {"売上債権": "回収できていない売上", "棚卸資産": "売れていない在庫"}  # what each line growing faster than sales may mean
 GAP_ITEMS = (("depreciation", "減価償却費"), ("receivables_change", "売上債権の増減"),
              ("inventories_change", "棚卸資産の増減"), ("tax_gap", "税金等の支払いと計上の差"))
 OTHER_MAIN = "その他（表の項目以外）"
@@ -277,7 +278,7 @@ def step3(rows: list[dict], series: dict) -> dict:
     sales_growth = wc[0]["cagr"]
     flagged = [w["name"] for w in wc[1:] if rating == "懸念" and w["cagr"] is not None and sales_growth is not None
                and w["cagr"] > sales_growth]
-    flag_text = (f"。{'・'.join(flagged)}の増加率が売上高を上回る（売れていない在庫・回収できていない売上の可能性。要確認）"
+    flag_text = (f"。{'・'.join(flagged)}の増加率が売上高を上回る（{'・'.join(FLAG_MEANING[n] for n in flagged)}の可能性。要確認）"
                  if flagged else "")
     growth_note = growth_absorbed(rating, ratio, wc)
     if growth_note:

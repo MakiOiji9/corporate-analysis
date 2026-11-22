@@ -19,6 +19,7 @@ import cr_doc as D
 import cr_evidence as EVR
 import cr_glossary as G
 import cr_judge as J
+import cr_notes as N
 import cr_legends as L
 import cr_sections as X
 import cr_strategy as ST
@@ -32,9 +33,20 @@ from cr_html import section as _section
 from slides import table
 
 TOC = (("conclusion", "結論"), ("reasons", "良い点・悪い点"), ("thesis", "行動計画"), ("step1", "STEP 1 事業"),
-       ("step2", "STEP 2 財務"), ("step3", "STEP 3 株価"), ("market", "株価の動き"),
-       ("tech", "テクニカル分析"), ("legends", "投資の神"), ("gaps", "材料不足"), ("glossary", "用語集"))
-LEGEND_LEAD = ("3人の投資哲学をこの会社の分析結果に当てはめた参考の視点。評価はスクリプトが資料の条件で決め、"
+       ("step2", "STEP 2 財務"), ("step3", "STEP 3 株価"), ("gaps", "材料不足"))
+# 付録: chapters that barely move the scores, folded at the end (docs/proposals/company-report-review-feedback.md 5.6)
+APPENDIX = (("market", "付録A", "株価の動き"), ("tech", "付録B", "テクニカル分析"), ("legends", "付録C", "投資の神"))
+APPENDIX_LEAD = ("点数への影響が小さい参考の章。株価の動き・チャートの見立て・投資の神の視点を、必要なときに開いて読む。"
+                 "点数に入るのは、付録B の日足のトレンド（短期）と、付録A の 13・26・52週線のテクニカル（中期）だけ。")
+def check_notice(checks: list[str]) -> str:
+    """The build's automatic checks (cr_lint) at the top of the report: what a reader should cross-check."""
+    items = "".join(f"<li>{esc(c)}</li>" for c in checks)
+    return (f'<div class="wrap"><div class="notice"><b>作成時の自動チェック</b>: 章どうしの食い違いや読みにくい書き方が '
+            f'{len(checks)} 件見つかった。数字や判定の言葉を読むときは注意する。'
+            f'<details><summary>内容を見る</summary><ul>{items}</ul></details></div></div>')
+
+
+LEGEND_LEAD = ("3人の投資哲学をこの会社の分析結果に当てはめた参考の視点。評価は資料に書かれた条件から機械的に決め、"
                "結論の判定の点数には入らない。本人が実際にこの会社をこう評価したという意味ではない。")
 PLAIN_HORIZONS = (("短期", "〜3ヶ月", "地合い・株価のテクニカル（流れ・勢い・位置）・直近の決算の進み具合・割安さを重く見る。値動きの影響が大きく、根拠は弱い。"),
                   ("中期", "6ヶ月〜1年", "割安さと業績の勢い（成長性・決算の進捗）を重く見て、財務と地合いも加える。"),
@@ -44,9 +56,8 @@ WEIGHT_NOTE = (f"各要素を +1（良い）・0（中間）・−1（悪い）�
                f"期間ごとの重みで平均した。{J.UP:+.2f} 以上で投資検討、{J.DOWN:+.2f} 以下で見送り、その間はウォッチ。"
                f"点数に使えた要素が重みの {J.MIN_COVERAGE:.0%} に届かない期間は判定保留。"
                "営業CF のマイナスが続く・FCF の累計がマイナス・安全性の悪化などの深刻な赤信号は、点数にかかわらず見送り。"
-               "点数は分析の結果を重み付けした目安で、将来のリターンの予想や、株価が上がる確率ではない。")
-DISCLAIMER = ("本レポートは公表資料と収集データをもとに企業分析フレームワークに沿って整理したもので、投資の勧誘・推奨ではありません。"
-              "判定は作成日時点の材料による位置づけで、将来の株価を予想するものではありません。最終的な投資判断はご自身で行ってください。")
+               "点数は分析の結果を重み付けした目安で、株価が上がる確率ではない。" + N.READING)
+DISCLAIMER = N.DISCLAIMER
 ROIC_NOTE = ("ROIC（使ったお金に対する本業の利益の割合）が資本コストの線より上の年は、元手に見合う以上に稼いだ年。"
              "上回る年が長く続くほど、強みが続いている証拠になる。")
 CF_NOTE = "営業CF（本業で実際に入った現金）が純利益より上なら、利益が現金を伴っている。下回る年が続くと利益の質に注意。"
@@ -61,7 +72,8 @@ def masthead(facts: dict) -> str:
             ("株価", f"{C.fmt(price.get('value'), 0)}{price.get('currency') or ''}（{price.get('date') or '—'} 終値）"),
             ("地合い", f"{o.get('overall') or '—'}（{o.get('week') or '—'} 週）"), ("次回の見直し", facts["review"])]
     items = "".join(f"<span>{esc(k)} <b>{esc(v)}</b></span>" for k, v in meta)
-    toc = "".join(f'<a href="#{sid}">{esc(label)}</a>' for sid, label in TOC)
+    toc = ("".join(f'<a href="#{sid}">{esc(label)}</a>' for sid, label in TOC) + '<span class="toc-sep">付録</span>'
+           + "".join(f'<a href="#{sid}">{esc(label)}</a>' for sid, _, label in APPENDIX) + '<a href="#glossary">用語集</a>')
     return (f'<header class="masthead"><div class="wrap"><div class="kicker">企業分析レポート ・ STEP 1〜3</div>'
             f'<h1>{esc(facts["name"])}</h1><div class="meta">{items}</div></div></header>'
             f'<nav class="toc" aria-label="目次"><div class="wrap">{toc}</div></nav>')
@@ -74,8 +86,14 @@ def _card(key: str, h: dict) -> str:
     bad = "・".join(r["label"].split("（")[0] for r in h["bad"][:2]) or "なし"
     return (f'<div class="vcard {VERDICT_CLASS.get(word, "")}"><div class="period">{esc(PERIODS[key])}'
             f'（{esc(SPANS[key])}）</div><div class="word">{esc(word)}<span class="vscore">{esc(score)}</span></div>'
-            f'{X.gauge(h["score"])}{_knockout_line(h)}<p class="why"><span class="ok-yes">＋</span> {esc(good)}<br>'
+            f'{X.gauge(h["score"])}{_knockout_line(h)}{_half_step_line(h)}<p class="why"><span class="ok-yes">＋</span> {esc(good)}<br>'
             f'<span class="ok-no">−</span> {esc(bad)}</p></div>')
+
+
+def _half_step_line(h: dict) -> str:
+    """The card says when the verdict rests on half points (cr_judge.half_step_dependence)."""
+    text = J.half_step_text(h.get("half_step"))
+    return f'<p class="small"><span class="ok-no">!</span> {esc(text)}</p>' if text else ""
 
 
 def _knockout_line(h: dict) -> str:
@@ -291,18 +309,18 @@ def step3(facts: dict) -> str:
     body = (head + f'<div class="steps">{cards}</div>' + X.peers_block(facts)
             + _details("判定が変わる株価・安い理由", f"<h3>判定が変わる株価</h3>{flips}{cheap}"))
     return _section("step3", "06", "STEP 3 株価の妥当性", "今の株価は、過去の水準と同業他社に比べて安いか高いか。"
-                    "割安・割高は現時点の位置づけで、将来の株価の予想ではない。", body)
+                    "割安・割高は現時点の位置づけ。", body)
 
 
 # ---------------------------------------------------------------- thesis / gaps / glossary
 
 def thesis(facts: dict, parsed: dict) -> str:
-    body = (f'<div class="cols"><div class="panel"><h3>投資の理由（または見送りの理由）</h3>{_paragraphs(parsed["thesis"])}'
-            f'</div><div class="panel"><h3>判断が崩れる条件</h3>{_list(parsed["break"])}</div></div>'
+    body = (ST.conditions_html(facts, parsed["break"])
+            + f'<div class="panel"><h3>投資の理由（または見送りの理由）</h3>{_paragraphs(parsed["thesis"])}</div>'
             + ST.html(facts, []) + f'<h3>次に確かめること</h3>{_list(parsed["watch"])}'
             + _details("チャートから見た買いの候補の価格（損切り・利益確定・リスクリワード）", CP.scenarios(facts)))
     return _section("thesis", "03", "投資判断と行動計画",
-                    "結論を踏まえて、何を根拠に、どんな条件で判断を変えるか。価格は条件の目安で、予想や推奨ではない。", body)
+                    "結論を踏まえて、何を根拠に、どんな条件で判断を変えるか。", body)
 
 
 def _legend_card(v: dict, prose: str, action: str = "") -> str:
@@ -323,7 +341,7 @@ def legends(facts: dict, parsed: dict) -> str:
         return ""
     actions = ST.legend_actions(facts)["actions"]
     cards = "".join(_legend_card(v, _paragraphs(parsed.get(k) or ""), actions.get(k, "")) for k, v in found.items())
-    return _section("legends", "09", "投資の神の視点（参考）", LEGEND_LEAD,
+    return _section("legends", "付録C", "投資の神の視点（参考）", LEGEND_LEAD,
                     ST.legend_summary(facts) + f'<div class="steps">{cards}</div>')
 
 
@@ -350,24 +368,32 @@ def gaps(facts: dict) -> str:
     body = (_list([f"{g['label']}: {g['gap']}" for g in facts["gaps"]]) + stale_html + material_html
             + "<h3>このレポートが使った分析</h3>"
             + table(["STEP", "分析", "分析日", "結論", "ファイル"], rows, nowrap=frozenset({2})))
-    return _section("gaps", "10", "材料不足と使った分析", "判定に影響しうる、まだ確かめられていない点。", body)
+    return _section("gaps", "07", "材料不足と使った分析", "判定に影響しうる、まだ確かめられていない点。", body)
 
 
 def glossary(text: str) -> str:
     terms = G.terms_in(text)
     body = (f'<dl class="gloss">{"".join(f"<dt>{esc(t)}</dt><dd>{esc(d)}</dd>" for t, d in terms)}</dl>' if terms
             else '<p class="muted">なし</p>')
-    return _section("glossary", "11", "用語集", "このレポートに出てくる言葉の意味。", body)
+    return _section("glossary", "付録D", "用語集", "このレポートに出てくる言葉の意味。", body)
+
+
+def appendix(chapters: list[str]) -> str:
+    """The 付録 heading and each appendix chapter folded in a closed details (a TOC link opens it: the template's
+    script)."""
+    head = _section("appendix", "付録", "付録（参考の章）", APPENDIX_LEAD, "")
+    folded = "".join(f'<details class="appendix"><summary class="wrap"><span class="num">{esc(num)}</span>{esc(label)}'
+                     f'</summary>{body}</details>' for (_, num, label), body in zip(APPENDIX, chapters))
+    return head + folded
 
 
 def render(template: str, facts: dict, parsed: dict, md_text: str) -> str:
     main = X.annotate(conclusion(facts, parsed) + reasons(facts, parsed) + thesis(facts, parsed) + step1(facts)
-                      + step2(facts) + step3(facts) + CP.chapter(facts, parsed, "07") + CT.chapter(facts, "08")
-                      + legends(facts, parsed)
-                      + gaps(facts))
+                      + step2(facts) + step3(facts) + gaps(facts)
+                      + appendix([CP.chapter(facts, parsed, "付録A"), CT.chapter(facts, "付録B"), legends(facts, parsed)]))
     body = (masthead(facts) + "<main>" + main
             + glossary(md_text + D.render_brief(facts, "").split(D.WRITING_RULES)[0])
             + f'</main><footer><div class="wrap"><p>{esc(DISCLAIMER)}</p>'
-              f'<p>作成: 企業分析レポートの作成スクリプト（{esc(facts["date"])}、判定規則の版 {J.RULES_VERSION}。'
-              '過去のレポートは作成時の版の規則で判定している）</p></div></footer>')
+              f'<p>作成日 {esc(facts["date"])}。判定ルールの改定 {J.RULES_VERSION}'
+              '（判定の基準は改定ごとに見直しており、過去のレポートとは判定の基準が違うことがある）</p></div></footer>')
     return Template(template).safe_substitute(title=esc(f"{facts['name']} 企業分析レポート {facts['date']}"), body=body)

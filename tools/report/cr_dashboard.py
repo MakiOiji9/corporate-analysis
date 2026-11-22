@@ -21,7 +21,7 @@ STRIP = (("five_forces", "業界の魅力度", "step1"), ("three_c", "勝てる�
          ("swot", "SWOT", "step1"), ("profitability", "収益性", "step2"), ("growth", "成長性", "step2"),
          ("safety", "安全性", "step2"), ("cash_flow", "キャッシュフロー", "step2"), ("valuation", "株価の割安さ", "step3"))
 FAIR_NOTE = ("帯は各指標で「割安」と「割高」の境目になる株価。縦線が今の株価、帯の中の短い線は適正PBR の株価。"
-             "左にあるほど割安側。株価の予想や目標株価ではない。")
+             "左にあるほど割安側。目標株価ではない。")
 INSIDE, BELOW, ABOVE = "帯の中", "下限より下", "上限より上"
 
 
@@ -59,6 +59,7 @@ def fair_rows(facts: dict) -> list[dict]:
     peg = detail.get("peg_standard")
     if peg and peg > 0 and price:
         rows.append({"label": "PEG（1倍〜2倍）", "low": price / peg, "high": 2 * price / peg,
+                     "fair": price / peg,  # the price the growth rate pays for (PEG 1): the scenarios' 基本 (改定 3)
                      "note": "成長率に見合う株価（PEG 1倍）から2倍まで"})
     week = next((w for w in (facts.get("prices") or {}).get("ranges") or [] if w.get("label") == "52週"), None)
     if week and week.get("low") is not None and week.get("high") is not None:

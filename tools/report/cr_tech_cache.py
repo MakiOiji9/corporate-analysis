@@ -18,7 +18,7 @@ from common import atomic_write_text  # noqa: E402
 JST = dt.timezone(dt.timedelta(hours=9))
 DIR = Path("analysis") / "technical"
 JSON_NAME, MD_NAME = "technical.json", "technical.md"
-VERSION = f"{P.VERSION}.1"
+VERSION = f"{P.VERSION}.3"  # .2: ATR の単位を足の種類で書き分けた。.3: そろわない根拠のあるトレンドは確度「高」にしない
 
 
 def needs_refresh(existing: dict | None, asof: str | None) -> bool:

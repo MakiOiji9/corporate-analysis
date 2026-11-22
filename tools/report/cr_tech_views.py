@@ -3,7 +3,8 @@
 Each aspect (切り口) stands on its own: state, evidence (each marked 順張り / 逆張り where it matters), outlook and
 confidence. The overall view lists the aspects side by side, so a trend-following and a contrarian reading that cancel
 each other stay visible, and builds three scenarios (強気・基本・弱気) with a trigger, a target and an invalidation price.
-Nothing here feeds the 短期・中期 scores (cr_technicals does); the indicator functions are reused from there.
+Only the daily trend feeds a score: the short horizon's technical factor (cr_factors.daily_trend_factor, 判定ルールの改定 3);
+the mid horizon keeps cr_technicals' score. The indicator functions are reused from there.
 
 Moving averages: 25・75・200 days (daily), 13・26・52 weeks (weekly). Confidence 高/中/低 comes from how many pieces of
 evidence there are and how well they agree, never from a feeling.
@@ -17,6 +18,7 @@ MA = {P.DAILY: (25, 75, 200), P.WEEKLY: (13, 26, 52)}
 SLOPE = {P.DAILY: 20, P.WEEKLY: 8}
 CHART = {P.DAILY: 250, P.WEEKLY: 156}
 YEAR = {P.DAILY: 250, P.WEEKLY: 52}
+UNIT = {P.DAILY: "日", P.WEEKLY: "週"}  # one bar of the timeframe (ATR の値幅の単位)
 RECENT = {P.DAILY: 60, P.WEEKLY: 26}      # the window of "recent high / low" and the OBV comparison
 SHORT_VOL = {P.DAILY: 5, P.WEEKLY: 2}
 STOCH = 14
@@ -94,7 +96,10 @@ def trend(rows: list[dict], tf: str, piv: list[dict]) -> dict:
     outlook = {P.UP: f"上昇の流れが続きやすい形。{b}{unit}線 {P.px(ma_b)} を終値で割り込むと流れが変わりうる。",
                P.DOWN: f"下降の流れが続きやすい形。{b}{unit}線 {P.px(ma_b)} を終値で上回ると流れが変わりうる。",
                P.FLAT: f"向きが決まっていない。{a}{unit}線 {P.px(ma_a)} と {c}{unit}線 {P.px(ma_c)} のどちらに寄るかが焦点。"}[d]
-    return _aspect("trend", state, d, ev, outlook, _conf(votes))
+    conf = _conf(votes)
+    if conf == HIGH and 0 in votes:  # a line that does not line up (並びがそろわない・ダウ理論がそろわない) is not 高
+        conf = MID
+    return _aspect("trend", state, d, ev, outlook, conf)
 
 
 # ---------------------------------------------------------------- momentum
@@ -177,7 +182,7 @@ def volatility(rows: list[dict], tf: str) -> dict:
     a = T.atr(rows)
     ev: list[tuple[str, int, str]] = [(f"ボリンジャーバンドの幅は直近 1 年の下位 {pct:.0f}% の位置", 0, "順張り")]
     if a:
-        ev.append((f"ATR（1 日あたりの平均的な値幅）は {P.px(a)}、株価の {a / closes[-1] * 100:.1f}%", 0, "順張り"))
+        ev.append((f"ATR（1{UNIT[tf]}あたりの平均的な値幅）は {P.px(a)}、株価の {a / closes[-1] * 100:.1f}%", 0, "順張り"))
     if pct <= SQUEEZE:
         state, outlook = "収縮（スクイーズ）", "値動きが小さく縮んでいる。大きく動く前の静けさになりやすいが、向きは示さない。"
     elif pct >= EXPAND:

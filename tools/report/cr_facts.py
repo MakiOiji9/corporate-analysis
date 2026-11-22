@@ -24,6 +24,7 @@ import news_table as NT
 import sector_map as SM
 import cr_prices as CP
 import cr_status as S
+import cr_tech_cache as TC
 import mdparse as M
 import outlook as O
 from sf_series import JAPAN_TICKER, unit_label
@@ -248,7 +249,8 @@ def judgements(found: dict[str, dict], prices: dict, outlook: dict) -> dict:
     s3 = F.step3_verdict(found["valuation"])
     factors = F.build(found, prices, outlook, burn)
     horizons = {h: {**J.horizon_score(h, factors[h], flags, s1["grade"], cautions),
-                    "sensitivity": J.sensitivity(h, factors[h], flags, s1["grade"])} for h in factors}
+                    "sensitivity": J.sensitivity(h, factors[h], flags, s1["grade"]),
+                    "half_step": J.half_step_dependence(h, factors[h], flags, s1["grade"])} for h in factors}
     final_check = _get(found["valuation"], "detail", "final_check") or {}
     note = "割安だが理由あり（" + "・".join(final_check.get("concerns") or []) + "）" \
         if s3 == "割安" and final_check.get("concerns") else ""
@@ -283,6 +285,10 @@ def build(root: Path, company: S.Company, today: str, status: dict) -> dict:
     prices = with_earnings({**CP.summarize(company.path), "positioning": POS.summarize(company.path)},
                            _get(found["growth"], "detail", "cagr", "eps"))
     outlook = {**status["outlook"], **outlook_rows(root, status["outlook"], market)}
+    # the technical analysis (付録B) before the judgements: its daily trend is the short horizon's technical factor
+    technical = TC.ensure(company.path, CP.load(company.path / "data" / "prices.csv"))
+    prices["daily_trend"] = (((technical.get("daily") or {}).get("aspects") or {}).get("trend")
+                             if technical.get("ok") else None)
     price = _get(found["valuation"], "detail", "price") or {}
     per_forecast = _get(found["valuation"], "detail", "per_forecast")
     extras = {"dividends": X.dividends(company.path, price.get("value"), per_forecast),
@@ -291,7 +297,8 @@ def build(root: Path, company: S.Company, today: str, status: dict) -> dict:
         "company": company.dirname, "ticker": company.ticker, "name": company.display_name(), "market": market,
         "date": today, "unit": unit_label(company), "price": _get(found["valuation"], "detail", "price") or {},
         "analyses": found, "prices": prices, "outlook": outlook, "review": next_review(company),
-        **judgements(found, prices, outlook), "gaps": gaps(found), "steps": status["steps"],
+        **judgements(found, prices, outlook), "technical_analysis": technical, "gaps": gaps(found),
+        "steps": status["steps"],
         "materials": status.get("materials") or [],
         "stale": [{k: s[k] for k in ("skill", "label", "step", "date", "result", "reason")}
                   for s in status["steps"] if s["result"] != "fresh"],

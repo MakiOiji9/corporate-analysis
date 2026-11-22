@@ -37,6 +37,8 @@ LOW_ZONE, TOP_ZONE = 33.0, 67.0
 MA_GAP_LIMIT = 15.0
 SWING_LOOKBACK, SWING_SIDE = 120, 5
 LEVELS_SHOWN = 2
+TAKE_MIN = 1.01  # a take-profit line is at least this far above the close (and one ATR)
+TAKE_MERGE = 0.03  # take-profit lines within 3% are one level (cr_scenarios.MERGE)
 SAME_LEVEL = 0.001  # levels within 0.1% of each other are one level
 CHART_DAYS = 250
 
@@ -243,12 +245,21 @@ def _level(label: str, price: float, current: float) -> dict:
     return {"label": label, "price": round(price, 2), "gap": _pct(price, current)}
 
 
-def _nearest(items: list[tuple[str, float]], current: float, below: bool) -> list[dict]:
+def _nearest(items: list[tuple[str, float]], current: float, below: bool, same: float = SAME_LEVEL) -> list[dict]:
     out: list[dict] = []
     for label, price in sorted(items, key=lambda x: x[1], reverse=below):
-        if all(abs(price / o["price"] - 1) > SAME_LEVEL for o in out):
+        if all(abs(price / o["price"] - 1) > same for o in out):
             out.append(_level(label, price, current))
     return out[:LEVELS_SHOWN]
+
+
+def role(label: str, price: float, current: float) -> tuple[str, float]:
+    """A past low above the price is now a ceiling, a past high below it a floor: the label says so."""
+    if label.startswith("直近の安値") and price > current:
+        label = label.replace("直近の安値", "以前の安値", 1) + "（今は上値の抵抗になりやすい）"
+    elif label.startswith("直近の高値") and price < current:
+        label = label.replace("直近の高値", "以前の高値", 1) + "（今は下値の支えになりやすい）"
+    return label, price
 
 
 def levels(rows: list[dict], mas: dict[int, list], upper: float | None, atr_value: float | None) -> dict:
@@ -261,8 +272,14 @@ def levels(rows: list[dict], mas: dict[int, list], upper: float | None, atr_valu
     above = [(f"直近の高値（{d}）", p) for d, p in highs] + [("52週高値", hi52)]
     if upper is not None:
         above.append(("ボリンジャーバンド +2σ", upper))
-    supports = _nearest([x for x in below if x[1] < current], current, below=True)
-    resistances = _nearest([x for x in above if x[1] > current], current, below=False)
+    # one list of lines for every chapter (03 章の売買シナリオ・付録A の目安): a past low above the close is now a
+    # ceiling and a past high below it a floor, each named so
+    every = [role(label, price, current) for label, price in below + above]
+    supports = _nearest([x for x in every if x[1] < current], current, below=True)
+    # a take-profit line is at least 1% and one ATR above the close (a closer one is within a day's move): the same
+    # floor as the trading scenarios' targets (cr_scenarios._targets), so 03 章と付録A name the same prices
+    floor = max(current * TAKE_MIN, current + (atr_value or 0))
+    resistances = _nearest([x for x in every if x[1] > floor], current, below=False, same=TAKE_MERGE)
     stop = None
     if supports and atr_value:
         # 1 ATR under the nearest support, but not under the 52-week low unless that low is the support itself
@@ -276,7 +293,7 @@ def levels(rows: list[dict], mas: dict[int, list], upper: float | None, atr_valu
     elif atr_value:
         stop = {**_level("株価の 2 ATR 下", current - 2 * atr_value, current), "basis": "下に支持線が無いため"}
     # every line, low to high: the trading scenarios look for the next one below / above any entry price
-    lines = [{"label": label, "price": round(price, 2)} for label, price in sorted(below + above, key=lambda x: x[1])]
+    lines = [{"label": label, "price": round(price, 2)} for label, price in sorted(every, key=lambda x: x[1])]
     return {"supports": supports, "resistances": resistances, "stop": stop, "atr": _round(atr_value),
             "lines": lines}
 
@@ -429,7 +446,7 @@ def brief_lines(t: dict, long_verdict: str | None, positioning: dict | None = No
             + positioning_lines(positioning) + [""]
     lv, band, vol = t["levels"], t.get("band") or {}, t["volume"]
     stop = lv.get("stop")
-    lines += [f"- 状態: **{t['state']}**（テクニカル点数 {t['score']:+.2f}。短期・中期の「株価のテクニカル」の点数）",
+    lines += [f"- 状態: **{t['state']}**（テクニカル点数 {t['score']:+.2f}。中期の「株価のテクニカル」の点数。短期は付録B の日足のトレンド）",
               f"- トレンド: {t['trend']['value']}", f"- 勢い: {t['momentum']['value']}",
               f"- 位置: {t['position']['value']}",
               "- 移動平均: " + "、".join(f"{k} {v:,.0f}" for k, v in t["averages"].items() if v is not None),

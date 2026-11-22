@@ -100,7 +100,7 @@ def _company(root: Path, verdicts: dict | None = None) -> Path:
     day = dt.date(2025, 10, 1)
     lines = ["date,open,high,low,close,adj_close,volume,retrieved"]
     for i in range(400):
-        close = 549 - (i % 50)  # a sawtooth that ends low in its 52-week range
+        close = round(420 + i * 0.4 - (i % 50), 1)  # a rising sawtooth: the daily trend is up (the short horizon's factor)
         lines.append(f"{(day + dt.timedelta(days=i)).isoformat()},{close},{close + 5},{close - 5},{close},{close},"
                      f"100,{TODAY}")
     (company / "data").mkdir()
@@ -333,7 +333,7 @@ def test_prepare_fill_build_flow(repo, capsys):
     assert result["horizons"]["long"]["verdict"] == "投資検討" and result["price_range"]["source"] == "prices"
     assert result["rules_version"] == CJ.RULES_VERSION and 0 < result["horizons"]["long"]["coverage"] <= 1
     html = (company / "reports" / f"{TODAY}_company-report.html").read_text(encoding="utf-8")
-    assert f"判定規則の版 {CJ.RULES_VERSION}" in html and "確率ではない" in html
+    assert f"判定ルールの改定 {CJ.RULES_VERSION}" in html and "確率ではない" in html
     assert _run(repo, capsys, "check", "--company", "3798", "--date", TODAY)["next"] == "report_existing"
     again = _prepare(repo, capsys)
     assert not again["ok"] and "--redo" in again["error"]
@@ -353,7 +353,7 @@ def test_brief_shows_nearest_boundary_recent_material_median_and_directions(repo
     company = _company(repo, PEER_MARGINS)
     out = _prepare(repo, capsys)
     brief = (company / "reports" / f"{TODAY}_company-report_brief.md").read_text(encoding="utf-8")
-    assert "まであと" in brief.split("## 3.")[1].split("## 4.")[0]  # every horizon names its nearest boundary
+    assert "の境目（" in brief.split("## 3.")[1].split("## 4.")[0]  # every horizon names its nearest boundary
     assert "## 直近の材料" in brief and "52週高値から" in brief and "S1" in brief  # SWOT strengths and the drop
     assert "同業平均 16.3%（中央値 14.0%）" in brief
     assert "### 5.1 判定が上がる条件" in brief and "### 5.2 判定が下がる条件" in brief
@@ -375,17 +375,18 @@ def test_conservative_note_is_not_doubled():
     import cr_factors as CF
     a = {"verdict": "懸念", "reason": "不明の年を構造とみなした（材料不足のため保守的に判定）", "conservative": ["x"],
          "step": "2-2", "label": "成長性"}
-    assert CF.analysis_factor(a)["reason"].count("保守的に判定") == 1
-    assert "保守的" in CF.analysis_factor({**a, "reason": "理由"})["reason"]
+    factor = CF.analysis_factor(a)
+    assert (factor["reason"] + factor["note"]).count("保守的") == 1
+    assert "保守的" in CF.analysis_factor({**a, "reason": "理由"})["note"]
 
 
 def test_conservative_note_does_not_claim_the_verdict_came_from_missing_material():
     import cr_factors as CF
     a = {"verdict": "懸念", "reason": "手順1が停滞・縮小", "conservative": ["M&A が分からない"],
          "step": "2-2", "label": "成長性"}
-    reason = CF.analysis_factor(a)["reason"]
-    assert "材料不足のため保守的に判定" not in reason
-    assert "一部の項目は材料不足のため保守的に扱った" in reason
+    factor = CF.analysis_factor(a)
+    assert "材料不足のため保守的に判定" not in factor["reason"] + factor["note"]
+    assert factor["note"] == "一部の項目は材料不足のため保守的に扱った"
 
 
 def test_valuation_factor_counts_only_the_scored_indicators():
@@ -406,7 +407,7 @@ def test_html_shows_3c_swot_peers_dividends_and_tooltips(repo, capsys):
     assert "期間ごとの良い点・悪い点" in html and 'class="gauge"' in html
     assert 'class="swot"' in html and "SWOT分析" in html
     assert "同業比較" in html and "株主還元" in html and "成長の見通し" in html
-    assert "同業の平均" in html and "同業の中央値" in html and "最も近い境目" in html
+    assert "同業の平均" in html and "同業の中央値" in html and "の境目（+0.25）" in html
     assert 'class="term"' in html
     assert not re.search(r'data-tip="[^"]*<span', html)  # a tooltip never lands inside an attribute
     assert '<svg' in html and not re.search(r"<svg[^>]*>[^<]*<span class=\"term\"", html)

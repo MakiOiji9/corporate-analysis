@@ -105,3 +105,30 @@ def test_the_note_is_a_condition_not_a_forecast():
     text = p["note"] + "".join(c["basis"] for c in p["cases"])
     assert "予想ではない" in p["note"]
     assert not T.FORECAST.search(text) and not any(w in text for w in O.FORBIDDEN)
+
+
+def _with_eps(facts: dict, eps: list[float]) -> dict:
+    facts["analyses"]["growth"]["detail"]["rows"] = [{"year": f"{2010 + i}-03", "eps": e} for i, e in enumerate(eps)]
+    return facts
+
+
+def test_pessimistic_is_floored_by_the_worst_eps_year():
+    # 3798: 22.46 -> 20.58 (-8.4%) in 2024-03
+    p = PJ.build(_with_eps(_facts(), [9.4, 9.68, 12.15, 12.87, 15.94, 17.83, 22.46, 20.58, 25.0, 30.0]))
+    bear = _case(p, "悲観")
+    assert bear["rate"] == pytest.approx((20.58 / 22.46 - 1) * 100) and "2017-03" in bear["basis"]
+    assert PJ.level(p, "悲観", 3) < p["eps0"] * p["per"]  # a falling EPS draws a level below today's
+
+
+def test_pessimistic_stays_half_the_base_without_a_worse_year():
+    bear = _case(PJ.build(_with_eps(_facts(), [10.0, 11.0, 12.0, 13.5])), "悲観")
+    assert bear["rate"] == pytest.approx(5.4) and bear["basis"] == "基本の半分（過去10年に減益の年が無い）"
+    bear = _case(PJ.build(_with_eps(_facts(), [10.0, 9.9, 12.0])), "悲観")  # any falling year is below half the base
+    assert bear["rate"] == pytest.approx(-1.0)
+
+
+def test_worst_year_looks_back_ten_years_and_skips_a_loss_base():
+    facts = _with_eps(_facts(), [10.0, 1.0] + [2.0 + i for i in range(10)])  # the -90% year is 11 changes ago
+    assert PJ.worst_eps_growth(facts)["rate"] > 0
+    assert PJ.worst_eps_growth(_with_eps(_facts(), [-5.0, 2.0, 1.0]))["rate"] == pytest.approx(-50.0)
+    assert PJ.worst_eps_growth(_with_eps(_facts(), [3.0])) is None

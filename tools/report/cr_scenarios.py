@@ -19,16 +19,6 @@ FAIR_LABEL = "適正PBR の株価"
 LOW_52 = "52週安値"
 
 
-def _role(line: dict, current: float) -> dict:
-    """A past low above the price is now a ceiling, a past high below it a floor: the label says so."""
-    label = line["label"]
-    if label.startswith("直近の安値") and line["price"] > current:
-        label = label.replace("直近の安値", "以前の安値", 1) + "（今は上値の抵抗になりやすい）"
-    elif label.startswith("直近の高値") and line["price"] < current:
-        label = label.replace("直近の高値", "以前の高値", 1) + "（今は下値の支えになりやすい）"
-    return {**line, "label": label}
-
-
 def _level(label: str, price: float) -> dict:
     return {"label": label, "price": round(price, 2)}
 
@@ -127,14 +117,27 @@ def _risks(entry: dict, t: dict, context: dict, stop: dict) -> list[str]:
     return out
 
 
+RR_MIN = 1.0  # below it the fall to the stop is larger than the rise to the first target
+
+
+def rr_note(rr: float | None) -> str:
+    return "利益確定までの上げ幅より損切りまでの下げ幅が大きい" if rr is not None and rr < RR_MIN else ""
+
+
+def rr_summary(buys: list[dict]) -> str:
+    """When every candidate's reward-to-risk is under 1, one line says so (the candidates stay: 決定 Q3)."""
+    known = [b["rr"] for b in buys if b.get("rr") is not None]
+    return ("どの候補もリスクリワードが 1 未満で、チャートの上では今は買いの条件が良くない"
+            if known and all(r < RR_MIN for r in known) else "")
+
+
 def build(t: dict, flips: dict, context: dict) -> dict:
     """{ok, buys: [{label, price, basis, stop, target1, target2, down, up1, up2, rr, risks}], holder: {take, exit}}."""
     levels = (t or {}).get("levels") or {}
     if not (t or {}).get("ok") or not levels.get("atr") or not levels.get("lines"):
         return {"ok": False, "buys": [], "holder": {"take": [], "exit": []}}
     atr, current = levels["atr"], t["current"]
-    lines = [_role(x, current) for x in levels["lines"]]
-    t = {**t, "levels": {**levels, "lines": lines}}
+    lines = levels["lines"]  # already named by their role now (cr_technicals.role)
     buys = []
     for e in _entries(t, flips or {}):
         stop = _stop(e["price"], lines, atr)

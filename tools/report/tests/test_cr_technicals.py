@@ -141,3 +141,21 @@ def test_validate_accepts_conditions_and_rejects_forecasts():
     assert any("状態" in i for i in issues) and any("予想" in i for i in issues)
     edited = table.replace("押し目の目安（下の支持線） | ", "押し目の目安（下の支持線） | 1,000円、", 1)
     assert any("表" in i for i in T.validate(ok, edited, t))
+
+
+def test_role_names_past_lows_above_and_highs_below():
+    assert T.role("直近の安値（2026-06-26）", 488.0, 467.0) == ("以前の安値（2026-06-26）（今は上値の抵抗になりやすい）", 488.0)
+    assert T.role("直近の高値（2026-01-05）", 400.0, 467.0) == ("以前の高値（2026-01-05）（今は下値の支えになりやすい）", 400.0)
+    assert T.role("直近の安値（2026-10-01）", 450.0, 467.0) == ("直近の安値（2026-10-01）", 450.0)
+
+
+def test_take_profit_lines_match_the_trading_scenarios():
+    """07 章の利益確定の目安 and 03 章の売買シナリオ (the current price's targets) name the same prices."""
+    import cr_scenarios as SC
+    closes = [100 + 10 * math.sin(i / 8) for i in range(400)] + [92 - i * 0.5 for i in range(30)]
+    t = T.evaluate(_rows(closes))
+    lv = t["levels"]
+    s = SC.build(t, {}, {})
+    target = s["buys"][0]["target1"]
+    assert target and lv["resistances"] and target["price"] == lv["resistances"][0]["price"]
+    assert all(x["price"] > t["current"] + lv["atr"] for x in lv["resistances"])

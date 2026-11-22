@@ -60,8 +60,16 @@ def _change(points: Points, end: str, days: int) -> float | None:
     return round((now[1] / base[1] - 1) * 100, 1)
 
 
+R2_MIN = 0.1  # below it the index explains almost none of the stock's moves: β × 市場 is not shown (決定 Q6)
+
+
 def beta(rows: list[dict], index: Points) -> float | None:
-    """Weekly (every BETA_STEP common trading days) returns of the last year, stock on index."""
+    fit = beta_fit(rows, index)
+    return fit["beta"] if fit else None
+
+
+def beta_fit(rows: list[dict], index: Points) -> dict | None:
+    """{beta, r2, n}: weekly (every BETA_STEP common trading days) returns of the last year, stock on index."""
     if not index:
         return None
     idx = dict(index)
@@ -74,7 +82,12 @@ def beta(rows: list[dict], index: Points) -> float | None:
         return None
     ms, mi = sum(p[0] for p in pairs) / len(pairs), sum(p[1] for p in pairs) / len(pairs)
     var = sum((p[1] - mi) ** 2 for p in pairs)
-    return round(sum((p[0] - ms) * (p[1] - mi) for p in pairs) / var, 2) if var else None
+    var_s = sum((p[0] - ms) ** 2 for p in pairs)
+    if not var:
+        return None
+    cov = sum((p[0] - ms) * (p[1] - mi) for p in pairs)
+    r2 = cov * cov / (var * var_s) if var_s else 0.0
+    return {"beta": round(cov / var, 2), "r2": round(r2, 3), "n": len(pairs)}
 
 
 def _returns(stock: Points, index: Points, sector: Points | None, end: str) -> list[dict]:
@@ -161,8 +174,13 @@ def evaluate(rows: list[dict], index: Points, sector: Points | None, news: list[
     if not index:
         notes.append(f"{index_name}の系列が無いため、市場との比較をしていない")
     stock = [(r["date"], r["close"]) for r in rows]
-    b = beta(rows, index)
+    fit = beta_fit(rows, index)
+    b = fit["beta"] if fit else None
     returns = _returns(stock, index, sector, end)
+    weak = bool(fit) and fit["r2"] < R2_MIN
+    weak_note = (f"株価は{index_name}との連動がほとんどない（過去1年の週ごとの値動きで決定係数 R² {fit['r2']:.2f}）。"
+                 "市場の動きで説明できる分は求められないため、分解は出さない" if weak else "")
     return {"ok": True, "end": end, "index_name": index_name, "sector_name": sector_name, "returns": returns,
-            "beta": b, "split": _split(returns, b), "big_days": big_days(rows, index, news),
+            "beta": b, "r2": fit["r2"] if fit else None, "split": None if weak else _split(returns, b),
+            "weak_link": weak_note, "big_days": big_days(rows, index, news),
             "consensus": consensus(technicals), "notes": notes}

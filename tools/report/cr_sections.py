@@ -58,27 +58,39 @@ def gauge(score: float | None) -> str:
 def _point(row: dict) -> str:
     pending = "（判定保留を0点）" if row["pending"] else ""
     reason = f'<span class="small muted">。{esc(row["reason"])}</span>' if row["reason"] else ""
+    if row.get("note"):  # how the report counted it, on its own line (not nested in the reason's brackets)
+        reason += f'<br><span class="small muted">点数の数え方: {esc(row["note"])}</span>'
+
     return (f'<li><b>{esc(row["label"])}</b> <span class="muted small">重み {row["weight"]}%・寄与 '
             f'{row["contribution"]:+.2f}{esc(pending)}</span><br>{esc(row["value"])}{reason}</li>')
 
 
 def _movers(h: dict) -> str:
     s = h.get("sensitivity") or {}
-    parts = [f"最も近い境目: {s['nearest']['text']} 点"] if s.get("nearest") else []
-    if s.get("to_up") is not None:
-        parts.append(f"投資検討まであと {s['to_up']:+.2f} 点")
-    if s.get("to_down") is not None:
-        parts.append(f"見送りまであと {s['to_down']:.2f} 点")
-    movers = [J.mover_text(m, h["rows"]) for m in s.get("movers") or []]
-    text = "、".join(parts) or "—"
-    text += "。" + ("、".join(movers) if movers else "1つの要素が1段変わっても判定は変わらない")
+    text = J.distance_text(s) or "—"
+    text += "。" + ("1段変わると判定が変わる要素は、03章の「判断が変わる条件」の表にまとめた" if s.get("movers")
+                   else "1つの要素が1段変わっても判定は変わらない")
     return f'<p class="small"><b>判定を動かす要因</b>: {esc(text)}</p>'
+
+
+def issuance_text(i: dict) -> str:
+    """'2014-03 株式分割（発行済株式数 60,264株 → 6,086,800株、約101倍）': a split reads as the share counts and
+    the multiple, not as a percentage rise (10,000.2%). The split ratio itself is not inferred from the counts."""
+    before, after = i.get("from"), i.get("to")
+    if before and after:
+        times = after / before
+        size = ((f"約{times:,.0f}倍" if times >= 100 else f"約{times:.1f}倍") if i.get("kind") == "株式分割"
+                else f"{num(i.get('change_pct'), '%')} 増")
+        return f"{i['period_end'][:7]} {i['kind']}（発行済株式数 {before:,}株 → {after:,}株、{size}）"
+    return f"{i['period_end'][:7]} {i['kind']}（{num(i.get('change_pct'), '%')}）"
 
 
 def horizon_block(label: str, span: str, h: dict, prose: str, matrix: dict | None) -> str:
     good = "".join(_point(r) for r in h["good"]) or '<li class="muted">なし</li>'
     bad = "".join(_point(r) for r in h["bad"]) or '<li class="muted">なし</li>'
     knock = f'<p class="notice"><b>足切り</b>: {esc("、".join(h["knockout"]))}</p>' if h.get("knockout") else ""
+    if h.get("half_step"):
+        knock += f'<p class="notice"><b>判定の頑健さ</b>: {esc(J.half_step_text(h["half_step"]))}</p>'
     knock += (f'<p class="notice"><b>注意</b>: {esc("、".join(h["cautions"]))}（判定は止めないが、確かめる）</p>'
               if h.get("cautions") else "")
     unknown = (f'<p class="small muted">材料が無く点数から外した要素: {esc("・".join(h["unknown"]))}</p>'
@@ -215,7 +227,7 @@ def governance_block(facts: dict) -> str:
                  f"（{p.get('title') or '—'}、{p.get('age') or '—'}歳）。その後の交代は適時開示で確かめる"]
         if owner.get("is_owner"):
             lines.append("オーナーの持株は経営の意思決定を速くする一方、相続や売却のときに株が市場に出て株価が動くことがある")
-        offers = [f"{i['period_end'][:7]} {i['kind']}（{num(i['change_pct'], '%')}）" for i in g.get("issuances") or []]
+        offers = [issuance_text(i) for i in g.get("issuances") or []]
         lines.append("発行済株式数の増加: " + ("、".join(offers) if offers else "なし")
                      + ("。5年以内に公募増資・第三者割当あり（キャッシュフローの評価は最大でも普通）"
                         if g.get("offering_within_5y") else ""))

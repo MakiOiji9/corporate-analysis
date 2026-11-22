@@ -39,7 +39,7 @@ SCORE = {"良好": 1, "普通": 0, "懸念": -1, "高": 1, "中": 0, "低": -1, 
          "平常": 1, "注意": 0, "警戒": -1, PENDING: 0}
 HORIZONS = (("short", "短期", "〜3ヶ月"), ("mid", "中期", "6ヶ月〜1年"), ("long", "長期", "3年以上"))
 WEIGHTS = {  # percent; each horizon sums to 100
-    "short": {"market": 25, "price": 25, "progress": 20, "valuation": 20, "safety": 10},
+    "short": {"market": 25, "trend_daily": 25, "progress": 20, "valuation": 20, "safety": 10},
     "mid": {"market": 10, "price": 10, "progress": 15, "valuation": 20, "growth": 15, "profitability": 10,
             "cash_flow": 10, "safety": 5, "swot": 5},
     # growth carries 手順5 (成長投資): whether the company keeps creating value matters more than whether a moat
@@ -47,7 +47,8 @@ WEIGHTS = {  # percent; each horizon sums to 100
     "long": {"market": 5, "valuation": 15, "growth": 20, "profitability": 10, "cash_flow": 5, "safety": 5,
              "five_forces": 10, "three_c": 15, "moat": 10, "swot": 5},
 }
-FACTOR_LABELS = {"market": "地合い", "price": "株価のテクニカル（トレンド・勢い・位置）", "progress": "直近の決算の進捗",
+FACTOR_LABELS = {"market": "地合い", "price": "株価のテクニカル（13・26・52週線・勢い・位置）",
+                 "trend_daily": "株価のテクニカル（日足のトレンド）", "progress": "直近の決算の進捗",
                  "valuation": "株価の割安さ（STEP 3）", "growth": "成長性", "profitability": "収益性",
                  "cash_flow": "キャッシュフロー", "safety": "安全性", "five_forces": "業界の魅力度（ファイブフォース）",
                  "three_c": "勝てる理由（3C）", "moat": "強みの持続性（モート）", "swot": "強みで脅威に対抗できるか（SWOT）"}
@@ -174,7 +175,10 @@ MIN_COVERAGE = 0.6  # share of a horizon's weight that must be known for a verdi
 # the version of the horizon rules (weights, thresholds, coverage), written into every report so an old report reads
 # against the rules it was built with. 2 (2026-11): growth 20 / moat 10 long weights, moat neutral with an excess
 # return, the coverage rule
-RULES_VERSION = 2
+# 3 (2026-11): a half step at exactly the lean threshold or over a −1 sub is not taken, the short horizon's technical is
+# the daily trend (the mid keeps the weekly score), the pessimistic growth is floored by the worst year, PEG's fair
+# price is PEG 1
+RULES_VERSION = 3
 
 
 def _weighted(weights: dict[str, int], factors: dict[str, dict]) -> tuple[float | None, list[dict], float]:
@@ -184,7 +188,7 @@ def _weighted(weights: dict[str, int], factors: dict[str, dict]) -> tuple[float 
         f = factors.get(key) or {}
         rows.append({"key": key, "label": FACTOR_LABELS[key], "weight": weight, "score": f.get("score"),
                      "value": f.get("value") or "—", "reason": f.get("reason") or "", "source": f.get("source") or "",
-                     "pending": bool(f.get("pending"))})
+                     "note": f.get("note") or "", "pending": bool(f.get("pending"))})
     used = [r for r in rows if r["score"] is not None]
     total = sum(r["weight"] for r in used)
     # a 判定保留 analysis scores 0 in the average but is no evidence: it does not count toward the coverage
@@ -245,21 +249,73 @@ def nearest(score: float | None) -> dict | None:
     needed; + upward, − downward), text}. A 見送り or 投資検討 has one neighbour, a ウォッチ the nearer of two."""
     if score is None:
         return None
+    score = round(score, 2)  # the distance from the score as the report shows it (+0.23 and あと 0.02 would not add up)
+    # the text names the boundary and the distance in words, without a sign (「あと -0.03」 reads badly)
     if score <= DOWN:
-        to, gap, rule = WATCH, DOWN - score, f"{DOWN:+.2f} を超えれば{WATCH}"  # must rise above DOWN
+        to, gap = WATCH, DOWN - score  # must rise above DOWN
+        text = (f"見送りの境目（{DOWN:+.2f}）" + ("ちょうど" if abs(gap) < 0.005 else f"を {abs(gap):.2f} 点下回っている")
+                + f"（上回ると{WATCH}）")
     elif score >= UP:
-        to, gap, rule = WATCH, -(score - UP), f"{UP:+.2f} を下回れば{WATCH}"  # 投資検討 until it falls below UP
+        to, gap = WATCH, -(score - UP)  # 投資検討 until it falls below UP
+        text = (f"投資検討の境目（{UP:+.2f}）" + ("ちょうど" if abs(gap) < 0.005 else f"を {abs(gap):.2f} 点上回っている")
+                + f"（下回ると{WATCH}）")
     else:
         up, down = UP - score, score - DOWN
-        to, gap, rule = ((CONSIDER, up, f"{UP:+.2f} 以上で{CONSIDER}") if up <= down
-                         else (PASS, -down, f"{DOWN:+.2f} 以下で{PASS}"))
+        to, gap = (CONSIDER, up) if up <= down else (PASS, -down)
+        text = (f"投資検討の境目（{UP:+.2f}）まであと {up:.2f} 点" if to == CONSIDER
+                else f"見送りの境目（{DOWN:+.2f}）まであと {down:.2f} 点")
     gap = round(gap, 3) + 0.0  # + 0.0 turns −0.0 into 0.0
-    return {"to": to, "gap": gap, "text": f"{to}まであと {gap:+.2f}（{rule}）"}
+    return {"to": to, "gap": gap, "text": text}
 
 
-def _next_word(score: float, step: int) -> float:
+MOAT_STEPS = (-1.0, 0.0, 0.5, 1.0)  # なし（超過収益なし）・なし（超過収益あり）・狭い・広い (cr_factors.moat_factor)
+MOAT_WORDS = {-1.0: "なし", 0.0: "なし", 0.5: "狭い", 1.0: "広い"}
+
+
+def half_step_dependence(horizon: str, factors: dict[str, dict], flags: list[str] | tuple = (),
+                         step1_grade: str | None = None) -> dict | None:
+    """When the verdict rests on half points taken from the analyses' sub-ratings: {verdict, score, labels} of the
+    horizon with every such factor back on its verdict word's own score; None when the verdict stays."""
+    moved = {k: f for k, f in factors.items() if k in WEIGHTS[horizon] and f.get("whole") is not None
+             and f.get("score") != f["whole"]}
+    if not moved:
+        return None
+    current = horizon_score(horizon, factors, flags, step1_grade)
+    plain = horizon_score(horizon, {**factors, **{k: {**f, "score": f["whole"]} for k, f in moved.items()}},
+                          flags, step1_grade)
+    if current["verdict"] == plain["verdict"] or current["verdict"] == PENDING or plain["score"] is None:
+        return None
+    return {"verdict": plain["verdict"], "score": plain["score"], "labels": [FACTOR_LABELS[k] for k in moved]}
+
+
+def half_step_text(dep: dict | None) -> str:
+    if not dep:
+        return ""
+    return (f"この判定は{'・'.join(dep['labels'])}の内訳による半点の加減に頼っている"
+            f"（半点を外すと{dep['verdict']}、点数 {dep['score']:+.2f}）")
+
+
+def distance_text(s: dict) -> str:
+    """The distance to the thresholds in words, without signs: '投資検討の境目（+0.25）まであと 0.20 点。
+    見送りの境目（-0.25）までは 0.30 点の余裕がある' (nearest first)."""
+    up, down, near = s.get("to_up"), s.get("to_down"), s.get("nearest") or {}
+    gap = near.get("gap")
+    if up is None and down is None:
+        return ""
+    to_up = (f"投資検討の境目（{UP:+.2f}）まであと {up:.2f} 点" if up is not None
+             else f"投資検討の境目（{UP:+.2f}）を {abs(gap or 0):.2f} 点上回っている（下回ると{WATCH}）")
+    to_down = (f"見送りの境目（{DOWN:+.2f}）までは {down:.2f} 点の余裕がある" if down is not None
+               else f"見送りの境目（{DOWN:+.2f}）を {abs(gap or 0):.2f} 点下回っている（上回ると{WATCH}）")
+    first, second = (to_down, to_up) if near.get("to") == PASS or down is None else (to_up, to_down)
+    return f"{first}。{second}"
+
+
+def _next_word(score: float, step: int, key: str | None = None) -> float:
     """One step of a factor: a whole score moves a whole word; a half or fractional score moves to the next
-    whole word in that direction (−0.5 up is 0, not +0.5)."""
+    whole word in that direction (−0.5 up is 0, not +0.5). The moat has its own four steps (MOAT_STEPS)."""
+    if key == "moat" and score in MOAT_STEPS:
+        i = MOAT_STEPS.index(score) + step
+        return MOAT_STEPS[max(0, min(len(MOAT_STEPS) - 1, i))]
     if float(score).is_integer():
         return max(-1.0, min(1.0, score + step))
     return float(math.ceil(score) if step > 0 else math.floor(score))
@@ -275,13 +331,14 @@ def sensitivity(horizon: str, factors: dict[str, dict], flags: list[str] | tuple
         return out
     score = current["score"]
     out["nearest"] = nearest(score)
-    out["to_up"] = round(UP - score, 3) if score < UP else None
-    out["to_down"] = round(score - DOWN, 3) if score > DOWN else None
+    shown = round(score, 2)  # as the report shows it, so the distance adds up with the score
+    out["to_up"] = round(UP - shown, 3) if score < UP else None
+    out["to_down"] = round(shown - DOWN, 3) if score > DOWN else None
     for key, f in factors.items():
         if key not in WEIGHTS[horizon] or f.get("score") is None:
             continue
         for step, word in ((1, "1段良くなれば"), (-1, "1段悪くなれば")):
-            moved = _next_word(f["score"], step)
+            moved = _next_word(f["score"], step, key)
             if moved == f["score"]:
                 continue
             other = horizon_score(horizon, {**factors, key: {**f, "score": moved}}, flags, step1_grade)
@@ -296,22 +353,56 @@ LADDERS = {  # the factor's words from −1 to +1 (a one-step move reads as a co
     "five_forces": ("低", "中", "高"), "three_c": ("なし", "あいまい", "明確"), "moat": ("なし", "狭い", "広い"),
     "swot": ("No", "条件付き", "Yes"), "market": ("警戒", "注意", "平常"), "valuation": ("割高", "妥当", "割安")}
 NUMERIC_MOVES = {
-    ("price", 1): "株価のテクニカルが上向き（上昇トレンドへの転換・売られすぎからの反発）に変われば",
-    ("price", -1): "株価のテクニカルが下向き（下降トレンド・買われすぎ）に変われば",
+    ("price", 1): "株価のテクニカル（13・26・52週線）が上向き（上昇トレンドへの転換・売られすぎからの反発）に変われば",
+    ("price", -1): "株価のテクニカル（13・26・52週線）が下向き（下降トレンド・買われすぎ）に変われば",
     ("progress", 1): "次の決算で営業利益の進捗が前年同期の110%以上になれば",
     ("progress", -1): "次の決算で営業利益の進捗が前年同期の90%を下回れば"}
+
+
+def _moat_text(label: str, score: float, to: float) -> str:
+    """The moat's steps in words: its 0 is なし with a return above the cost of capital, not 狭い."""
+    if score == 0.0 and to == -1.0:
+        return "資本コストを上回る利益（超過収益）が無くなれば（今はモート「なし」・超過収益あり）"
+    if score == -1.0 and to == 0.0:
+        return "資本コストを上回る利益（超過収益）が出れば（今はモート「なし」・超過収益なし）"
+    return f"{label}が「{MOAT_WORDS[to]}」になれば（今は「{MOAT_WORDS[score]}」）"
+
+
+def _verdict_word(row: dict) -> str | None:
+    """The analysis' own verdict as the row shows it ('普通（内訳から +0.5）' -> '普通')."""
+    value = str(row.get("value") or "")
+    return value.split("（", 1)[0] or None
+
+
+def _trend_text(step: int, row: dict | None) -> str:
+    now = f"（今は「{row['value']}」）" if row and row.get("value") else ""
+    score = (row or {}).get("score")
+    if step > 0:
+        return ("日足のトレンドが下降トレンドでなくなれば" if score == -1.0 else "日足のトレンドが上昇トレンドに変われば") + now
+    return ("日足のトレンドが上昇トレンドでなくなれば" if score == 1.0 else "日足のトレンドが下降トレンドに変われば") + now
 
 
 def mover_text(mover: dict, rows: list[dict]) -> str:
     """'成長性が「良好」になれば（今は「普通」）投資検討': the one-step move of sensitivity() as a condition."""
     step = 1 if mover["direction"] == "1段良くなれば" else -1
     text = NUMERIC_MOVES.get((mover["key"], step))
+    if mover["key"] == "trend_daily":
+        text = _trend_text(step, next((r for r in rows if r["key"] == "trend_daily"), None))
     ladder = LADDERS.get(mover["key"])
     row = next((r for r in rows if r["key"] == mover["key"]), None)
     score, to = (row or {}).get("score"), mover.get("to")
+    if text is None and mover["key"] == "moat" and score in MOAT_STEPS and to in MOAT_STEPS:
+        text = _moat_text(mover["label"], score, to)
     if text is None and ladder and score is not None and to is not None and not float(score).is_integer() \
             and not (mover["key"] == "valuation" and abs(to) == 1):
-        text = f"{mover['label']}が「{ladder[int(to) + 1]}」になれば（今は {score:+.1f} 点）"
+        target = ladder[int(to) + 1]
+        word = _verdict_word(row) if row else None
+        if word not in ladder:  # −0.5 is a 懸念 moved up or a 普通 moved down: without the word, only the score
+            text = f"{mover['label']}が「{target}」になれば（今は {score:+.1f} 点）"
+        elif word == target:  # the half point came from the analysis' sub-ratings: the move takes it away
+            text = (f"{mover['label']}の内訳の寄りが無くなれば（今は「{word}」を {score:+.1f} 点で数えている）")
+        else:
+            text = f"{mover['label']}が「{target}」になれば（今は「{word}」を {score:+.1f} 点で数えている）"
     if text is None and ladder and row and row["score"] is not None:
         now = max(-1, min(1, round(row["score"])))
         if -1 <= now + step <= 1:

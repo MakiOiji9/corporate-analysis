@@ -260,7 +260,7 @@ def header_notes(path: Path) -> str:
 def excerpt(f: Found, company: Company) -> str:
     """Section body for the brief, with its source line; capped at EXCERPT_LIMIT characters."""
     if f.path is None:
-        note = "status.md の未取得項目に記載あり" if f.status == "unavailable" else "raw に無い"
+        note = "status.md の未取得項目に記載あり" if f.status == "unavailable" else "集めた資料に無い"
         return f"（{f.spec.label}: {note}）"
     body = COMMENT.sub("", f.body).strip()
     body = re.sub(r"^#{1,6}\s+(.+)$", r"**\1**", body, flags=re.M)  # keep the brief's own heading levels

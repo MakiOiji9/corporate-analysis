@@ -315,6 +315,7 @@ def test_step3_flags_receivables_growing_faster_than_sales():
               "inventories": {}}
     s3 = X.step3(rows, series)
     assert s3["rating"] == "懸念" and s3["flagged"] == ["売上債権"]
+    assert "回収できていない売上の可能性" in s3["basis"] and "在庫" not in s3["basis"]
 
 
 def test_step4_patterns_and_ties():
