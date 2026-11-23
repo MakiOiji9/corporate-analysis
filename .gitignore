@@ -13,16 +13,15 @@ __pycache__/
 *.lock
 *.tmp
 
-# Original documents downloaded by tools/collect/fetch.py.
-# Only the manifest is committed; originals can be re-fetched from its URLs.
-companies/*/sources/**
-!companies/*/sources/
-!companies/*/sources/manifest.csv
-
-# Same for collect-market-info (policy library and sessions)
-market/**/sources/**
-!market/**/sources/
-!market/**/sources/manifest.csv
+# Original documents downloaded by tools/collect (fetch.py, edinet.py, market/docs.py) are kept in git with
+# their manifest (policy of 2026-11-23). Not kept: a file above 20MB (saved under sources/_large/, the manifest
+# note says so), the folder an XBRL->CSV zip is extracted to (the zip is kept), and files moved aside by
+# sources_admin.py remove.
+companies/*/sources/**/_large/
+companies/*/sources/**/*_csv/
+companies/*/sources/_removed/
+market/**/sources/**/_large/
+market/**/sources/_removed/
 
 # The writer's JSON poured into an analysis / report md by the `fill` subcommand (the md keeps the text)
 companies/*/analysis/*/*_fills.json

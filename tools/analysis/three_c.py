@@ -122,7 +122,8 @@ def cmd_list(args: argparse.Namespace, root: Path) -> int:
         company = P.Company(root, path)
         state = evaluate(company, today)
         raw_dates = [d for kind in I.TRIGGER_KINDS for d, _ in I.raw_files(company, kind)]
-        rows.append({"dir": company.dirname, "ticker": company.ticker, "name": company.display_name(),
+        rows.append({"dir": company.dirname, "peer_only": A.peer_only(path),
+                     "ticker": company.ticker, "name": company.display_name(),
                      "last_collected": max(raw_dates) if raw_dates else None, "three_c": state["result"],
                      "three_c_date": (state["latest"] or {}).get("date"),
                      "verdict": (state["latest"] or {}).get("verdict"),

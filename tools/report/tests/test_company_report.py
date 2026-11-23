@@ -562,3 +562,14 @@ def test_an_old_cash_flow_text_names_only_what_was_flagged():
     assert "在庫" not in json.dumps(words, ensure_ascii=False)
     assert words["reason"].endswith("（回収できていない売上の可能性。要確認）")
     assert CFX._flag_words({"reason": old}, []) == {"reason": old}
+
+
+def test_peer_only_dir_is_reported_as_uncollected(tmp_path):
+    peer = tmp_path / "companies" / "6954_fanuc"
+    (peer / "sources").mkdir(parents=True)
+    (peer / "peer.json").write_text('{"ticker": "6954", "peer_of": ["6506_yaskawa"]}', encoding="utf-8")
+    company, error = CR._resolve(tmp_path, "6954")
+    assert company is None and error["company_missing"] and error["peer_only"] and error["dir"] == "6954_fanuc"
+    (peer / "status.md").write_text("x", encoding="utf-8")  # collected on its own: an ordinary company
+    company, error = CR._resolve(tmp_path, "6954")
+    assert error is None and company.dirname == "6954_fanuc"

@@ -90,7 +90,8 @@ Claude Code でこのリポジトリを開き、スラッシュコマンドで�
 - `raw/`（収集した生データ）は変更禁止です。誤りに気づいた場合も上書きせず、再収集します
 - `data/`・`sources/`・`index.csv`・`tasks.json`・`status.md` などスクリプトが生成するファイルは、手で編集しません
 - これらのルールは書き込みガード（[tools/guard/write_guard.py](tools/guard/write_guard.py)、Claude Code の PreToolUse hook）が強制します
-- 原本（`sources/`）と `.env`・`.venv` は git 管理外です。原本は `sources/manifest.csv` の URL から別の環境でも再取得できます
+- 原本（`sources/`）は台帳（`sources/manifest.csv`）とともに git にコミットします。20MB を超えるファイルだけは `sources/_large/` に置き、git 管理外です（台帳の URL から再取得できます）。`.env`・`.venv` は git 管理外です
+- 同業他社の原本は、その会社のディレクトリ（`companies/{ticker}_{name}/`、`peer.json` 付き）に置きます。あとでその会社を分析するときは、取得済みの原本を取り直しません
 - AI の行動指針と禁止事項: [.ai/instructions/policy.md](.ai/instructions/policy.md)
 
 ## テスト

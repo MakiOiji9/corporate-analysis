@@ -336,5 +336,6 @@
 - 決定（2026-11-23 の問答）: 独立スキル `investment`、判定（良好/普通/懸念/判定保留）を点数に反映（長期 10・中期 5。成長性と 3C から付け替え）、成長性の手順5は investment に移す（二重計上しない）、潮流は今ある材料だけ、競合は数値だけ、米国株は出せる範囲、追加の評価 (a)〜(h) をすべて入れる
 - 提案書: `docs/proposals/investment-analysis.md`（しきい値・判定ルール・有効期限は未決）
 - 段階1（収集）: `tools/collect/yuho_investments.py`（`data/investments.json`）、`xbrl_financials.py`・`edgar.py` に減損損失・有形固定資産・建設仮勘定、collect-filings の手順（日本株は Phase 3、米国株は 10-K の Capital Expenditures と Business Combinations）
+- 原本の扱いの変更（2026-11-23 の問答）: 原本は台帳とともに git にコミットする（20MB 超は `sources/_large/` で管理外、XBRL→CSV の展開フォルダも管理外）。同業他社の原本はその会社のディレクトリ（`tools/collect/peer_company.py`、`peer.json`）に置き、`fetch.py --doc-id`・`edinet.py fetch` は台帳にある書類を取り直さない。未分析の同業のディレクトリは一覧で `peer_only`、`/company-report` では `company_missing`（mode=full で収集）
 - 残り: EDINET に接続できる環境（`api.edinet-fsa.go.jp`・`disclosure2dl.edinet-fsa.go.jp` の許可と `EDINET_API_KEY`）で XBRL の要素名を実データで確かめる
 - 状態: 着手

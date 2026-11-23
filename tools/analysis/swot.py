@@ -175,7 +175,8 @@ def cmd_list(args: argparse.Namespace, root: Path) -> int:
         company = P.Company(root, path)
         state = evaluate(company, today)
         raw_dates = [d for kind in LIST_KINDS for d, _ in I.raw_files(company, kind)]
-        rows.append({"dir": company.dirname, "ticker": company.ticker, "name": company.display_name(),
+        rows.append({"dir": company.dirname, "peer_only": A.peer_only(path),
+                     "ticker": company.ticker, "name": company.display_name(),
                      "last_collected": max(raw_dates) if raw_dates else None, "swot": state["result"],
                      "swot_date": (state["latest"] or {}).get("date"),
                      "verdict": (state["latest"] or {}).get("verdict"),

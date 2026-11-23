@@ -1,0 +1,105 @@
+"""Originals kept in git (2026-11-23): the 20MB limit, the doc-id skip and the peer company directory."""
+import json
+import sys
+from pathlib import Path
+
+import pytest
+
+COLLECT = Path(__file__).resolve().parents[1]
+sys.path[:0] = [str(COLLECT), str(COLLECT.parents[0] / "analysis")]
+
+import an_common  # noqa: E402
+import common  # noqa: E402
+import edinet  # noqa: E402
+import fetch  # noqa: E402
+import peer_company as PC  # noqa: E402
+from common import find_by_doc_id, read_manifest, store_document  # noqa: E402
+
+
+def test_large_file_goes_to_ignored_dir(tmp_path, monkeypatch):
+    monkeypatch.setattr(common, "LARGE_FILE_BYTES", 10)
+    small, _ = store_document(tmp_path, b"12345", "a.pdf", {"doc_type": "yuho", "doc_id": "A"})
+    big, _ = store_document(tmp_path, b"x" * 11, "b.pdf", {"doc_type": "yuho", "doc_id": "B", "note": "EDINET"})
+    assert "_large" not in small.parts and big.parts[-3] == "_large"
+    notes = {r["doc_id"]: r["note"] for r in read_manifest(tmp_path)}
+    assert notes == {"A": "", "B": "EDINET; git 管理外（20MB 超）"}
+
+
+def test_gitignore_keeps_originals_but_not_large_or_extracted():
+    text = (COLLECT.parents[1] / ".gitignore").read_text(encoding="utf-8")
+    assert "companies/*/sources/**\n" not in text
+    for line in ("companies/*/sources/**/_large/", "companies/*/sources/**/*_csv/", "companies/*/sources/_removed/"):
+        assert line in text
+
+
+def test_find_by_doc_id_needs_type_and_file(tmp_path):
+    path, _ = store_document(tmp_path, b"zip", "S1_csv.zip", {"doc_type": "edinet-csv", "doc_id": "S1"})
+    assert find_by_doc_id(tmp_path, "S1", "edinet-csv")["local_path"].endswith("S1_csv.zip")
+    assert find_by_doc_id(tmp_path, "S1", "edinet-pdf") is None
+    assert find_by_doc_id(tmp_path, "", "edinet-csv") is None
+    path.unlink()
+    assert find_by_doc_id(tmp_path, "S1", "edinet-csv") is None  # registered but not on disk: fetch again
+
+
+def _no_network(*_a, **_k):
+    raise AssertionError("must not download")
+
+
+def test_fetch_skips_existing_doc_id(tmp_path, monkeypatch, capsys):
+    store_document(tmp_path, b"%PDF", "S1.pdf", {"doc_type": "yuho", "doc_id": "S1"})
+    monkeypatch.setattr(fetch, "http_get", _no_network)
+    monkeypatch.setattr(sys, "argv", ["fetch.py", "https://example.invalid/S1.pdf", "--company", str(tmp_path),
+                                      "--type", "yuho", "--doc-id", "S1"])
+    fetch.main()
+    assert capsys.readouterr().out.startswith("EXISTING ")
+
+
+def test_edinet_fetch_skips_existing_without_key(tmp_path, monkeypatch, capsys):
+    import io
+    import zipfile
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as zf:
+        zf.writestr("XBRL_TO_CSV/jpcrp.csv", "x")
+    store_document(tmp_path, buf.getvalue(), "S1_csv.zip", {"doc_type": "edinet-csv", "doc_id": "S1"})
+    monkeypatch.setattr(edinet, "http_get", _no_network)
+    monkeypatch.setattr(edinet, "api_key", _no_network)
+    args = edinet.argparse.Namespace(doc_id="S1", company=str(tmp_path), kind="csv", period="", force=False)
+    edinet.cmd_fetch(args)
+    out = capsys.readouterr().out
+    assert out.startswith("EXISTING ") and "EXTRACTED" in out
+
+
+def test_peer_dir_created_once_per_ticker(tmp_path):
+    (tmp_path / "companies").mkdir()
+    first = PC.ensure(tmp_path, "6954", "fanuc", "6506_yaskawa")
+    again = PC.ensure(tmp_path, "6954", "fanuc-corp", "6268_nabtesco")  # another name: the same directory
+    assert first == {"ok": True, "dir": "companies/6954_fanuc", "created": True, "peer_only": True}
+    assert again["dir"] == "companies/6954_fanuc" and not again["created"]
+    info = json.loads((tmp_path / "companies/6954_fanuc/peer.json").read_text(encoding="utf-8"))
+    assert info["peer_of"] == ["6268_nabtesco", "6506_yaskawa"]
+    assert (tmp_path / "companies/6954_fanuc/sources/manifest.csv").read_text(encoding="utf-8").startswith(
+        "fetched_date,")
+
+
+def test_peer_of_an_analysed_company_uses_its_dir(tmp_path):
+    own = tmp_path / "companies" / "6506_yaskawa"
+    (own / "sources").mkdir(parents=True)
+    (own / "status.md").write_text("x", encoding="utf-8")
+    got = PC.ensure(tmp_path, "6506", "yaskawa-electric", "6954_fanuc")
+    assert got == {"ok": True, "dir": "companies/6506_yaskawa", "created": False, "peer_only": False}
+    assert not (own / "peer.json").exists()  # an analysed company gets no peer.json
+
+
+def test_peer_only_until_analysed(tmp_path):
+    (tmp_path / "companies").mkdir()
+    path = tmp_path / PC.ensure(tmp_path, "AAPL", "apple", "CBRS_cerebras")["dir"]
+    assert an_common.peer_only(path) and PC.peer_only(path)
+    (path / "status.md").write_text("x", encoding="utf-8")
+    assert not an_common.peer_only(path)
+
+
+@pytest.mark.parametrize("ticker,name", [("69541", "fanuc"), ("6954", "Fanuc"), ("6954", "fanuc_corp")])
+def test_peer_rejects_bad_names(tmp_path, ticker, name):
+    (tmp_path / "companies").mkdir()
+    with pytest.raises(SystemExit):
+        PC.ensure(tmp_path, ticker, name, "6506_yaskawa")

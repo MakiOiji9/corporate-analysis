@@ -72,6 +72,11 @@ def _resolve(root: Path, arg: str | None) -> tuple[S.Company | None, dict | None
     if not arg:
         return None, {"ok": False, "error": "--company を指定する（候補は list で確認）"}
     company, candidates = S.resolve_company(root, arg)
+    if company and A.peer_only(company.path):
+        # made for another company's peer comparison: only its originals are on file (they are not fetched again)
+        return None, {"ok": False, "company_missing": True, "peer_only": True, "dir": company.dirname,
+                      "error": f"{company.dirname} は同業比較のために原本だけを集めた未分析の企業。"
+                               "collect-company-info（mode=full）で収集する（取得済みの原本は取り直さない）"}
     if company:
         return company, None
     if candidates:
@@ -101,7 +106,8 @@ def cmd_list(args: argparse.Namespace, root: Path) -> int:
         company = S.Company(root, path)
         steps = [S.step_state(step, company, today) for step in S.STEPS]
         report = S.report_state(company)
-        rows.append({"dir": company.dirname, "ticker": company.ticker, "name": company.display_name(),
+        rows.append({"dir": company.dirname, "peer_only": A.peer_only(path),
+                     "ticker": company.ticker, "name": company.display_name(),
                      "not_fresh": [s["skill"] for s in steps if s["result"] != "fresh"],
                      "report_date": report["date"], "report_state": report["state"]})
     return emit({"ok": True, "companies": rows})

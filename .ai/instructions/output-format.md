@@ -24,8 +24,9 @@
 companies/{ticker}_{name}/
 ├── overview.md                  # 企業概要・投資テーゼ・現在の判断・次回見直し日
 ├── status.md                    # データ鮮度・未取得項目・次回更新トリガー（収集のたびに上書き）
-├── sources/                     # ダウンロードした原本（git 管理外）
-│   ├── manifest.csv             # 原本の台帳（URL・書類ID・取得日・sha256）※これだけコミット
+├── peer.json                    # 他社の同業比較のために作られたディレクトリだけ（tools/collect/peer_company.py が書く。status.md が無い間は未分析）
+├── sources/                     # ダウンロードした原本（git にコミット。20MB 超は _large/ に置き git 管理外）
+│   ├── manifest.csv             # 原本の台帳（URL・書類ID・取得日・sha256）
 │   └── YYYY-MM-DD/              # 取得日ごとの原本（PDF/HTML/ZIP）とテキスト化したもの
 ├── data/                        # スクリプトが生成する構造化データ（手で編集しない）
 │   ├── financials.csv           # 年次財務（xbrl_financials.py）
@@ -99,7 +100,7 @@ companies/{ticker}_{name}/
 market/
 ├── policy/{japan,us}/           # 国家方針・財政・金融政策の文書ライブラリ（collect-market-info。新しい版だけ追加）
 │   ├── index.csv                # 資料台帳（スクリプトが管理）
-│   ├── sources/                 # 原本・テキスト・抜粋（git 管理外。manifest.csv だけコミット）
+│   ├── sources/                 # 原本・テキスト・抜粋（manifest.csv とともにコミット。20MB 超は _large/ に置き git 管理外）
 │   └── raw/YYYY-MM-DD_{doc_key}.md  # 文書ごとの要旨（テンプレート policy-doc / monetary-doc）
 ├── data/{japan,us}_series.csv   # マクロ指標・需給の時系列（スクリプトのみが書く）
 └── sessions/YYYY-MM-DD_{topic}/

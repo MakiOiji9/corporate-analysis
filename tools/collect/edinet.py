@@ -6,7 +6,10 @@ caller falls back to the PDF route (fetch.py + pdf_text.py + find_pages.py).
 Usage:
   edinet.py list  --code 3798 --from 2026-06-01 --to 2026-06-30
   edinet.py list  --code 3798 --fy-end-month 3 --years 10      # scans each year's filing month
-  edinet.py fetch --doc-id S100YCBQ --company <dir> [--kind csv|pdf|xbrl] [--period 2026-03]
+  edinet.py fetch --doc-id S100YCBQ --company <dir> [--kind csv|pdf|xbrl] [--period 2026-03] [--force]
+
+fetch skips a document already in the company's manifest (same doc id and kind, file on disk; e.g. fetched for
+another company's peer comparison) and prints EXISTING <path>; --force downloads it again.
 
 The document list API is per-day, so daily results are cached in .cache/edinet/
 (past dates only). 'csv' (XBRL->CSV zip) is what xbrl_financials.py reads.
@@ -24,7 +27,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # scripts run with python -I
 from common import (  # noqa: E402
-    CACHE_DIR, atomic_write_text, company_dir, http_get, load_env, store_document, utf8_stdout,
+    CACHE_DIR, atomic_write_text, company_dir, find_by_doc_id, http_get, load_env, store_document, utf8_stdout,
 )
 
 API = "https://api.edinet-fsa.go.jp/api/v2"
@@ -100,9 +103,24 @@ def cmd_list(args: argparse.Namespace) -> None:
               f"{d.get('submitDateTime')} | {d.get('docDescription')} | {d.get('csvFlag')} |")
 
 
+def _extract(path: Path) -> None:
+    out_dir = path.with_suffix("")
+    if not out_dir.exists():
+        with zipfile.ZipFile(path) as zf:
+            zf.extractall(out_dir)
+    print(f"EXTRACTED {out_dir}")
+
+
 def cmd_fetch(args: argparse.Namespace) -> None:
-    key = api_key()
     company = company_dir(args.company)
+    existing = None if args.force else find_by_doc_id(company, args.doc_id, f"edinet-{args.kind}")
+    if existing:  # fetched before (e.g. for another company's peer comparison): no download, no API key needed
+        path = company / existing["local_path"]
+        print(f"EXISTING {path}")
+        if path.suffix == ".zip":
+            _extract(path)
+        return
+    key = api_key()
     url = f"{API}/documents/{args.doc_id}"
     resp = http_get(url, params={"type": KIND_PARAM[args.kind], "Subscription-Key": key})
     if "application/json" in resp.headers.get("Content-Type", ""):
@@ -113,10 +131,7 @@ def cmd_fetch(args: argparse.Namespace) -> None:
     })
     print(f"{'SAVED' if is_new else 'DUPLICATE'} {path}")
     if path.suffix == ".zip":
-        out_dir = path.with_suffix("")
-        with zipfile.ZipFile(path) as zf:
-            zf.extractall(out_dir)
-        print(f"EXTRACTED {out_dir}")
+        _extract(path)
 
 
 def main() -> None:
@@ -134,6 +149,7 @@ def main() -> None:
     p_fetch.add_argument("--company", required=True)
     p_fetch.add_argument("--kind", choices=list(KIND_PARAM), default="csv")
     p_fetch.add_argument("--period", default="")
+    p_fetch.add_argument("--force", action="store_true", help="download even when the doc id is already on file")
     args = ap.parse_args()
     if args.cmd == "list" and not (args.fy_end_month or (args.date_from and args.date_to)):
         ap.error("list needs --from/--to or --fy-end-month")

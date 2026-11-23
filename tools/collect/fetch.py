@@ -6,6 +6,10 @@ Usage:
 
 doc_type examples: yuho, hanki, tanshin, presentation, qa, disclosure, press, other
 Identical content (same sha256) is not saved twice; the existing path is printed.
+With --doc-id, a document already in the manifest (same doc id and type, file on disk) is not downloaded again:
+EXISTING <path> is printed (--force downloads it anyway). This is how a company whose originals were fetched for
+another company's peer comparison skips them in its own collection.
+A file above 20MB is saved under sources/_large/ (git-ignored); the manifest note says so.
 --text also writes <file>.txt via pdf_text.py (page-delimited).
 Exit code 2 on HTTP failure (message tells which route to try next).
 """
@@ -18,7 +22,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # scripts run with python -I
-from common import company_dir, http_get, store_document, utf8_stdout  # noqa: E402
+from common import company_dir, find_by_doc_id, http_get, store_document, utf8_stdout  # noqa: E402
 
 SAFE_NAME = re.compile(r"[^\w.\-]+")
 
@@ -47,9 +51,21 @@ def main() -> None:
     ap.add_argument("--name")
     ap.add_argument("--note", default="")
     ap.add_argument("--text", action="store_true")
+    ap.add_argument("--force", action="store_true", help="download even when the doc id is already in the manifest")
     args = ap.parse_args()
 
     company = company_dir(args.company)
+    existing = None if args.force else find_by_doc_id(company, args.doc_id, args.doc_type)
+    if existing:
+        path = company / existing["local_path"]
+        print(f"EXISTING {path}")
+        if args.text and path.suffix.lower() in (".pdf", ".htm", ".html"):
+            txt = path.with_name(path.name + ".txt")
+            if not txt.exists():
+                from pdf_text import convert
+                txt = convert(path)
+            print(f"TEXT {txt}")
+        return
     try:
         resp = http_get(args.url, referer=args.referer)
     except Exception as exc:  # noqa: BLE001 - report any network/HTTP failure to the caller

@@ -17,7 +17,7 @@ sh tools/setup.sh         # macOS / Linux / Git Bash
    - `SEC_USER_AGENT`: 米国株の SEC EDGAR 取得（`fetch.py`・`edgar.py`）。登録は不要で、`名前 メールアドレス` の形式で書く（[SEC のアクセス規約](https://www.sec.gov/os/accessing-edgar-data)）。未設定だと sec.gov は 403 を返す
 3. 最後に `preflight.py` が走り、使える取得経路を表示する
 
-`.venv/`・`.env`・`.cache/`・`companies/*/sources/`（原本）は `.gitignore` 済み。
+`.venv/`・`.env`・`.cache/` は `.gitignore` 済み。原本（`companies/*/sources/`・`market/**/sources/`）は台帳とともにコミットする。git に入れないのは 20MB を超えるファイル（`sources/_large/`）、XBRL→CSV の zip を展開したフォルダ（zip は入れる）、`sources_admin.py remove` で退避したファイル（`sources/_removed/`）だけ。
 
 ### Claude Code のフック設定（任意）
 
@@ -41,10 +41,11 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 | スクリプト | 用途 | 主な出力 |
 |---|---|---|
 | `preflight.py` | 環境・取得経路の事前チェック | 標準出力（表） |
-| `fetch.py` | URL から原本を保存（sha256 で重複排除）、`--text` でテキスト化 | `sources/YYYY-MM-DD/`、`sources/manifest.csv` |
+| `fetch.py` | URL から原本を保存（sha256 で重複排除）、`--text` でテキスト化。`--doc-id` があり同じ書類番号・種別の原本が台帳にあればダウンロードしない（`EXISTING`。`--force` で取り直す）。20MB 超は `sources/_large/`（git 管理外） | `sources/YYYY-MM-DD/`、`sources/manifest.csv` |
 | `pdf_text.py` | PDF/HTML → ページ区切りテキスト | `<原本>.txt` |
 | `find_pages.py` | テキストから表紙・見出し・財務行・任意パターンのページだけ抽出 | 標準出力 |
-| `edinet.py` | EDINET API v2 の書類一覧・取得（要 `EDINET_API_KEY`） | `sources/`、`.cache/edinet/` |
+| `edinet.py` | EDINET API v2 の書類一覧・取得（要 `EDINET_API_KEY`）。fetch は同じ書類番号・種別の原本が台帳にあれば取り直さない（キーも不要。`--force` で取り直す） | `sources/`、`.cache/edinet/` |
+| `peer_company.py ensure --ticker {code} --name {英語名} --peer-of {自社dir}` | 同業他社の原本を置くディレクトリを用意する（同じ銘柄コードのディレクトリがあればそれを使い、無ければ `companies/{ticker}_{name}/` を `sources/manifest.csv` と `peer.json` 付きで作る）。`peer.json` があり `status.md` が無い間は、分析の一覧で `peer_only: true`（未分析（同業として収集のみ））。あとでその会社を分析するときは取得済みの原本を取り直さない | `companies/{ticker}_{name}/peer.json`、`sources/manifest.csv` |
 | `xbrl_financials.py` | EDINET XBRL→CSV から財務を抽出（リース負債・非支配持分・のれん・金融費用・減損損失・有形固定資産・建設仮勘定なども）。`--all --company {dir}` で sources/ の自社の有報をすべて古い順に取り込む | `data/financials.csv` |
 | `yuho_investments.py --company {dir}` | sources/ の自社の有報（XBRL→CSV）すべてから、何に投資したかの文章（設備投資等の概要・主要な設備・設備の新設計画・研究開発活動・企業結合・株式の保有状況）とセグメント別の設備投資・資産・売上・利益・減価償却費を抜き出す（投資の質の分析の材料。要素名は実データで要確認で、`elements`・`missing` に一致した要素名と見つからなかった期を出す） | `data/investments.json` |
 | `company_profile.py` | 業種（日本株: EDINET コードリストの提出者業種、米国株: SEC の SIC）。分析の業種別ルール（`tools/analysis/sector_rules.py`）が読む | `data/profile.json` |
@@ -249,7 +250,7 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 - 日付はすべて JST（`TZ=Asia/Tokyo`）。GitHub の cron は UTC なので `日〜木 15:30 UTC` のように1日ずれて書いてある。混雑時は数分〜数十分遅れることがある
 - 2つのワークフローは `concurrency: reports` を共有し、同時には走らない（月曜 0:30 の A グループは地合いレポートの完了を待つ）。GitHub の仕様で待機できるのは1件だけなので、実行中＋待機中のところへ次の実行が来ると、待機中の実行は黙って取り消される（例: A グループが翌日 0:30 まで終わらず、待機中の B が取り消される）。Summary に実行が無い日はこれを疑う
 - main へ push できなかったとき（競合・ブランチ保護）は、出力を `auto/rescue-…` ブランチに退避して失敗にする。手でマージする
-- git 管理外の原本（`sources/`・`.cache/`）は Actions のキャッシュで実行間に引き継ぐ（7日使われなければ消えるので、その後は再取得になる）
+- 原本（`sources/`）は git にコミットされるので実行間で引き継がれる。git 管理外の 20MB 超の原本（`sources/_large/`）と `.cache/` は Actions のキャッシュで引き継ぐ（7日使われなければ消えるので、その後は再取得になる）
 - 結果（完了報告・未完了の企業・コミット）は各実行の Summary に出る。会話ログは保存しない
 
 ### Issue からの初期分析

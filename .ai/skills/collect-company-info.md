@@ -26,7 +26,7 @@
 | `name` | 企業名（英語・半角小文字・ハイフン区切り。ディレクトリ名に使用） | `toyota`, `apple` |
 | `url` | 企業ホームページのURL（情報収集の起点） | `https://global.toyota/jp/` |
 | `market` | 市場区分 | `japan` / `us` |
-| `mode` | `full`（初回・全項目）/ `update`（前回以降の差分のみ） | 省略時: 企業ディレクトリが無ければ `full`、あれば `update` |
+| `mode` | `full`（初回・全項目）/ `update`（前回以降の差分のみ） | 省略時: 企業ディレクトリが無ければ `full`、あれば `update`。ただし同業比較のために作られただけのディレクトリ（`peer.json` があり `status.md` が無い。未分析）は無いものとして `full` |
 | `担当` | mode=full で、指定した担当だけを実行する（カンマ区切り。例 `担当=collect-ir`）。集約（Phase 7・8）はしない。GitHub Actions が担当ごとに分けて実行し、1担当ごとにコミットするのに使う | 全担当（集約まで） |
 | `集約のみ` | mode=full で、担当を起動せず集約（Phase 7・8）だけを行う | なし |
 
@@ -71,7 +71,7 @@
 ## 保存ルール
 
 - 保存先ルート: `companies/{ticker}_{name}/`
-- **原本**: ダウンロードした PDF/HTML/ZIP は `tools/collect/fetch.py`（または `edinet.py fetch`）で `sources/YYYY-MM-DD/` に保存する。`sources/manifest.csv`（URL・書類種別・対象期・公表日・取得日・sha256・保存パス）に自動登録される。原本は git 管理外で、manifest だけをコミットする
+- **原本**: ダウンロードした PDF/HTML/ZIP は `tools/collect/fetch.py`（または `edinet.py fetch`）で `sources/YYYY-MM-DD/` に保存する。`sources/manifest.csv`（URL・書類種別・対象期・公表日・取得日・sha256・保存パス）に自動登録される。原本は manifest とともに git にコミットする（2026-11-23 の方針。過去の有報などを取り直さずに使うため）。git に入れないのは、20MB を超えるファイル（`sources/_large/` に置かれ、manifest の note に「git 管理外（20MB 超）」と書かれる）、XBRL→CSV の zip を展開したフォルダ（zip は入れる）、`sources_admin.py remove` で退避したファイルだけ。`--doc-id` 付きの `fetch.py` と `edinet.py fetch` は、同じ書類番号・種別の原本が manifest にあれば取り直さない（EXISTING と表示）
 - **raw**: ファイル名は `YYYY-MM-DD_{種類}.md`（収集日を先頭に付ける）
   - **書き上げたファイルから順に保存する**（担当の作業の最後にまとめて書かない）。途中で止まっても（利用枠の上限・タイムアウト）書き終えたファイルは残り、次の実行はそこから続ける
   - 既存の raw ファイルは変更・上書きしない。再収集時は新しい日付のファイルとして追加する。ただし**同じ収集日の raw が既にある**とき（同じ日に別の範囲で収集済み）は、新しいファイルを作らず、その日のファイルの末尾に今回の章を雛形どおりの番号・見出しで追記する（既存の章は変えない。冒頭の「前回ファイル」の行に今回追記した章を書き足す。見出しに章を列挙している場合は「（{収集日}の差分）」に改める）
@@ -155,13 +155,13 @@
 3. 確定した経路と実行モード（並列 / 逐次）を1行でユーザーに伝える
 
 #### Phase 0: ディレクトリ準備
-`companies/{ticker}_{name}/` が存在しなければ、以下を作成する。既に存在する場合は、不足しているサブディレクトリのみ作成する。既存ファイルには触れない。
+`companies/{ticker}_{name}/` が存在しなければ、以下を作成する。既に存在する場合は、不足しているサブディレクトリのみ作成する。既存ファイルには触れない。同じ銘柄コードのディレクトリが別の名前で既にあれば（他社の同業比較のために作られた `{ticker}_{別名}/` など）、新しく作らずそのディレクトリを使う。同業比較のときに取った原本（有報・短信など）は `sources/manifest.csv` にあり、各担当の `fetch.py --doc-id`・`edinet.py fetch` が取り直さずに使う（`peer.json` はそのまま残す。`status.md` ができた時点で未分析の扱いでなくなる）。
 
 ```
 companies/{ticker}_{name}/
 ├── overview.md        # テンプレート: .ai/templates/collect-company-info/overview.md
 ├── status.md          # テンプレート: .ai/templates/collect-company-info/status.md
-├── sources/           # 原本（git 管理外）＋ manifest.csv
+├── sources/           # 原本（git にコミット。20MB 超は _large/ で管理外）＋ manifest.csv
 ├── data/              # スクリプト生成の CSV
 ├── raw/
 │   ├── ir/

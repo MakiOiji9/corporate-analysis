@@ -49,6 +49,7 @@ SCRIPT_ONLY = [
         r"^market/sessions/[^/]+/raw/(indicators-[^/]+|policy-digest)\.md$",
         r"^companies/[^/]+/sources/",
         r"^companies/[^/]+/data/",
+        r"^companies/[^/]+/peer\.json$",
         r"^companies/favorites\.json$",
         r"^market/report/[^/]+_(facts\.json|brief\.md|market-report\.html|judgment\.json)$",
         r"^market/report/backtest/",

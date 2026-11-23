@@ -4,7 +4,7 @@ Usage:
   sources_admin.py remove --company <dir> --local-path sources/2026-10-14/--company [--dry-run]
 
 The row is dropped from manifest.csv and its file moved to sources/_removed/<date>/ (kept for inspection,
-git-ignored like all of sources/). Afterwards the document can be fetched again with fetch.py, because the
+git-ignored). Afterwards the document can be fetched again with fetch.py, because the
 sha256 duplicate check no longer finds it. Run only when the user asked for the repair.
 """
 from __future__ import annotations
