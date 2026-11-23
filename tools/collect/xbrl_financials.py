@@ -137,9 +137,9 @@ STATEMENT_ITEMS = {
     "non_controlling_interests": ["NonControllingInterestsIFRS", "NonControllingInterests"],
     "goodwill": ["GoodwillIFRS", "Goodwill"],
     # 投資の質（investment）: past investments that failed (impairment), the asset turnover and the capex not yet
-    # running. The element names are unverified on real filings (check with --dump and fix)
-    "impairment_loss": ["ImpairmentLossOpeCFIFRS", "ImpairmentLossesOpeCFIFRS", "ImpairmentLossOpeCF",
-                        "ImpairmentLossEL"],
+    # running. IFRS names checked on 6506 (2026-02); the J-GAAP names are unverified (check with --dump and fix)
+    "impairment_loss": ["ImpairmentLossesPLIFRS", "ImpairmentLossOpeCFIFRS", "ImpairmentLossesOpeCFIFRS",
+                        "ImpairmentLossOpeCF", "ImpairmentLossEL"],
     "property_plant_and_equipment": ["PropertyPlantAndEquipmentIFRS", "PropertyPlantAndEquipment"],
     "construction_in_progress": ["ConstructionInProgressIFRS", "ConstructionInProgress"],
     "intangible_assets": ["IntangibleAssetsIFRS", "IntangibleAssets"],
