@@ -1,6 +1,6 @@
 # データ鮮度・未取得項目 — 安川電機
 
-**最終更新**: 2026-11-19（mode=update。企業分析レポートの指定で collect-ir（適時開示の差分 raw/news/2026-11-19_press-releases.md）。2026-11-12〜2026-11-19 の新規適時開示なし（新規プレスリリース: 広報誌 YASKAWA NEWS No.356 のみ、業績無関係）。以前: 2026-11-11（mode=update。企業分析レポートの指定で collect-ir（適時開示の差分・経営者の目標と実績 raw/ir/2026-11-11_management.md）と collect-filings（xbrl_financials --all の再取り込み・yuho_governance で data/governance.json）。新しい適時開示なし。有報 第110期の役員の状況では小川昌寛が代表取締役社長だが、2026-04 に取締役を退任し、現在は小笠原浩が代表取締役会長兼社長（254Q_QA.pdf p.8））（2026-11-10 に株価のみ更新: refresh_valuation.py）（2026-11-19 に株価のみ更新: refresh_valuation.py）（2026-11-20 に株価のみ更新: refresh_valuation.py）（2026-11-23 に株価のみ更新: refresh_valuation.py）
+**最終更新**: 2026-11-24（mode=update。investment の指定で collect-peers-valuation（競合 14章: 成長投資の材料 raw/market/2026-11-24_competitors.md）。ファナック・三菱電機・山洋電気の設備投資・減価償却費・研究開発費 2022〜2026年3月期を EDINET XBRL CSV から抽出）。以前: 2026-11-19（mode=update。企業分析レポートの指定で collect-ir（適時開示の差分 raw/news/2026-11-19_press-releases.md）。2026-11-12〜2026-11-19 の新規適時開示なし（新規プレスリリース: 広報誌 YASKAWA NEWS No.356 のみ、業績無関係）。以前: 2026-11-11（mode=update。企業分析レポートの指定で collect-ir（適時開示の差分・経営者の目標と実績 raw/ir/2026-11-11_management.md）と collect-filings（xbrl_financials --all の再取り込み・yuho_governance で data/governance.json）。新しい適時開示なし。有報 第110期の役員の状況では小川昌寛が代表取締役社長だが、2026-04 に取締役を退任し、現在は小笠原浩が代表取締役会長兼社長（254Q_QA.pdf p.8））（2026-11-10 に株価のみ更新: refresh_valuation.py）（2026-11-19 に株価のみ更新: refresh_valuation.py）（2026-11-20 に株価のみ更新: refresh_valuation.py）（2026-11-23 に株価のみ更新: refresh_valuation.py）（2026-11-24 に株価のみ更新: refresh_valuation.py）
 > collect-company-info を実行するたびに上書きする。`mode=update` はまずこのファイルと `sources/manifest.csv` を読む。
 
 ## 1. データ鮮度
@@ -13,7 +13,7 @@
 | 有価証券報告書 | 第110期（2026年2月期、2026-05-25 提出） | 2026-11-01 | raw/filings/2026-11-01_2026-02_yuho.md | 有報提出（例年5月下旬） |
 | プレスリリース | 〜2026-11-19 | 2026-11-19 | raw/news/2026-11-19_press-releases.md（差分。前回 2026-11-11） | 再実行のたび（前回以降の差分） |
 | 業界・市場 | IFR 2025年実績、JARA 2025年（見込み）、中国サーボ白書 2026-09-19 | 2026-11-01 | raw/market/2026-11-01_industry-overview.md | 年1回 |
-| 競合 | ファナック・三菱電機・山洋電気の2026年3月期、2027年3月期 中間期 | 2026-11-01 | raw/market/2026-11-01_competitors.md | 年1回、または競合の本決算後 |
+| 競合 | ファナック・三菱電機・山洋電気の2026年3月期、2027年3月期 中間期（成長投資: 2026年3月期 設備投資・減価償却費・研究開発費） | 2026-11-24（14章）/ 2026-11-01（1〜13章） | raw/market/2026-11-01_competitors.md（1〜13章）、raw/market/2026-11-24_competitors.md（14章） | 年1回、または競合の本決算後 |
 | 中期経営計画 | Dash 35（2026-05-22 公表）、IR Day 2026（2026-06-01） | 2026-11-01 | raw/ir/2026-11-01_mid-term-plan.md | 中計の改定時 |
 
 ## 2. 未取得項目（次回優先して取りにいく）
