@@ -159,3 +159,38 @@ def test_restore_reports_errors(tmp_path):
 
     out = SA.restore(tmp_path, get=get)
     assert out["failed"][0]["error"] == "403" and not out["restored"]
+
+
+def test_move_peer_moves_row_and_file(tmp_path):
+    import sources_admin as SA
+    own = tmp_path / "companies" / "3798_uls-group"
+    (own / "sources").mkdir(parents=True)
+    path, _ = store_document(own, b"%PDF", "t.pdf", {"doc_type": "peer-tanshin", "doc_id": "T1",
+                                                     "url": "https://www2.jpx.co.jp/disc/60880/t.pdf"})
+    path.with_name("t.pdf.txt").write_text("text", encoding="utf-8")
+    ghost = _registered(own, "g.pdf", b"g", "https://irbank.net/6088/results")  # registered, not on disk
+    rel = path.relative_to(own).as_posix()
+    got = SA.move_peer(own, rel, "6088", "sigmaxyz", "tanshin", root=tmp_path)
+    SA.move_peer(own, ghost, "6088", "sigmaxyz", "irbank", root=tmp_path)
+    peer = tmp_path / "companies" / "6088_sigmaxyz"
+    assert got == {"dir": "companies/6088_sigmaxyz", "local_path": rel, "dup": False}
+    assert (peer / rel).read_bytes() == b"%PDF" and (peer / f"{rel}.txt").exists() and not path.exists()
+    rows = {r["doc_id"]: r for r in read_manifest(peer)}
+    assert rows["T1"]["doc_type"] == "tanshin" and rows["T1"]["note"] == f"移動元: companies/3798_uls-group/{rel}"
+    assert rows["g.pdf"]["doc_type"] == "irbank" and not (peer / ghost).exists()
+    assert read_manifest(own) == []
+    assert json.loads((peer / "peer.json").read_text(encoding="utf-8"))["peer_of"] == ["3798_uls-group"]
+
+
+def test_move_peer_skips_duplicate(tmp_path):
+    import sources_admin as SA
+    a = tmp_path / "companies" / "3798_uls-group"
+    b = tmp_path / "companies" / "6532_baycurrent"
+    for d in (a, b):
+        (d / "sources").mkdir(parents=True)
+    (b / "status.md").write_text("x", encoding="utf-8")
+    store_document(b, b"same", "own.pdf", {"doc_type": "tanshin", "doc_id": "X"})
+    path, _ = store_document(a, b"same", "x.pdf", {"doc_type": "peer-tanshin", "doc_id": "X"})
+    got = SA.move_peer(a, path.relative_to(a).as_posix(), "6532", "baycurrent", "tanshin", root=tmp_path)
+    assert got["dup"] and len(read_manifest(b)) == 1 and read_manifest(a) == []
+    assert not (b / "peer.json").exists() and not path.exists()

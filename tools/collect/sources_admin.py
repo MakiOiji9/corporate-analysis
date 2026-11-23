@@ -5,6 +5,13 @@ Usage:
   sources_admin.py remove --company <dir> --local-path sources/2026-10-14/--company [--dry-run]
   sources_admin.py restore --company <dir> [--host api.edinet-fsa.go.jp ...] [--text] [--dry-run]
 
+  sources_admin.py move-peer --company <dir> --local-path <path> --ticker 6954 --name fanuc --doc-type tanshin
+
+move-peer  moves a peer's original registered in <dir> (before 2026-11-23 peers' originals were kept in the
+         comparing company's sources/ with a peer-* type) to the peer's own directory (peer_company.py ensure):
+         the manifest row (doc type renamed, note "移動元: companies/<dir>/<path>") and the file with its .txt when on
+         disk. The row is dropped from <dir>'s manifest. A document already in the peer's manifest (same sha256) is
+         not registered twice.
 restore  downloads each manifest row whose file is missing (from before originals were kept in git) from its URL
          (EDINET rows get EDINET_API_KEY), and writes it back to its local_path only when the sha256 matches the
          manifest. A changed document (e.g. an IR list page updated since) is reported as mismatch and not written.
@@ -51,6 +58,49 @@ def remove(company: Path, local_path: str, dry_run: bool = False) -> dict:
                 shutil.move(str(src), str(target_dir / src.name))
         write_csv_atomic(manifest, MANIFEST_FIELDS, [r for r in rows if r is not match[0]])
     return match[0]
+
+
+def move_peer(company: Path, local_path: str, ticker: str, name: str, doc_type: str, root: Path | None = None) -> dict:
+    """Move one manifest row (and its file) of `company` to the peer's directory. Returns {dir, local_path, dup}."""
+    import peer_company
+    root = root or company.parents[1]
+    target = root / peer_company.ensure(root, ticker, name, company.name)["dir"]
+    src_manifest, dst_manifest = manifest_path(company), manifest_path(target)
+    with file_lock(src_manifest):
+        rows = read_csv_rows(src_manifest)
+        match = [r for r in rows if r.get("local_path") == local_path]
+        if len(match) != 1:
+            raise SystemExit(f"expected exactly one manifest row with local_path={local_path}, found {len(match)}")
+        row = match[0]
+        with file_lock(dst_manifest):
+            dst_rows = read_csv_rows(dst_manifest)
+            dup = next((r for r in dst_rows if r.get("sha256") == row["sha256"]), None)
+            new_path = dup["local_path"] if dup else local_path
+            if not dup:
+                dest = target / local_path
+                stem, suffix, n = dest.stem, dest.suffix, 2
+                while dest.exists() or any(r["local_path"] == dest.relative_to(target).as_posix() for r in dst_rows):
+                    dest = dest.with_name(f"{stem}_{n}{suffix}")
+                    n += 1
+                new_path = dest.relative_to(target).as_posix()
+                note = f"移動元: companies/{company.name}/{local_path}"
+                dst_rows.append({**row, "doc_type": doc_type, "local_path": new_path,
+                                 "note": "; ".join(x for x in (row.get("note", ""), note) if x)})
+                write_csv_atomic(dst_manifest, MANIFEST_FIELDS, dst_rows)
+            for suffix in ("", ".txt"):
+                src = company / f"{local_path}{suffix}"
+                if not src.exists():
+                    continue
+                if dup:  # the peer already has it: keep the copy aside like remove does
+                    aside = company / "sources" / "_removed" / today()
+                    aside.mkdir(parents=True, exist_ok=True)
+                    shutil.move(str(src), str(aside / src.name))
+                else:
+                    dest = target / f"{new_path}{suffix}"
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.move(str(src), str(dest))
+        write_csv_atomic(src_manifest, MANIFEST_FIELDS, [r for r in rows if r is not row])
+    return {"dir": target.relative_to(root).as_posix(), "local_path": new_path, "dup": bool(dup)}
 
 
 def _download(url: str, get) -> bytes:
@@ -120,7 +170,10 @@ def restore(base: Path, hosts: list[str] | None = None, text: bool = False, dry_
 def main() -> None:
     utf8_stdout()
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=("remove", "restore"))
+    ap.add_argument("command", choices=("remove", "restore", "move-peer"))
+    ap.add_argument("--ticker", help="move-peer: the peer's code")
+    ap.add_argument("--name", help="move-peer: the peer's English name (used only when its directory is new)")
+    ap.add_argument("--doc-type", help="move-peer: the type in the peer's manifest (tanshin, presentation, ...)")
     ap.add_argument("--company", required=True)
     ap.add_argument("--local-path")
     ap.add_argument("--host", action="append", help="restore: only rows from this host (repeatable)")
@@ -134,7 +187,13 @@ def main() -> None:
                           "failed_rows": result["failed"]}, ensure_ascii=False))
         return
     if not args.local_path:
-        ap.error("remove needs --local-path")
+        ap.error(f"{args.command} needs --local-path")
+    if args.command == "move-peer":
+        if not (args.ticker and args.name and args.doc_type):
+            ap.error("move-peer needs --ticker, --name and --doc-type")
+        moved = move_peer(company_dir(args.company), args.local_path, args.ticker, args.name, args.doc_type)
+        print(json.dumps({"ok": True, **moved}, ensure_ascii=False))
+        return
     row = remove(company_dir(args.company), args.local_path, args.dry_run)
     print(f"{'WOULD REMOVE' if args.dry_run else 'REMOVED'} {row.get('local_path')} url={row.get('url')}")
 

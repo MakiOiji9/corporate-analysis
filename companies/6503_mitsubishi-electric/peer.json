@@ -1,0 +1,8 @@
+{
+ "ticker": "6503",
+ "name": "mitsubishi-electric",
+ "peer_of": [
+  "6506_yaskawa"
+ ],
+ "created": "2026-11-23"
+}
