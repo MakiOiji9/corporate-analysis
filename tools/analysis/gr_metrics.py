@@ -577,9 +577,10 @@ def with_investment(verdict: str, why: str, s1: dict, declines: list[dict], clas
 
 def decide(s1: dict, declines: list[dict], s4: dict, classes: dict[str, str] | None,
            s5: dict | None = None) -> tuple[str, str, list[str]]:
-    """judge(), with_investment() and then conservative(): (verdict, why, downgraded). A comparison near its line is
-    noted in why; it no longer moves the verdict, so downgraded stays empty (kept for the result's shape)."""
-    verdict, why = with_investment(*judge(s1, declines, s4, classes), s1, declines, classes, s5, s4)
+    """judge() and then conservative(): (verdict, why, downgraded). A comparison near its line is noted in why; it
+    no longer moves the verdict, so downgraded stays empty (kept for the result's shape). 手順5 (成長投資) moved to
+    the investment analysis (2026-11-23, 判定ルールの改定): s5 is accepted for old callers and not used."""
+    verdict, why = judge(s1, declines, s4, classes)
     reasons = conservative(verdict, s1, s4)
     if not reasons:
         return verdict, why, []
@@ -651,7 +652,7 @@ def candidates(company, found: dict) -> dict:
     s4 = step4(s1, rows, ma, found["ma"].status)
     s5 = V.step5(company, s1, rows, has_plan=found["targets"].status == "ok",
                  peers=V.peer_shares(found.get("peer_invest"), company))
-    verdict, why, downgraded = decide(s1, declines, s4, None, s5)
+    verdict, why, downgraded = decide(s1, declines, s4, None)
     records = F.split_records(company)
     return {"series": series, "rows": rows, "splits": splits, "odd_share_jumps": odd, "plan_dropped": dropped,
             "basis_changes": basis_changes(rows),
@@ -734,10 +735,7 @@ def collect_requests(company, found: dict, cands: dict) -> list[dict]:
     the peers' growth-investment table. Each request carries hints: the template chapter and the originals already
     saved for the years concerned."""
     unavailable = I.unavailable_items(company)
-    extra: list[tuple[str, str]] = []
-    peer = peer_request(found, company, cands, unavailable)
-    if peer:
-        extra.append(("collect-peers-valuation", peer))
+    extra: list[tuple[str, str]] = []  # the peers' growth-investment table is the investment analysis' request now
     if cands["step1"]["years"] < MIN_YEARS and not any(OWN_UNAVAILABLE in u for u in unavailable):
         extra.append(("collect-filings", OWN_ITEM))
     if cands["declines"] and found["decline"].status in ("missing", "blank"):

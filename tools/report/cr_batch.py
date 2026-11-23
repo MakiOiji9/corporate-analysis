@@ -1,4 +1,4 @@
-"""company_report.py run: the STEP 2・3 analyses (profitability, growth, safety, cash-flow, valuation) in one go.
+"""company_report.py run: the STEP 2・3 analyses (profitability, investment, growth, safety, cash-flow, valuation) in one go.
 
 Each call goes as far as the scripts can without the writer, then stops:
   - an analysis whose writer's JSON ({date}_fills.json) is there is filled (the JSON is then removed) and built
@@ -27,8 +27,9 @@ import cr_status as S  # noqa: E402
 import refresh_valuation as RV  # noqa: E402
 from common import atomic_write_text  # noqa: E402
 
-BATCH = ("profitability", "growth", "safety", "cash-flow", "valuation")
-DEPENDS = {"cash-flow": ("profitability", "growth", "safety"),  # its consistency rows read their results
+BATCH = ("profitability", "investment", "growth", "safety", "cash-flow", "valuation")
+DEPENDS = {"growth": ("investment",),  # its 成長投資 row quotes the investment result
+           "cash-flow": ("profitability", "growth", "safety"),  # its consistency rows read their results
            "valuation": ("profitability", "growth", "safety", "cash-flow")}  # growth, and the final check reads all four
 MAX_ROUNDS = 12  # every round builds or refreshes something, or stops
 

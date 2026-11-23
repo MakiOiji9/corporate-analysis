@@ -39,8 +39,11 @@ def test_step1_rules(attr, win, moat, swot, grade, pending):
 
 def test_long_horizon_weighs_growth_more_than_the_moat():
     long = J.WEIGHTS["long"]
-    assert (long["growth"], long["moat"], long["cash_flow"]) == (20, 10, 5)
-    assert long["five_forces"] + long["three_c"] + long["moat"] + long["swot"] == 40
+    # 判定ルールの改定 4: growth 15 and the investment quality 10 (growth's 手順5 moved there), 3C 15 → 10
+    assert (long["growth"], long["investment"], long["moat"], long["cash_flow"]) == (15, 10, 10, 5)
+    assert long["five_forces"] + long["three_c"] + long["moat"] + long["swot"] == 35
+    assert J.WEIGHTS["mid"]["growth"] == 10 and J.WEIGHTS["mid"]["investment"] == 5
+    assert all(sum(w.values()) == 100 for w in J.WEIGHTS.values())
 
 
 # ---------------------------------------------------------------- STEP 2 (score + red flags)
@@ -143,13 +146,13 @@ def test_coverage_at_the_minimum_still_gives_a_verdict():
 
 
 def test_pending_analyses_do_not_count_as_material():
-    # a 判定保留 analysis scores 0 but is no evidence: STEP 1's four (40% of the long horizon) and the valuation (15%)
-    # pending leave 45%, so the horizon is pending too
+    # a 判定保留 analysis scores 0 but is no evidence: STEP 1's four (35% of the long horizon) and the valuation (15%)
+    # pending leave 50%, so the horizon is pending too
     factors = _all(1.0)
     for key in ("five_forces", "three_c", "moat", "swot", "valuation"):
         factors[key] = _f(0.0, pending=True)
     result = J.horizon_score("long", factors)
-    assert result["coverage"] == pytest.approx(0.45) and result["verdict"] == "判定保留"
+    assert result["coverage"] == pytest.approx(0.50) and result["verdict"] == "判定保留"
     assert "勝てる理由（3C）（判定保留）" in result["why"]
 
 
@@ -208,7 +211,7 @@ def test_cautions_are_shown_but_do_not_stop_the_horizon():
 def test_pending_analysis_counts_as_zero():
     factors = {**_all(1.0), "three_c": _f(0.0, pending=True)}
     result = J.horizon_score("long", factors)
-    assert result["score"] == pytest.approx(0.85) and any(r["pending"] for r in result["rows"])
+    assert result["score"] == pytest.approx(0.90) and any(r["pending"] for r in result["rows"])
 
 
 def test_uls_like_case():

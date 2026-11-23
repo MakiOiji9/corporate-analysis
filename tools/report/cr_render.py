@@ -123,7 +123,7 @@ def conclusion(facts: dict, parsed: dict) -> str:
     reading = (f'<div class="cols"><div class="panel"><dl class="gloss">{legend}</dl></div>'
                f'<div class="panel small">{spans}<p>{esc(WEIGHT_NOTE)}</p></div></div>')
     about = f'<h3>この会社をひと言で</h3><div class="prose">{_paragraphs(parsed["about"])}</div>'
-    glance = ('<h3>9つの分析の結論</h3>' + DB.analysis_strip(facts) + DB.key_figures_html(facts)
+    glance = ('<h3>10の分析の結論</h3>' + DB.analysis_strip(facts) + DB.key_figures_html(facts)
               + '<h3>今の株価の位置</h3>' + DB.fair_value(facts))
     return _section("conclusion", "01", "ひと目でわかる結論",
                     "3つの期間それぞれで、今この会社に投資してよいかを判定した。詳しい理由は下の章で確かめられる。",
@@ -286,11 +286,12 @@ def step2(facts: dict) -> str:
     cfsteps = _list([f"{s['rating']}: {s['sentence']}" for s in d["cash_flow"]["detail"].get("steps") or []
                      if s["rating"]])
     points = _list([f"{a['label']}: {a['points']}" for k, a in d.items()
-                    if k in ("profitability", "growth", "safety", "cash_flow") and a["points"]])
+                    if k in ("profitability", "investment", "growth", "safety", "cash_flow") and a["points"]])
     inner = (_conditions(facts["step2"]["rows"]) + "<h3>各分析の要点</h3>" + points + _dupont(d["profitability"]["detail"])
              + "<h3>安全性の3指標</h3>" + safety + "<h3>キャッシュフローの5つの確認</h3>" + cfsteps)
     body = (_stephead(facts["step2"], "STEP 2 総合") + _stepcards(facts, ("profitability", "growth", "safety", "cash_flow"))
             + _financial_charts(facts) + _details("成長の見通しと会社計画の達成率", X.growth_block(facts))
+            + _details("何に投資したか（投資の質）", X.investment_block(facts))
             + _details("株主還元（配当・自社株買い）", X.dividends_block(facts))
             + _details("詳しく見る（A の条件・各分析の要点・ROE の分解・安全性・キャッシュフロー）", inner))
     return _section("step2", "05", "STEP 2 財務", "稼ぐ力・伸びる力・つぶれにくさ・お金の流れを数字で確かめる。", body)

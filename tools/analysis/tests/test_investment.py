@@ -100,8 +100,10 @@ def _write_and_build(root: Path, out: dict, capsys, **kw) -> tuple[int, dict]:
 
 def test_prepare_fill_build(repo, capsys):
     code, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)
-    assert code == 0 and out["next"] == "prepare", out
-    code, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    # no peers' growth-investment table: ④ asks collect-peers-valuation for it (moved here from growth's 手順5)
+    assert code == 0 and out["next"] == "collect", out
+    assert out["missing_inputs"][0]["agent"] == "collect-peers-valuation"
+    code, out = run(repo, "prepare", "--company", "7203", "--date", DAY, "--skip-collect", capsys=capsys)
     assert code == 0, out
     assert out["years"][0] == "2018-03" and "content-2026-03" in out["fill_keys"]
     assert out["plan_years"]  # every report names a plan: the last three are compared with the next report
@@ -118,7 +120,7 @@ def test_prepare_fill_build(repo, capsys):
 
 
 def test_build_rejects_bad_classes(repo, capsys):
-    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, "--skip-collect", capsys=capsys)
     code, built = _write_and_build(repo, out, capsys, trend="たぶん合う", mtp="ほぼ整合")
     assert code == 1
     joined = " ".join(built["issues"])
@@ -126,7 +128,7 @@ def test_build_rejects_bad_classes(repo, capsys):
 
 
 def test_plan_slips_make_divergence(repo, capsys):
-    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, "--skip-collect", capsys=capsys)
     code, built = _write_and_build(repo, out, capsys, outcome="延期")
     assert code == 0, built
     assert built["axes"]["plan"].startswith("乖離")
@@ -140,7 +142,7 @@ def test_unknown_theme_id_rejected():
 
 
 def test_numbers_must_come_from_brief(repo, capsys):
-    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, "--skip-collect", capsys=capsys)
     fills = _fills(out["fill_keys"])
     fills["report-points"] = "設備投資は 98,765百万円 だった"
     (repo / out["fills_json"]).write_text(json.dumps(fills, ensure_ascii=False), encoding="utf-8")
@@ -154,6 +156,6 @@ def test_list_shows_state(repo, capsys):
 
 
 def test_fill_keys_are_unique(repo, capsys):
-    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, capsys=capsys)
+    _, out = run(repo, "prepare", "--company", "7203", "--date", DAY, "--skip-collect", capsys=capsys)
     keys = AF.fill_keys((repo / out["md"]).read_text(encoding="utf-8"))
     assert len(keys) == len(set(keys))

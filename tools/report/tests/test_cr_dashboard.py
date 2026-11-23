@@ -28,11 +28,11 @@ def _facts(**over) -> dict:
     return facts
 
 
-# ---------------------------------------------------------------- the nine analyses at a glance
+# ---------------------------------------------------------------- the ten analyses at a glance
 
 def test_strip_colours_each_analysis_by_its_verdict():
     html = DB.analysis_strip(_facts())
-    assert html.count('class="cell ') == 9
+    assert html.count('class="cell ') == 10  # 判定ルールの改定 4: the investment quality joined the nine
     assert 'class="cell v-consider"' in html and 'class="cell v-pass"' in html and 'class="cell v-pending"' in html
     assert "モート" in html and "判定保留" in html and 'href="#step2"' in html
 

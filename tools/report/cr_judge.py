@@ -40,16 +40,19 @@ SCORE = {"良好": 1, "普通": 0, "懸念": -1, "高": 1, "中": 0, "低": -1, 
 HORIZONS = (("short", "短期", "〜3ヶ月"), ("mid", "中期", "6ヶ月〜1年"), ("long", "長期", "3年以上"))
 WEIGHTS = {  # percent; each horizon sums to 100
     "short": {"market": 25, "trend_daily": 25, "progress": 20, "valuation": 20, "safety": 10},
-    "mid": {"market": 10, "price": 10, "progress": 15, "valuation": 20, "growth": 15, "profitability": 10,
+    "mid": {"market": 10, "price": 10, "progress": 15, "valuation": 20, "growth": 10, "investment": 5, "profitability": 10,
             "cash_flow": 10, "safety": 5, "swot": 5},
     # growth carries 手順5 (成長投資): whether the company keeps creating value matters more than whether a moat
     # source could be named (most companies have none)
-    "long": {"market": 5, "valuation": 15, "growth": 20, "profitability": 10, "cash_flow": 5, "safety": 5,
-             "five_forces": 10, "three_c": 15, "moat": 10, "swot": 5},
+    # 判定ルールの改定 4: the investment quality (what was invested in and how it paid) takes 10 of the long horizon
+    # (growth 20 → 15, three_c 15 → 10) and 5 of the mid (growth 15 → 10); growth no longer carries 手順5
+    "long": {"market": 5, "valuation": 15, "growth": 15, "investment": 10, "profitability": 10, "cash_flow": 5,
+             "safety": 5, "five_forces": 10, "three_c": 10, "moat": 10, "swot": 5},
 }
 FACTOR_LABELS = {"market": "地合い", "price": "株価のテクニカル（13・26・52週線・勢い・位置）",
                  "trend_daily": "株価のテクニカル（日足のトレンド）", "progress": "直近の決算の進捗",
-                 "valuation": "株価の割安さ（STEP 3）", "growth": "成長性", "profitability": "収益性",
+                 "valuation": "株価の割安さ（STEP 3）", "growth": "成長性", "investment": "投資の質（何に投資し、成果が出たか）",
+                 "profitability": "収益性",
                  "cash_flow": "キャッシュフロー", "safety": "安全性", "five_forces": "業界の魅力度（ファイブフォース）",
                  "three_c": "勝てる理由（3C）", "moat": "強みの持続性（モート）", "swot": "強みで脅威に対抗できるか（SWOT）"}
 
@@ -178,7 +181,8 @@ MIN_COVERAGE = 0.6  # share of a horizon's weight that must be known for a verdi
 # 3 (2026-11): a half step at exactly the lean threshold or over a −1 sub is not taken, the short horizon's technical is
 # the daily trend (the mid keeps the weekly score), the pessimistic growth is floored by the worst year, PEG's fair
 # price is PEG 1
-RULES_VERSION = 3
+# 4 (2026-11): the investment quality is a factor (long 10, mid 5) and growth's 手順5 moved into it
+RULES_VERSION = 4
 
 
 def _weighted(weights: dict[str, int], factors: dict[str, dict]) -> tuple[float | None, list[dict], float]:
@@ -349,7 +353,7 @@ def sensitivity(horizon: str, factors: dict[str, dict], flags: list[str] | tuple
 
 
 LADDERS = {  # the factor's words from −1 to +1 (a one-step move reads as a concrete condition)
-    **{k: ("懸念", "普通", "良好") for k in ("growth", "profitability", "cash_flow", "safety")},
+    **{k: ("懸念", "普通", "良好") for k in ("growth", "investment", "profitability", "cash_flow", "safety")},
     "five_forces": ("低", "中", "高"), "three_c": ("なし", "あいまい", "明確"), "moat": ("なし", "狭い", "広い"),
     "swot": ("No", "条件付き", "Yes"), "market": ("警戒", "注意", "平常"), "valuation": ("割高", "妥当", "割安")}
 NUMERIC_MOVES = {

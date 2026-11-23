@@ -73,10 +73,8 @@ def _numbers_lines(cands: dict) -> list[str]:
              f"- 手順1: {s1['sentence']}", f"- 手順3: {s3['sentence']}", f"- 手順4: {s4['sentence']}"]
     if s4["adjusted"]:
         lines.append(f"  - 質の補正: {s4['adjusted']['sentence']}")
-    s5 = cands.get("step5")
-    if s5:
-        lines.append(f"- 手順5: {s5['sentence']}（年次表・比率・効率は md の 4章「成長投資」。4章の「成長投資の背景」に、"
-                     "下の中期経営計画・経営方針にある投資計画と効率の背景を書く）")
+    lines.append(f"- 成長投資: {cands.get('invest_quote') or '投資の質の分析が未実施'}（md の 4章に引用済み。成長性の判定には"
+                 "使わない。何に投資したか・投資効率は投資の質の分析が判定する）")
     if cands["declines"]:
         lines.append("- 分類する年（売上高・営業利益・EPS のどれかが前年を下回った年。md の 2章）:")
         for d in cands["declines"]:

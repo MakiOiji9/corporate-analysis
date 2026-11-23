@@ -21,7 +21,7 @@ from validate import check_fill, check_structure, check_tables
 
 UNKNOWN = "不明"
 TEMPORARY = "一時"
-VERSION = 2  # 2 (2026-11): 手順5 成長投資（投資比率 × 投資効率）moves the verdict one step
+VERSION = 3  # 2 (2026-11): 手順5 成長投資 moved the verdict; 3 (2026-11-23): 手順5 moved to the investment analysis
 
 
 # ---------- tables ----------
@@ -218,7 +218,7 @@ def render_skeleton(template: str, values: dict, cands: dict, consistency: list[
                   decline_rows=decline_table_rows(cands["declines"]), decline_note=decline_note(),
                   plan_rows=plan_table_rows(s3["rows"]), step3_rating=rating_cell(s3["rating"], s3["basis"]),
                   quality_rows=quality_table_rows(s4), adjusted_step1=adjusted_cell(s4, s1),
-                  invest_rows=invest_table_rows(cands["step5"]), invest_checks=invest_check_rows(cands["step5"]),
+                  invest_quote=cands.get("invest_quote") or "—（投資の質の分析が未実施）",
                   consistency_rows=consistency_table_rows(consistency))
     return Template(template).safe_substitute(filled)
 
@@ -283,8 +283,7 @@ def _changes(cands: dict, previous: tuple[str, dict] | None) -> str:
               ("減収・減益の年", "、".join(d["year"] for d in old.get("declines") or []) or "なし",
                "、".join(d["year"] for d in cands["declines"]) or "なし"),
               ("手順3", o3.get("rating"), cands["step3"]["rating"]),
-              ("成長の質", o4.get("quality"), cands["step4"]["quality"]),
-              ("成長投資", (old.get("step5") or {}).get("verdict"), cands["step5"]["verdict"])]
+              ("成長の質", o4.get("quality"), cands["step4"]["quality"])]
     return AF.changes_bullets(previous, pairs)
 
 
@@ -339,7 +338,7 @@ def classes(parsed: dict) -> dict[str, str]:
 
 def _required_cells(p: dict) -> list[tuple[str, str]]:
     return [("2. 構造要因の評価", p["structural"]), ("3. 中期経営計画の達成状況", p["mtp"]),
-            ("4. 成長の背景", p["drivers"]), ("4. 成長投資の背景", p.get("invest", "")),
+            ("4. 成長の背景", p["drivers"]),
             ("6. コメント", p["consistency_comment"]),
             ("7. レポートで使う要点", p["report_points"]), ("7. STEP 3 の成長率設定への示唆", p["step3_hint"]),
             ("7. STEP 2 の他の分析で確かめること", p["step2_checks"]), ("7. 評価が変わる条件", p["triggers"])]
@@ -431,7 +430,7 @@ def step2_sentence(cands: dict, year_classes: dict[str, str]) -> str:
 
 def final(cands: dict, year_classes: dict[str, str]) -> tuple[str, str, list[str]]:
     """(verdict, why, the reasons it was moved down for being near a line)."""
-    return decide(cands["step1"], cands["declines"], cands["step4"], year_classes, cands.get("step5"))
+    return decide(cands["step1"], cands["declines"], cands["step4"], year_classes)
 
 
 def conclusion_section(cands: dict, year_classes: dict[str, str]) -> str:
@@ -443,7 +442,7 @@ def conclusion_section(cands: dict, year_classes: dict[str, str]) -> str:
         f"| 手順2 減収・減益の原因 | {step2_sentence(cands, year_classes)} |",
         f"| 手順3 会社計画の信頼性 | {s3['sentence']} |",
         f"| 手順4 成長の質 | {s4['sentence']}{'。' + s4['adjusted']['sentence'] if s4['adjusted'] else ''} |",
-        f"| 手順5 成長投資 | {cands['step5']['sentence']} |",
+        f"| 成長投資（投資の質の分析） | {cands.get('invest_quote') or '—（投資の質の分析が未実施）'}（成長性の判定には使わない） |",
         f"| 境界に近い比較 | {'。'.join(cands['borderline']) or 'なし'} |",
         f"| 成長性 | **{verdict}**: {why} |"])
 

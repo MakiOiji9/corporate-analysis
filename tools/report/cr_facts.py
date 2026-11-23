@@ -114,26 +114,25 @@ def _growth(r: dict) -> dict:
             "cagr_span": [_get(r, "step1", "cagr", "sales", "first"), _get(r, "step1", "cagr", "sales", "last")],
             "rows": [{k: x.get(k) for k in ("year", "sales", "operating_income", "net_income", "eps")}
                      for x in r.get("rows") or []],
-            "investment": _investment(r.get("step5") or {}),
             "declines": [{"year": d.get("year"), "class": d.get("class")} for d in r.get("declines") or []]}
 
 
-def _investment(s5: dict) -> dict:
-    """手順5 成長投資 for the report: the verdict, the ratio, the efficiency and the yearly parts."""
-    if not s5:
-        return {}
-    ratio = s5.get("ratio") or {}
-    return {"verdict": s5.get("verdict"), "sentence": s5.get("sentence"),
-            "level": ratio.get("level"), "share": ratio.get("recent"), "earlier": ratio.get("earlier"),
-            "span": ratio.get("span"), "capex_to_dep": ratio.get("capex_to_dep"),
-            "peer_median": ratio.get("peer_median"), "peer_own": ratio.get("peer_own"),
-            "peer_level": ratio.get("peer_level"), "peer_count": ratio.get("peer_count"),
-            "underinvest": ratio.get("underinvest"),
-            "efficiency": (s5.get("efficiency") or {}).get("rating"),
-            "efficiency_basis": (s5.get("efficiency") or {}).get("basis"),
-            "roic": (s5.get("incremental_roic") or {}).get("value"),
-            "rows": [{k: x.get(k) for k in ("year", "capex", "depreciation", "rnd", "working_capital", "acquisition",
-                                            "growth")} for x in s5.get("rows") or []]}
+def _investment(r: dict) -> dict:
+    """投資の質 for the report: what was invested in each year, the change points, the themes and the six axes."""
+    contents = {y.get("year"): y for y in r.get("years") or []}
+    themes = {t.get("id"): t.get("name") for t in r.get("themes") or []}
+    rows = []
+    for x in r.get("rows") or []:
+        y = contents.get(x.get("year")) or {}
+        rows.append({**{k: x.get(k) for k in ("year", "capex", "capex_share", "capex_to_dep", "rnd", "rnd_share",
+                                               "acquisition", "impairment", "mix")},
+                     "content": y.get("content"), "themes": [themes.get(i, i) for i in y.get("themes") or []]})
+    backgrounds = {(p.get("year"), p.get("kind")): p.get("background") for p in r.get("point_backgrounds") or []}
+    return {"axes": r.get("axes") or {}, "rows": rows,
+            "points": [{**p, "background": backgrounds.get((p.get("year"), p.get("kind")))} for p in r.get("points") or []],
+            "themes": [{k: t.get(k) for k in ("id", "name", "trend", "basis")} for t in r.get("themes") or []],
+            "mtp": r.get("mtp") or {}, "plans": r.get("plans") or [], "top_segment": r.get("top_segment"),
+            "growth_investment": r.get("growth_investment") or {}}
 
 
 def _safety(r: dict) -> dict:
@@ -176,7 +175,7 @@ def _valuation(r: dict) -> dict:
 
 
 DETAILS = {"five_forces": _five_forces, "three_c": _three_c, "moat": _moat, "swot": _swot,
-           "profitability": _profitability, "growth": _growth, "safety": _safety, "cash_flow": _cash_flow,
+           "profitability": _profitability, "growth": _growth, "investment": _investment, "safety": _safety, "cash_flow": _cash_flow,
            "valuation": _valuation}
 
 
@@ -186,8 +185,9 @@ def _ratings(r: dict, *paths: tuple[str, str]) -> list:
 
 SUBS = {  # the STEP 2 analyses' step ratings, which move a verdict half a step (cr_factors.half_step)
     "profitability": lambda r: _ratings(r, ("step1", "rating"), ("step2", "rating"), ("step3", "source")),
-    "growth": lambda r: _ratings(r, ("step1", "rating"), ("step3", "rating"), ("step4", "quality"),
-                                 ("step5", "verdict")),
+    "growth": lambda r: _ratings(r, ("step1", "rating"), ("step3", "rating"), ("step4", "quality")),
+    "investment": lambda r: _ratings(r, *((("axes", k, "rating")) for k in ("efficiency", "plan", "trend", "failure",
+                                                                              "discipline"))),
     "safety": lambda r: [i.get("rating") for i in _get(r, "step1", "items") or []]
     + _ratings(r, ("step2", "rating"), ("step3", "rating")),
     "cash_flow": lambda r: _ratings(r, *((k, "rating") for k in ("step1", "step2", "step3", "step4", "step5"))),

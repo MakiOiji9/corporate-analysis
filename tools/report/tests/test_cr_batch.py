@@ -101,7 +101,8 @@ def _fills(fake: FakeAnalysis, values: dict) -> None:
 
 def test_first_run_prepares_the_three_independent_analyses(setup):
     out = B.run(setup.root, setup.company, DAY)
-    assert out["next"] == "write" and [w["skill"] for w in out["write"]] == ["profitability", "growth", "safety"]
+    # growth waits for the investment analysis (its 成長投資 row quotes it)
+    assert out["next"] == "write" and [w["skill"] for w in out["write"]] == ["profitability", "investment", "safety"]
     packet = out["write"][0]
     assert packet["fill_keys"] == ["a", "b"] and packet["rules"] == ["rule one"]
     assert packet["fills_json"].endswith(f"analysis/profitability/{DAY}_fills.json")
@@ -110,10 +111,14 @@ def test_first_run_prepares_the_three_independent_analyses(setup):
 
 def test_json_is_poured_and_removed_then_the_next_analyses_follow(setup):
     B.run(setup.root, setup.company, DAY)
-    for k in ("profitability", "growth", "safety"):
+    for k in ("profitability", "investment", "safety"):
         _fills(setup.fakes[k], {"a": "x", "b": "y"})
     out = B.run(setup.root, setup.company, DAY)
-    assert [b["skill"] for b in out["built"]] == ["profitability", "growth", "safety"]
+    assert [b["skill"] for b in out["built"]] == ["profitability", "investment", "safety"]
+    assert [w["skill"] for w in out["write"]] == ["growth"] and setup.fakes["cash-flow"].calls == []
+    _fills(setup.fakes["growth"], {"a": "x", "b": "y"})
+    out = B.run(setup.root, setup.company, DAY)
+    assert [b["skill"] for b in out["built"]] == ["growth"]
     assert [w["skill"] for w in out["write"]] == ["cash-flow"] and setup.fakes["valuation"].calls == []
     assert not (setup.fakes["growth"].dir / f"{DAY}_fills.json").exists()
     setup.fakes["cash-flow"].md().write_text("| a | x |\n| b | y |\n", encoding="utf-8")  # written in the md itself
@@ -151,7 +156,7 @@ def _built(fake: FakeAnalysis) -> None:
 
 
 def test_price_only_gap_is_refreshed_by_the_script(setup, monkeypatch):
-    for k in ("profitability", "growth", "safety", "cash-flow"):
+    for k in ("profitability", "investment", "growth", "safety", "cash-flow"):
         _built(setup.fakes[k])
     val = setup.fakes["valuation"]
     val.collect = {"price_refresh": "tools/collect/refresh_valuation.py --company 1111_x", "missing_inputs": []}
@@ -168,7 +173,7 @@ def test_price_only_gap_is_refreshed_by_the_script(setup, monkeypatch):
 
 
 def test_a_failed_refresh_goes_to_collect_once(setup, monkeypatch):
-    for k in ("profitability", "growth", "safety", "cash-flow"):
+    for k in ("profitability", "investment", "growth", "safety", "cash-flow"):
         _built(setup.fakes[k])
     setup.fakes["valuation"].collect = {"price_refresh": "x", "missing_inputs": [{"agent": "a", "items": ["株価"]}]}
     monkeypatch.setattr(B.RV, "run", lambda root, company, today: {"ok": False, "error": "e", "fallback": "f"})
@@ -177,7 +182,7 @@ def test_a_failed_refresh_goes_to_collect_once(setup, monkeypatch):
 
 
 def test_the_newest_close_is_taken_once_and_the_valuation_is_checked_against_it(setup):
-    for k in ("profitability", "growth", "safety", "cash-flow"):
+    for k in ("profitability", "investment", "growth", "safety", "cash-flow"):
         _built(setup.fakes[k])
     out = B.run(setup.root, setup.company, DAY, sync=True)
     assert setup.syncs.count(True) == 1 and out["price_sync"] == {"state": "updated", "base_date": "2026-10-30"}
@@ -196,4 +201,4 @@ def test_another_gap_is_returned_to_collect(setup):
     setup.fakes["profitability"].collect = {"missing_inputs": [{"agent": "collect-filings", "items": ["x"]}]}
     out = B.run(setup.root, setup.company, DAY)
     assert out["next"] == "write" and out["collect"][0]["skill"] == "profitability"
-    assert [w["skill"] for w in out["write"]] == ["growth", "safety"]
+    assert [w["skill"] for w in out["write"]] == ["investment", "safety"]
