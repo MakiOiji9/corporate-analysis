@@ -1,0 +1,351 @@
+=====PAGE 1=====
+﻿決算短信_20260512174226
+2026年３月期決算短信〔日本基準〕（連結）
+2026年5月13日
+上場会社名 |
+ULSグループ株式会社 |
+上場取引所東
+コード番号 |
+3798 |
+ＵＲＬhttps://www.ulsgroup.co.jp/
+代表者 |
+（役職名） |
+代表取締役社長 |
+（氏名）横山芳成
+問合せ先責任者 |
+（役職名） |
+取締役ＣＦＯ |
+（氏名）高橋敬一 |
+ＴＥＬ03-6220-1416
+定時株主総会開催予定日 |
+2026年６月25日 |
+配当支払開始予定日 |
+2026年６月26日
+有価証券報告書提出予定日 |
+2026年６月17日 |
+決算補足説明資料作成の有無： |
+有 |
+決算説明会開催の有無      ： |
+有 |
+(アナリスト・機関投資家向け)
+（百万円未満切捨て）
+１．2026年３月期の連結業績（2025年４月１日～2026年３月31日）
+（１）連結経営成績 |
+（％表示は対前期増減率）
+売上高 |
+営業利益 |
+経常利益 |
+親会社株主に帰属する
+当期純利益
+百万円 |
+％ |
+百万円 |
+％ |
+百万円 |
+％ |
+百万円 |
+％
+2026年３月期 |
+16,600 |
+25.7 |
+3,046 |
+16.1 |
+3,063 |
+16.1 |
+2,027 |
+23.9
+2025年３月期 |
+13,203 |
+27.2 |
+2,623 |
+49.3 |
+2,638 |
+50.1 |
+1,635 |
+44.6
+（注）包括利益 |
+2026年３月期 |
+2,089 |
+百万円 |
+（23.3％） |
+2025年３月期 |
+1,694 |
+百万円 |
+（43.7％）
+１株当たり
+当期純利益 |
+潜在株式調整後
+１株当たり当期純利益 |
+自己資本
+当期純利益率 |
+総資産
+経常利益率 |
+売上高
+営業利益率
+円 銭 |
+円 銭 |
+％ |
+％ |
+％
+2026年３月期 |
+36.20 |
+34.71 |
+18.8 |
+20.9 |
+18.4
+2025年３月期 |
+29.74 |
+28.72 |
+18.0 |
+21.5 |
+19.9
+（参考）持分法投資損益 |
+2026年３月期 |
+－ |
+百万円 |
+2025年３月期 |
+－ |
+百万円
+（注）当社は、2025年10月１日付で普通株式１株につき10株の割合で株式分割を行っております。これに伴い、前連結会計年度の期首に当該株式分割が行われたと仮定して１株当たり当期純利益及び潜在株式調整後１株当たり当期純利益を算定しております。
+（２）連結財政状態
+総資産 |
+純資産 |
+自己資本比率 |
+１株当たり純資産
+百万円 |
+百万円 |
+％ |
+円 銭
+2026年３月期 |
+15,719 |
+12,566 |
+74.7 |
+207.45
+2025年３月期 |
+13,570 |
+10,479 |
+72.2 |
+178.01
+（参考）自己資本 |
+2026年３月期 |
+11,736 |
+百万円 |
+2025年３月期 |
+9,792 |
+百万円
+（注）当社は、2025年10月１日付で普通株式１株につき10株の割合で株式分割を行っております。これに伴い、前連結会計年度の期首に当該株式分割が行われたと仮定して、１株当たり純資産を算定しております。
+（３）連結キャッシュ・フローの状況
+営業活動による
+キャッシュ・フロー |
+投資活動による
+キャッシュ・フロー |
+財務活動による
+キャッシュ・フロー |
+現金及び現金同等物
+期末残高
+百万円 |
+百万円 |
+百万円 |
+百万円
+2026年３月期 |
+1,994 |
+△531 |
+△140 |
+8,460
+2025年３月期 |
+1,587 |
+△222 |
+△249 |
+7,137
+２．配当の状況
+年間配当金 |
+配当金総額
+(合計) |
+配当性向
+（連結） |
+純資産配当率（連結）
+第１四半期末 |
+第２四半期末 |
+第３四半期末 |
+期末 |
+合計
+円 銭 |
+円 銭 |
+円 銭 |
+円 銭 |
+円 銭 |
+百万円 |
+％ |
+％
+2025年３月期 |
+－ |
+0.00 |
+－ |
+60.00 |
+60.00 |
+330 |
+20.2 |
+3.6
+2026年３月期 |
+－ |
+0.00 |
+－ |
+7.30 |
+7.30 |
+413 |
+20.2 |
+3.8
+2027年３月期（予想） |
+－ |
+0.00 |
+－ |
+8.20 |
+8.20 |
+20.2 |
+（注）当社は、2025年10月１日付で普通株式１株につき10株の割合で株式分割を行っております。2025年３月期は株式分割前、2026年3月期及び2027年3月期（予想）は株式分割後の金額を記載しております。
+３．2027年３月期の連結業績予想（2026年４月１日～2027年３月31日）
+（％表示は対前期増減率）
+売上高 |
+営業利益 |
+経常利益 |
+親会社株主に帰属
+する当期純利益 |
+１株当たり
+当期純利益
+百万円 |
+％ |
+百万円 |
+％ |
+百万円 |
+％ |
+百万円 |
+％ |
+円 銭
+通期 |
+20,200 |
+21.7 |
+3,700 |
+21.4 |
+3,700 |
+20.8 |
+2,300 |
+13.4 |
+40.65
+当社は年次で業績管理を行っているため、第2四半期連結累計期間の業績予想の記載を省略しております。
+※  注記事項
+（１）期中における連結範囲の重要な変更： |
+無 |
+（２）会計方針の変更・会計上の見積りの変更・修正再表示
+①  会計基準等の改正に伴う会計方針の変更： |
+無 |
+②  ①以外の会計方針の変更              ： |
+無 |
+③  会計上の見積りの変更                ： |
+無 |
+④  修正再表示                          ： |
+無 |
+（３）発行済株式数（普通株式）
+①  期末発行済株式数（自己株式を含む） |
+2026年３月期 |
+63,853,000 |
+株 |
+2025年３月期 |
+62,288,000 |
+株
+②  期末自己株式数 |
+2026年３月期 |
+7,276,620 |
+株 |
+2025年３月期 |
+7,276,620 |
+株
+③  期中平均株式数 |
+2026年３月期 |
+56,002,918 |
+株 |
+2025年３月期 |
+55,011,380 |
+株
+（注）当社は、2025年10月１日付で普通株式１株につき10株の割合で株式分割を行っております。これに伴い、前連結会計年度の期首に当該株式分割が行われたと仮定して、期末発行済株式数（自己株式を含む）、期末自己株式数、期中平均株式数を算定しております。
+（参考）個別業績の概要
+１．2026年３月期の個別業績（2025年４月１日～2026年３月31日）
+（１）個別経営成績 |
+（％表示は対前期増減率）
+営業収益 |
+営業利益 |
+経常利益 |
+当期純利益
+百万円 |
+％ |
+百万円 |
+％ |
+百万円 |
+％ |
+百万円 |
+％
+2026年３月期 |
+2,662 |
+28.6 |
+1,557 |
+43.1 |
+1,571 |
+42.7 |
+1,056 |
+58.5
+2025年３月期 |
+2,070 |
+21.7 |
+1,087 |
+9.1 |
+1,101 |
+10.1 |
+666 |
+1.4
+１株当たり
+当期純利益 |
+潜在株式調整後
+１株当たり当期純利益
+円 銭 |
+円 銭
+2026年３月期 |
+18.87 |
+18.09
+2025年３月期 |
+12.12 |
+11.70
+（注）当社は、2025年10月１日付で普通株式１株につき10株の割合で株式分割を行っております。これに伴い、前事業年度の期首に当該株式分割が行われたと仮定して、1株当たり当期純利益及び潜在株式調整後1株当たり当期純利益を算定しております。
+（２）個別財政状態
+総資産 |
+純資産 |
+自己資本比率 |
+１株当たり純資産
+百万円 |
+百万円 |
+％ |
+円 銭
+2026年３月期 |
+6,619 |
+6,089 |
+84.4 |
+98.80
+2025年３月期 |
+5,565 |
+5,022 |
+83.2 |
+84.23
+（参考）自己資本 |
+2026年３月期 |
+5,589 |
+百万円 |
+2025年３月期 |
+4,633 |
+百万円
+（注）当社は、2025年10月１日付で普通株式１株につき10株の割合で株式分割を行っております。これに伴い、前事業年度の期首に当該株式分割が行われたと仮定して、１株当たり純資産を算定しております。
+※  決算短信は公認会計士又は監査法人の監査の対象外です
+※  業績予想の適切な利用に関する説明、その他特記事項
+（将来に関する記述等についてのご注意）
+本資料に記載されている業績見通し等の将来に関する記述は、当社が現在入手している情報及び合理的であると判断する一定の前提に基づいており、当社としてその実現を約束する趣旨のものではありません。実際の業績等は様々な要因により大きく異なる可能性があります。業績予想の前提となる条件及び業績予想のご利用にあたっての注意事項等については、添付資料２ページ「１．経営成績等の概況（２）今後の見通し」をご覧ください。
+（決算補足説明資料の入手方法について)
+当社は2026年5月20日にアナリスト・機関投資家向け決算説明会を開催する予定です。
+この説明会で配布する決算補足説明資料は、開催後速やかに当社ウェブサイトに掲載する予定です。
+2026-03-31379802025-03-31tse-ed-t:ResultMembertse-ed-t:NonConsolidatedMember379802025-04-012026-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:YearEndMembertse-ed-t:ResultMember379802025-04-012026-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:AnnualMembertse-ed-t:ResultMember379802024-04-012025-03-31tse-ed-t:AnnualMembertse-ed-t:ResultMembertse-ed-t:ConsolidatedMember379802024-04-012025-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:FirstQuarterMembertse-ed-t:ResultMember379802024-04-012025-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:SecondQuarterMembertse-ed-t:ResultMember379802024-04-012025-03-31tse-ed-t:ResultMembertse-ed-t:ConsolidatedMember379802025-03-31tse-ed-t:ConsolidatedMembertse-ed-t:ResultMember379802025-04-012026-03-31tse-ed-t:ResultMembertse-ed-t:ConsolidatedMember379802026-03-31tse-ed-t:ResultMembertse-ed-t:ConsolidatedMember379802026-04-012027-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:FirstQuarterMembertse-ed-t:ForecastMember379802026-04-012027-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:FirstQuarterMembertse-ed-t:UpperMember379802026-04-012027-03-31tse-ed-t:FirstQuarterMembertse-ed-t:LowerMembertse-ed-t:NonConsolidatedMember379802026-04-012027-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:YearEndMembertse-ed-t:ForecastMember379802024-04-012025-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:AnnualMembertse-ed-t:ResultMember379802026-04-012027-03-31tse-ed-t:ForecastMembertse-ed-t:AnnualMembertse-ed-t:ConsolidatedMember379802026-03-31379802026-04-012027-03-31tse-ed-t:ConsolidatedMembertse-ed-t:ForecastMember379802026-04-012027-03-31tse-ed-t:UpperMembertse-ed-t:ConsolidatedMember379802026-04-012027-03-31tse-ed-t:LowerMembertse-ed-t:ConsolidatedMember379802024-04-012025-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:ResultMember379802024-04-012025-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:ThirdQuarterMembertse-ed-t:ResultMember379802026-04-012027-03-31tse-ed-t:UpperMembertse-ed-t:NonConsolidatedMembertse-ed-t:YearEndMember379802026-04-012027-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:LowerMembertse-ed-t:YearEndMember379802026-04-012027-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:ForecastMember379802025-04-012026-03-31tse-ed-t:ResultMembertse-ed-t:ConsolidatedMembertse-ed-t:AnnualMember379802024-04-012025-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:YearEndMembertse-ed-t:ResultMember379802025-04-012026-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:ResultMember379802025-04-012026-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:FirstQuarterMembertse-ed-t:ResultMember379802026-04-012027-03-31tse-ed-t:UpperMembertse-ed-t:AnnualMembertse-ed-t:NonConsolidatedMember379802026-04-012027-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:AnnualMembertse-ed-t:LowerMember379802026-04-012027-03-31tse-ed-t:AnnualMembertse-ed-t:ForecastMembertse-ed-t:NonConsolidatedMember379802026-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:ResultMember379802026-04-012027-03-31379802026-04-012027-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:ForecastMembertse-ed-t:SecondQuarterMember379802026-04-012027-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:SecondQuarterMembertse-ed-t:UpperMember379802026-04-012027-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:LowerMembertse-ed-t:SecondQuarterMember379802026-04-012027-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:ForecastMembertse-ed-t:ThirdQuarterMember379802026-04-012027-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:UpperMembertse-ed-t:ThirdQuarterMember379802026-04-012027-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:ThirdQuarterMembertse-ed-t:LowerMember379802025-04-012026-03-31tse-ed-t:NonConsolidatedMembertse-ed-t:SecondQuarterMembertse-ed-t:ResultMember379802025-04-012026-03-31tse-ed-t:ThirdQuarterMembertse-ed-t:ResultMembertse-ed-t:NonConsolidatedMemberxsd:nonNegativeIntegerxsd:nonNegativeIntegeriso4217:JPYxbrli:sharesiso4217:JPYiso4217:JPYxsd:positiveIntegerxbrli:sharesxbrli:pure

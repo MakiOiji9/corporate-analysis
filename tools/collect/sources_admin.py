@@ -17,7 +17,8 @@ restore  downloads each manifest row whose file is missing (from before original
          manifest. A changed document (e.g. an IR list page updated since) is reported as mismatch and not written.
          A file above 20MB goes to sources/_large/ and the row's local_path and note are updated. --host limits the
          rows to those hosts; --text also writes <file>.txt for PDF / HTML (as fetch.py --text). <dir> may also be a
-         market policy library (market/policy/japan). stdout is one JSON line.
+         market policy library (market/policy/japan). An http:// URL that fails is tried once over https://.
+         stdout is one JSON line.
 
 The row is dropped from manifest.csv and its file moved to sources/_removed/<date>/ (kept for inspection,
 git-ignored). Afterwards the document can be fetched again with fetch.py, because the
@@ -137,8 +138,16 @@ def restore(base: Path, hosts: list[str] | None = None, text: bool = False, dry_
         try:
             data = _download(row["url"], get)
         except Exception as exc:  # noqa: BLE001 - report every failure and go on with the next row
-            out["failed"].append({"local_path": row["local_path"], "url": row["url"], "error": str(exc)[:200]})
-            continue
+            # an http:// URL may be reachable only over https (the sha256 check below still guards the content)
+            data = None
+            if row["url"].startswith("http://"):
+                try:
+                    data = _download("https://" + row["url"][len("http://"):], get)
+                except Exception:  # noqa: BLE001
+                    data = None
+            if data is None:
+                out["failed"].append({"local_path": row["local_path"], "url": row["url"], "error": str(exc)[:200]})
+                continue
         if sha256_bytes(data) != row["sha256"]:
             out["mismatch"].append({"local_path": row["local_path"], "url": row["url"]})
             continue

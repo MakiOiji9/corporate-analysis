@@ -194,3 +194,16 @@ def test_move_peer_skips_duplicate(tmp_path):
     got = SA.move_peer(a, path.relative_to(a).as_posix(), "6532", "baycurrent", "tanshin", root=tmp_path)
     assert got["dup"] and len(read_manifest(b)) == 1 and read_manifest(a) == []
     assert not (b / "peer.json").exists() and not path.exists()
+
+
+def test_restore_falls_back_to_https(tmp_path):
+    import sources_admin as SA
+    rel = _registered(tmp_path, "a.pdf", b"doc", "http://www.boj.or.jp/a.pdf")
+
+    def get(url, params=None):
+        if url.startswith("http://"):
+            raise RuntimeError("port 80 blocked")
+        return _Resp(b"doc")
+
+    out = SA.restore(tmp_path, get=get)
+    assert out["restored"] == [rel] and not out["failed"]
