@@ -378,8 +378,9 @@ def efficiency_axis(s5: dict, turnover_check: dict, top: dict | None) -> dict:
     if rating == "良好" and top and top.get("margin_change") is not None and top["margin_change"] < 0:
         rating = "普通"
         notes.append(f"設備投資が最も多い {top['segment']} の利益率が下がった: 良好を普通に")
-    return {"rating": rating, "basis": eff.get("basis") or "—", "sentence": eff.get("sentence") or s5.get("sentence", ""),
-            "notes": notes}
+    sentence = eff.get("sentence") or s5.get("sentence", "")
+    return {"rating": rating, "basis": eff.get("basis") or "—", "notes": notes,
+            "sentence": sentence + ("。" + "。".join(notes) if notes else "")}
 
 
 def top_segment(seg: dict[str, dict[str, float]], revenue: dict, profit: dict, years: list[str]) -> dict | None:
