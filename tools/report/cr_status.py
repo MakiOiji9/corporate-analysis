@@ -1,6 +1,7 @@
-"""Where the company report stands: the nine analyses in dependency order, the market outlook and the report.
+"""Where the company report stands: the ten analyses in dependency order, the market outlook and the report.
 
-The order five-forces → three-c → moat → swot → profitability → growth → safety → cash-flow → valuation is the
+The order five-forces → three-c → moat → swot → profitability → investment → growth → safety → cash-flow →
+valuation is the
 only one in which a finished analysis never makes a downstream one 'triggered' again, so the command always runs
 the first analysis that is not fresh and checks again. Freshness is each analysis script's own evaluate();
 nothing is re-judged here.
@@ -23,6 +24,8 @@ import ff_paths  # noqa: E402
 import five_forces  # noqa: E402
 import gr_paths  # noqa: E402
 import growth  # noqa: E402
+import investment  # noqa: E402
+import iv_paths  # noqa: E402
 import moat  # noqa: E402
 import mt_paths  # noqa: E402
 import pf_paths  # noqa: E402
@@ -59,6 +62,7 @@ STEPS = (
     Step("moat", "moat", "モート", "1-3", moat, mt_paths),
     Step("swot", "swot", "SWOT", "1-4", swot, sw_paths),
     Step("profitability", "profitability", "収益性", "2-1", profitability, pf_paths),
+    Step("investment", "investment", "投資の質", "2-2", investment, iv_paths),
     Step("growth", "growth", "成長性", "2-2", growth, gr_paths),
     Step("safety", "safety", "安全性", "2-3", safety, sf_paths),
     Step("cash_flow", "cash-flow", "キャッシュフロー", "2-4", cash_flow, cf_paths),

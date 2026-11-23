@@ -266,32 +266,63 @@ def growth_block(facts: dict) -> str:
              f"{num(cagr.get('operating_income'), '%')}・EPS {num(cagr.get('eps'), '%')}（{g.get('growth_type') or '—'}）",
              f"会社計画の信頼性: {g.get('plan') or '—'}（過去の達成率の平均 {num(g.get('plan_average'), '%', 0)}）",
              f"成長の質: {g.get('quality_sentence') or g.get('quality') or '—'}",
-             f"成長投資（将来の成長のために使ったお金とその効率）: {(g.get('investment') or {}).get('sentence') or '—'}",
              f"市場の成長性（3C）: {tc.get('growth') or '—'}。{tc.get('market') or ''}",
              f"中期経営計画: {g.get('mtp') or '—'}"]
     plan_table = (f'<h4>今期の会社計画と進み具合（{esc(facts["unit"])}）</h4>'
                   + table(["項目", "前期の実績", "今期の会社予想", "予想の伸び", "進捗率", "前年同期の進捗率"], plan,
                           right=frozenset({1, 2, 3, 4, 5})) if plan else "")
     return ('<h3>成長の見通し</h3><ul class="plain">' + "".join(f"<li>{esc(x)}</li>" for x in lines) + "</ul>"
-            + plan_table + investment_table(g.get("investment") or {}, facts["unit"]))
+            + plan_table)
 
 
-INVEST_COLUMNS = (("capex", "設備投資"), ("depreciation", "減価償却費"), ("rnd", "研究開発費"),
-                  ("working_capital", "運転資本の増加"), ("acquisition", "子会社の取得"), ("growth", "成長投資"))
+AXES = (("efficiency", "① 投資効率"), ("plan", "② 中期経営計画・設備計画との整合"), ("trend", "③ 世界の潮流との整合"),
+        ("peer", "④ 競合と比べた投資の大きさ"), ("failure", "⑤ 失敗の履歴（減損・のれん）"), ("discipline", "⑥ 資金と規律"))
+INVEST_COLUMNS = (("capex", "設備投資", 0), ("capex_share", "売上比", "%"), ("capex_to_dep", "設備投資 ÷ 減価償却", "x"),
+                  ("rnd", "研究開発費", 0), ("acquisition", "子会社の取得", 0), ("impairment", "減損損失", 0))
 
 
-def investment_table(inv: dict, unit: str) -> str:
-    """The yearly parts of the growth investment (成長性 手順5) with how to read them."""
-    rows = inv.get("rows") or []
-    if not rows:
-        return ""
-    body = [[esc(r.get("year"))] + [esc(num(r.get(k), "", 0)) for k, _ in INVEST_COLUMNS] for r in rows]
-    roic = num(inv.get("roic"), "%") if inv.get("roic") is not None else "—"
-    note = (f'<p class="small">読み方: 成長投資 = 設備投資 − 減価償却費（今の設備を保つ分）＋ 研究開発費 ＋ 運転資本の増加 '
-            f'＋ 子会社の取得。投資した分に対して利益がどれだけ増えたか（増分 ROIC）は {esc(roic)}'
-            f'（効率 {esc(inv.get("efficiency") or "—")}）。</p>')
-    return (f'<h4>成長投資の推移（{esc(unit)}）</h4>'
-            + table(["年度"] + [label for _, label in INVEST_COLUMNS], body, right=frozenset(range(1, 7))) + note)
+def _invest_cell(value: object, kind: object) -> str:
+    if kind == "%":
+        return num(value, "%")
+    if kind == "x":
+        return "—" if value is None else f"{value:.2f}"
+    return num(value, "", 0)
+
+
+def investment_block(facts: dict) -> str:
+    """何に投資したか: the yearly table with what the money went to, the change points, the themes and the six axes
+    of the investment analysis (投資の質)."""
+    a = facts["analyses"].get("investment") or {}
+    inv = a.get("detail") or {}
+    if not inv:
+        return '<p class="muted">投資の質の分析が未実施（何に投資したかの材料なし）</p>'
+    rows = []
+    for r in inv.get("rows") or []:
+        mix = "、".join(f"{k} {v:.0f}%" for k, v in sorted((r.get("mix") or {}).items(), key=lambda kv: -kv[1]))
+        rows.append([esc(r.get("year"))] + [esc(_invest_cell(r.get(k), kind)) for k, _, kind in INVEST_COLUMNS]
+                    + [esc(mix or "—"), esc(r.get("content") or "—"), esc("、".join(r.get("themes") or []) or "—")])
+    marks = {p.get("year") for p in inv.get("points") or []}
+    rows = [[f"<strong>{row[0]}</strong>" if r.get("year") in marks else row[0]] + row[1:]
+            for row, r in zip(rows, inv.get("rows") or [])]
+    out = (f'<p>投資の質: <strong>{esc(a.get("verdict") or "—")}</strong>（{esc(a.get("reason") or "—")}）</p>'
+           f'<h4>年ごとの投資（{esc(facts["unit"])}。太字の年度は変化点）</h4>'
+           + table(["年度"] + [label for _, label, _ in INVEST_COLUMNS] + ["セグメント配分", "主な内容", "主なテーマ"], rows,
+                   right=frozenset(range(1, 7))))
+    points = [[esc(p.get("year")), esc(p.get("kind")), esc(p.get("text")), esc(p.get("background") or "—")]
+              for p in inv.get("points") or []]
+    if points:
+        out += "<h4>どこで変わったか（変化点）</h4>" + table(["年度", "種類", "数値", "背景"], points)
+    themes = [[esc(t.get("id")), esc(t.get("name")), esc(t.get("trend")), esc(t.get("basis"))] for t in inv.get("themes") or []]
+    if themes:
+        out += "<h4>投資のテーマと世界の潮流</h4>" + table(["ID", "テーマ", "潮流との照合", "根拠"], themes)
+    axes = inv.get("axes") or {}
+    out += "<h4>投資の質の6つの軸</h4>" + table(
+        ["軸", "評価", "根拠"], [[esc(label), esc((axes.get(k) or {}).get("rating") or "—"),
+                                 esc((axes.get(k) or {}).get("sentence") or "—")] for k, label in AXES])
+    out += ('<p class="small">読み方: 設備投資 ÷ 減価償却が 1 を超える年は今の設備を保つ以上に投資した「攻め」の年。'
+            '投資効率は、投資で増えた資本に対して利益がどれだけ増えたか（増分 ROIC）を資本コストと比べる。'
+            '潮流・中期経営計画との照合は有価証券報告書・中期経営計画・業界の資料の記述による。</p>')
+    return out
 
 
 def peers_block(facts: dict) -> str:

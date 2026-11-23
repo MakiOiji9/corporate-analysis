@@ -41,6 +41,7 @@ import gr_inputs as I  # noqa: E402
 import gr_metrics as X  # noqa: E402
 import freshness as T  # noqa: E402
 import gr_paths as P  # noqa: E402
+import iv_paths as IP  # noqa: E402
 import mdparse as M  # noqa: E402
 import sw_paths as SP  # noqa: E402
 import tc_paths as TP  # noqa: E402
@@ -77,6 +78,23 @@ def _upstream_files(company: P.Company) -> list[tuple[str, str]]:
         if result:
             out.append((result[0], company.rel(cls(company.root, company.path).file(result[0], suffix))))
     return out
+
+
+def invest_quote(company: P.Company) -> str | None:
+    """The investment analysis' conclusion, quoted in 4章 (成長投資). 手順5 moved there on 2026-11-23."""
+    found = IP.latest_result(IP.Company(company.root, company.path))
+    if not found:
+        return None
+    date, r = found
+    md = company.rel(IP.Company(company.root, company.path).file(date, IP.MD_SUFFIX))
+    eff = ((r.get("axes") or {}).get("efficiency") or {}).get("rating") or "—"
+    return f"投資の質 {r.get('verdict') or '—'}（{r.get('verdict_reason') or '—'}。投資効率 {eff}）: {md}（{date}）"
+
+
+def candidates(company: P.Company, found: dict) -> dict:
+    cands = X.candidates(company, found)
+    cands["invest_quote"] = invest_quote(company)
+    return cands
 
 
 # ---------- state ----------
@@ -172,7 +190,7 @@ def cmd_check(args: argparse.Namespace, root: Path) -> int:
     today = args.date or dt.date.today().isoformat()
     state = evaluate(company, today)
     found = I.gather_growth(company)
-    requests = X.collect_requests(company, found, X.candidates(company, found))
+    requests = X.collect_requests(company, found, candidates(company, found))
     outlook = A.latest_outlook(root, today)
     return emit({"ok": True, "company": company.dirname, "name": company.display_name(), **state,
                  "three_c": _three_c_summary(_three_c(company)), "swot": _summary(_swot(company)),
@@ -221,7 +239,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
                      "latest": state["latest"]})
     redo_built = args.redo and company.file(today, P.JSON_SUFFIX).exists()  # moved aside once the gate passes
     found = I.gather_growth(company)
-    cands = X.candidates(company, found)
+    cands = candidates(company, found)
     requests = X.collect_requests(company, found, cands)
     draft = P.latest_draft(company)
     untouched = bool(draft) and A.is_untouched(company.file(draft[0], P.BRIEF_SUFFIX), draft[1])
@@ -260,7 +278,7 @@ def cmd_prepare(args: argparse.Namespace, root: Path) -> int:
         **AF.prepare_fields(company, md_path),
         "candidate": {"verdict": cands["verdict"], "why": cands["why"], "step1": s1["rating"],
                       "step3": cands["step3"]["rating"], "quality": cands["step4"]["quality"],
-                      "investment": cands["step5"]["verdict"], "downgraded": cands["downgraded"]},
+                      "investment": cands["invest_quote"], "downgraded": cands["downgraded"]},
         "progress": F.progress_text(cands["progress"]),
         "cagr": {"sales": _round(s1["sales"]["value"]), "operating_income": _round(s1["operating_income"]["value"]),
                  "eps": _round(s1["eps"]["value"]), "net_income": _round(s1["net_income"]["value"])},
@@ -306,7 +324,8 @@ def _step_json(cands: dict) -> dict:
         "step4": {"quality": s4["quality"], "sentence": s4["sentence"], "problems": s4["problems"],
                   "unknown": s4["unknown"], "adjusted": s4["adjusted"],
                   "checks": [{k: c[k] for k in ("name", "status", "detail")} for c in s4["checks"]]},
-        "step5": _investment_json(cands["step5"]),
+        "step5": _investment_json(cands["step5"]),  # reference only: the investment analysis judges it
+        "investment_quote": cands.get("invest_quote"),
     }
 
 
@@ -382,7 +401,7 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
     text = md_path.read_text(encoding="utf-8")
     # the numbers are recomputed so edited cells in the md can't change the conclusion
     found = I.gather_growth(company)
-    cands = X.candidates(company, found)
+    cands = candidates(company, found)
     issues = D.validate(text, _template(root), cands["declines"], _allowed_text(root, company, date, found, cands))
     if issues:
         return emit({"ok": False, "md": company.rel(md_path), "issues": issues})
@@ -404,7 +423,7 @@ def cmd_build(args: argparse.Namespace, root: Path) -> int:
         "progress": F.progress_text(cands["progress"]),
         "step1": cands["step1"]["sentence"], "step2": result["step2"]["sentence"],
         "step3": cands["step3"]["sentence"], "step4": cands["step4"]["sentence"],
-        "step5": cands["step5"]["sentence"],
+        "investment": cands.get("invest_quote") or "投資の質の分析が未実施",
         "consistency": [f"{c['check']}: {c['result']}" for c in consistency],
         "borderline": cands["borderline"], "valid_until": result["valid_until"], "previous": result["previous"],
         "three_c": result["three_c"], "swot": result["swot"], **D.flags(parsed),

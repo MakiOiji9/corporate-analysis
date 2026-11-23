@@ -18,6 +18,8 @@ STEP_NAMES: dict[str, dict[int, str]] = {
     "swot": {1: "4象限への振り分け", 2: "影響度の評価", 3: "強みで脅威に対抗できるか"},
     "profitability": {1: "ROE の水準と安定性", 2: "営業利益率の同業比較", 3: "ROE の源泉", 4: "収益性の結論"},
     "growth": {1: "成長の水準", 2: "減収・減益の年の原因", 3: "会社計画の信頼性", 4: "成長の質", 5: "成長投資"},
+    "investment": {1: "何に投資したか", 2: "変化点", 3: "潮流との整合", 4: "中計との整合", 5: "投資効率と競合比較",
+                   6: "失敗の履歴と資金・規律", 7: "投資の質の結論"},
     "safety": {1: "財務の現状の水準", 2: "財務の推移", 3: "借入の目的", 4: "安全性の結論"},
     "cash_flow": {1: "営業CF の安定性", 2: "FCF の創出力", 3: "利益の質", 4: "CF パターン", 5: "株主還元の持続性",
                   6: "キャッシュフローの結論"},
@@ -25,7 +27,7 @@ STEP_NAMES: dict[str, dict[int, str]] = {
 }
 # 「キャッシュフロー手順1」のように分析名が前に付くもの
 LABEL_KEYS = {"ファイブフォース": "five_forces", "3C": "three_c", "モート": "moat", "SWOT": "swot",
-              "収益性": "profitability", "成長性": "growth", "安全性": "safety", "キャッシュフロー": "cash_flow",
+              "収益性": "profitability", "投資の質": "investment", "成長性": "growth", "安全性": "safety", "キャッシュフロー": "cash_flow",
               "バリュエーション": "valuation"}
 # raw/・analysis/ のファイル名の後半 → 読み手の言葉
 DOC_LABELS = {"competitors": "競合の資料", "industry-overview": "業界の資料", "business-overview": "事業の資料",
@@ -33,11 +35,12 @@ DOC_LABELS = {"competitors": "競合の資料", "industry-overview": "業界の�
               "financials-historical": "過去の業績", "valuation-data": "株価指標の資料", "mid-term-plan": "中期経営計画",
               "positioning": "信用残・空売りの資料", "outlook": "地合いレポート", "five-forces": "ファイブフォース分析",
               "three-c": "3C分析", "moat": "モート分析", "swot": "SWOT分析", "profitability": "収益性分析",
-              "growth": "成長性分析", "safety": "安全性分析", "cash-flow": "キャッシュフロー分析",
+              "growth": "成長性分析", "investment": "投資の質の分析", "safety": "安全性分析", "cash-flow": "キャッシュフロー分析",
               "valuation": "バリュエーション分析", "management": "経営者の資料"}
 DATA_LABELS = {"prices.csv": "日々の株価", "tdnet_facts.csv": "決算短信", "financials.csv": "財務データ",
                "quarterly.csv": "四半期の業績", "positioning.csv": "信用残・空売りのデータ",
-               "consensus.json": "アナリスト予想", "profile.json": "会社の基本情報", "governance.json": "有価証券報告書"}
+               "consensus.json": "アナリスト予想", "profile.json": "会社の基本情報", "governance.json": "有価証券報告書",
+               "investments.json": "有価証券報告書（投資の記述）"}
 PHRASES = (("比べる材料が無いため ？ を △ とみなし", "比べる材料が無いため同程度とみなし"),
            ("？ を △ とみなし", "比べる材料が無いため同程度とみなし"), ("？ → △ とみなした", "比べる材料が無く同程度とみなした"),
            ("（status.md の未取得項目）", "（未取得の項目）"), ("（status.md）", ""),

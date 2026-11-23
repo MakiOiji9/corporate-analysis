@@ -43,6 +43,18 @@ RESULTS = {
                "progress": {"quarter": 1, "items": {"operating_income": {"progress": 26.5, "prior_progress": 29.3}}},
                "rows": [{"year": "2025-03", "sales": 14000, "operating_income": 2600, "net_income": 1600, "eps": 29},
                         {"year": "2026-03", "sales": 16600, "operating_income": 3046, "net_income": 2027, "eps": 36}]},
+    "investment": {"verdict": "良好", "verdict_reason": "投資効率 良好、中計との整合 整合、潮流との整合 合う",
+                   "axes": {"efficiency": {"rating": "良好", "sentence": "増分 ROIC 12.0%"},
+                            "plan": {"rating": "整合", "sentence": "中期経営計画との照合 整合"},
+                            "trend": {"rating": "合う", "sentence": "照合できたテーマ 1 件"},
+                            "peer": {"rating": "同等", "sentence": "同業並み"},
+                            "failure": {"rating": "問題なし", "sentence": "減損なし"},
+                            "discipline": {"rating": "問題なし", "sentence": "営業CF の範囲"}},
+                   "rows": [{"year": "2026-03", "capex": 393, "capex_share": 2.4, "capex_to_dep": 2.69, "rnd": 60,
+                             "acquisition": 0, "impairment": None, "mix": {}}],
+                   "years": [{"year": "2026-03", "content": "新オフィスの開設", "themes": ["T1"]}],
+                   "themes": [{"id": "T1", "name": "人材の拡大", "trend": "合う", "basis": "DX 需要"}],
+                   "points": [], "point_backgrounds": []},
     "safety": {"verdict": "良好", "step1": {"items": [{"name": "自己資本比率", "value": 74.7, "peer_avg": 71.0,
                                                   "rating": "クリア", "target": "40%以上"}]}},
     "cash-flow": {"verdict": "良好", "step1": {"rating": "良好", "sentence": "営業CF はすべての年でプラス"},
@@ -325,7 +337,8 @@ def test_prepare_fill_build_flow(repo, capsys):
     assert 'id="technical"' in html and "押し目の目安" in html and 'class="hl sup"' in html and "<dt>RSI</dt>" in html
     # the new layout: the nine analyses at a glance first, the strategy chapter before the STEP chapters, the
     # price chapters merged into one
-    assert html.count('class="cell ') == 9 and 'id="market"' in html
+    assert html.count('class="cell ') == 10 and 'id="market"' in html
+    assert "何に投資したか（投資の質）" in html and "新オフィスの開設" in html
     assert html.index('id="thesis"') < html.index('id="step1"') < html.index('id="market"')
     assert "## 4.1 テクニカル" in (company / "reports" / f"{TODAY}_company-report_brief.md").read_text(encoding="utf-8")
     assert "## 投資の神の視点" in (company / "reports" / f"{TODAY}_company-report_brief.md").read_text(encoding="utf-8")

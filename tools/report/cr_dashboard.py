@@ -18,7 +18,8 @@ import cr_judge as J
 from cr_html import esc, figure
 
 STRIP = (("five_forces", "業界の魅力度", "step1"), ("three_c", "勝てる理由", "step1"), ("moat", "モート", "step1"),
-         ("swot", "SWOT", "step1"), ("profitability", "収益性", "step2"), ("growth", "成長性", "step2"),
+         ("swot", "SWOT", "step1"), ("profitability", "収益性", "step2"), ("investment", "投資の質", "step2"),
+         ("growth", "成長性", "step2"),
          ("safety", "安全性", "step2"), ("cash_flow", "キャッシュフロー", "step2"), ("valuation", "株価の割安さ", "step3"))
 FAIR_NOTE = ("帯は各指標で「割安」と「割高」の境目になる株価。縦線が今の株価、帯の中の短い線は適正PBR の株価。"
              "左にあるほど割安側。目標株価ではない。")
@@ -38,7 +39,7 @@ def analysis_strip(facts: dict) -> str:
         verdict = (facts["analyses"].get(key) or {}).get("verdict")
         cells += (f'<a class="cell {tone(verdict)}" href="#{anchor}"><span class="k">{esc(label)}</span>'
                   f'<span class="v">{esc(verdict or "未実施")}</span></a>')
-    return f'<div class="strip" aria-label="9つの分析の結論">{cells}</div>'
+    return f'<div class="strip" aria-label="10の分析の結論">{cells}</div>'
 
 
 def _valuation(facts: dict) -> dict:

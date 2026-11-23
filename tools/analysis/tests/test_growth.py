@@ -601,10 +601,11 @@ def test_result_carries_the_version_and_growth_investment_and_old_rules_trigger(
     path = repo / out["json"]
     result = json.loads(path.read_text(encoding="utf-8"))
     assert result["version"] == D.VERSION
-    # the fixture has no data/financials.csv: no capex series, so 手順5 cannot judge and leaves the verdict alone
-    assert result["step5"]["verdict"] == "不明" and result["verdict"] == "良好"
+    # 手順5 is kept as a reference only; the md quotes the investment analysis (none here)
+    assert result["step5"]["verdict"] == "不明" and result["verdict"] == "良好" and result["investment_quote"] is None
     text = (repo / out["md"]).read_text(encoding="utf-8")
-    assert "### 成長投資（手順5、スクリプトが判定）" in text and "| 手順5 成長投資 |" in text
+    assert "### 成長投資（投資の質の分析を引用。成長性の判定には使わない）" in text
+    assert "| 成長投資（投資の質の分析） | —（投資の質の分析が未実施）（成長性の判定には使わない） |" in text
     path.write_text(json.dumps({k: v for k, v in result.items() if k != "version"}, ensure_ascii=False),
                     encoding="utf-8")
     _, out = run(repo, "check", "--company", "7203", "--date", DAY, capsys=capsys)

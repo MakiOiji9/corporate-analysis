@@ -10,13 +10,19 @@ import cr_plain as P  # noqa: E402
 import cr_sections as CS  # noqa: E402
 
 
-def test_investment_table_shows_the_yearly_parts_and_the_incremental_roic():
-    inv = {"efficiency": "良好", "roic": 13.6,
-           "rows": [{"year": "2026-02", "capex": 46240, "depreciation": 21084, "rnd": 24006, "working_capital": 16138,
-                     "acquisition": 0, "growth": 65300}]}
-    html = CS.investment_table(inv, "百万円")
-    assert "成長投資の推移（百万円）" in html and "46,240" in html and "13.6%" in html
-    assert CS.investment_table({}, "百万円") == ""
+def test_investment_block_shows_what_was_invested_and_the_axes():
+    inv = {"axes": {"efficiency": {"rating": "普通", "sentence": "増分 ROIC 13.6%"}},
+           "rows": [{"year": "2026-02", "capex": 46240, "capex_share": 8.5, "capex_to_dep": 2.19, "rnd": 24006,
+                     "acquisition": 0, "impairment": 10, "mix": {"ロボット": 40.2}, "content": "八幡西の新工場",
+                     "themes": ["ロボットの増産"]}],
+           "points": [{"year": "2026-02", "kind": "投資の急増", "text": "1.6倍", "background": "新工場"}],
+           "themes": [{"id": "T1", "name": "ロボットの増産", "trend": "合う", "basis": "自動化の需要"}]}
+    facts = {"unit": "百万円", "analyses": {"investment": {"verdict": "普通", "reason": "投資効率 普通", "detail": inv}}}
+    html = CS.investment_block(facts)
+    assert "年ごとの投資（百万円" in html and "46,240" in html and "八幡西の新工場" in html and "8.5%" in html
+    assert "<strong>2026-02</strong>" in html  # a change-point year is in bold
+    assert "① 投資効率" in html and "増分 ROIC 13.6%" in html and "ロボットの増産" in html
+    assert "未実施" in CS.investment_block({"unit": "百万円", "analyses": {}})
 
 
 def test_step_number_becomes_what_the_step_checks():

@@ -71,11 +71,14 @@ def _growth_result(company: P.Company) -> tuple[str, dict] | None:
 
 def compute(company: P.Company, cls: dict | None = None) -> tuple[dict, dict, dict | None]:
     """(investment candidates, the inputs found, investments.json). cls: the writer's classes (build)."""
-    growth = GX.candidates(company, GI.gather_growth(company))
+    growth_found = GI.gather_growth(company)
+    growth = GX.candidates(company, growth_found)
     invest = X.load_investments(company)
     cls = cls or {}
     cands = X.candidates(company, growth, invest, cls.get("year_themes"), cls.get("mtp_class"),
                          cls.get("outcomes", ()), cls.get("trend_classes", ()))
+    # ④ compares with the peers' growth-investment table (moved here from the growth analysis with 手順5)
+    cands["peer_request"] = GX.peer_request(growth_found, company, growth, I.unavailable_items(company))
     return cands, I.gather_investment(company), invest
 
 
@@ -126,7 +129,11 @@ def collect_requests(company: P.Company, cands: dict, invest: dict | None) -> li
         items.append(INVEST_ITEM)
     hints = ["有報の XBRL→CSV（sources/ の edinet-csv）があれば yuho_investments.py --company {dir} を1回実行するだけでよい"] \
         if INVEST_ITEM in items and _has_xbrl(company) else []
-    return [{"agent": "collect-filings", "items": items, "hints": hints}] if items else []
+    out = [{"agent": "collect-filings", "items": items, "hints": hints}] if items else []
+    if cands.get("peer_request"):
+        out.append({"agent": "collect-peers-valuation", "items": [cands["peer_request"]],
+                    "hints": ["雛形 competitors.md「成長投資の材料」（競合ごとに設備投資・減価償却費・研究開発費を最大5期）"]})
+    return out
 
 
 def _resolve(root: Path, arg: str | None) -> tuple[P.Company | None, dict | None]:

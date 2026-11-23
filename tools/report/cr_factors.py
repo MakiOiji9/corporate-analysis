@@ -1,7 +1,7 @@
 """The factors the three horizons are scored on (cr_judge.horizon_score), built from facts.json's material.
 
 Each factor is {score: +1..−1 or None (no material), value, reason, source, pending}:
-  analyses   growth, profitability, cash_flow, safety, five_forces, three_c, moat, swot: the verdict word
+  analyses   growth, investment, profitability, cash_flow, safety, five_forces, three_c, moat, swot: the verdict word
              (良好/高/明確/広い/Yes +1, 普通/中/あいまい/狭い/条件付き 0, 懸念/低/なし/No −1, 判定保留 0 and pending),
              moved half a step by the analysis' own sub-ratings (subs, cr_facts.SUBS) when they lean the other way:
              a 普通 whose subs average > +0.25 is +0.5 (< −0.25: −0.5; not raised with a −1 sub); a 懸念 whose subs average ≥ 0 is −0.5
@@ -25,12 +25,12 @@ import cr_technicals as T
 
 PERIOD_KEYS = {"short": "短期", "mid": "中期", "long": "長期"}
 PROGRESS_UP, PROGRESS_DOWN = 1.1, 0.9
-ANALYSIS_KEYS = ("growth", "profitability", "cash_flow", "safety", "five_forces", "three_c", "moat", "swot")
+ANALYSIS_KEYS = ("growth", "investment", "profitability", "cash_flow", "safety", "five_forces", "three_c", "moat", "swot")
 SUB_SCORE = {  # the STEP 2 analyses' step ratings (None, 不明, 対象外 are not counted)
     **dict.fromkeys(("良好", "上回る", "本業由来", "高成長", "信頼できる", "高い", "問題なし", "クリア",
-                     "悪化傾向なし", "許容"), 1.0),
-    **dict.fromkeys(("普通", "同等", "安定成長", "割り引いて扱う", "要確認", "注意", "特定できず"), 0.0),
-    **dict.fromkeys(("懸念", "下回る", "借入依存", "停滞・縮小", "問題あり", "未達", "悪化傾向"), -1.0),
+                     "悪化傾向なし", "許容", "整合", "合う"), 1.0),
+    **dict.fromkeys(("普通", "同等", "安定成長", "割り引いて扱う", "要確認", "注意", "特定できず", "一部"), 0.0),
+    **dict.fromkeys(("懸念", "下回る", "借入依存", "停滞・縮小", "問題あり", "未達", "悪化傾向", "乖離", "逆行"), -1.0),
 }
 SUB_MIN = 2  # known sub-ratings needed to move a verdict
 LEAN = 0.25  # a 普通 moves when its subs average this far from 0

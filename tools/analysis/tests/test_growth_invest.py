@@ -277,15 +277,13 @@ def _s5(verdict: str) -> dict:
     return {"verdict": verdict, "sentence": f"成長投資は{verdict}"}
 
 
-def test_a_problem_in_growth_investment_moves_the_verdict_one_step_down():
-    assert X.decide(_s1(), [], _s4(), {}, _s5("問題あり"))[0] == "普通"
-    assert X.decide(_s1(), [], _s4(["利益率が下がった"]), {}, _s5("問題あり"))[0] == "懸念"
+def test_growth_investment_no_longer_moves_the_growth_verdict():
+    # 2026-11-23: 手順5 moved to the investment analysis (it is scored there), so the growth verdict ignores it
+    assert X.decide(_s1(), [], _s4(), {}, _s5("問題あり"))[0] == "良好"
+    assert X.decide(_s1(), [], _s4(["利益率が下がった"]), {}, _s5("問題あり"))[0] == "普通"
     assert X.decide(_s1("停滞・縮小"), [], _s4(), {}, _s5("問題あり"))[0] == "懸念"
-
-
-def test_good_growth_investment_moves_a_quality_problem_back_up():
     verdict, why, _ = X.decide(_s1(), [], _s4(["利益率が下がった"]), {}, _s5("良好"))
-    assert verdict == "良好" and "成長の質に問題あり" in why and "成長投資" in why
+    assert verdict == "普通" and "成長投資" not in why
 
 
 def test_good_growth_investment_does_not_lift_a_concern_or_an_unknown_cause():
