@@ -3,7 +3,7 @@
 Usage:
   pdf_text.py <file.pdf|file.htm> [out.txt]
 
-Output defaults to <file>.txt next to the input (inside sources/, git-ignored).
+Output defaults to <file>.txt next to the input (inside sources/, kept in git with the original).
 PDF pages are separated by lines '=====PAGE n====='. HTML becomes a single page
 with one table row per line (cells separated by ' | ').
 """

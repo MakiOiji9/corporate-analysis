@@ -46,6 +46,7 @@
 | BL-35 | P1 | 企業レポート: レビュー指摘の段階2（半点の加点・悲観シナリオ・テクニカルの時間軸・PEG・RR・β。判定ルールの改定 3） | 完了（40a3579） |
 | BL-36 | P1 | 企業レポート: レビュー指摘の段階3（注意書きの集約・結論が変わる条件の表・付録化） | 完了（ae04b05） |
 | BL-37 | P1 | 企業レポート: 改訂版の再レビューの指摘（悲観ケース・局面判定・自動チェックの見せ方・文言） | 完了（69df22e） |
+| BL-38 | P1 | 投資の質の分析（何に投資したか・変化点・投資効率・中計/潮流との整合・競合比較。新スキル investment、点数に反映） | 着手（提案書 `docs/proposals/investment-analysis.md`） |
 
 ---
 
@@ -329,3 +330,15 @@
 - 確かめ: 3798 を作り直し、build の警告 0 件。悲観ケースは EPS 横ばい（2024-03 は一時要因として除外）
 - 残り: 証拠の連鎖（BL-01）を 3798 の STEP 1 に広げること
 
+## BL-38 投資の質の分析（何に投資したか）
+
+- 課題: レポートで分かるのは成長投資の「金額」まで（成長性の手順5）で、「何に」投資したか・どこで変わったかが見えない。最新の有報1期の要約にしか内容が無く、過去の期の内容は集めていない
+- 決定（2026-11-23 の問答）: 独立スキル `investment`、判定（良好/普通/懸念/判定保留）を点数に反映（長期 10・中期 5。成長性と 3C から付け替え）、成長性の手順5は investment に移す（二重計上しない）、潮流は今ある材料だけ、競合は数値だけ、米国株は出せる範囲、追加の評価 (a)〜(h) をすべて入れる
+- 提案書: `docs/proposals/investment-analysis.md`（しきい値・判定ルール・有効期限は未決）
+- 段階1（収集）: `tools/collect/yuho_investments.py`（`data/investments.json`）、`xbrl_financials.py`・`edgar.py` に減損損失・有形固定資産・建設仮勘定、collect-filings の手順（日本株は Phase 3、米国株は 10-K の Capital Expenditures と Business Combinations）
+- 原本の扱いの変更（2026-11-23 の問答）: 原本は台帳とともに git にコミットする（20MB 超は `sources/_large/` で管理外、XBRL→CSV の展開フォルダも管理外）。同業他社の原本はその会社のディレクトリ（`tools/collect/peer_company.py`、`peer.json`）に置き、`fetch.py --doc-id`・`edinet.py fetch` は台帳にある書類を取り直さない。未分析の同業のディレクトリは一覧で `peer_only`、`/company-report` では `company_missing`（mode=full で収集）
+- 段階2（スキル）: `tools/analysis/investment.py`・`iv_metrics.py`・`iv_brief.py`・`iv_doc.py`・`iv_paths.py`・`iv_inputs.py`、テンプレート `.ai/templates/investment/investment.md`、スキル `.ai/skills/investment.md` とエントリーポイント、書き込みガード。6506 の写しで prepare〜build まで通ることを確かめた（実際の分析はまだ作っていない）
+- 段階2 で決めた細部: のれんの減損は「のれんが減り、減損損失がその半分以上かつ純資産の 0.5% 以上」の年だけ数える。(h) 政策保有株は投資有価証券 ÷ 純資産で代用。① 投資効率は、設備投資が最も多いセグメントの営業利益率が下がったら 良好 を 普通 に
+- 残り: 段階3（レポートの節と点数。長期 10・中期 5）、段階4（成長性の手順5を外して investment を引用）、実際の分析（既存3社）
+- 実データ: 6506（IFRS）・3798（日本基準）・6532（IFRS）の有報で要素名を確かめた（減損損失の IFRS の要素名を直した）
+- 状態: 着手

@@ -28,6 +28,10 @@ HTTP_TIMEOUT_SEC = 60
 LOCK_TIMEOUT_SEC = 120
 LOCK_STALE_SEC = 300  # a lock older than this is assumed abandoned by a crashed process
 LOCK_POLL_SEC = 0.05
+# originals are kept in git (policy of 2026-11-23); a file above this size goes to sources/_large/ (git-ignored)
+LARGE_FILE_BYTES = 20 * 1024 * 1024
+LARGE_DIR = "_large"
+LARGE_NOTE = "git 管理外（20MB 超）"
 REPLACE_RETRIES = 50  # Windows: os.replace fails while another process has the file open
 
 
@@ -179,6 +183,17 @@ def find_by_hash(company: Path, digest: str) -> dict | None:
     return next((r for r in read_manifest(company) if r.get("sha256") == digest), None)
 
 
+def find_by_doc_id(company: Path, doc_id: str, doc_type: str) -> dict | None:
+    """The manifest row of the same document (doc_id and doc_type) whose file is on disk, else None.
+
+    Used to skip a download: an original fetched earlier (by this company's own collection, or for another
+    company's peer comparison into this company's directory) is not fetched again."""
+    if not doc_id:
+        return None
+    return next((r for r in read_manifest(company) if r.get("doc_id") == doc_id and r.get("doc_type") == doc_type
+                 and (company / r.get("local_path", "")).is_file()), None)
+
+
 def _unique_target(directory: Path, filename: str) -> Path:
     """Different documents may share a name (e.g. two '00.pdf'); never overwrite."""
     target = directory / filename
@@ -192,7 +207,8 @@ def _unique_target(directory: Path, filename: str) -> Path:
 def store_document(company: Path, data: bytes, filename: str, meta: dict) -> tuple[Path, bool]:
     """Save bytes under sources/<today>/ and register in manifest (process-safe).
 
-    Returns (path, is_new). Duplicate content (same sha256) is not saved again.
+    Returns (path, is_new). Duplicate content (same sha256) is not saved again. A file above LARGE_FILE_BYTES goes
+    to sources/_large/<today>/ (git-ignored) and its manifest note says so.
     """
     digest = sha256_bytes(data)
     manifest = manifest_path(company)
@@ -201,10 +217,13 @@ def store_document(company: Path, data: bytes, filename: str, meta: dict) -> tup
         existing = next((r for r in rows if r.get("sha256") == digest), None)
         if existing:
             return company / existing["local_path"], False
-        target_dir = company / "sources" / today()
+        large = len(data) > LARGE_FILE_BYTES
+        target_dir = company / "sources" / (f"{LARGE_DIR}/{today()}" if large else today())
         target_dir.mkdir(parents=True, exist_ok=True)
         target = _unique_target(target_dir, filename)
         target.write_bytes(data)
+        if large:
+            meta = {**meta, "note": "; ".join(n for n in (meta.get("note", ""), LARGE_NOTE) if n)}
         rows.append({**meta, "fetched_date": today(), "sha256": digest,
                      "local_path": target.relative_to(company).as_posix()})
         write_csv_atomic(manifest, MANIFEST_FIELDS, rows)

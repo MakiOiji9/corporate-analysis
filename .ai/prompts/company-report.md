@@ -50,7 +50,7 @@ Python は `.venv` のものを使う（Windows: `.venv\Scripts\python.exe`、ma
 $PY -I tools/report/company_report.py list
 ```
 
-`companies` の各行（`dir`・`name`・`not_fresh`（鮮度が新しくない分析）・`report_date`・`report_state`）から選択肢を作り、ユーザーに選んでもらう（提示の方法はエントリーポイントの指示に従う）。
+`companies` の各行（`dir`・`name`・`not_fresh`（鮮度が新しくない分析）・`report_date`・`report_state`）から選択肢を作り、ユーザーに選んでもらう（提示の方法はエントリーポイントの指示に従う）。`peer_only: true` の行（他社の同業比較のために原本だけ集めた、未分析の会社）は名前に「未分析（同業として収集のみ）」を添える。
 企業が1社だけなら選択肢を出さずにその企業で進み、完了報告の「材料」行に「対象は1社だけのため選択を省略」と書く。
 一覧に無い企業を指定されたら、手順 1 の `company_missing` と同じ扱いにする。
 
@@ -67,7 +67,7 @@ $PY -I tools/report/company_report.py check --company {company} [--redo] [--use-
 | `next` | すること |
 |---|---|
 | `ok: false` で `candidates` あり | 複数の企業が当たった。候補からユーザーに選んでもらい、もう一度 check |
-| `ok: false` で `company_missing: true` | 企業の情報が無い。ユーザーにホームページ URL を確認し、collect-company-info を `mode=full` で実行してから check をやり直す |
+| `ok: false` で `company_missing: true` | 企業の情報が無い。ユーザーにホームページ URL を確認し、collect-company-info を `mode=full` で実行してから check をやり直す。`peer_only: true` なら、他社の同業比較のために原本だけ集めたディレクトリ（`dir`）がある: そのディレクトリのまま `mode=full` で収集する（取得済みの有報・短信などは各担当のスクリプトが取り直さない） |
 | `five-forces` / `three-c` / `moat` / `swot` | その分析が新しくない。**そのスキルを引数 `{ticker}` で最後の完了報告まで実行**し、check をやり直す（各スキルが収集・上流の確認を自分で行う。上流の結論（C・懸念・判定保留）では止めない） |
 | `profitability` / `growth` / `safety` / `cash-flow` / `valuation` | STEP 2・3 が新しくない。手順 1.5 の run でまとめて進める（スキルの手順書は読まない） |
 | `market-report` | 地合い判断（outlook.md）が無いか古い（分析が使うのは35日以内、レポートの株価の動き・業種の比較は7日以内。`materials` の `market` 行）。market-report スキルを実行し（材料が古ければ market-report が collect-market-info を先に実行する）、check をやり直す |

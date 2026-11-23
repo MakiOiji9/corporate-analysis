@@ -62,6 +62,12 @@ def company_dirs(root: Path) -> list[Path]:
     return sorted(p for p in base.iterdir() if p.is_dir() and "_" in p.name and not p.name.startswith("."))
 
 
+def peer_only(path: Path) -> bool:
+    """A directory made for another company's peer comparison (tools/collect/peer_company.py) and not analysed yet:
+    peer.json and no status.md. Lists show it as 未分析（同業として収集のみ）."""
+    return (path / "peer.json").is_file() and not (path / "status.md").is_file()
+
+
 def resolve_company(root: Path, arg: str, cls: type[C]) -> tuple[C | None, list[str]]:
     """(company, candidates). Accepts '3798', '3798_uls-group', 'companies/3798_uls-group' or part of
     the name. Returns (None, candidates) when nothing or more than one directory matches."""

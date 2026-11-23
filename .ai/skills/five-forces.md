@@ -45,7 +45,7 @@ Python は `.venv` のものを使う（Windows: `.venv\Scripts\python.exe`、ma
 $PY -I tools/analysis/five_forces.py list
 ```
 
-`companies` の各行（`dir`・`name`・`last_collected`・`five_forces`・`five_forces_date`・`attractiveness`）から選択肢を作り、ユーザーに選んでもらう（提示の方法はエントリーポイントの指示に従う）。
+`companies` の各行（`dir`・`name`・`last_collected`・`five_forces`・`five_forces_date`・`attractiveness`）から選択肢を作り、ユーザーに選んでもらう（提示の方法はエントリーポイントの指示に従う）。`peer_only: true` の行（他社の同業比較のために原本だけ集めた、未分析の会社）は名前に「未分析（同業として収集のみ）」を添える。
 企業が1社だけなら選択肢を出さずにその企業で進み、完了報告の「材料」行に「対象は1社だけのため選択を省略」と書く。
 選択肢には `five_forces` の状態（`none` 未分析 / `fresh` 有効 / `expired` 期限切れ / `triggered` 新しい raw あり / `draft` 作成途中）を添える。
 一覧に無い企業を指定されたら、手順 1 の `company_missing` と同じ扱いにする。

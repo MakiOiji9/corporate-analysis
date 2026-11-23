@@ -11,11 +11,13 @@
 スキル `collect-company-info` を実行すると、以下の構成が作成されます（詳細は `.ai/instructions/output-format.md`）。
 2回目以降は `mode=update` で、前回以降の差分だけを追加します。
 
+他社の同業比較のために原本だけを集めた会社は、`{ticker}_{name}/` に `peer.json` と `sources/` だけがあります（未分析）。その会社を分析するときは同じディレクトリを使い、取得済みの原本は取り直しません。
+
 ```
 {ticker}_{name}/
 ├── overview.md          # 企業概要・投資テーゼ・現在の判断
 ├── status.md            # データ鮮度・未取得項目・次回更新トリガー
-├── sources/             # ダウンロードした原本（git 管理外。manifest.csv だけコミット）
+├── sources/             # ダウンロードした原本と manifest.csv（git にコミット。20MB 超は _large/ で管理外）
 ├── data/                # スクリプト生成の構造化データ（financials.csv, tdnet_facts.csv）
 ├── raw/                 # 生データ（収集後は変更禁止）
 │   ├── ir/              # 事業概要・中期経営計画・IR資料一覧・財務時系列・株価指標

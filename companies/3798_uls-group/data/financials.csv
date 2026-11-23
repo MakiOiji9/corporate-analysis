@@ -284,6 +284,17 @@ S100TQHJ,2023-03-31,profit_before_tax,1924,百万円,jppfs_cor:IncomeBeforeIncom
 S100W1JI,2024-03-31,profit_before_tax,1758,百万円,jppfs_cor:IncomeBeforeIncomeTaxes,Prior1YearDuration
 S100YCBQ,2025-03-31,profit_before_tax,2638,百万円,jppfs_cor:IncomeBeforeIncomeTaxes,Prior1YearDuration
 S100YCBQ,2026-03-31,profit_before_tax,3063,百万円,jppfs_cor:IncomeBeforeIncomeTaxes,CurrentYearDuration
+S100ANFQ,2016-03-31,property_plant_and_equipment,31.085,百万円,jppfs_cor:PropertyPlantAndEquipment,Prior1YearInstant
+S100DI01,2017-03-31,property_plant_and_equipment,25.841,百万円,jppfs_cor:PropertyPlantAndEquipment,Prior1YearInstant
+S100G59I,2018-03-31,property_plant_and_equipment,34.955,百万円,jppfs_cor:PropertyPlantAndEquipment,Prior1YearInstant
+S100IVUU,2019-03-31,property_plant_and_equipment,53.673,百万円,jppfs_cor:PropertyPlantAndEquipment,Prior1YearInstant
+S100LN21,2020-03-31,property_plant_and_equipment,54.531,百万円,jppfs_cor:PropertyPlantAndEquipment,Prior1YearInstant
+S100OGPU,2021-03-31,property_plant_and_equipment,55.052,百万円,jppfs_cor:PropertyPlantAndEquipment,Prior1YearInstant
+S100R9LX,2022-03-31,property_plant_and_equipment,69.382,百万円,jppfs_cor:PropertyPlantAndEquipment,Prior1YearInstant
+S100TQHJ,2023-03-31,property_plant_and_equipment,166,百万円,jppfs_cor:PropertyPlantAndEquipment,Prior1YearInstant
+S100W1JI,2024-03-31,property_plant_and_equipment,157,百万円,jppfs_cor:PropertyPlantAndEquipment,Prior1YearInstant
+S100YCBQ,2025-03-31,property_plant_and_equipment,166,百万円,jppfs_cor:PropertyPlantAndEquipment,Prior1YearInstant
+S100YCBQ,2026-03-31,property_plant_and_equipment,413,百万円,jppfs_cor:PropertyPlantAndEquipment,CurrentYearInstant
 S100ANFQ,2016-03-31,receivables,1913.415,百万円,jppfs_cor:AccountsReceivableTrade,Prior1YearInstant
 S100DI01,2017-03-31,receivables,1748.986,百万円,jppfs_cor:AccountsReceivableTrade,Prior1YearInstant
 S100G59I,2018-03-31,receivables,1581.799,百万円,jppfs_cor:AccountsReceivableTrade,Prior1YearInstant
