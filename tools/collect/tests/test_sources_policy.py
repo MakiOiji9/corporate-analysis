@@ -103,3 +103,59 @@ def test_peer_rejects_bad_names(tmp_path, ticker, name):
     (tmp_path / "companies").mkdir()
     with pytest.raises(SystemExit):
         PC.ensure(tmp_path, ticker, name, "6506_yaskawa")
+
+
+class _Resp:
+    def __init__(self, content: bytes, ctype: str = "application/octet-stream"):
+        self.content, self.headers, self.text = content, {"Content-Type": ctype}, content.decode("latin-1")
+
+
+def _registered(tmp_path, name: str, data: bytes, url: str) -> str:
+    path, _ = store_document(tmp_path, data, name, {"doc_type": "yuho", "doc_id": name, "url": url})
+    path.unlink()  # as before originals were kept in git: registered, not on disk
+    return path.relative_to(tmp_path).as_posix()
+
+
+def test_restore_writes_only_matching_content(tmp_path, monkeypatch):
+    import sources_admin as SA
+    monkeypatch.setenv("EDINET_API_KEY", "k")
+    ok = _registered(tmp_path, "a.zip", b"same", "https://api.edinet-fsa.go.jp/api/v2/documents/S1?type=5")
+    changed = _registered(tmp_path, "b.htm", b"old", "https://www.example.co.jp/ir/")
+    other = _registered(tmp_path, "c.pdf", b"x", "https://other.example/c.pdf")
+    seen = {}
+
+    def get(url, params=None):
+        seen[url] = params
+        return _Resp({"https://api.edinet-fsa.go.jp/api/v2/documents/S1?type=5": b"same",
+                      "https://www.example.co.jp/ir/": b"new"}[url])
+
+    out = SA.restore(tmp_path, ["api.edinet-fsa.go.jp", "www.example.co.jp"], get=get)
+    assert out["restored"] == [ok] and (tmp_path / ok).read_bytes() == b"same"
+    assert [m["local_path"] for m in out["mismatch"]] == [changed] and not (tmp_path / changed).exists()
+    assert out["skipped_host"] == 1 and not (tmp_path / other).exists()
+    assert seen["https://api.edinet-fsa.go.jp/api/v2/documents/S1?type=5"] == {"Subscription-Key": "k"}
+    assert seen["https://www.example.co.jp/ir/"] is None
+    again = SA.restore(tmp_path, ["api.edinet-fsa.go.jp"], get=get)
+    assert again["present"] == 1 and not again["restored"]
+
+
+def test_restore_moves_large_files_aside(tmp_path, monkeypatch):
+    import sources_admin as SA
+    rel = _registered(tmp_path, "big.pdf", b"x" * 11, "https://a.example/big.pdf")
+    monkeypatch.setattr(common, "LARGE_FILE_BYTES", 10)
+    out = SA.restore(tmp_path, get=lambda url, params=None: _Resp(b"x" * 11))
+    assert out["large"] == ["sources/_large/" + rel.split("/", 1)[1]]
+    row = read_manifest(tmp_path)[0]
+    assert row["local_path"] == out["large"][0] and row["note"].endswith("git 管理外（20MB 超）")
+    assert (tmp_path / row["local_path"]).is_file()
+
+
+def test_restore_reports_errors(tmp_path):
+    import sources_admin as SA
+    _registered(tmp_path, "a.pdf", b"x", "https://a.example/a.pdf")
+
+    def get(url, params=None):
+        raise RuntimeError("403")
+
+    out = SA.restore(tmp_path, get=get)
+    assert out["failed"][0]["error"] == "403" and not out["restored"]
