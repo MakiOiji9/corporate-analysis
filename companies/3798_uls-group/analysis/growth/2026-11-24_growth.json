@@ -1,8 +1,9 @@
 {
+ "version": 3,
  "company": "3798_uls-group",
  "name": "ULSグループ（3798）",
- "date": "2026-11-11",
- "valid_until": "2027-03-11",
+ "date": "2026-11-24",
+ "valid_until": "2027-03-24",
  "verdict": "普通",
  "verdict_reason": "手順1は高成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））",
  "step1": {
@@ -166,9 +167,212 @@
    }
   ]
  },
+ "step5": {
+  "verdict": "普通",
+  "sentence": "成長投資は普通: 売上に対する成長投資 7.3%（2022-03〜2026-03、以前並み）、効率（人材）は普通",
+  "notes": [
+   "人材集約型（従業員数 × 平均年間給与 ÷ 売上 41.9%）: 効率は人材の指標で見る（平均年間給与は提出会社の値）",
+   "設備投資が売上の 1.4% で 3% 未満: 投資不足の規則は使わない"
+  ],
+  "ratio": {
+   "recent": 7.3,
+   "earlier": -0.0,
+   "level": "標準",
+   "years": 5,
+   "past_level": "高い",
+   "recent_comparable": 6.9,
+   "peer_own": 0.6,
+   "peer_median": 0.2,
+   "peer_level": "標準",
+   "peer_count": 5,
+   "peer_with_rnd": false,
+   "peers": [
+    {
+     "name": "ノースサンド（446A）",
+     "share": 0.2,
+     "share_capex": 0.2,
+     "years": 3
+    },
+    {
+     "name": "ベイカレント（6532）",
+     "share": -0.4,
+     "share_capex": -0.4,
+     "years": 5
+    },
+    {
+     "name": "エル・ティー・エス（6560）",
+     "share": 0.7,
+     "share_capex": 0.7,
+     "years": 5
+    },
+    {
+     "name": "ライズ・コンサルティング・グループ（9168）",
+     "share": -1.2,
+     "share_capex": -1.2,
+     "years": 5
+    },
+    {
+     "name": "シグマクシス・ホールディングス（6088）",
+     "share": 0.3,
+     "share_capex": 0.3,
+     "years": 5
+    }
+   ],
+   "span": "2022-03〜2026-03",
+   "earlier_span": "2018-03〜2021-03",
+   "capex_share": 1.4,
+   "rnd_share": 0.5,
+   "capex_to_dep": 2.69,
+   "underinvest": false,
+   "asset_light": true,
+   "missing_rnd": false,
+   "missing_working_capital": false
+  },
+  "efficiency": {
+   "rating": "普通",
+   "basis": "人材",
+   "sentence": "1人当たり営業利益の CAGR -1.8%、従業員数 CAGR +19.5%"
+  },
+  "incremental_roic": {
+   "rating": "良好",
+   "value": 73.3,
+   "span": "2017-03〜2026-03",
+   "lag": 2,
+   "hurdle": 7.0
+  },
+  "people": {
+   "employees_cagr": 19.5,
+   "per_employee_cagr": -1.8,
+   "people_share": 41.9,
+   "intensive": true
+  },
+  "rows": [
+   {
+    "year": "2017-03",
+    "sales": 4677,
+    "capex": 6,
+    "depreciation": 11,
+    "net_capex": -4,
+    "rnd": null,
+    "working_capital": null,
+    "acquisition": 0,
+    "capex_to_dep": 0.58,
+    "growth": -4
+   },
+   {
+    "year": "2018-03",
+    "sales": 5085,
+    "capex": 24,
+    "depreciation": 14,
+    "net_capex": 10,
+    "rnd": null,
+    "working_capital": -167,
+    "acquisition": 0,
+    "capex_to_dep": 1.68,
+    "growth": -158
+   },
+   {
+    "year": "2019-03",
+    "sales": 5830,
+    "capex": 37,
+    "depreciation": 22,
+    "net_capex": 15,
+    "rnd": 8,
+    "working_capital": 65,
+    "acquisition": 0,
+    "capex_to_dep": 1.71,
+    "growth": 88
+   },
+   {
+    "year": "2020-03",
+    "sales": 6388,
+    "capex": 9,
+    "depreciation": 31,
+    "net_capex": -23,
+    "rnd": null,
+    "working_capital": 27,
+    "acquisition": 0,
+    "capex_to_dep": 0.28,
+    "growth": 5
+   },
+   {
+    "year": "2021-03",
+    "sales": 7191,
+    "capex": 58,
+    "depreciation": 36,
+    "net_capex": 22,
+    "rnd": 31,
+    "working_capital": 49,
+    "acquisition": 0,
+    "capex_to_dep": 1.6,
+    "growth": 102
+   },
+   {
+    "year": "2022-03",
+    "sales": 7367,
+    "capex": 60,
+    "depreciation": 38,
+    "net_capex": 22,
+    "rnd": 56,
+    "working_capital": 503,
+    "acquisition": 0,
+    "capex_to_dep": 1.57,
+    "growth": 581
+   },
+   {
+    "year": "2023-03",
+    "sales": 8515,
+    "capex": 152,
+    "depreciation": 54,
+    "net_capex": 98,
+    "rnd": 12,
+    "working_capital": 554,
+    "acquisition": 0,
+    "capex_to_dep": 2.81,
+    "growth": 665
+   },
+   {
+    "year": "2024-03",
+    "sales": 10382,
+    "capex": 64,
+    "depreciation": 74,
+    "net_capex": -10,
+    "rnd": 17,
+    "working_capital": 908,
+    "acquisition": 0,
+    "capex_to_dep": 0.86,
+    "growth": 915
+   },
+   {
+    "year": "2025-03",
+    "sales": 13203,
+    "capex": 90,
+    "depreciation": 83,
+    "net_capex": 7,
+    "rnd": 125,
+    "working_capital": 1159,
+    "acquisition": 0,
+    "capex_to_dep": 1.08,
+    "growth": 1291
+   },
+   {
+    "year": "2026-03",
+    "sales": 16600,
+    "capex": 393,
+    "depreciation": 146,
+    "net_capex": 247,
+    "rnd": 67,
+    "working_capital": 353,
+    "acquisition": 0,
+    "capex_to_dep": 2.69,
+    "growth": 667
+   }
+  ]
+ },
+ "investment_quote": "投資の質 普通（投資効率 普通、中計との整合 不明、潮流との整合 合う（良好の条件を満たさない）。投資効率 普通）: companies/3798_uls-group/analysis/investment/2026-11-24_investment.md（2026-11-24）",
  "step2": {
   "sentence": "減収・減益の年 1 年（一時 2024-03）で構造要因なし",
-  "structural": "構造的な減収・減益の要因は見当たらない。2024-03 の EPS の減少は前期の特別利益が無くなった一時要因で、翌 2025-03 に EPS は回復した"
+  "structural": "構造的な減収・減益の要因は見当たらない。2024年3月期の EPS 減少は前期の特別利益（投資有価証券売却益 197百万円）の一巡による一時要因で、2025年3月期には回復した。"
  },
  "rows": [
   {
@@ -318,7 +522,7 @@
      "recovered": "2025-03"
     }
    ],
-   "reason": "前連結会計年度に計上した特別利益（投資有価証券売却益 197百万円）が当連結会計年度は無かったため純利益が減少したと会社は説明しており、売上高は+21.9%、営業利益は+1.7%で増加していた（有報 第24期 S100TQHJ p.17・p.21）",
+   "reason": "前連結会計年度に特別利益（投資有価証券売却益 197百万円）を計上したが当連結会計年度は同様の計上がなかったため EPS が減少（売上高・営業利益・経常利益はいずれも増加）（有報 S100TQHJ p.17・p.21）。",
    "class": "一時",
    "swot": "—（構造要因ではない）"
   }
@@ -347,10 +551,10 @@
   }
  ],
  "consistency_comment": "整合（売上が市場並み以上に伸びている）",
- "mtp": "数値目標を置いた中期経営計画は開示されておらず、「当面前期比平均20-30%台の利益成長フェーズを継続するイメージ」という定性的な方針（決算説明会資料 2026年5月 p.12）だけのため、前回の中期経営計画の達成状況は不明（brief に記載なし）",
- "drivers": "ITコンサルティングの単一セグメントで、受注の拡大が売上を押し上げ、中途採用を年間120〜140名規模に広げる人員拡大がそれを支えている（有報 p.22・p.7–8）。直近3年に営業利益 CAGR 20.8% が売上 CAGR 24.9% を下回るのは、採用加速に伴う販管費の増加と 2024年3月期の売上総利益率の低下（研修・待機時間の増加）による",
+ "mtp": "有報（S100YCBQ p.23）に「中期経営計画等の策定・公表は行っておりません」と明記されており、前回の中期経営計画の達成状況は確認できない（brief に記載なし）。",
+ "drivers": "受注高 18,135百万円（前年比 +27.3%）・受注残高 6,759百万円（同 +29.4%）と旺盛な需要への積極採用対応が売上成長の主因。採用費（2026年3月期 848百万円）と人件費増加による販管費の拡大で、直近3年は営業利益率が低下している（成長の質の問題の要因）。",
  "handoff": {
-  "report_points": "2017-03〜2026-03 を全年の回帰で見ると売上 CAGR 14.2%・EPS CAGR 15.9% で高成長にあたり、減益は 2024-03 の EPS（特別利益の剥落による一時要因）だけで翌年に回復した。一方で直近3年は営業利益 CAGR 20.8% が売上 CAGR 24.9% を下回り、採用拡大の費用で利益率が下がっているため成長の質に問題があり、成長性は普通にとどまる。今期は第2四半期累計で営業利益の進捗 46.1%（前年同期 50.3%）と、前年よりやや遅い",
+  "report_points": "売上 CAGR 14.2%・EPS CAGR 15.9%（2017-03〜2026-03）の高成長だが、直近3年は採用拡大に伴う販管費増で営業利益率が低下しており、成長の質に課題がある（成長性 普通）。2024-03 の EPS 減少は前期の特別利益（投資有価証券売却益 197百万円）の一巡による一時要因で 2025-03 に回復した。会社計画の達成率は平均 123%（9年中 9年達成）で信頼できるが、直近2年（2024-03・2026-03）は若干未達気味。",
   "step3_hint": "会社計画は信頼できる（9年中 9年で達成率 90% 以上。直近3年の平均 104%、100% 未満の年 2（2024-03、2026-03））。STEP 3 では会社計画の成長率をそのまま使える",
   "step2_checks": "利益の伸びが売上の伸びに見合い、利益率が保たれているか（収益性）、成長に伴う運転資本・設備投資が営業CF・FCF を圧迫していないか（キャッシュフロー）、成長投資の資金を借入に頼っていないか（安全性）",
   "triggers": "売上 CAGR が5%を下回るか EPS CAGR が7%を下回れば安定成長、減収・減益の年に構造要因が見つかれば懸念。境界に近い比較: 手順4: 営業利益 CAGR 14.4% と売上 CAGR 14.2% の差が 1pt 以内。"
@@ -366,7 +570,8 @@
   "companies/3798_uls-group/raw/filings/2026-10-11_2026-03_yuho.md",
   "companies/3798_uls-group/raw/ir/2026-10-11_financials-historical.md",
   "companies/3798_uls-group/raw/ir/2026-10-11_mid-term-plan.md",
-  "companies/3798_uls-group/raw/ir/2026-10-21_financials-historical.md"
+  "companies/3798_uls-group/raw/ir/2026-10-21_financials-historical.md",
+  "companies/3798_uls-group/raw/market/2026-11-24_competitors.md"
  ],
  "seen": [
   "companies/3798_uls-group/raw/filings/2026-10-11_2026-03_yuho.md",
@@ -387,23 +592,24 @@
   "policy": "5b53a00b6a72f4552e7e1965f97c0171b7aaed1b",
   "targets": "2d78358241c07d5c1144b6264eee3169ba347b44",
   "mtp_result": "",
+  "peer_invest": "a8be393b537368a431e5120ad19b5401ee246775",
   "yearly_series": "473e89cdb3095b1d1cdf42678e735e19dede6c99"
  },
  "three_c": {
-  "date": "2026-10-31",
+  "date": "2026-11-16",
   "verdict": "あいまい",
   "market_growth": "高"
  },
  "swot": {
-  "date": "2026-10-31",
+  "date": "2026-11-16",
   "verdict": "条件付き"
  },
- "outlook": "market/report/2026-11-09_outlook.md",
+ "outlook": "market/report/2026-11-23_outlook.md",
  "previous": {
-  "date": "2026-11-10",
+  "date": "2026-11-16",
   "verdict": "普通"
  },
- "md": "companies/3798_uls-group/analysis/growth/2026-11-11_growth.md",
+ "md": "companies/3798_uls-group/analysis/growth/2026-11-24_growth.md",
  "downgraded": [],
  "conservative": []
 }
