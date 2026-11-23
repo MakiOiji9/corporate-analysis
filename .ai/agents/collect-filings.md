@@ -13,7 +13,7 @@ ticker, name, url, market, mode, 企業ディレクトリ, 収集日, 取得経�
 
 ## 書いてよいファイル（これ以外は書かない）
 - `raw/filings/{収集日}_{決算期}_{書類種別}.md`, `raw/ir/{収集日}_financials-historical.md`
-- `data/financials.csv`, `data/tdnet_facts.csv`, `data/governance.json`（スクリプト経由のみ）
+- `data/financials.csv`, `data/tdnet_facts.csv`, `data/governance.json`, `data/investments.json`（スクリプト経由のみ）
 - `fetch.py` / `edinet.py fetch` 経由の `sources/`
 - **書かない**: `status.md`, `overview.md`, `summaries/`, 他担当の raw
 - **保存と再開**: raw は書き上げたファイルから順に保存する（最後にまとめない。有報の raw を先に書き上げてから財務時系列に進む）。始める前に、自分の書く raw が今日の日付で既にあれば読み、書き終わっている章は飛ばして残りだけを書く（前回の実行が途中で止まった続き）
@@ -33,6 +33,7 @@ ticker, name, url, market, mode, 企業ディレクトリ, 収集日, 取得経�
    - EDINET 経路: `edinet.py list --code {ticker} --fy-end-month {決算月} --years 10` で過去10期の有報を探し、**全期**を `edinet.py fetch --kind csv` で取得してから `xbrl_financials.py --all --company {dir}` を1回実行する（財務諸表は各有報に2期分しか無いので、5期おきでは減価償却費・借入金・リース負債などが歯抜けになる。`--all` は sources/ の自社の有報だけを古い順に取り込み、同業の有報は飛ばす）
    - 業種: `company_profile.py --company {dir}` で `data/profile.json`（日本株は EDINET コードリストの提出者業種、米国株は SEC の SIC）を作る。分析の業種別ルール（金融・不動産など）が読む
    - 続けて `yuho_governance.py --company {dir}` を1回実行し、`data/governance.json`（大株主上位10・役員の役職・生年月日・略歴・持株、創業者・親族の保有比率、発行済株式数の推移と増資・分割の履歴）を作る。`ok: false` なら有報の XBRL→CSV が無い理由を報告の3章に書く（大株主・役員を web から推測で補わない）
+   - 続けて `yuho_investments.py --company {dir}` を1回実行し、`data/investments.json`（各期の有報の設備投資等の概要・主要な設備の状況・設備の新設、除却等の計画・研究開発活動・企業結合・株式の保有状況の文章と、セグメント別の設備投資・資産・売上・利益・減価償却費）を作る。投資の質の分析（investment）が「何に投資したか」と変化点を読む。`missing` に出た期（文章が見つからなかった期）は報告の3章に書く（web から補わない）
    - **日本株は `data/financials.csv` が無ければ Phase 3 は未完了**。`--all` の出力の「years」が5年未満なら、取れなかった期と理由を報告の3章に書く
    - PDF 経路: 過去の有報 PDF を `fetch.py --text` → `find_pages.py fin`（各有報に2期分）
    - どちらでも取れない年度だけ IRBANK・株探で補い、確度「二次」と明記
@@ -66,6 +67,7 @@ ticker, name, url, market, mode, 企業ディレクトリ, 収集日, 取得経�
 1. `edgar.py list --ticker {ticker}` で提出書類一覧と本文 URL を得る（10-K・10-Q・S-1・424B4・8-K）
 2. 年次: 最新の 10-K（無ければ 424B4、無ければ S-1）を `fetch.py {url} --company {dir} --type 10k|424b4|s-1 --period YYYY-MM --published YYYY-MM-DD --doc-id {accession} --text`
    - 本文は全部読まない。`find_pages.py toc` で見出しを出し、`find_pages.py find` で Item 1（Business）・1A（Risk Factors）・7（MD&A）・8（Financial Statements）、目論見書なら Prospectus Summary・Business・Risk Factors・Capitalization・Lock-Up・Principal Stockholders・Use of Proceeds の該当部分だけ読む
+   - 投資の内容（投資の質の分析の材料。米国株は有報の様式が無いので書かれている範囲で）: Item 7 の Liquidity and Capital Resources にある Capital Expenditures の説明（金額・用途・翌期の見込み）と、注記の Business Combinations / Acquisitions（買収先・取得額・のれん・目的）を、raw の 7章（設備投資）に期を付けて書く。過去の期の金額は companyfacts（`edgar.py facts`）が出すので、本文から書き写さない。設備の新設計画・政策保有株にあたる開示は無いので書かない
 3. 四半期: 最新の 10-Q を同じ要領で保存し、損益・貸借・CF・主要顧客・RPO・発行済株式数（表紙）・後発事象を読む
 4. 財務の時系列: `edgar.py facts --ticker {ticker} --company {dir}` → `raw_financials.py --company {dir}`（日本株と同じく 1・8章を記入済みの raw を作る。表は書き写さない）。companyfacts に無い年（S-1 にだけ載る古い年度など）だけ 2章に本文から転記し、出典を書く
 5. 会社計画: 決算発表（8-K Ex.99.1）のガイダンスを `financials-historical.md` 4章に書く。非 GAAP は会社の定義を併記する

@@ -136,6 +136,12 @@ STATEMENT_ITEMS = {
     "lease_liabilities_noncurrent": ["LeaseLiabilitiesNCLIFRS", "LeaseObligationsNCL"],
     "non_controlling_interests": ["NonControllingInterestsIFRS", "NonControllingInterests"],
     "goodwill": ["GoodwillIFRS", "Goodwill"],
+    # 投資の質（investment）: past investments that failed (impairment), the asset turnover and the capex not yet
+    # running. The element names are unverified on real filings (check with --dump and fix)
+    "impairment_loss": ["ImpairmentLossOpeCFIFRS", "ImpairmentLossesOpeCFIFRS", "ImpairmentLossOpeCF",
+                        "ImpairmentLossEL"],
+    "property_plant_and_equipment": ["PropertyPlantAndEquipmentIFRS", "PropertyPlantAndEquipment"],
+    "construction_in_progress": ["ConstructionInProgressIFRS", "ConstructionInProgress"],
     "intangible_assets": ["IntangibleAssetsIFRS", "IntangibleAssets"],
     "short_term_investments": ["OtherFinancialAssetsCAIFRS", "ShortTermInvestmentSecurities", "SecuritiesCA"],
     # IFRS has no 投資有価証券 line: その他の金融資産（非流動）holds the listed shares and bonds

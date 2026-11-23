@@ -335,5 +335,6 @@
 - 課題: レポートで分かるのは成長投資の「金額」まで（成長性の手順5）で、「何に」投資したか・どこで変わったかが見えない。最新の有報1期の要約にしか内容が無く、過去の期の内容は集めていない
 - 決定（2026-11-23 の問答）: 独立スキル `investment`、判定（良好/普通/懸念/判定保留）を点数に反映（長期 10・中期 5。成長性と 3C から付け替え）、成長性の手順5は investment に移す（二重計上しない）、潮流は今ある材料だけ、競合は数値だけ、米国株は出せる範囲、追加の評価 (a)〜(h) をすべて入れる
 - 提案書: `docs/proposals/investment-analysis.md`（しきい値・判定ルール・有効期限は未決）
+- 段階1（収集）: `tools/collect/yuho_investments.py`（`data/investments.json`）、`xbrl_financials.py`・`edgar.py` に減損損失・有形固定資産・建設仮勘定、collect-filings の手順（日本株は Phase 3、米国株は 10-K の Capital Expenditures と Business Combinations）
 - 残り: EDINET に接続できる環境（`api.edinet-fsa.go.jp`・`disclosure2dl.edinet-fsa.go.jp` の許可と `EDINET_API_KEY`）で XBRL の要素名を実データで確かめる
 - 状態: 着手

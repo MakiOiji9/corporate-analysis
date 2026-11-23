@@ -60,6 +60,9 @@ DURATION_ITEMS = {
         "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments"],
     "share_based_compensation": ["ShareBasedCompensation", "AllocatedShareBasedCompensationExpense"],
     "lease_repayments": ["FinanceLeasePrincipalPayments"],
+    # 投資の質（investment）: past investments that failed
+    "impairment_loss": ["GoodwillAndIntangibleAssetImpairment", "GoodwillImpairmentLoss",
+                        "ImpairmentOfLongLivedAssetsHeldForUse", "AssetImpairmentCharges"],
 }
 INSTANT_ITEMS = {
     "summary.total_assets": ["Assets"],
@@ -84,6 +87,8 @@ INSTANT_ITEMS = {
     "non_controlling_interests": ["MinorityInterest"],
     "goodwill": ["Goodwill"],
     "intangible_assets": ["IntangibleAssetsNetExcludingGoodwill"],
+    "property_plant_and_equipment": ["PropertyPlantAndEquipmentNet"],
+    "construction_in_progress": ["ConstructionInProgressGross"],
     "shares_outstanding": ["CommonStockSharesOutstanding"],
 }
 # statement-level aliases that ff_metrics / tc_metrics read without the 'summary.' prefix

@@ -45,7 +45,8 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 | `pdf_text.py` | PDF/HTML → ページ区切りテキスト | `<原本>.txt` |
 | `find_pages.py` | テキストから表紙・見出し・財務行・任意パターンのページだけ抽出 | 標準出力 |
 | `edinet.py` | EDINET API v2 の書類一覧・取得（要 `EDINET_API_KEY`） | `sources/`、`.cache/edinet/` |
-| `xbrl_financials.py` | EDINET XBRL→CSV から財務を抽出（リース負債・非支配持分・のれん・金融費用なども）。`--all --company {dir}` で sources/ の自社の有報をすべて古い順に取り込む | `data/financials.csv` |
+| `xbrl_financials.py` | EDINET XBRL→CSV から財務を抽出（リース負債・非支配持分・のれん・金融費用・減損損失・有形固定資産・建設仮勘定なども）。`--all --company {dir}` で sources/ の自社の有報をすべて古い順に取り込む | `data/financials.csv` |
+| `yuho_investments.py --company {dir}` | sources/ の自社の有報（XBRL→CSV）すべてから、何に投資したかの文章（設備投資等の概要・主要な設備・設備の新設計画・研究開発活動・企業結合・株式の保有状況）とセグメント別の設備投資・資産・売上・利益・減価償却費を抜き出す（投資の質の分析の材料。要素名は実データで要確認で、`elements`・`missing` に一致した要素名と見つからなかった期を出す） | `data/investments.json` |
 | `company_profile.py` | 業種（日本株: EDINET コードリストの提出者業種、米国株: SEC の SIC）。分析の業種別ルール（`tools/analysis/sector_rules.py`）が読む | `data/profile.json` |
 | `tdnet_summary.py` | 決算短信 iXBRL から実績・予想・配当・株式数を抽出 | `data/tdnet_facts.csv` |
 | `edgar.py` | SEC EDGAR の提出書類一覧（`list`）、companyfacts から年次財務を抽出（`facts`）、四半期（3か月）の売上高・利益を抽出（`quarters`）。米国株。要 `SEC_USER_AGENT` | 標準出力、`data/financials.csv`、`data/quarterly.csv` |
