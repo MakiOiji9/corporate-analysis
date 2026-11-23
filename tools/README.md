@@ -203,6 +203,17 @@ everything-claude-code プラグインの Fact-Forcing Gate（ファイル作成
 
 モジュール: `gr_paths.py`（結果の場所と鮮度）、`gr_inputs.py`（入力一覧。抽出は `ff_inputs.py` を再利用）、`gr_series.py`（自社の年次系列: 売上高・営業利益・当期純利益・EPS・子会社株式の取得・自己株式の取得、EPS の分割調整、会社計画と実績、M&A の表。セルの読み取りは `pf_series.py`）、`gr_metrics.py`（CAGR、手順1〜5の判定と保守的判断、整合性チェック、収集の要求とヒント）、`gr_facts.py`（株式分割の記録、今期の進捗、販管費の内訳、保存済みの原本の検索）、`gr_brief.py`（材料。SWOT の弱み・脅威を引用）、`gr_doc.py`（骨組み・検証・結論）。テンプレートは `.ai/templates/growth/`。
 
+スキル `investment`（`.ai/skills/investment.md`、投資の質）からは `investment.py` を呼び出す。出力は `companies/{ticker}_{name}/analysis/investment/{分析日}_*`。数値・変化点・(a)〜(h)・判定はすべてスクリプトが出し、LLM は何に投資したか・投資テーマ（T1〜T5）と潮流との照合・変化点の背景・中計と設備計画の照合だけを書く。
+
+| コマンド | 用途 | 主な出力 |
+|---|---|---|
+| `investment.py list` | `companies/` の企業と、投資の質の分析の状態・結論・`data/investments.json` の有無 | 1行の JSON |
+| `investment.py check --company X` | 結果が有効か（365日以内で、新しい期の有報・中計・業界データ、ファイブフォース・3C の結論の変化が無いか）、材料（設備投資の時系列・日本株の `data/investments.json`）があるか → `next` | 1行の JSON |
+| `investment.py prepare --company X [--redo] [--skip-collect]` | 年ごとの表・変化点・① 投資効率（成長性と同じ計算の増分 ROIC）・④ 競合比較・(a)〜(h)・⑤⑥ を記入した骨組みと brief | `{分析日}_brief.md`・`{分析日}_investment.md` |
+| `investment.py fill --company X [--build]` / `build --company X [--date …]` | 執筆者の JSON を流し込み、md を検証（構造・FILL・分類の語・テーマの ID・数値の引用）して ②③ を集計し結論を書く | md の 3・4・7章、`{分析日}_investment.json` |
+
+モジュール: `iv_paths.py`（結果の場所と鮮度）、`iv_inputs.py`（入力一覧）、`iv_metrics.py`（数値・変化点・(a)〜(h)・軸・判定。成長投資の比率と増分 ROIC は `gr_invest.step5`）、`iv_brief.py`（材料）、`iv_doc.py`（骨組み・検証・結論）。テンプレートは `.ai/templates/investment/investment.md`。
+
 スキル `safety`（`.ai/skills/safety.md`、STEP 2-3 安全性）からは `safety.py` を呼び出す。出力は `companies/{ticker}_{name}/analysis/safety/{分析日}_*`。数値と判定はすべてスクリプトが出し、LLM は数値の背景だけを書く。
 
 | コマンド | 用途 | 主な出力 |
