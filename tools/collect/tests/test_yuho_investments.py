@@ -52,6 +52,10 @@ def test_segments_priority_and_names():
              "jpcrp_cor:RevenuesFromExternalCustomers"): 290_000_000_000,
             (f"Prior1YearDuration_{SEG.format('Robotics')}",
              "jpcrp_cor:IncreaseInPropertyPlantAndEquipmentAndIntangibleAssets"): 15_000_000_000,
+            ("CurrentYearDuration_jpcrp030000-asr_E01741-000SystemEngineeringReportableSegmentsMember",
+             "jpcrp_cor:IncreaseInPropertyPlantAndEquipmentAndIntangibleAssets"): 1_241_000_000,
+            ("CurrentYearDuration_ReportableSegmentsMember",
+             "jpcrp_cor:IncreaseInPropertyPlantAndEquipmentAndIntangibleAssets"): 49_200_000_000,
             ("CurrentYearDuration_ReconcilingItemsMember",
              "jpcrp_cor:IncreaseInPropertyPlantAndEquipmentAndIntangibleAssets"): 7_836_000_000,
             # two axes, the parent only, and a non-segment member are skipped
@@ -62,6 +66,8 @@ def test_segments_priority_and_names():
     assert got == {("2026-02-28", "MotionControl", "capex"): "17573",
                    ("2026-02-28", "MotionControl", "revenue"): "290000",  # external customers before the total
                    ("2025-02-28", "Robotics", "capex"): "15000",
+                   ("2026-02-28", "SystemEngineering", "capex"): "1241",  # older 'ReportableSegments' member name
+                   ("2026-02-28", "ReportableSegments", "capex"): "49200",
                    ("2026-02-28", "ReconcilingItems", "capex"): "7836"}
 
 

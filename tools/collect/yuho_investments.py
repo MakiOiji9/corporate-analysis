@@ -110,8 +110,9 @@ def texts(rows: list[XF.Row]) -> dict[str, dict]:
 def _segment_name(member: str) -> str:
     """'jpcrp030000-asr_E01741-000MotionControlReportableSegmentMember' -> 'MotionControl'."""
     name = re.sub(r"^.*-\d{3}", "", member)
-    name = re.sub(r"ReportableSegmentMember$|Member$", "", name)
-    return name or member
+    # older reports name the members 'MotionControlReportableSegmentsMember': the same segment as 'MotionControl'
+    plain = re.sub(r"(ReportableSegments?)?Member$", "", name)
+    return plain or re.sub(r"Member$", "", name) or member
 
 
 def segments(rows: list[XF.Row], fy_end: str) -> list[dict]:
