@@ -1,8 +1,8 @@
 {
- "rules_version": 3,
+ "rules_version": 4,
  "company": "6506_yaskawa",
  "name": "安川電機（6506）",
- "date": "2026-11-23",
+ "date": "2026-11-25",
  "market": "日本",
  "horizons": {
   "short": {
@@ -15,15 +15,15 @@
   "mid": {
    "verdict": "ウォッチ",
    "provisional": null,
-   "why": "重み付けの点数 +0.19（+0.25 以上 投資検討、-0.25 以下 見送り。投資検討の境目（+0.25）まであと 0.06 点）。プラス: 収益性・成長性／マイナス: 直近の決算の進捗",
-   "score": 0.192,
+   "why": "重み付けの点数 +0.09（+0.25 以上 投資検討、-0.25 以下 見送り。投資検討の境目（+0.25）まであと 0.16 点）。プラス: 収益性・株価の割安さ（STEP 3）／マイナス: 直近の決算の進捗・成長性",
+   "score": 0.092,
    "coverage": 1.0
   },
   "long": {
-   "verdict": "投資検討",
+   "verdict": "ウォッチ",
    "provisional": null,
-   "why": "重み付けの点数 +0.36（+0.25 以上 投資検討、-0.25 以下 見送り。投資検討の境目（+0.25）を 0.11 点上回っている（下回るとウォッチ））。プラス: 成長性・収益性／マイナスの要素なし",
-   "score": 0.362,
+   "why": "重み付けの点数 +0.24（+0.25 以上 投資検討、-0.25 以下 見送り。投資検討の境目（+0.25）まであと 0.01 点）。プラス: 収益性・地合い／マイナス: 成長性",
+   "score": 0.237,
    "coverage": 1.0
   }
  },
@@ -35,7 +35,7 @@
  "step2": {
   "grade": "A",
   "pending": false,
-  "why": "平均点 +0.75（良好 +1・普通 0・懸念 −1。A は +0.5 以上、C は -0.25 以下）",
+  "why": "平均点 +0.50（良好 +1・普通 0・懸念 −1。A は +0.5 以上、C は -0.25 以下）",
   "mismatch": []
  },
  "step3": {
@@ -93,27 +93,33 @@
    "date": "2026-11-10",
    "verdict": "良好"
   },
+  "investment": {
+   "date": "2026-11-24",
+   "verdict": "普通"
+  },
   "growth": {
-   "date": "2026-11-15",
-   "verdict": "良好"
+   "date": "2026-11-24",
+   "verdict": "普通"
   },
   "safety": {
    "date": "2026-11-11",
    "verdict": "良好"
   },
   "cash_flow": {
-   "date": "2026-11-15",
+   "date": "2026-11-24",
    "verdict": "普通"
   },
   "valuation": {
-   "date": "2026-11-23",
+   "date": "2026-11-24",
    "verdict": "妥当"
   }
  },
  "outlook": "market/report/2026-11-23_outlook.md",
  "review": "次回決算発表予定日: 未告知（第3四半期は例年1月上旬〜中旬。2026-01-09、2025-01-10）",
- "warnings": [],
+ "warnings": [
+  "自動チェック（読みにくい書き方。レポートには出さない）: 2重の括弧が 1 か所（例: （良好の条件を満たさない））"
+ ],
  "used_existing": [],
- "md": "companies/6506_yaskawa/reports/2026-11-23_company-report.md",
- "html": "companies/6506_yaskawa/reports/2026-11-23_company-report.html"
+ "md": "companies/6506_yaskawa/reports/2026-11-25_company-report.md",
+ "html": "companies/6506_yaskawa/reports/2026-11-25_company-report.html"
 }
