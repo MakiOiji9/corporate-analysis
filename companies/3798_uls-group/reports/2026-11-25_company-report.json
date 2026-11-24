@@ -1,8 +1,8 @@
 {
- "rules_version": 3,
+ "rules_version": 4,
  "company": "3798_uls-group",
  "name": "ULSグループ（3798）",
- "date": "2026-11-23",
+ "date": "2026-11-25",
  "market": "日本",
  "horizons": {
   "short": {
@@ -15,15 +15,15 @@
   "mid": {
    "verdict": "ウォッチ",
    "provisional": null,
-   "why": "重み付けの点数 +0.17（+0.25 以上 投資検討、-0.25 以下 見送り。投資検討の境目（+0.25）まであと 0.08 点）。プラス: 株価の割安さ（STEP 3）・安全性／マイナス: キャッシュフロー・株価のテクニカル（13・26・52週線・勢い・位置）",
-   "score": 0.167,
+   "why": "重み付けの点数 +0.19（+0.25 以上 投資検討、-0.25 以下 見送り。投資検討の境目（+0.25）まであと 0.06 点）。プラス: 株価の割安さ（STEP 3）・安全性／マイナス: キャッシュフロー・株価のテクニカル（13・26・52週線・勢い・位置）",
+   "score": 0.192,
    "coverage": 1.0
   },
   "long": {
-   "verdict": "ウォッチ",
+   "verdict": "投資検討",
    "provisional": null,
-   "why": "重み付けの点数 +0.23（+0.25 以上 投資検討、-0.25 以下 見送り。投資検討の境目（+0.25）まであと 0.02 点）。プラス: 株価の割安さ（STEP 3）・地合い／マイナス: キャッシュフロー",
-   "score": 0.225,
+   "why": "重み付けの点数 +0.28（+0.25 以上 投資検討、-0.25 以下 見送り。投資検討の境目（+0.25）を 0.03 点上回っている（下回るとウォッチ））。プラス: 株価の割安さ（STEP 3）・地合い／マイナス: キャッシュフロー",
+   "score": 0.275,
    "coverage": 1.0
   }
  },
@@ -93,8 +93,12 @@
    "date": "2026-11-11",
    "verdict": "普通"
   },
+  "investment": {
+   "date": "2026-11-24",
+   "verdict": "普通"
+  },
   "growth": {
-   "date": "2026-11-16",
+   "date": "2026-11-24",
    "verdict": "普通"
   },
   "safety": {
@@ -112,8 +116,10 @@
  },
  "outlook": "market/report/2026-11-23_outlook.md",
  "review": "2027年3月期 第3四半期決算の発表（日付は IR カレンダーで要確認）",
- "warnings": [],
+ "warnings": [
+  "自動チェック（読みにくい書き方。レポートには出さない）: 2重の括弧が 1 か所（例: （良好の条件を満たさない））"
+ ],
  "used_existing": [],
- "md": "companies/3798_uls-group/reports/2026-11-23_company-report.md",
- "html": "companies/3798_uls-group/reports/2026-11-23_company-report.html"
+ "md": "companies/3798_uls-group/reports/2026-11-25_company-report.md",
+ "html": "companies/3798_uls-group/reports/2026-11-25_company-report.html"
 }
