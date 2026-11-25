@@ -2,7 +2,7 @@
  "rules_version": 4,
  "company": "3798_uls-group",
  "name": "ULSグループ（3798）",
- "date": "2026-11-24",
+ "date": "2026-11-26",
  "market": "日本",
  "horizons": {
   "short": {
@@ -15,8 +15,8 @@
   "mid": {
    "verdict": "ウォッチ",
    "provisional": null,
-   "why": "重み付けの点数 +0.19（+0.25 以上 投資検討、-0.25 以下 見送り。投資検討の境目（+0.25）まであと 0.06 点）。プラス: 株価の割安さ（STEP 3）・安全性／マイナス: キャッシュフロー・株価のテクニカル（13・26・52週線・勢い・位置）",
-   "score": 0.192,
+   "why": "重み付けの点数 +0.21（+0.25 以上 投資検討、-0.25 以下 見送り。投資検討の境目（+0.25）まであと 0.04 点）。プラス: 株価の割安さ（STEP 3）・安全性／マイナス: キャッシュフロー・株価のテクニカル（13・26・52週線・勢い・位置）",
+   "score": 0.208,
    "coverage": 1.0
   },
   "long": {
@@ -43,8 +43,8 @@
   "note": "割安だが理由あり（キャッシュフロー）"
  },
  "price": {
-  "value": 458.0,
-  "date": "2026-11-20",
+  "value": 456.0,
+  "date": "2026-11-24",
   "currency": "円"
  },
  "legends": {
@@ -54,7 +54,7 @@
  },
  "technical": {
   "state": "下降トレンド",
-  "score": -0.333
+  "score": -0.167
  },
  "projection": {
   "ok": true,
@@ -67,10 +67,10 @@
  },
  "price_range": {
   "source": "prices",
-  "current": 458.0,
+  "current": 456.0,
   "first": "2016-10-24",
-  "last": "2026-11-20",
-  "position_52w": 2.7
+  "last": "2026-11-24",
+  "position_52w": 2.3
  },
  "analyses": {
   "five_forces": {
@@ -110,7 +110,7 @@
    "verdict": "懸念"
   },
   "valuation": {
-   "date": "2026-11-23",
+   "date": "2026-11-26",
    "verdict": "割安"
   }
  },
@@ -120,6 +120,6 @@
   "自動チェック（読みにくい書き方。レポートには出さない）: 2重の括弧が 1 か所（例: （良好の条件を満たさない））"
  ],
  "used_existing": [],
- "md": "companies/3798_uls-group/reports/2026-11-24_company-report.md",
- "html": "companies/3798_uls-group/reports/2026-11-24_company-report.html"
+ "md": "companies/3798_uls-group/reports/2026-11-26_company-report.md",
+ "html": "companies/3798_uls-group/reports/2026-11-26_company-report.html"
 }
