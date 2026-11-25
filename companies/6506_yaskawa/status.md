@@ -1,13 +1,13 @@
 # データ鮮度・未取得項目 — 安川電機
 
-**最終更新**: 2026-11-24（mode=update。investment の指定で collect-peers-valuation（競合 14章: 成長投資の材料 raw/market/2026-11-24_competitors.md）。ファナック・三菱電機・山洋電気の設備投資・減価償却費・研究開発費 2022〜2026年3月期を EDINET XBRL CSV から抽出）。以前: 2026-11-19（mode=update。企業分析レポートの指定で collect-ir（適時開示の差分 raw/news/2026-11-19_press-releases.md）。2026-11-12〜2026-11-19 の新規適時開示なし（新規プレスリリース: 広報誌 YASKAWA NEWS No.356 のみ、業績無関係）。以前: 2026-11-11（mode=update。企業分析レポートの指定で collect-ir（適時開示の差分・経営者の目標と実績 raw/ir/2026-11-11_management.md）と collect-filings（xbrl_financials --all の再取り込み・yuho_governance で data/governance.json）。新しい適時開示なし。有報 第110期の役員の状況では小川昌寛が代表取締役社長だが、2026-04 に取締役を退任し、現在は小笠原浩が代表取締役会長兼社長（254Q_QA.pdf p.8））（2026-11-10 に株価のみ更新: refresh_valuation.py）（2026-11-19 に株価のみ更新: refresh_valuation.py）（2026-11-20 に株価のみ更新: refresh_valuation.py）（2026-11-23 に株価のみ更新: refresh_valuation.py）（2026-11-24 に株価のみ更新: refresh_valuation.py）
+**最終更新**: 2026-11-24（mode=update。investment の指定で collect-peers-valuation（競合 14章: 成長投資の材料 raw/market/2026-11-24_competitors.md）。ファナック・三菱電機・山洋電気の設備投資・減価償却費・研究開発費 2022〜2026年3月期を EDINET XBRL CSV から抽出）。以前: 2026-11-19（mode=update。企業分析レポートの指定で collect-ir（適時開示の差分 raw/news/2026-11-19_press-releases.md）。2026-11-12〜2026-11-19 の新規適時開示なし（新規プレスリリース: 広報誌 YASKAWA NEWS No.356 のみ、業績無関係）。以前: 2026-11-11（mode=update。企業分析レポートの指定で collect-ir（適時開示の差分・経営者の目標と実績 raw/ir/2026-11-11_management.md）と collect-filings（xbrl_financials --all の再取り込み・yuho_governance で data/governance.json）。新しい適時開示なし。有報 第110期の役員の状況では小川昌寛が代表取締役社長だが、2026-04 に取締役を退任し、現在は小笠原浩が代表取締役会長兼社長（254Q_QA.pdf p.8））（2026-11-10 に株価のみ更新: refresh_valuation.py）（2026-11-19 に株価のみ更新: refresh_valuation.py）（2026-11-20 に株価のみ更新: refresh_valuation.py）（2026-11-23 に株価のみ更新: refresh_valuation.py）（2026-11-24 に株価のみ更新: refresh_valuation.py）（2026-11-26 に株価のみ更新: refresh_valuation.py）
 > collect-company-info を実行するたびに上書きする。`mode=update` はまずこのファイルと `sources/manifest.csv` を読む。
 
 ## 1. データ鮮度
 
 | 区分 | 最新データの時点 | 取得日 | raw ファイル | 次回更新トリガー |
 |---|---|---|---|---|
-| 株価・株価指標 | 2026-11-20 終値 | 2026-11-23 | raw/ir/2026-11-23_valuation-data.md | 再実行のたび |
+| 株価・株価指標 | 2026-11-24 終値 | 2026-11-26 | raw/ir/2026-11-26_valuation-data.md | 再実行のたび |
 | 四半期決算 | 2027年2月期 Q2（中間期、2026-08-31 終了、2026-10-09 公表） | 2026-11-01 | raw/ir/2026-11-01_financials-historical.md 5章（data/tdnet_facts.csv は未作成） | 次回決算発表予定日: 未告知（第3四半期は例年1月上旬〜中旬。2026-01-09、2025-01-10） |
 | 通期決算・会社予想 | 2026年2月期（予想は 2026-10-09 修正後の2027年2月期） | 2026-11-01 | raw/ir/2026-11-01_financials-historical.md, data/financials.csv | 本決算発表（例年4月上旬。2026-04-10） |
 | 有価証券報告書 | 第110期（2026年2月期、2026-05-25 提出） | 2026-11-01 | raw/filings/2026-11-01_2026-02_yuho.md | 有報提出（例年5月下旬） |
