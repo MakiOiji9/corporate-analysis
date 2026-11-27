@@ -1,0 +1,334 @@
+{
+ "company": "6532_baycurrent",
+ "name": "ベイカレント・コンサルティング（6532）",
+ "date": "2026-11-17",
+ "valid_until": "2026-11-24",
+ "verdict": "割高",
+ "verdict_reason": "4 指標の平均点 -0.50（+0.5 以上で割安、−0.5 以下で割高）。ネットキャッシュ比率（妥当）は割高にならない指標のため参考",
+ "conservative": [],
+ "price": {
+  "value": 11660.0,
+  "date": "2026-11-12",
+  "currency": "円"
+ },
+ "ncr": {
+  "rating": "妥当",
+  "sentence": "ネットキャッシュ比率 0.04倍: 資産ベースのネットキャッシュ 78,065（流動資産 114,292 ＋ 投資有価証券 6,029 × 0.7 − 負債合計 40,447） ÷ 時価総額 1,762,566。1倍以上で割安、0〜1倍で妥当 → 妥当",
+  "value": 0.0443,
+  "asset_net_cash": 78065.3
+ },
+ "per": {
+  "rating": "割高",
+  "sentence": "予想PER 36.0倍: 過去レンジだけで判定（片軸。もう一方は比べられる同業が1社（2社以上で判定））（予想PER で判定）。業態の目安（優良顧客型 15倍以下）で割高圏",
+  "used": "予想PER",
+  "guide": {
+   "type": "優良顧客型",
+   "guide": 15,
+   "basis": "売上の10%以上の販売先なし（特定の顧客に依存しない）",
+   "zone": "割高"
+  },
+  "per_actual": 46.7972,
+  "per_forecast": 36.011,
+  "discount": false,
+  "na": null,
+  "rule": {
+   "rating": "割高",
+   "basis": "過去レンジだけで判定（片軸。もう一方は比べられる同業が1社（2社以上で判定））",
+   "single_axis": true,
+   "axis1": {
+    "zone": "割高",
+    "position": 68,
+    "low": 13.79,
+    "high": 62.53,
+    "basis": "現在 46.8倍、2022-02〜2026-02 の 5 期のレンジ 13.8〜62.5倍で位置 68%（割高圏）"
+   },
+   "axis2": {
+    "zone": null,
+    "raw_zone": null,
+    "median": null,
+    "diff": null,
+    "count": 1,
+    "explained": false,
+    "basis": "比べられる同業が1社（2社以上で判定）"
+   }
+  },
+  "eps": {
+   "year": "2026-02",
+   "eps": 249.16,
+   "eps_used": 249.16,
+   "adjusted": false,
+   "share": 0.0,
+   "gain": null,
+   "loss": null
+  }
+ },
+ "pbr": {
+  "rating": "妥当",
+  "sentence": "PBR 15.13倍: 手順2（適正PBR）で判定。適正PBR 12.76倍（予想ROE 42.0%（予想EPS ÷ BPS）× 平均PER 30.4倍（有報の期末PER 5 期の平均））に対して現在 15.13倍で +19%（妥当）",
+  "pbr": 15.1285,
+  "before_trap": "妥当",
+  "rule": {
+   "rating": "妥当",
+   "basis": "過去レンジだけで判定（片軸。もう一方は比べられる同業が1社（2社以上で判定））",
+   "single_axis": true,
+   "axis1": {
+    "zone": "妥当",
+    "position": 56,
+    "low": 4.49,
+    "high": 23.32,
+    "basis": "現在 15.1倍、2022-02〜2026-02 の 5 期のレンジ 4.5〜23.3倍で位置 56%（妥当圏）"
+   },
+   "axis2": {
+    "zone": null,
+    "raw_zone": null,
+    "median": null,
+    "diff": null,
+    "count": 1,
+    "explained": false,
+    "basis": "比べられる同業が1社（2社以上で判定）"
+   }
+  },
+  "fair": {
+   "fair": 12.7629,
+   "roe": 42.0108,
+   "roe_basis": "予想EPS ÷ BPS",
+   "average_per": 30.38,
+   "average_basis": "有報の期末PER 5 期の平均",
+   "diff": 0.1854,
+   "rating": "妥当"
+  },
+  "trap": {
+   "applies": false,
+   "roe": 32.338839938125474,
+   "measures": null,
+   "raised": false
+  },
+  "measures": null
+ },
+ "peg": {
+  "rating": "妥当",
+  "sentence": "PEG（標準）1.27倍 = PER 36.0倍 ÷ 成長率 28.3%（妥当）。悲観ケース 2.54倍で2倍超（安全域なし）",
+  "na": null,
+  "margin": false,
+  "candidates": [
+   {
+    "name": "過去の EPS CAGR（成長性分析）",
+    "value": 29.0
+   },
+   {
+    "name": "会社計画（予想EPS ÷ 実績EPS − 1）",
+    "value": 29.9526
+   },
+   {
+    "name": "アナリスト予想の EPS 成長率",
+    "value": 28.3
+   }
+  ],
+  "cases": {
+   "standard": 28.3,
+   "pessimistic": 14.15,
+   "optimistic": 29.9526
+  },
+  "peg": {
+   "standard": 1.2725,
+   "pessimistic": 2.5449,
+   "optimistic": 1.2023
+  }
+ },
+ "ev": {
+  "rating": "割高",
+  "sentence": "EV/EBITDA 31.7倍: 過去レンジだけで判定（片軸。もう一方は比べられる同業が0社（2社以上で判定））（過去レンジは算出値）。株式数が未確定のため上限（154,394,010株）でも計算: 32.4倍で割高（判定は同じ）。EV に リース負債 +6,313・短期投資 −3,020 を含む（同業の EV は含まない）",
+  "value": 31.6861,
+  "rule": {
+   "rating": "割高",
+   "basis": "過去レンジだけで判定（片軸。もう一方は比べられる同業が0社（2社以上で判定））",
+   "single_axis": true,
+   "axis1": {
+    "zone": "割高",
+    "position": 144,
+    "low": 8.1747,
+    "high": 24.4945,
+    "basis": "現在 31.7倍、2024-02〜2026-02 の 3 期のレンジ 8.2〜24.5倍で位置 144%（割高圏）"
+   },
+   "axis2": {
+    "zone": null,
+    "raw_zone": null,
+    "median": null,
+    "diff": null,
+    "count": 0,
+    "explained": false,
+    "basis": "比べられる同業が0社（2社以上で判定）"
+   }
+  },
+  "year": "2026-02",
+  "debt": 6575.0,
+  "cash": 75328.0,
+  "operating_income": 50931.0,
+  "depreciation": 2525.0,
+  "ebitda": 53456.0,
+  "ev": 1693813.0369,
+  "net_cash": 68753.0,
+  "market_cap": 1762566.0369,
+  "history": [
+   {
+    "year": "2024-02",
+    "high": 23.7757,
+    "low": 11.3043,
+    "basis": "PER × 純利益"
+   },
+   {
+    "year": "2025-02",
+    "high": 22.7963,
+    "low": 8.1747,
+    "basis": "PER × 純利益"
+   },
+   {
+    "year": "2026-02",
+    "high": 24.4945,
+    "low": 9.4523,
+    "basis": "PER × 純利益"
+   }
+  ],
+  "divergence": null,
+  "sensitivity": {
+   "shares": 154394010.0,
+   "market_cap": 1800234.1566,
+   "value": 32.3908,
+   "rating": "割高",
+   "changes": false
+  }
+ },
+ "step3": {
+  "ratings": {
+   "PER": "割高",
+   "PBR": "妥当",
+   "PEG": "妥当",
+   "EV/EBITDA": "割高",
+   "ネットキャッシュ比率": "妥当"
+  },
+  "scores": {
+   "PER": -1,
+   "PBR": 0,
+   "PEG": 0,
+   "EV/EBITDA": -1,
+   "ネットキャッシュ比率": 0
+  },
+  "average": -0.5,
+  "raw_verdict": "割高",
+  "final_check": {
+   "concerns": [],
+   "swot_no": false,
+   "not_done": [],
+   "raised": false,
+   "noted": false,
+   "applies": false
+  }
+ },
+ "sheet": "PER 割高／PBR 妥当／PEG 妥当（悲観ケース：2.54倍）／EV/EBITDA 割高／STEP 3 割高（平均点：-0.50）",
+ "flip_prices": [
+  "PER: 過去レンジの割安圏（位置33%以下）になる株価 9,752円 以下、割高圏（67%以上）になる株価 14,960円 以上",
+  "PBR: 適正PBR 12.76倍 から割安（−20%）になる株価 7,869円 以下、割高（+20%）になる株価 11,804円 以上",
+  "PEG: 1倍になる株価 9,163円、2倍になる株価 18,327円"
+ ],
+ "flip_values": {
+  "per_cheap": 9751.87,
+  "per_rich": 14959.78,
+  "pbr_cheap": 7869.39,
+  "pbr_fair": 9836.74,
+  "pbr_rich": 11804.09
+ },
+ "borderline": [
+  "PER: 過去レンジでの位置 68% が境界（33% / 67%）に近い",
+  "PBR: 適正PBR との差 +19% が境界（±20%）に近い"
+ ],
+ "handoff": {
+  "report_points": "STEP 3 は割高（4 指標の平均点 -0.50（+0.5 以上で割安、−0.5 以下で割高）。ネットキャッシュ比率（妥当）は割高にならない指標のため参考）。指標ごとの判定は PER 割高・PBR 妥当・PEG 妥当・EV/EBITDA 割高・ネットキャッシュ比率 妥当（根拠は1〜5章）。",
+  "final_checks": "PBR の水準が ROE（収益性分析）と見合っているか、PEG に使った成長率が成長性分析の会社計画の信頼性と合っているか",
+  "special_bg": "該当なし（EPS を調整していない）",
+  "measures": "該当なし（判定に影響しない）",
+  "divergence_bg": "該当なし（食い違いなし）",
+  "cheap_reason": "該当なし（STEP 3 が割安でない）"
+ },
+ "changes": [
+  "初回の分析"
+ ],
+ "gaps": [
+  "警告: 株式数: 期末後のコーポレートアクション: 2026年3月18日: 自社株買い発表（上限660万株または300億円、4月15日〜7月31日）。2026年6月17日: 譲渡制限付株式報酬として自己株式処分決。時価総額・EV は 151,163,468株で計算した（上限は自己株式を含む 154,394,010株。PER・PBR は1株指標なので影響しない。4章に上限での EV/EBITDA の判定を記入）"
+ ],
+ "peers": [
+  {
+   "name": "シグマクシス HD",
+   "per_actual": 13.3627,
+   "per_forecast": 11.6241,
+   "pbr": 3.6435,
+   "ev_ebitda_calc": null,
+   "cagr": 2.069,
+   "roe": 16.2
+  }
+ ],
+ "inputs": [
+  "companies/6532_baycurrent/raw/filings/2026-11-12_2026-02_yuho.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-12_mid-term-plan.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-13_valuation-data.md",
+  "companies/6532_baycurrent/raw/market/2026-11-13_competitors.md"
+ ],
+ "seen": [
+  "companies/6532_baycurrent/raw/filings/2026-11-12_2026-02_yuho.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-12_financials-historical.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-12_mid-term-plan.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-13_financials-historical.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-13_valuation-data.md",
+  "companies/6532_baycurrent/raw/market/2026-11-13_competitors.md",
+  "companies/6532_baycurrent/raw/market/2026-11-17_competitors.md"
+ ],
+ "input_digests": {
+  "price": "e5cae883692addb04446a51f58c67aa852c3064d",
+  "per_share": "1945d938cde6ca259f08f07c6148a8131467fdb9",
+  "current": "3eb06a4b52782be812551229e8e3f910fcb45b1b",
+  "history": "f856b9e5b4f568ba5f10d85f1c81056f2807eb6d",
+  "analyst": "3e4bba8037cb353b76793b288af39a223fae0a7c",
+  "peer_valuation": "8f747eb5a00f14b1841651e097f7fcb9bd44cc96",
+  "peer_cagr": "09a6aaa17cec309925dc175de275ed33d7430160",
+  "peer_roe": "702203ea4f8fc678f5c3b094bbf1f66788222b53",
+  "peer_dupont": "ebecfa33e6a931572282198f0cf744f3596dabb3",
+  "peer_safety": "ae7df35928b2ba3391ffefd5f205dd21a0339f97",
+  "peer_ebitda": "6c2ba384bbfd3e9d6aad3541425598362519c960",
+  "special": "769b6435da5573a9c4b8e8a475bbac91d262c3f7",
+  "policy": "5edde25638f81b3eb3169e53fdfd7e6119978421",
+  "capital": "6a3558db9f2066f22c2b44a48bbf2bc631b7b41c",
+  "numbers": "d48dce6b790897d79b9cc88844cff3cc093baa24"
+ },
+ "growth": {
+  "date": "2026-11-17"
+ },
+ "upstream": {
+  "profitability": {
+   "date": "2026-11-17",
+   "verdict": "良好",
+   "reason": "手順1が良好、営業利益率が同業平均以上、ROE の源泉が本業由来"
+  },
+  "growth": {
+   "date": "2026-11-17",
+   "verdict": "良好",
+   "reason": "手順1は高成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））。ただし成長投資が良好（成長投資は良好: 売上に対する成長投資 -0.1%（2024-02〜2026-02、以前並み）、効率（増分 ROIC）は良好）なので一段上げた（差し引きで良好）"
+  },
+  "safety": {
+   "date": "2026-11-17",
+   "verdict": "良好",
+   "reason": "3指標とも目安または同業平均をクリアし、悪化傾向なし"
+  },
+  "cash_flow": {
+   "date": "2026-11-17",
+   "verdict": "良好",
+   "reason": "手順1〜4がすべて良好で、株主還元は問題なし"
+  },
+  "swot": {
+   "date": "2026-11-13",
+   "verdict": "条件付き",
+   "reason": "国内最大規模の案件実績（案件数YoY+20.7%）とCxOリレーションは採用時の知名度・ブランドとして機能しうるが、市場全体での人材争奪激化を直接打ち消せない。ただし現中計に採用・育成強化の施策が明示され、コンサルタント数がFY2024: 3,837名→FY2025: 5,590名へと計画（4,000名）を超過達成しており、施策が継続して機能すれば採用競争に耐えられる"
+  }
+ },
+ "outlook": "market/report/2026-11-16_outlook.md",
+ "previous": null,
+ "md": "companies/6532_baycurrent/analysis/valuation/2026-11-17_valuation.md"
+}

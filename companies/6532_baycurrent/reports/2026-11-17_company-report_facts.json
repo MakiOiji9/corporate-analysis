@@ -1,0 +1,11921 @@
+{
+ "dividends": {
+  "actual": 100.0,
+  "actual_fy": "2026-02",
+  "forecast": null,
+  "forecast_fy": null,
+  "payout_actual": 250.5,
+  "yield_basis": "実績",
+  "yield": 0.86,
+  "payout_forecast": null,
+  "source": "有価証券報告書の主要な経営指標"
+ },
+ "peers": {
+  "rows": [
+   {
+    "name": "ベイカレント・コンサルティング（6532）",
+    "self": true,
+    "per_forecast": 36.011,
+    "pbr": 15.1285,
+    "ev_ebitda": 31.6861,
+    "cagr": 24.9,
+    "roe": 35.8,
+    "margin": 34.3,
+    "equity_ratio": 74.2998
+   },
+   {
+    "name": "シグマクシス HD",
+    "self": false,
+    "per_forecast": 11.6241,
+    "pbr": 3.6435,
+    "ev_ebitda": null,
+    "cagr": 2.069,
+    "roe": 16.2,
+    "margin": 25.5,
+    "equity_ratio": 83.555
+   }
+  ],
+  "median": {
+   "name": "同業の中央値",
+   "self": false,
+   "per_forecast": 11.62,
+   "pbr": 3.64,
+   "ev_ebitda": null,
+   "cagr": 2.07,
+   "roe": 16.2,
+   "margin": 25.5,
+   "equity_ratio": 83.56
+  },
+  "mean": {
+   "name": "同業の平均",
+   "self": false,
+   "per_forecast": 11.62,
+   "pbr": 3.64,
+   "ev_ebitda": null,
+   "cagr": 2.07,
+   "roe": 16.2,
+   "margin": 25.5,
+   "equity_ratio": 83.56
+  },
+  "columns": [
+   [
+    "per_forecast",
+    "PER（予想）",
+    "倍"
+   ],
+   [
+    "pbr",
+    "PBR",
+    "倍"
+   ],
+   [
+    "ev_ebitda",
+    "EV/EBITDA",
+    "倍"
+   ],
+   [
+    "cagr",
+    "売上の3年CAGR",
+    "%"
+   ],
+   [
+    "roe",
+    "ROE",
+    "%"
+   ],
+   [
+    "margin",
+    "営業利益率",
+    "%"
+   ],
+   [
+    "equity_ratio",
+    "自己資本比率",
+    "%"
+   ]
+  ]
+ },
+ "company": "6532_baycurrent",
+ "ticker": "6532",
+ "name": "ベイカレント・コンサルティング（6532）",
+ "market": "日本",
+ "date": "2026-11-17",
+ "unit": "百万円",
+ "price": {
+  "value": 11660.0,
+  "date": "2026-11-12",
+  "currency": "円"
+ },
+ "analyses": {
+  "five_forces": {
+   "key": "five_forces",
+   "label": "ファイブフォース",
+   "step": "1-1",
+   "skill": "five-forces",
+   "date": "2026-11-17",
+   "verdict": "高",
+   "md": "companies/6532_baycurrent/analysis/five-forces/2026-11-17_five-forces.md",
+   "subs": [],
+   "confidence": "中",
+   "confidence_why": "一次資料 2/5・参考 0・不明 0/5",
+   "counter": "外資系大手（アクセンチュア等）が日本市場への採用・AI投資をさらに積極化すると業界の集中度が高まり、競争は「強」に近づく可能性がある。また、生成AIによる知識労働の自動化が想定より早く進んだ場合は市場成長が鈍化し、代替品の脅威が「強」に転じて業界の魅力度は「中」に下がりうる。",
+   "reason": "",
+   "points": "",
+   "gaps": [
+    "知的財産（特許件数）: 自社・競合とも raw に無い。次回収集時に有価証券報告書の知的財産の節を確認する",
+    "新規参入の具体的社名（新興日系ファーム複数社）: 有料記事のため確認できず。公開情報で社名が確認できれば参入例の確度が上がる",
+    "ベイカレントの同市場シェア数値: IDC・矢野経済研究所等の公表資料に記載なし",
+    "業界全体の営業利益率の複数年推移（3年以上の一次データ）: 取得不可"
+   ],
+   "conservative": [],
+   "detail": {
+    "industry": "コンサルティング業界（単一セグメント：コンサルティング事業）",
+    "total": 7,
+    "factors": [
+     {
+      "name": "新規参入の脅威",
+      "rating": "中",
+      "reason": "許認可は不要だが、AI・データ分析等の専門技術力とブランドが参入障壁として機能しており（技術: 二次情報）、判定基準の「有り」に当たる。確認できた参入例はいずれも資本力のある企業（AIスタートアップ・テクノロジー大手）が中心であり、判断基準の中「資本力のある異業種や海外企業の参入例がある」に当てはまる。判断が分かれた点: 新興日系ファームの社名・売上実績が確認できず、強の条件（2件以上の具体例確認）を満たすか判断できないため不利な側（中）を採った。",
+      "evidence": [
+       {
+        "status": "未検証",
+        "reason": "Front Matter なし",
+        "doc_id": null,
+        "title": null,
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "Front Matter なし",
+        "doc_id": null,
+        "title": null,
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       }
+      ]
+     },
+     {
+      "name": "代替品の脅威",
+      "rating": "中",
+      "reason": "生成AI・内製化という有力な代替手段は存在するが、コンサルティング代替としての具体的な普及率（導入率・シェア）を示す数値は取得できていない。AIエージェントの全社展開23%はコンサル代替の数値ではなく、コンサルファーム自身もAIを活用して生産性向上に使っており、単純な代替とはいえない。判断基準の中「代替手段はあるが普及途上」に当てはまる。",
+      "evidence": [
+       {
+        "status": "未検証",
+        "reason": "Front Matter なし",
+        "doc_id": null,
+        "title": null,
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "Front Matter なし",
+        "doc_id": null,
+        "title": null,
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       }
+      ]
+     },
+     {
+      "name": "買い手の交渉力",
+      "rating": "弱",
+      "reason": "売上の10%超を占める単一顧客は有報上なく（判断基準の弱「単一顧客10%未満」を満たす）、複数の調査でサービス品質・担当者スキルが選定の最優先事項であり価格は3〜4位にとどまる（判断基準の弱「製品が差別化されている」を満たす）。弱の両条件が揃う。",
+      "evidence": [
+       {
+        "status": "未検証",
+        "reason": "Front Matter なし",
+        "doc_id": null,
+        "title": null,
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "Front Matter なし",
+        "doc_id": null,
+        "title": null,
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       }
+      ]
+     },
+     {
+      "name": "売り手の交渉力",
+      "rating": "弱",
+      "reason": "コンサルティング業は物的な調達先を持たず、主要コストは人件費。採用競争は激化しているが、粗利率の前年比最大低下幅は0.8pt（判断基準の弱「2pt未満」を満たす）。コスト高騰を転嫁または吸収できており、供給側の交渉力は低い。",
+      "evidence": [
+       {
+        "status": "未検証",
+        "reason": "Front Matter なし",
+        "doc_id": null,
+        "title": null,
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "Front Matter なし",
+        "doc_id": null,
+        "title": null,
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       }
+      ]
+     },
+     {
+      "name": "業界内の競争",
+      "rating": "中",
+      "reason": "上位3社シェア合計33.9%は過半に達せず、弱（寡占60%以上）の条件を満たさない。市場成長率9.8〜13%はいずれも5%以上であり、強の条件（3%未満または縮小）を満たさない。競合の利益率は上昇傾向（シグマクシス +4.1pt、ベイカレントは前年比-2.4ptだが業界平均の約9.6%を大きく上回る）。判断基準の中「上位数社が拮抗しているが、市場成長や差別化により価格競争は限定的」に当てはまる。",
+      "evidence": [
+       {
+        "status": "未検証",
+        "reason": "Front Matter なし",
+        "doc_id": null,
+        "title": null,
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "Front Matter なし",
+        "doc_id": null,
+        "title": null,
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "Front Matter なし",
+        "doc_id": null,
+        "title": null,
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "Front Matter なし",
+        "doc_id": null,
+        "title": null,
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       },
+       {
+        "status": "未検証",
+        "reason": "Front Matter なし",
+        "doc_id": null,
+        "title": null,
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "three_c": {
+   "key": "three_c",
+   "label": "3C",
+   "step": "1-2",
+   "skill": "three-c",
+   "date": "2026-11-17",
+   "verdict": "あいまい",
+   "md": "companies/6532_baycurrent/analysis/three-c/2026-11-17_three-c.md",
+   "subs": [],
+   "confidence": "低",
+   "confidence_why": "一次資料 0/2・参考 0・不明 4/6",
+   "counter": "より強い解釈: ベイカレントの売上高1,483億円はシグマクシス238億円の約6.2倍であり、この規模格差そのものが案件実績の圧倒的な積み上げを示すとみることもできる（ただし本分析では同一基準の品質指標が揃わないため採用していない）。より弱い解釈: 比較対象はシグマクシス1社のみで、アクセンチュア（業界シェア21.1%）など実質的な競合となるグローバルファームとの比較がなく、真の競争環境を反映できていない可能性がある",
+   "reason": "最重要KBF（提案品質・実績（過去実績・課題適合））で自社と競合を比べる材料が無いため同程度とみなし、競合との比較「同等」で判定（材料不足のため保守的に判定。明確にはしない）（シェアの数値が無く、競合との比較は規則上「優位」に届かないため明確にはならない。証拠から否定されたのではない）",
+   "points": "",
+   "gaps": [
+    "提案品質・実績（KBF1）: ベイカレントの顧客継続率・顧客満足度指標（リピート率・NSI等）が非開示。開示があれば最重要KBFでの比較が可能になり判定が「明確」に変わる可能性がある。次に取りにいく: 決算説明会の質疑応答・IR資料（ 担当: ）",
+    "人材の質（KBF2）: ベイカレントの第三者評価・顧客推薦指数等が非開示。次に取りにいく: 同上",
+    "市場シェア: 両社のシェア数値なし。次に取りにいく: 矢野経済研究所・IDCの有料レポート（二次情報。WebSearch では取得不可）"
+   ],
+   "conservative": [
+    "最重要KBF（提案品質・実績（過去実績・課題適合））の比較が 比べる材料が無く同程度とみなした"
+   ],
+   "detail": {
+    "win_reason": "なし（材料不足）。大企業CxOが重視する提案品質・実績において、ベイカレントは国内最大規模の案件実績（FY2027 Q2 案件数 YoY+25.5%）と16業種の幅広い支援経験を持つが、競合シグマクシスの顧客満足度指標（NSI97点・リピート率9割超）と同水準を示す自社の品質指標が非開示のため、テンプレートの「競合より優れている」の部分が材料不足で埋まらない",
+    "top_kbf": "提案品質・実績（過去実績・課題適合）",
+    "customer": "顧客は法人の大企業（16業種リーディングカンパニー）で、最も重視するのは提案品質・実績（過去実績・課題適合）。市場の成長性は高（国内コンサルティング市場のCAGR 9.8〜13.9%、IDC・consul.global・constep.jp 各推計、いずれも二次情報）",
+    "customers": "法人顧客のみ。各業界のリーディングカンパニー（金融・製造・通信・小売・公共など16業種）。主な接点は大企業のCxOへの直接リレーション。売上高の10%以上を占める単一顧客なし（有報 第12期 p.17 記載なし）",
+    "kbf": [
+     "提案品質・実績（過去実績・課題適合）",
+     "人材の質（コンサルタントのスキル・担当者の信頼感）",
+     "専門性・実装力（業界知識・DX実行一気通貫）",
+     "費用対効果"
+    ],
+    "market": "国内ビジネスコンサルティング市場（IDC定義）: 2024年 7,987億円（前年比+10.8%）、CAGR 9.8%（2025–2030年）。国内コンサルティング市場全体（consul.global推計）: 2024年 2兆3,422億円（前年比+17%）、CAGR 13%（2024–2030年）。国内コンサルティング市場全体（constep.jp推計）: CAGR 13.9%（2022–2025年）",
+    "competitor": "同等",
+    "competitor_reason": "競合（シグマクシス）と比べて同等。根拠：営業利益率 34.3% vs 競合の中央値（シグマクシス）25.5%。シェアの数値が両社とも取得不可のため「優位」の条件を満たせない",
+    "growth": "高",
+    "growth_reason": "3つの推計いずれもCAGRが9.8〜13.9%と年3%を大幅に上回り、判断基準「年3%以上 高」に当てはまる。スクリプトの判定候補（3件平均12.2%）と一致する",
+    "kbf_table": [
+     {
+      "kbf": "提案品質・実績（過去実績・課題適合）",
+      "self": "？",
+      "peers": {
+       "シグマクシス・ホールディングス（6088、3月期）": "？"
+      },
+      "basis": "【自社】案件数 FY2026 YoY+20.7%・FY2027 Q2 YoY+25.5%、コアクライアント戦略（CxOリレーション）、16業種実績（FY2026通期説明資料・補足説明資料 一次）。顧客継続率・顧客満足度指標は非開示。【競合A：シグマクシス】NSI97点・リピート率9割超・顧客170社超（WebSearch 二次）。いずれも同一基準での品質指標を開示していないため比べられない"
+     },
+     {
+      "kbf": "人材の質（コンサルタントのスキル・担当者の信頼感）",
+      "self": "？",
+      "peers": {
+       "シグマクシス・ホールディングス（6088、3月期）": "？"
+      },
+      "basis": "【自社】コンサルタント6,339名（2026年8月末 YoY+30.9%）、一人当たり売上高 約2,654万円/年（FY2026：148,332百万円÷5,590名 計算値 一次）。【競合A：シグマクシス】コンサルタント625名、一人当たり売上高 約3,813万円/年（23,831百万円÷625名 計算値 二次）。シグマクシスの一人当たり売上高はベイカレントの約1.4倍だが、単価・プロジェクト規模も影響するためスキルの直接比較指標にならない。第三者評価はシグマクシスのみNSI97点で、ベイカレントは同種指標非開示"
+     },
+     {
+      "kbf": "専門性・実装力（業界知識・DX実行一気通貫）",
+      "self": "？",
+      "peers": {
+       "シグマクシス・ホールディングス（6088、3月期）": "？"
+      },
+      "basis": "【自社】16業種カバレッジ、AI関連 FY2027 Q2 売上の50〜60%、戦略立案から実装まで一気通貫、サイバーセキュリティ・防衛 約10%→約20%拡大計画（FY2026上期補足説明資料 一次）。【競合A：シグマクシス】「DX・サービス・マネジメントの3変革領域」「Co-Creation（共創）型」（WebSearch 二次）。業種カバレッジ・AI特化度の比較可能な数値なし。比べられない"
+     },
+     {
+      "kbf": "費用対効果",
+      "self": "？",
+      "peers": {
+       "シグマクシス・ホールディングス（6088、3月期）": "？"
+      },
+      "basis": "両社とも個別単価・費用対効果の開示なし。比べられない"
+     }
+    ],
+    "comparison": [
+     {
+      "name": "ベイカレント・コンサルティング（6532）（対象）",
+      "self": true,
+      "year": "2026-02",
+      "sales": 148332000000.0,
+      "margin": 34.3,
+      "share": null,
+      "cagr": 24.9
+     },
+     {
+      "name": "シグマクシス・ホールディングス（6088、3月期）",
+      "self": false,
+      "year": "2026-03",
+      "sales": 23831000000.0,
+      "margin": 25.5,
+      "share": null,
+      "cagr": 11.2
+     }
+    ],
+    "strengths": "なし（3章の全KBFで ？ のため ○ なし）",
+    "weaknesses": "顧客品質指標（継続率・満足度）の非開示（最重要KBFで比較不能の原因。有報 第12期 p.17・補足説明資料）。一人当たり売上高 約2,654万円（FY2026）はシグマクシス約3,813万円を約3割下回る（計算値 一次・二次。スキルの直接指標ではないが参考）。顧客集中リスクは有報上、売上10%超の単一顧客なし",
+    "company_conclusion": "最重要KBF「提案品質・実績」で自社の品質指標（顧客継続率・満足度指数）が非開示であり、競合シグマクシスのNSI97点・リピート率9割超と同一基準で比べられない（？）。その他のKBFも比べられる数値がそろっておらず、全KBFで ？ となった",
+    "customer_evidence": [
+     {
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "pages": null,
+      "local_path": null
+     }
+    ],
+    "competitor_evidence": [
+     {
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   }
+  },
+  "moat": {
+   "key": "moat",
+   "label": "モート",
+   "step": "1-3",
+   "skill": "moat",
+   "date": "2026-11-17",
+   "verdict": "なし",
+   "md": "companies/6532_baycurrent/analysis/moat/2026-11-17_moat.md",
+   "subs": [],
+   "confidence": "中",
+   "confidence_why": "一次資料 2/3・参考 0・不明 1/4",
+   "counter": "この結論（モートなし）が間違っているとしたら: 6年連続ROIC差+57.6ptという圧倒的な超過収益が続くことは、開示されていない形のスイッチングコストまたはブランドプレミアムが実在する可能性を示す（2026-11-17_収集した資料1章）。また、コンサルタント一人当たり売上がYoY+6.6%と成長していることは（事業の資料）、単価上昇が持続していることを示唆しており、価格決定力の間接証拠として読める可能性がある",
+   "reason": "超過収益はある（弱い）が、それを守る「強」「中」の源泉が無い（業態に共通する収益性や一時的な要因の可能性）",
+   "points": "",
+   "gaps": [
+    "事業概要: 知的財産（特許の件数）: raw に無い",
+    "競合: 知的財産（特許の件数）: raw に無い",
+    "シェアの推移: 不明（業界のシェアの時系列が無い）"
+   ],
+   "conservative": [],
+   "detail": {
+    "durability": "持続を見込むモートなし。ROICは資本コスト（7%）を6年連続で上回る超過収益が確認されるが、仕組みの事実と数値の痕跡の両方が揃う源泉を特定できないため、競合に対する参入障壁として確認できない。3Cの強み（案件実績・CxOリレーション）は生成AI・テクノロジー系企業の参入（5年以内）および内製化加速（5〜10年）によって崩れうる",
+    "effective": [],
+    "moats": [
+     {
+      "type": "ブランド",
+      "group": "無形資産",
+      "rating": "弱",
+      "mechanism": "国内最大規模の案件実績（FY2027 Q2 案件数 YoY+25.5%）と16業種のカバレッジで実績ブランドは形成されているが、価格プレミアムを示す証拠（値上げ実績・粗利率の同業比較）が確認できない。粗利率は5年未満（3年分）で価格決定力が不明判定",
+      "evidence": [
+       {
+        "status": "未検証",
+        "reason": "Front Matter なし",
+        "doc_id": null,
+        "title": null,
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       }
+      ]
+     },
+     {
+      "type": "規制・特許・許認可",
+      "group": "無形資産",
+      "rating": "該当なし",
+      "mechanism": "コンサルティング業態のため特別な許認可不要（有報 p.23）。研究開発活動なし（有報 p.23 「該当事項はありません」）",
+      "evidence": [
+       {
+        "status": "未検証",
+        "reason": "Front Matter なし",
+        "doc_id": null,
+        "title": null,
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       }
+      ]
+     },
+     {
+      "type": "スイッチングコスト",
+      "group": "スイッチングコスト",
+      "rating": "弱",
+      "mechanism": "大企業CxOとの長期リレーション（コアクライアント戦略）で業務への組み込みは進んでいると推測されるが、継続率・リピート率・ストック型売上比率のいずれも非開示で数値の痕跡が確認できない",
+      "evidence": [
+       {
+        "status": "未検証",
+        "reason": "Front Matter なし",
+        "doc_id": null,
+        "title": null,
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       }
+      ]
+     },
+     {
+      "type": "ネットワーク効果",
+      "group": "ネットワーク効果",
+      "rating": "該当なし",
+      "mechanism": "プロジェクト型コンサルティングは各案件が独立しており、利用者の増加で価値が高まる構造を持たない",
+      "evidence": [
+       {
+        "status": "未検証",
+        "reason": "Front Matter なし",
+        "doc_id": null,
+        "title": null,
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       }
+      ]
+     },
+     {
+      "type": "コスト優位",
+      "group": "コスト優位",
+      "rating": "弱",
+      "mechanism": "自社営業利益率34.3%（FY2026）はシグマクシスHD 25.5%を+8.8pt上回るが、比較対象の売上原価率・販管費率が取得不可のため、コスト構造優位を数値で示せない",
+      "evidence": [
+       {
+        "status": "未検証",
+        "reason": "Front Matter なし",
+        "doc_id": null,
+        "title": null,
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       }
+      ]
+     },
+     {
+      "type": "効率的規模",
+      "group": "効率的規模",
+      "rating": "該当なし",
+      "mechanism": "市場プレイヤー約67社（constep.jp 二次情報）、上位3社合計シェア約34%と分散。AIスタートアップ・新興日系ファームの新規参入が続いており、少数企業のみ採算が合う構造ではない",
+      "evidence": [
+       {
+        "status": "未検証",
+        "reason": "Front Matter なし",
+        "doc_id": null,
+        "title": null,
+        "url": null,
+        "published": null,
+        "period": null,
+        "pages": null,
+        "local_path": null
+       }
+      ]
+     }
+    ],
+    "risks": [
+     {
+      "factor": "生成AI・AIエージェントによるコンサルタント業務の自動化",
+      "category": "破壊的イノベーション",
+      "timing": "5年以内",
+      "moat": "3Cの強み",
+      "basis": "McKinseyによれば現行コンサルタント業務の約60%が既存AI技術で自動化可能。2026年以降AIエージェントが業務プロセスへ本格組み込みへ移行中",
+      "source": "業界の資料（二次情報）"
+     },
+     {
+      "factor": "企業の内製化加速（コンサル支援後のリピート案件減少）",
+      "category": "顧客行動",
+      "timing": "5〜10年",
+      "moat": "3Cの強み",
+      "basis": "生成AIが企業の自走・内製化を促進し、コンサル支援終了後のリピート案件が減少するリスク",
+      "source": "業界の資料（二次情報）"
+     },
+     {
+      "factor": "テクノロジー系企業（Salesforce・Google Cloud・AWS等）のコンサル参入",
+      "category": "技術",
+      "timing": "5年以内",
+      "moat": "3Cの強み",
+      "basis": "AI・クラウド企業がコンサルティングサービスを提供開始し、既存コンサルファームと競合する案件が増加",
+      "source": "業界の資料（二次情報）"
+     }
+    ],
+    "trend": "安定",
+    "axes": {
+     "width": "大",
+     "depth": "浅い",
+     "reach": "限定的"
+    },
+    "returns": {
+     "hurdle": 7.0,
+     "rating": "弱い",
+     "basis": "2021-02〜2026-02 の 6 年中 6 年で ROIC が資本コスト 7% を上回る（景気の一巡を通した差の中央値 +57.6pt、直近3年平均 +56.9pt）。目安: 7年以上・8割以上の年で上回り中央値 +5pt 以上 強い / 上回った年が半分未満か中央値が0以下 なし / ほか 弱い",
+     "rows": [
+      {
+       "year": "2021-02",
+       "roic": 43.9,
+       "spread": 36.9,
+       "peer_median": null
+      },
+      {
+       "year": "2022-02",
+       "roic": 67.2,
+       "spread": 60.2,
+       "peer_median": null
+      },
+      {
+       "year": "2023-02",
+       "roic": 77.7,
+       "spread": 70.7,
+       "peer_median": 41.4
+      },
+      {
+       "year": "2024-02",
+       "roic": 65.7,
+       "spread": 58.7,
+       "peer_median": 46.7
+      },
+      {
+       "year": "2025-02",
+       "roic": 63.5,
+       "spread": 56.5,
+       "peer_median": 49.5
+      },
+      {
+       "year": "2026-02",
+       "roic": 62.5,
+       "spread": 55.5,
+       "peer_median": 44.5
+      }
+     ]
+    }
+   }
+  },
+  "swot": {
+   "key": "swot",
+   "label": "SWOT",
+   "step": "1-4",
+   "skill": "swot",
+   "date": "2026-11-13",
+   "verdict": "条件付き",
+   "md": "companies/6532_baycurrent/analysis/swot/2026-11-13_swot.md",
+   "subs": [],
+   "confidence": "中",
+   "confidence_why": "一次資料 6/14・参考 2・不明 1/15",
+   "counter": "コンサルタント数がFY2025末に5,590名と目標4,000名を超過達成しており（中期経営計画）、採用難（T2）はこれまで顕在化していない。最大の脅威をT1（生成AI: コンサル業務の60%が自動化可能、業界の資料）に切り替えれば、S2は代替を直接打ち消せず判定が「条件付き」から「No」に変わる。",
+   "reason": "国内最大規模の案件実績（案件数YoY+20.7%）とCxOリレーションは採用時の知名度・ブランドとして機能しうるが、市場全体での人材争奪激化を直接打ち消せない。ただし現中計に採用・育成強化の施策が明示され、コンサルタント数がFY2024: 3,837名→FY2025: 5,590名へと計画（4,000名）を超過達成しており、施策が継続して機能すれば採用競争に耐えられる",
+   "points": "",
+   "gaps": [
+    "中計: 中期経営計画に代わる開示: raw に無い",
+    "W2: 影響度が不明",
+    "O3: 根拠が参考情報だけ",
+    "T4: 根拠が参考情報だけ"
+   ],
+   "conservative": [],
+   "detail": {
+    "sentence": "S2（国内最大規模の案件実績（案件数YoY+20.7%）と16業種・21カテゴリーのCxOリレーションを持つ（会社は「コアクラ…）により、T2（採用市場の逼迫とコンサル業界の人材争奪激化により採用計画が未達となるリスクがある（有報が最重要リスクと位置付け））に対して条件付きで耐えられる。理由：国内最大規模の案件実績（案件数YoY+20.7%）とCxOリレーションは採用時の知名度・ブランドとして機能しうるが、市場全体での人材争奪激化を直接打ち消せない",
+    "top_strength": {
+     "id": "S2",
+     "fact": "国内最大規模の案件実績（案件数YoY+20.7%）と16業種・21カテゴリーのCxOリレーションを持つ（会社は「コアクライアントとのリレーション拡大」を成長ドライバーと説明）",
+     "impact": "大"
+    },
+    "top_threat": {
+     "id": "T2",
+     "fact": "採用市場の逼迫とコンサル業界の人材争奪激化により採用計画が未達となるリスクがある（有報が最重要リスクと位置付け）",
+     "impact": "大"
+    },
+    "quadrants": {
+     "S": [
+      {
+       "id": "S1",
+       "fact": "FY2026の営業利益率34.3%は同業シグマクシスの25.5%を8.8pt上回り、4期連続で同業中央値を上回る",
+       "impact": "大",
+       "evidence": [
+        {
+         "status": "未検証",
+         "reason": "Front Matter なし",
+         "doc_id": null,
+         "title": null,
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        }
+       ]
+      },
+      {
+       "id": "S2",
+       "fact": "国内最大規模の案件実績（案件数YoY+20.7%）と16業種・21カテゴリーのCxOリレーションを持つ（会社は「コアクライアントとのリレーション拡大」を成長ドライバーと説明）",
+       "impact": "大",
+       "evidence": [
+        {
+         "status": "未検証",
+         "reason": "Front Matter なし",
+         "doc_id": null,
+         "title": null,
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        }
+       ]
+      },
+      {
+       "id": "S3",
+       "fact": "自己資本比率74.3%・実質無借金（現金72,308百万円、有利子負債262百万円）で金利コスト最小かつ大規模投資余力を持つ",
+       "impact": "中",
+       "evidence": [
+        {
+         "status": "未検証",
+         "reason": "Front Matter なし",
+         "doc_id": null,
+         "title": null,
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        }
+       ]
+      },
+      {
+       "id": "S4",
+       "fact": "旧中計（FY2022〜FY2026）の5年目標を3年で概ね達成し、現中計（FY2024〜FY2028）も約1年前倒しで進捗（CAGR実績27%、目標20%）",
+       "impact": "小",
+       "evidence": [
+        {
+         "status": "未検証",
+         "reason": "Front Matter なし",
+         "doc_id": null,
+         "title": null,
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        }
+       ]
+      }
+     ],
+     "W": [
+      {
+       "id": "W1",
+       "fact": "コンサルタント一人当たり売上高がベイカレント2,654万円/人に対しシグマクシス3,813万円/人と低く、事業規模に比べた人材生産性が劣る（案件mix・外注比率の差を含む可能性あり）",
+       "impact": "中",
+       "evidence": [
+        {
+         "status": "未検証",
+         "reason": "Front Matter なし",
+         "doc_id": null,
+         "title": null,
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        }
+       ]
+      },
+      {
+       "id": "W2",
+       "fact": "顧客数・上位顧客比率・継続率・リピート率が全期間非開示で、顧客基盤の強さを数値で確認できない（FY2024-FY2026およびFY2027 Q2すべて非開示）",
+       "impact": "不明",
+       "evidence": [
+        {
+         "status": "未検証",
+         "reason": "Front Matter なし",
+         "doc_id": null,
+         "title": null,
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        }
+       ]
+      },
+      {
+       "id": "W3",
+       "fact": "2014年MBO由来ののれん19,187百万円が計上されており、将来の収益性低下時に減損損失計上の可能性がある",
+       "impact": "中",
+       "evidence": [
+        {
+         "status": "未検証",
+         "reason": "Front Matter なし",
+         "doc_id": null,
+         "title": null,
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        }
+       ]
+      },
+      {
+       "id": "W4",
+       "fact": "採用費が年間45億円規模（報道）に膨らんでおり、人材依存の事業構造で採用費増加が販管費を押し上げている（FY2026販管費率22.3%、FY2025比+5.2pt）",
+       "impact": "中",
+       "evidence": [
+        {
+         "status": "未検証",
+         "reason": "Front Matter なし",
+         "doc_id": null,
+         "title": null,
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        }
+       ]
+      }
+     ],
+     "O": [
+      {
+       "id": "O1",
+       "fact": "国内コンサルティング市場はCAGR9.8〜13%で拡大中（IDC定義2024年7,987億円→2030年予測14,064億円）",
+       "impact": "大",
+       "evidence": [
+        {
+         "status": "未検証",
+         "reason": "Front Matter なし",
+         "doc_id": null,
+         "title": null,
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        }
+       ]
+      },
+      {
+       "id": "O2",
+       "fact": "生成AI・DX需要の拡大がAI変革コンサル需要を押し上げており、ベイカレントのAI関連売上比は50-60%に達している",
+       "impact": "大",
+       "evidence": [
+        {
+         "status": "未検証",
+         "reason": "Front Matter なし",
+         "doc_id": null,
+         "title": null,
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        }
+       ]
+      },
+      {
+       "id": "O3",
+       "fact": "政府のサイバーセキュリティ強化政策（防衛・官公庁DX）とAI規制対応需要がコンサル市場を拡大させる",
+       "impact": "中",
+       "evidence": [
+        {
+         "status": "未検証",
+         "reason": "Front Matter なし",
+         "doc_id": null,
+         "title": null,
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        }
+       ]
+      }
+     ],
+     "T": [
+      {
+       "id": "T1",
+       "fact": "生成AI・LLMの普及がコンサルティング業務の一部自動化を進め企業の内製化を促進する（AIエージェント全社展開が23%まで進展。ファイブフォース「代替品の脅威: 中」）",
+       "impact": "大",
+       "evidence": [
+        {
+         "status": "未検証",
+         "reason": "Front Matter なし",
+         "doc_id": null,
+         "title": null,
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        }
+       ]
+      },
+      {
+       "id": "T2",
+       "fact": "採用市場の逼迫とコンサル業界の人材争奪激化により採用計画が未達となるリスクがある（有報が最重要リスクと位置付け）",
+       "impact": "大",
+       "evidence": [
+        {
+         "status": "未検証",
+         "reason": "Front Matter なし",
+         "doc_id": null,
+         "title": null,
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        }
+       ]
+      },
+      {
+       "id": "T3",
+       "fact": "テクノロジー系企業（Salesforce・Google Cloud・AWS等）と戦略ファーム（McKinsey・BCG等）がコンサル市場に参入強化し、2024〜2026年に競合が顕在化",
+       "impact": "中",
+       "evidence": [
+        {
+         "status": "未検証",
+         "reason": "Front Matter なし",
+         "doc_id": null,
+         "title": null,
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        }
+       ]
+      },
+      {
+       "id": "T4",
+       "fact": "国内外の景気変動・AI株調整により主要クライアントのIT投資が抑制された場合に業績影響（有報リスク。地合い「警戒」、AI・半導体株調整の長期化リスク「大」）",
+       "impact": "中",
+       "evidence": [
+        {
+         "status": "未検証",
+         "reason": "Front Matter なし",
+         "doc_id": null,
+         "title": null,
+         "url": null,
+         "published": null,
+         "period": null,
+         "pages": null,
+         "local_path": null
+        }
+       ]
+      }
+     ]
+    }
+   }
+  },
+  "profitability": {
+   "key": "profitability",
+   "label": "収益性",
+   "step": "2-1",
+   "skill": "profitability",
+   "date": "2026-11-17",
+   "verdict": "良好",
+   "md": "companies/6532_baycurrent/analysis/profitability/2026-11-17_profitability.md",
+   "subs": [
+    "良好",
+    "上回る",
+    "本業由来"
+   ],
+   "confidence": null,
+   "confidence_why": null,
+   "counter": "",
+   "reason": "「ROE の水準と安定性」が良好、営業利益率が同業平均以上、ROE の源泉が本業由来",
+   "points": "収益性は良好（「ROE の水準と安定性」が良好、営業利益率が同業平均以上、ROE の源泉が本業由来）。ROE は平均39.6%、最低35.8%（2026-02）で良好。直近3年は低下傾向（38.6% → 36.5% → 35.8%）。営業利益率は34.3%（2026-02）で同業中央値25.5%との差 +8.8pt。2024-02〜2026-02 の3年の差の平均 +13.9pt で上回る。4年の推移は悪化。同業が1社で3社に満たず、参考の比較。ROE の源泉は本業由来（売上高純利益率が同業平均を上回る（売上高純利益率 27.0% と同業平均 15.1%（+11.8pt、±1pt 以内は同等）、総資産回転率 1.07回 と同業平均 1.31回（比 0.82、±5% 以内は同等）、財務レバレッジ 1.34倍 と同業平均 1.34倍（比 1.00、±5% 以内は同等）））。",
+   "gaps": [],
+   "conservative": [],
+   "detail": {
+    "roe_average": 39.6,
+    "roe_minimum": 35.8,
+    "margin": {
+     "year": "2026-02",
+     "self": 34.3,
+     "avg": 25.5,
+     "diff": 8.8,
+     "trend": "悪化"
+    },
+    "peer_margins": [
+     {
+      "name": "シグマクシス・ホールディングス（6088、3月期）",
+      "margin": 25.5
+     }
+    ],
+    "source": "本業由来",
+    "roe_rows": [
+     {
+      "year": "2021-02",
+      "roe": 38.9
+     },
+     {
+      "year": "2022-02",
+      "roe": 43.3
+     },
+     {
+      "year": "2023-02",
+      "roe": 44.2
+     },
+     {
+      "year": "2024-02",
+      "roe": 38.6
+     },
+     {
+      "year": "2025-02",
+      "roe": 36.5
+     },
+     {
+      "year": "2026-02",
+      "roe": 35.8
+     }
+    ],
+    "dupont": [
+     {
+      "year": "2021-02",
+      "margin": 23.3574,
+      "turnover": 0.932,
+      "leverage": 1.5314,
+      "roe": 33.3356
+     },
+     {
+      "year": "2022-02",
+      "margin": 26.9664,
+      "turnover": 1.107,
+      "leverage": 1.4519,
+      "roe": 43.3439
+     },
+     {
+      "year": "2023-02",
+      "margin": 28.7948,
+      "turnover": 1.1408,
+      "leverage": 1.347,
+      "roe": 44.2465
+     },
+     {
+      "year": "2024-02",
+      "margin": 27.0283,
+      "turnover": 1.0723,
+      "leverage": 1.3323,
+      "roe": 38.6141
+     },
+     {
+      "year": "2025-02",
+      "margin": 26.5044,
+      "turnover": 1.0337,
+      "leverage": 1.3328,
+      "roe": 36.5139
+     },
+     {
+      "year": "2026-02",
+      "margin": 25.5103,
+      "turnover": 1.0514,
+      "leverage": 1.3348,
+      "roe": 35.8025
+     }
+    ]
+   }
+  },
+  "growth": {
+   "key": "growth",
+   "label": "成長性",
+   "step": "2-2",
+   "skill": "growth",
+   "date": "2026-11-17",
+   "verdict": "良好",
+   "md": "companies/6532_baycurrent/analysis/growth/2026-11-17_growth.md",
+   "subs": [
+    "高成長",
+    "信頼できる",
+    "問題あり",
+    "良好"
+   ],
+   "confidence": null,
+   "confidence_why": null,
+   "counter": "",
+   "reason": "「成長の水準」は高成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））。ただし成長投資が良好（成長投資は良好: 売上に対する成長投資 -0.1%（2024-02〜2026-02、以前並み）、効率（増分 ROIC）は良好）なので一段上げた（差し引きで良好）",
+   "points": "成長性は良好（「成長の水準」は高成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））。ただし成長投資が良好（成長投資は良好: 売上に対する成長投資 -0.1%（2024-02〜2026-02、以前並み）、効率（増分 ROIC）は良好）なので一段上げた（差し引きで良好））。売上 CAGR 27.5%、営業利益 CAGR 28.6%、EPS CAGR 29.0%（全年の回帰）（2021-02〜2026-02）で高成長。減収・減益の年なし。成長の質に問題あり: 直近3年は営業利益が売上ほど伸びていない（利益率が下がっている）。会社計画は信頼できる。",
+   "gaps": [],
+   "conservative": [],
+   "detail": {
+    "sales_cagr": 27.5,
+    "eps_cagr": 29.0,
+    "growth_type": "高成長",
+    "plan": "信頼できる",
+    "plan_average": 101.8,
+    "quality": "問題あり",
+    "quality_sentence": "成長の質に問題あり: 直近3年は営業利益が売上ほど伸びていない（利益率が下がっている）",
+    "progress": {
+     "fy": "2027-02",
+     "quarter": 2,
+     "filing_date": "",
+     "source": "raw（過去の業績）",
+     "items": {
+      "sales": {
+       "name": "売上高",
+       "cum": 92913.0,
+       "prior": 68462.0,
+       "forecast": 190000.0,
+       "last_actual": 148332.0,
+       "yoy": 35.71470304694575,
+       "forecast_growth": 28.091039020575458,
+       "progress": 48.90157894736842,
+       "prior_progress": 46.15457217592967
+      },
+      "operating_income": {
+       "name": "営業利益",
+       "cum": 29892.0,
+       "prior": 23270.0,
+       "forecast": 64800.0,
+       "last_actual": 50931.0,
+       "yoy": 28.45724108293941,
+       "forecast_growth": 27.230959533486487,
+       "progress": 46.12962962962963,
+       "prior_progress": 45.689265869509725
+      }
+     }
+    },
+    "mtp": "旧中計（FY2022〜FY2026）の数値目標（売上100,000百万円・コンサルタント数4,000名）を3年で概ね達成（FY2024実績93,909百万円、FY2025末5,590名と超過）し、現中計（FY2024〜FY2028、売上2,500億円・CAGR約20%）もFY2026末時点で約1年前倒しで進捗。FY2027中に概ね達成見込みと報告している（中期経営計画）",
+    "cagr": {
+     "sales": 27.5,
+     "operating_income": 28.6,
+     "eps": 29.0
+    },
+    "cagr_span": [
+     "2021-02",
+     "2026-02"
+    ],
+    "rows": [
+     {
+      "year": "2021-02",
+      "sales": 42873.0,
+      "operating_income": 13551.0,
+      "net_income": 10014.0,
+      "eps": 65.45
+     },
+     {
+      "year": "2022-02",
+      "sales": 57642.0,
+      "operating_income": 21518.0,
+      "net_income": 15544.0,
+      "eps": 101.39
+     },
+     {
+      "year": "2023-02",
+      "sales": 76090.0,
+      "operating_income": 29916.0,
+      "net_income": 21910.0,
+      "eps": 142.96
+     },
+     {
+      "year": "2024-02",
+      "sales": 93909.0,
+      "operating_income": 34219.0,
+      "net_income": 25382.0,
+      "eps": 166.04
+     },
+     {
+      "year": "2025-02",
+      "sales": 116056.0,
+      "operating_income": 42615.0,
+      "net_income": 30760.0,
+      "eps": 202.16
+     },
+     {
+      "year": "2026-02",
+      "sales": 148332.0,
+      "operating_income": 50931.0,
+      "net_income": 37840.0,
+      "eps": 249.16
+     }
+    ],
+    "investment": {
+     "verdict": "良好",
+     "sentence": "成長投資は良好: 売上に対する成長投資 -0.1%（2024-02〜2026-02、以前並み）、効率（増分 ROIC）は良好",
+     "level": "標準",
+     "share": -0.1,
+     "earlier": null,
+     "span": "2024-02〜2026-02",
+     "capex_to_dep": 1.05,
+     "peer_median": 0.3,
+     "peer_own": -0.1,
+     "peer_level": "標準",
+     "peer_count": 1,
+     "underinvest": false,
+     "efficiency": "良好",
+     "efficiency_basis": "増分 ROIC",
+     "roic": 63.3,
+     "rows": [
+      {
+       "year": "2024-02",
+       "capex": 3632,
+       "depreciation": 2415,
+       "rnd": null,
+       "working_capital": null,
+       "acquisition": 0,
+       "growth": 1217
+      },
+      {
+       "year": "2025-02",
+       "capex": 866,
+       "depreciation": 2489,
+       "rnd": null,
+       "working_capital": 250,
+       "acquisition": 0,
+       "growth": -1373
+      },
+      {
+       "year": "2026-02",
+       "capex": 2645,
+       "depreciation": 2525,
+       "rnd": null,
+       "working_capital": -295,
+       "acquisition": 0,
+       "growth": -175
+      }
+     ]
+    }
+   }
+  },
+  "safety": {
+   "key": "safety",
+   "label": "安全性",
+   "step": "2-3",
+   "skill": "safety",
+   "date": "2026-11-17",
+   "verdict": "良好",
+   "md": "companies/6532_baycurrent/analysis/safety/2026-11-17_safety.md",
+   "subs": [
+    "クリア",
+    "クリア",
+    "クリア",
+    "悪化傾向なし",
+    "許容"
+   ],
+   "confidence": null,
+   "confidence_why": null,
+   "counter": "",
+   "reason": "3指標とも目安または同業平均をクリアし、悪化傾向なし",
+   "points": "安全性は良好（3指標とも目安または同業平均をクリアし、悪化傾向なし）。2026-02: 自己資本比率 74.3% クリア、D/E レシオ 0.00倍 クリア、流動比率 322.1% クリア（クリア 3・未達 0・不明 0）。ネットキャッシュ 75,066 百万円で実質無借金。インタレスト・カバレッジ 808.4倍（利払いに余裕あり。5倍以上で余裕、1.5倍未満で注意）。2022-02〜2026-02（5年）: 自己資本比率 71.7%→74.3%（+2.6pt）、D/E 0.11→0.00倍。悪化傾向なし。借入の目的: 2021-02〜2026-02 に有利子負債が目立って増えた年はない（許容）。",
+   "gaps": [
+    "財務時系列: キャッシュ・フロー: raw に無い"
+   ],
+   "conservative": [],
+   "detail": {
+    "items": [
+     {
+      "name": "自己資本比率",
+      "value": 74.2998,
+      "peer_avg": 83.555,
+      "rating": "クリア",
+      "target": "40%以上"
+     },
+     {
+      "name": "D/E レシオ",
+      "value": 0.0022,
+      "peer_avg": 0.0,
+      "rating": "クリア",
+      "target": "1倍以下"
+     },
+     {
+      "name": "流動比率",
+      "value": 322.0763,
+      "peer_avg": 353.5654,
+      "rating": "クリア",
+      "target": "120%以上"
+     }
+    ],
+    "net_cash": 75066.0,
+    "debt_free": true,
+    "trend": "悪化傾向なし",
+    "peers": [
+     {
+      "name": "シグマクシス HD",
+      "equity_ratio": 83.555
+     }
+    ],
+    "rows": [
+     {
+      "year": "2021-02",
+      "equity_ratio": 65.3001,
+      "net_cash": 10782.0,
+      "debt": 5513.0
+     },
+     {
+      "year": "2022-02",
+      "equity_ratio": 71.7008,
+      "net_cash": 21593.0,
+      "debt": 4463.0
+     },
+     {
+      "year": "2023-02",
+      "equity_ratio": 76.2001,
+      "net_cash": 33193.0,
+      "debt": 3413.0
+     },
+     {
+      "year": "2024-02",
+      "equity_ratio": 74.1998,
+      "net_cash": 44215.0,
+      "debt": 2356.0
+     },
+     {
+      "year": "2025-02",
+      "equity_ratio": 75.6997,
+      "net_cash": 62241.0,
+      "debt": 1311.0
+     },
+     {
+      "year": "2026-02",
+      "equity_ratio": 74.2998,
+      "net_cash": 75066.0,
+      "debt": 262.0
+     }
+    ]
+   }
+  },
+  "cash_flow": {
+   "key": "cash_flow",
+   "label": "キャッシュフロー",
+   "step": "2-4",
+   "skill": "cash-flow",
+   "date": "2026-11-17",
+   "verdict": "良好",
+   "md": "companies/6532_baycurrent/analysis/cash-flow/2026-11-17_cash-flow.md",
+   "subs": [
+    "良好",
+    "良好",
+    "良好",
+    "良好",
+    "問題なし"
+   ],
+   "confidence": null,
+   "confidence_why": null,
+   "counter": "",
+   "reason": "「営業CF の安定性」〜4がすべて良好で、株主還元は問題なし",
+   "points": "キャッシュフローは良好（「営業CF の安定性」〜4がすべて良好で、株主還元は問題なし）。営業CF は6年（2021-02〜2026-02）で、すべての年がプラス。良好。FCF は2022-02〜2026-02の5年累計 116,068、プラスの年 5/5（累計プラスで過半数の年がプラス）。良好。営業CF対純利益比率は5年累計（平均 1.01倍は参考）で1.01倍。良好。",
+   "gaps": [
+    "財務時系列: キャッシュ・フロー: raw に無い"
+   ],
+   "conservative": [],
+   "detail": {
+    "steps": [
+     {
+      "rating": "良好",
+      "sentence": "営業CF は6年（2021-02〜2026-02）で、すべての年がプラス。良好"
+     },
+     {
+      "rating": "良好",
+      "sentence": "FCF は2022-02〜2026-02の5年累計 116,068、プラスの年 5/5（累計プラスで過半数の年がプラス）。良好"
+     },
+     {
+      "rating": "良好",
+      "sentence": "営業CF対純利益比率は5年累計（平均 1.01倍は参考）で1.01倍。良好"
+     },
+     {
+      "rating": "良好",
+      "sentence": "CF パターンは直近5年の評価が 良好 5年（最も多い評価を採る。同数なら保守的な方）で良好。直近 2026-02 は（+、−、−）本業で稼ぎ、投資を行い、財務CF の流出は主に株主還元"
+     },
+     {
+      "rating": "問題なし",
+      "sentence": "株主還元は2024-02〜2026-02（3年）の還元額 累計 36,729、FCF 累計 80,818、還元が FCF を上回った年 0年（還元は継続的には FCF を上回っていない）。問題なし"
+     }
+    ],
+    "ratio": 1.01,
+    "rows": [
+     {
+      "year": "2021-02",
+      "cfo": 12135.0,
+      "cfi": -364.0,
+      "fcf": 11771.0,
+      "net_income": 10014.0,
+      "ratio": 1.21
+     },
+     {
+      "year": "2022-02",
+      "cfo": 16018.0,
+      "cfi": -147.0,
+      "fcf": 15871.0,
+      "net_income": 15544.0,
+      "ratio": 1.03
+     },
+     {
+      "year": "2023-02",
+      "cfo": 21635.0,
+      "cfi": -2256.0,
+      "fcf": 19379.0,
+      "net_income": 21910.0,
+      "ratio": 0.99
+     },
+     {
+      "year": "2024-02",
+      "cfo": 24348.0,
+      "cfi": -3754.0,
+      "fcf": 20594.0,
+      "net_income": 25382.0,
+      "ratio": 0.96
+     },
+     {
+      "year": "2025-02",
+      "cfo": 32648.0,
+      "cfi": -3532.0,
+      "fcf": 29116.0,
+      "net_income": 30760.0,
+      "ratio": 1.06
+     },
+     {
+      "year": "2026-02",
+      "cfo": 37616.0,
+      "cfi": -6508.0,
+      "fcf": 31108.0,
+      "net_income": 37840.0,
+      "ratio": 0.99
+     }
+    ]
+   }
+  },
+  "valuation": {
+   "key": "valuation",
+   "label": "バリュエーション",
+   "step": "3",
+   "skill": "valuation",
+   "date": "2026-11-17",
+   "verdict": "割高",
+   "md": "companies/6532_baycurrent/analysis/valuation/2026-11-17_valuation.md",
+   "subs": [],
+   "confidence": null,
+   "confidence_why": null,
+   "counter": "",
+   "reason": "4 指標の平均点 -0.50（+0.5 以上で割安、−0.5 以下で割高）。ネットキャッシュ比率（妥当）は割高にならない指標のため参考",
+   "points": "STEP 3 は割高（4 指標の平均点 -0.50（+0.5 以上で割安、−0.5 以下で割高）。ネットキャッシュ比率（妥当）は割高にならない指標のため参考）。指標ごとの判定は PER 割高・PBR 妥当・PEG 妥当・EV/EBITDA 割高・ネットキャッシュ比率 妥当（根拠は1〜5章）。",
+   "gaps": [
+    "警告: 株式数: 期末後のコーポレートアクション: 2026年3月18日: 自社株買い発表（上限660万株または300億円、4月15日〜7月31日）。2026年6月17日: 譲渡制限付株式報酬として自己株式処分決。時価総額・EV は 151,163,468株で計算した（上限は自己株式を含む 154,394,010株。PER・PBR は1株指標なので影響しない。4章に上限での EV/EBITDA の判定を記入）"
+   ],
+   "conservative": [],
+   "detail": {
+    "price": {
+     "value": 11660.0,
+     "date": "2026-11-12",
+     "currency": "円"
+    },
+    "items": {
+     "PER": {
+      "rating": "割高",
+      "sentence": "予想PER 36.0倍: 過去レンジだけで判定（片軸。もう一方は比べられる同業が1社（2社以上で判定））（予想PER で判定）。業態の目安（優良顧客型 15倍以下）で割高圏"
+     },
+     "PBR": {
+      "rating": "妥当",
+      "sentence": "PBR 15.13倍: 適正PBRで判定。適正PBR 12.76倍（予想ROE 42.0%（予想EPS ÷ BPS）× 平均PER 30.4倍（有報の期末PER 5 期の平均））に対して現在 15.13倍で +19%（妥当）"
+     },
+     "PEG": {
+      "rating": "妥当",
+      "sentence": "PEG（標準）1.27倍 = PER 36.0倍 ÷ 成長率 28.3%（妥当）。悲観ケース 2.54倍で2倍超（安全域なし）"
+     },
+     "EV/EBITDA": {
+      "rating": "割高",
+      "sentence": "EV/EBITDA 31.7倍: 過去レンジだけで判定（片軸。もう一方は比べられる同業が0社（2社以上で判定））（過去レンジは算出値）。株式数が未確定のため上限（154,394,010株）でも計算: 32.4倍で割高（判定は同じ）。EV に リース負債 +6,313・短期投資 −3,020 を含む（同業の EV は含まない）"
+     },
+     "ネットキャッシュ比率": {
+      "rating": "妥当",
+      "sentence": "ネットキャッシュ比率 0.04倍: 資産ベースのネットキャッシュ 78,065（流動資産 114,292 ＋ 投資有価証券 6,029 × 0.7 − 負債合計 40,447） ÷ 時価総額 1,762,566。1倍以上で割安、0〜1倍で妥当 → 妥当"
+     }
+    },
+    "sheet": "PER 割高／PBR 妥当／PEG 妥当（悲観ケース：2.54倍）／EV/EBITDA 割高／STEP 3 割高（平均点：-0.50）",
+    "flip_prices": [
+     "PER: 過去レンジの割安圏（位置33%以下）になる株価 9,752円 以下、割高圏（67%以上）になる株価 14,960円 以上",
+     "PBR: 適正PBR 12.76倍 から割安（−20%）になる株価 7,869円 以下、割高（+20%）になる株価 11,804円 以上",
+     "PEG: 1倍になる株価 9,163円、2倍になる株価 18,327円"
+    ],
+    "flip_values": {
+     "per_cheap": 9751.87,
+     "per_rich": 14959.78,
+     "pbr_cheap": 7869.39,
+     "pbr_fair": 9836.74,
+     "pbr_rich": 11804.09
+    },
+    "per_guide": {
+     "type": "優良顧客型",
+     "guide": 15,
+     "basis": "売上の10%以上の販売先なし（特定の顧客に依存しない）",
+     "zone": "割高"
+    },
+    "per_actual": 46.7972,
+    "per_forecast": 36.011,
+    "pbr": 15.1285,
+    "per_range": {
+     "low": 13.79,
+     "high": 62.53,
+     "position": 68
+    },
+    "cheap_reason": "該当なし（STEP 3 が割安でない）",
+    "final_check": {
+     "concerns": [],
+     "swot_no": false,
+     "not_done": [],
+     "raised": false,
+     "noted": false,
+     "applies": false
+    },
+    "average": -0.5,
+    "scored": 5,
+    "scores": {
+     "PER": -1,
+     "PBR": 0,
+     "PEG": 0,
+     "EV/EBITDA": -1,
+     "ネットキャッシュ比率": 0
+    },
+    "peg_standard": 1.2725,
+    "peg_cases": {
+     "standard": 28.3,
+     "pessimistic": 14.15,
+     "optimistic": 29.9526
+    },
+    "pbr_fair": {
+     "fair": 12.7629,
+     "roe": 42.0108,
+     "roe_basis": "予想EPS ÷ BPS",
+     "average_per": 30.38,
+     "average_basis": "有報の期末PER 5 期の平均",
+     "diff": 0.1854,
+     "rating": "妥当"
+    },
+    "raw_verdict": "割高",
+    "ev_ebitda": 31.6861,
+    "eps_used": 249.16,
+    "peers": [
+     {
+      "name": "シグマクシス HD",
+      "per_actual": 13.3627,
+      "per_forecast": 11.6241,
+      "pbr": 3.6435,
+      "ev_ebitda_calc": null,
+      "cagr": 2.069,
+      "roe": 16.2
+     }
+    ]
+   }
+  }
+ },
+ "prices": {
+  "source": "prices",
+  "path": "data/prices.csv",
+  "first": "2016-11-04",
+  "last": "2026-11-17",
+  "current": 12780.0,
+  "days": 2471,
+  "ranges": [
+   {
+    "label": "52週",
+    "start": "2025-11-18",
+    "partial": false,
+    "high": 12810.0,
+    "high_date": "2026-11-17",
+    "low": 3780.0,
+    "low_date": "2026-02-24",
+    "position": 99.7,
+    "from_high": -0.2,
+    "from_low": 238.1
+   },
+   {
+    "label": "3年",
+    "start": "2023-11-20",
+    "partial": false,
+    "high": 12810.0,
+    "high_date": "2026-11-17",
+    "low": 2787.5,
+    "low_date": "2024-04-03",
+    "position": 99.7,
+    "from_high": -0.2,
+    "from_low": 358.5
+   },
+   {
+    "label": "5年",
+    "start": "2021-11-18",
+    "partial": false,
+    "high": 12810.0,
+    "high_date": "2026-11-17",
+    "low": 2787.5,
+    "low_date": "2024-04-03",
+    "position": 99.7,
+    "from_high": -0.2,
+    "from_low": 358.5
+   },
+   {
+    "label": "10年",
+    "start": "2016-11-18",
+    "partial": false,
+    "high": 12810.0,
+    "high_date": "2026-11-17",
+    "low": 80.8,
+    "low_date": "2016-12-22",
+    "position": 99.8,
+    "from_high": -0.2,
+    "from_low": 15716.8
+   }
+  ],
+  "averages": [
+   {
+    "label": "13週",
+    "value": 9131.02,
+    "gap": 40.0
+   },
+   {
+    "label": "26週",
+    "value": 7628.88,
+    "gap": 67.5
+   },
+   {
+    "label": "52週",
+    "value": 6698.25,
+    "gap": 90.8
+   }
+  ],
+  "monthly": {
+   "close": [
+    [
+     "2016-11-30",
+     153.0
+    ],
+    [
+     "2016-12-30",
+     83.8
+    ],
+    [
+     "2017-01-31",
+     114.0
+    ],
+    [
+     "2017-02-28",
+     118.5
+    ],
+    [
+     "2017-03-31",
+     131.0
+    ],
+    [
+     "2017-04-28",
+     168.1
+    ],
+    [
+     "2017-05-31",
+     188.7
+    ],
+    [
+     "2017-06-30",
+     193.9
+    ],
+    [
+     "2017-07-31",
+     210.9
+    ],
+    [
+     "2017-08-31",
+     201.0
+    ],
+    [
+     "2017-09-29",
+     209.0
+    ],
+    [
+     "2017-10-31",
+     241.0
+    ],
+    [
+     "2017-11-30",
+     256.9
+    ],
+    [
+     "2017-12-29",
+     325.5
+    ],
+    [
+     "2018-01-31",
+     344.5
+    ],
+    [
+     "2018-02-28",
+     332.5
+    ],
+    [
+     "2018-03-30",
+     348.0
+    ],
+    [
+     "2018-04-30",
+     391.5
+    ],
+    [
+     "2018-05-31",
+     420.5
+    ],
+    [
+     "2018-06-29",
+     370.5
+    ],
+    [
+     "2018-07-31",
+     329.0
+    ],
+    [
+     "2018-08-31",
+     304.0
+    ],
+    [
+     "2018-09-28",
+     316.5
+    ],
+    [
+     "2018-10-31",
+     231.1
+    ],
+    [
+     "2018-11-30",
+     280.3
+    ],
+    [
+     "2018-12-31",
+     230.5
+    ],
+    [
+     "2019-01-31",
+     334.0
+    ],
+    [
+     "2019-02-28",
+     333.0
+    ],
+    [
+     "2019-03-29",
+     347.5
+    ],
+    [
+     "2019-04-26",
+     402.0
+    ],
+    [
+     "2019-05-31",
+     364.5
+    ],
+    [
+     "2019-06-28",
+     415.0
+    ],
+    [
+     "2019-07-31",
+     501.0
+    ],
+    [
+     "2019-08-30",
+     480.0
+    ],
+    [
+     "2019-09-30",
+     475.5
+    ],
+    [
+     "2019-10-31",
+     547.0
+    ],
+    [
+     "2019-11-29",
+     586.0
+    ],
+    [
+     "2019-12-30",
+     558.0
+    ],
+    [
+     "2020-01-31",
+     770.0
+    ],
+    [
+     "2020-02-28",
+     644.0
+    ],
+    [
+     "2020-03-31",
+     506.0
+    ],
+    [
+     "2020-04-30",
+     615.0
+    ],
+    [
+     "2020-05-29",
+     757.0
+    ],
+    [
+     "2020-06-30",
+     896.0
+    ],
+    [
+     "2020-07-31",
+     1267.0
+    ],
+    [
+     "2020-08-31",
+     1137.0
+    ],
+    [
+     "2020-09-30",
+     1460.0
+    ],
+    [
+     "2020-10-30",
+     1351.0
+    ],
+    [
+     "2020-11-30",
+     1738.0
+    ],
+    [
+     "2020-12-30",
+     1809.0
+    ],
+    [
+     "2021-01-29",
+     1577.0
+    ],
+    [
+     "2021-02-26",
+     2144.0
+    ],
+    [
+     "2021-03-31",
+     2525.0
+    ],
+    [
+     "2021-04-30",
+     2985.0
+    ],
+    [
+     "2021-05-31",
+     3340.0
+    ],
+    [
+     "2021-06-30",
+     3990.0
+    ],
+    [
+     "2021-07-30",
+     4350.0
+    ],
+    [
+     "2021-08-31",
+     5470.0
+    ],
+    [
+     "2021-09-30",
+     5680.0
+    ],
+    [
+     "2021-10-29",
+     4690.0
+    ],
+    [
+     "2021-11-30",
+     4730.0
+    ],
+    [
+     "2021-12-30",
+     4450.0
+    ],
+    [
+     "2022-01-31",
+     4290.0
+    ],
+    [
+     "2022-02-28",
+     4535.0
+    ],
+    [
+     "2022-03-31",
+     4480.0
+    ],
+    [
+     "2022-04-28",
+     4315.0
+    ],
+    [
+     "2022-05-31",
+     4065.0
+    ],
+    [
+     "2022-06-30",
+     3610.0
+    ],
+    [
+     "2022-07-29",
+     4130.0
+    ],
+    [
+     "2022-08-31",
+     4150.0
+    ],
+    [
+     "2022-09-30",
+     3765.0
+    ],
+    [
+     "2022-10-31",
+     4190.0
+    ],
+    [
+     "2022-11-30",
+     4465.0
+    ],
+    [
+     "2022-12-30",
+     4115.0
+    ],
+    [
+     "2023-01-31",
+     5470.0
+    ],
+    [
+     "2023-02-28",
+     5350.0
+    ],
+    [
+     "2023-03-31",
+     5450.0
+    ],
+    [
+     "2023-04-28",
+     4705.0
+    ],
+    [
+     "2023-05-31",
+     5110.0
+    ],
+    [
+     "2023-06-30",
+     5368.0
+    ],
+    [
+     "2023-07-31",
+     4588.0
+    ],
+    [
+     "2023-08-31",
+     5013.0
+    ],
+    [
+     "2023-09-29",
+     4998.0
+    ],
+    [
+     "2023-10-31",
+     3759.0
+    ],
+    [
+     "2023-11-30",
+     4976.0
+    ],
+    [
+     "2023-12-29",
+     4951.0
+    ],
+    [
+     "2024-01-31",
+     3466.0
+    ],
+    [
+     "2024-02-29",
+     3354.0
+    ],
+    [
+     "2024-03-29",
+     2962.0
+    ],
+    [
+     "2024-04-30",
+     3372.0
+    ],
+    [
+     "2024-05-31",
+     3204.0
+    ],
+    [
+     "2024-06-28",
+     3240.0
+    ],
+    [
+     "2024-07-31",
+     4545.0
+    ],
+    [
+     "2024-08-30",
+     4669.0
+    ],
+    [
+     "2024-09-30",
+     5304.0
+    ],
+    [
+     "2024-10-31",
+     4974.0
+    ],
+    [
+     "2024-11-29",
+     5411.0
+    ],
+    [
+     "2024-12-30",
+     5320.0
+    ],
+    [
+     "2025-01-31",
+     6645.0
+    ],
+    [
+     "2025-02-28",
+     6364.0
+    ],
+    [
+     "2025-03-31",
+     6470.0
+    ],
+    [
+     "2025-04-30",
+     7690.0
+    ],
+    [
+     "2025-05-30",
+     7683.0
+    ],
+    [
+     "2025-06-30",
+     7420.0
+    ],
+    [
+     "2025-07-31",
+     8676.0
+    ],
+    [
+     "2025-08-29",
+     8373.0
+    ],
+    [
+     "2025-09-30",
+     8700.0
+    ],
+    [
+     "2025-10-31",
+     7065.0
+    ],
+    [
+     "2025-11-28",
+     6837.0
+    ],
+    [
+     "2025-12-30",
+     6500.0
+    ],
+    [
+     "2026-01-30",
+     5441.0
+    ],
+    [
+     "2026-02-27",
+     4505.0
+    ],
+    [
+     "2026-03-31",
+     4539.0
+    ],
+    [
+     "2026-04-30",
+     5060.0
+    ],
+    [
+     "2026-05-29",
+     5616.0
+    ],
+    [
+     "2026-06-30",
+     6036.0
+    ],
+    [
+     "2026-07-31",
+     7139.0
+    ],
+    [
+     "2026-08-31",
+     8192.0
+    ],
+    [
+     "2026-09-30",
+     7690.0
+    ],
+    [
+     "2026-10-30",
+     11825.0
+    ],
+    [
+     "2026-11-17",
+     12780.0
+    ]
+   ],
+   "ma": [
+    [
+     "2017-05-31",
+     130.29
+    ],
+    [
+     "2017-06-30",
+     140.55
+    ],
+    [
+     "2017-07-31",
+     157.77
+    ],
+    [
+     "2017-08-31",
+     169.94
+    ],
+    [
+     "2017-09-29",
+     181.4
+    ],
+    [
+     "2017-10-31",
+     194.33
+    ],
+    [
+     "2017-11-30",
+     208.0
+    ],
+    [
+     "2017-12-29",
+     226.28
+    ],
+    [
+     "2018-01-31",
+     248.73
+    ],
+    [
+     "2018-02-28",
+     269.85
+    ],
+    [
+     "2018-03-30",
+     290.23
+    ],
+    [
+     "2018-04-30",
+     312.44
+    ],
+    [
+     "2018-05-31",
+     341.16
+    ],
+    [
+     "2018-06-29",
+     354.61
+    ],
+    [
+     "2018-07-31",
+     355.22
+    ],
+    [
+     "2018-08-31",
+     349.77
+    ],
+    [
+     "2018-09-28",
+     349.98
+    ],
+    [
+     "2018-10-31",
+     331.84
+    ],
+    [
+     "2018-11-30",
+     303.6
+    ],
+    [
+     "2018-12-31",
+     281.01
+    ],
+    [
+     "2019-01-31",
+     273.91
+    ],
+    [
+     "2019-02-28",
+     278.86
+    ],
+    [
+     "2019-03-29",
+     283.31
+    ],
+    [
+     "2019-04-26",
+     295.5
+    ],
+    [
+     "2019-05-31",
+     317.82
+    ],
+    [
+     "2019-06-28",
+     337.57
+    ],
+    [
+     "2019-07-31",
+     372.96
+    ],
+    [
+     "2019-08-30",
+     401.68
+    ],
+    [
+     "2019-09-30",
+     420.17
+    ],
+    [
+     "2019-10-31",
+     447.7
+    ],
+    [
+     "2019-11-29",
+     474.72
+    ],
+    [
+     "2019-12-30",
+     503.48
+    ],
+    [
+     "2020-01-31",
+     546.99
+    ],
+    [
+     "2020-02-28",
+     586.27
+    ],
+    [
+     "2020-03-31",
+     597.95
+    ],
+    [
+     "2020-04-30",
+     611.88
+    ],
+    [
+     "2020-05-29",
+     630.13
+    ],
+    [
+     "2020-06-30",
+     684.24
+    ],
+    [
+     "2020-07-31",
+     761.55
+    ],
+    [
+     "2020-08-31",
+     821.07
+    ],
+    [
+     "2020-09-30",
+     916.77
+    ],
+    [
+     "2020-10-30",
+     1083.99
+    ],
+    [
+     "2020-11-30",
+     1223.39
+    ],
+    [
+     "2020-12-30",
+     1361.56
+    ],
+    [
+     "2021-01-29",
+     1492.56
+    ],
+    [
+     "2021-02-26",
+     1586.73
+    ],
+    [
+     "2021-03-31",
+     1800.88
+    ],
+    [
+     "2021-04-30",
+     2017.2
+    ],
+    [
+     "2021-05-31",
+     2255.75
+    ],
+    [
+     "2021-06-30",
+     2599.03
+    ],
+    [
+     "2021-07-30",
+     2916.07
+    ],
+    [
+     "2021-08-31",
+     3392.78
+    ],
+    [
+     "2021-09-30",
+     3944.28
+    ],
+    [
+     "2021-10-29",
+     4279.58
+    ],
+    [
+     "2021-11-30",
+     4588.96
+    ],
+    [
+     "2021-12-30",
+     4782.31
+    ],
+    [
+     "2022-01-31",
+     4847.08
+    ],
+    [
+     "2022-02-28",
+     4826.35
+    ],
+    [
+     "2022-03-31",
+     4634.73
+    ],
+    [
+     "2022-04-28",
+     4476.58
+    ],
+    [
+     "2022-05-31",
+     4345.35
+    ],
+    [
+     "2022-06-30",
+     4091.35
+    ],
+    [
+     "2022-07-29",
+     4021.88
+    ],
+    [
+     "2022-08-31",
+     4033.65
+    ],
+    [
+     "2022-09-30",
+     3994.08
+    ],
+    [
+     "2022-10-31",
+     3921.15
+    ],
+    [
+     "2022-11-30",
+     3960.73
+    ],
+    [
+     "2022-12-30",
+     4122.38
+    ],
+    [
+     "2023-01-31",
+     4327.04
+    ],
+    [
+     "2023-02-28",
+     4528.65
+    ],
+    [
+     "2023-03-31",
+     4743.69
+    ],
+    [
+     "2023-04-28",
+     4910.65
+    ],
+    [
+     "2023-05-31",
+     5072.81
+    ],
+    [
+     "2023-06-30",
+     5211.34
+    ],
+    [
+     "2023-07-31",
+     5282.6
+    ],
+    [
+     "2023-08-31",
+     5139.07
+    ],
+    [
+     "2023-09-29",
+     5071.11
+    ],
+    [
+     "2023-10-31",
+     4942.42
+    ],
+    [
+     "2023-11-30",
+     4852.32
+    ],
+    [
+     "2023-12-29",
+     4755.34
+    ],
+    [
+     "2024-01-31",
+     4566.13
+    ],
+    [
+     "2024-02-29",
+     4357.11
+    ],
+    [
+     "2024-03-29",
+     4069.65
+    ],
+    [
+     "2024-04-30",
+     3801.62
+    ],
+    [
+     "2024-05-31",
+     3676.77
+    ],
+    [
+     "2024-06-28",
+     3434.35
+    ],
+    [
+     "2024-07-31",
+     3373.37
+    ],
+    [
+     "2024-08-30",
+     3542.11
+    ],
+    [
+     "2024-09-30",
+     3819.02
+    ],
+    [
+     "2024-10-31",
+     4174.81
+    ],
+    [
+     "2024-11-29",
+     4483.59
+    ],
+    [
+     "2024-12-30",
+     4841.03
+    ],
+    [
+     "2025-01-31",
+     5151.75
+    ],
+    [
+     "2025-02-28",
+     5472.68
+    ],
+    [
+     "2025-03-31",
+     5754.92
+    ],
+    [
+     "2025-04-30",
+     6039.94
+    ],
+    [
+     "2025-05-30",
+     6492.18
+    ],
+    [
+     "2025-06-30",
+     6803.47
+    ],
+    [
+     "2025-07-31",
+     7253.36
+    ],
+    [
+     "2025-08-29",
+     7554.47
+    ],
+    [
+     "2025-09-30",
+     7880.38
+    ],
+    [
+     "2025-10-31",
+     8061.72
+    ],
+    [
+     "2025-11-28",
+     7913.85
+    ],
+    [
+     "2025-12-30",
+     7727.33
+    ],
+    [
+     "2026-01-30",
+     7554.78
+    ],
+    [
+     "2026-02-27",
+     7011.92
+    ],
+    [
+     "2026-03-31",
+     6379.06
+    ],
+    [
+     "2026-04-30",
+     5821.12
+    ],
+    [
+     "2026-05-29",
+     5579.15
+    ],
+    [
+     "2026-06-30",
+     5417.86
+    ],
+    [
+     "2026-07-31",
+     5428.62
+    ],
+    [
+     "2026-08-31",
+     5763.23
+    ],
+    [
+     "2026-09-30",
+     6233.18
+    ],
+    [
+     "2026-10-30",
+     7054.12
+    ],
+    [
+     "2026-11-17",
+     7628.88
+    ]
+   ]
+  },
+  "yearly": [
+   {
+    "year": "2026",
+    "high": 12810.0,
+    "low": 3780.0,
+    "close": 12780.0,
+    "change": 96.6,
+    "partial": true
+   },
+   {
+    "year": "2025",
+    "high": 9075.0,
+    "low": 4904.0,
+    "close": 6500.0,
+    "change": 22.2,
+    "partial": false
+   },
+   {
+    "year": "2024",
+    "high": 5864.0,
+    "low": 2787.5,
+    "close": 5320.0,
+    "change": 7.5,
+    "partial": false
+   },
+   {
+    "year": "2023",
+    "high": 5939.0,
+    "low": 3607.0,
+    "close": 4951.0,
+    "change": 20.3,
+    "partial": false
+   },
+   {
+    "year": "2022",
+    "high": 5230.0,
+    "low": 3110.0,
+    "close": 4115.0,
+    "change": -7.5,
+    "partial": false
+   },
+   {
+    "year": "2021",
+    "high": 6340.0,
+    "low": 1554.0,
+    "close": 4450.0,
+    "change": 146.0,
+    "partial": false
+   },
+   {
+    "year": "2020",
+    "high": 1837.0,
+    "low": 377.5,
+    "close": 1809.0,
+    "change": 224.2,
+    "partial": false
+   },
+   {
+    "year": "2019",
+    "high": 600.0,
+    "low": 220.5,
+    "close": 558.0,
+    "change": 142.1,
+    "partial": false
+   },
+   {
+    "year": "2018",
+    "high": 444.0,
+    "low": 194.0,
+    "close": 230.5,
+    "change": -29.2,
+    "partial": false
+   },
+   {
+    "year": "2017",
+    "high": 344.5,
+    "low": 82.2,
+    "close": 325.5,
+    "change": 288.4,
+    "partial": false
+   }
+  ],
+  "long_trend": {
+   "verdict": "上昇トレンド",
+   "basis": "10年",
+   "windows": {
+    "10年": {
+     "verdict": "上昇トレンド",
+     "annual": 54.5,
+     "r2": 0.86,
+     "band": [
+      231.1,
+      6837.0
+     ],
+     "max_drawdown": -48.2,
+     "start": "2016-12-30"
+    },
+    "5年": {
+     "verdict": "レンジ",
+     "annual": 15.0,
+     "r2": 0.43,
+     "band": [
+      3466.0,
+      7690.0
+     ],
+     "max_drawdown": -48.2,
+     "start": "2021-12-30"
+    },
+    "3年": {
+     "verdict": "上昇トレンド",
+     "annual": 33.6,
+     "r2": 0.5,
+     "band": [
+      3354.0,
+      8373.0
+     ],
+     "max_drawdown": -48.2,
+     "start": "2023-12-29"
+    }
+   },
+   "sentence": "10年の株価は年率 +54.5% の上昇トレンド（傾向線のあてはまり R² 0.86）。この間の最大の下落は -48%",
+   "line": [
+    [
+     "2016-12-30",
+     202.21
+    ],
+    [
+     "2017-01-31",
+     209.67
+    ],
+    [
+     "2017-02-28",
+     217.42
+    ],
+    [
+     "2017-03-31",
+     225.45
+    ],
+    [
+     "2017-04-28",
+     233.77
+    ],
+    [
+     "2017-05-31",
+     242.4
+    ],
+    [
+     "2017-06-30",
+     251.35
+    ],
+    [
+     "2017-07-31",
+     260.64
+    ],
+    [
+     "2017-08-31",
+     270.26
+    ],
+    [
+     "2017-09-29",
+     280.24
+    ],
+    [
+     "2017-10-31",
+     290.59
+    ],
+    [
+     "2017-11-30",
+     301.32
+    ],
+    [
+     "2017-12-29",
+     312.45
+    ],
+    [
+     "2018-01-31",
+     323.98
+    ],
+    [
+     "2018-02-28",
+     335.95
+    ],
+    [
+     "2018-03-30",
+     348.35
+    ],
+    [
+     "2018-04-30",
+     361.22
+    ],
+    [
+     "2018-05-31",
+     374.56
+    ],
+    [
+     "2018-06-29",
+     388.39
+    ],
+    [
+     "2018-07-31",
+     402.73
+    ],
+    [
+     "2018-08-31",
+     417.6
+    ],
+    [
+     "2018-09-28",
+     433.02
+    ],
+    [
+     "2018-10-31",
+     449.01
+    ],
+    [
+     "2018-11-30",
+     465.59
+    ],
+    [
+     "2018-12-31",
+     482.79
+    ],
+    [
+     "2019-01-31",
+     500.61
+    ],
+    [
+     "2019-02-28",
+     519.1
+    ],
+    [
+     "2019-03-29",
+     538.27
+    ],
+    [
+     "2019-04-26",
+     558.14
+    ],
+    [
+     "2019-05-31",
+     578.75
+    ],
+    [
+     "2019-06-28",
+     600.13
+    ],
+    [
+     "2019-07-31",
+     622.29
+    ],
+    [
+     "2019-08-30",
+     645.27
+    ],
+    [
+     "2019-09-30",
+     669.09
+    ],
+    [
+     "2019-10-31",
+     693.8
+    ],
+    [
+     "2019-11-29",
+     719.42
+    ],
+    [
+     "2019-12-30",
+     745.99
+    ],
+    [
+     "2020-01-31",
+     773.54
+    ],
+    [
+     "2020-02-28",
+     802.1
+    ],
+    [
+     "2020-03-31",
+     831.72
+    ],
+    [
+     "2020-04-30",
+     862.43
+    ],
+    [
+     "2020-05-29",
+     894.28
+    ],
+    [
+     "2020-06-30",
+     927.3
+    ],
+    [
+     "2020-07-31",
+     961.54
+    ],
+    [
+     "2020-08-31",
+     997.05
+    ],
+    [
+     "2020-09-30",
+     1033.87
+    ],
+    [
+     "2020-10-30",
+     1072.05
+    ],
+    [
+     "2020-11-30",
+     1111.63
+    ],
+    [
+     "2020-12-30",
+     1152.68
+    ],
+    [
+     "2021-01-29",
+     1195.25
+    ],
+    [
+     "2021-02-26",
+     1239.39
+    ],
+    [
+     "2021-03-31",
+     1285.15
+    ],
+    [
+     "2021-04-30",
+     1332.61
+    ],
+    [
+     "2021-05-31",
+     1381.82
+    ],
+    [
+     "2021-06-30",
+     1432.85
+    ],
+    [
+     "2021-07-30",
+     1485.76
+    ],
+    [
+     "2021-08-31",
+     1540.62
+    ],
+    [
+     "2021-09-30",
+     1597.51
+    ],
+    [
+     "2021-10-29",
+     1656.5
+    ],
+    [
+     "2021-11-30",
+     1717.67
+    ],
+    [
+     "2021-12-30",
+     1781.1
+    ],
+    [
+     "2022-01-31",
+     1846.87
+    ],
+    [
+     "2022-02-28",
+     1915.07
+    ],
+    [
+     "2022-03-31",
+     1985.79
+    ],
+    [
+     "2022-04-28",
+     2059.12
+    ],
+    [
+     "2022-05-31",
+     2135.15
+    ],
+    [
+     "2022-06-30",
+     2214.0
+    ],
+    [
+     "2022-07-29",
+     2295.76
+    ],
+    [
+     "2022-08-31",
+     2380.53
+    ],
+    [
+     "2022-09-30",
+     2468.44
+    ],
+    [
+     "2022-10-31",
+     2559.59
+    ],
+    [
+     "2022-11-30",
+     2654.11
+    ],
+    [
+     "2022-12-30",
+     2752.12
+    ],
+    [
+     "2023-01-31",
+     2853.74
+    ],
+    [
+     "2023-02-28",
+     2959.12
+    ],
+    [
+     "2023-03-31",
+     3068.39
+    ],
+    [
+     "2023-04-28",
+     3181.7
+    ],
+    [
+     "2023-05-31",
+     3299.19
+    ],
+    [
+     "2023-06-30",
+     3421.02
+    ],
+    [
+     "2023-07-31",
+     3547.35
+    ],
+    [
+     "2023-08-31",
+     3678.34
+    ],
+    [
+     "2023-09-29",
+     3814.17
+    ],
+    [
+     "2023-10-31",
+     3955.02
+    ],
+    [
+     "2023-11-30",
+     4101.07
+    ],
+    [
+     "2023-12-29",
+     4252.51
+    ],
+    [
+     "2024-01-31",
+     4409.54
+    ],
+    [
+     "2024-02-29",
+     4572.37
+    ],
+    [
+     "2024-03-29",
+     4741.21
+    ],
+    [
+     "2024-04-30",
+     4916.29
+    ],
+    [
+     "2024-05-31",
+     5097.84
+    ],
+    [
+     "2024-06-28",
+     5286.08
+    ],
+    [
+     "2024-07-31",
+     5481.28
+    ],
+    [
+     "2024-08-30",
+     5683.69
+    ],
+    [
+     "2024-09-30",
+     5893.57
+    ],
+    [
+     "2024-10-31",
+     6111.2
+    ],
+    [
+     "2024-11-29",
+     6336.87
+    ],
+    [
+     "2024-12-30",
+     6570.87
+    ],
+    [
+     "2025-01-31",
+     6813.52
+    ],
+    [
+     "2025-02-28",
+     7065.12
+    ],
+    [
+     "2025-03-31",
+     7326.01
+    ],
+    [
+     "2025-04-30",
+     7596.54
+    ],
+    [
+     "2025-05-30",
+     7877.06
+    ],
+    [
+     "2025-06-30",
+     8167.94
+    ],
+    [
+     "2025-07-31",
+     8469.55
+    ],
+    [
+     "2025-08-29",
+     8782.31
+    ],
+    [
+     "2025-09-30",
+     9106.61
+    ],
+    [
+     "2025-10-31",
+     9442.89
+    ],
+    [
+     "2025-11-28",
+     9791.59
+    ],
+    [
+     "2025-12-30",
+     10153.16
+    ],
+    [
+     "2026-01-30",
+     10528.09
+    ],
+    [
+     "2026-02-27",
+     10916.86
+    ],
+    [
+     "2026-03-31",
+     11319.99
+    ],
+    [
+     "2026-04-30",
+     11738.0
+    ],
+    [
+     "2026-05-29",
+     12171.45
+    ],
+    [
+     "2026-06-30",
+     12620.91
+    ],
+    [
+     "2026-07-31",
+     13086.96
+    ],
+    [
+     "2026-08-31",
+     13570.22
+    ],
+    [
+     "2026-09-30",
+     14071.33
+    ],
+    [
+     "2026-10-30",
+     14590.94
+    ],
+    [
+     "2026-11-17",
+     15129.74
+    ]
+   ],
+   "vs_eps": "株価の伸び（年率 +54.5%）は EPS の伸び（+29.0%）を上回り、業績に加えて評価の見直し（PER の上昇）が株価を押し上げた"
+  },
+  "technicals": {
+   "ok": true,
+   "date": "2026-11-17",
+   "current": 12780.0,
+   "score": 0.0,
+   "state": "上昇トレンド",
+   "trend": {
+    "score": 1.0,
+    "order": "上昇の並び（株価 > 13週線 > 26週線 > 52週線）",
+    "slope": 15.4,
+    "cross": null,
+    "value": "上昇の並び（株価 > 13週線 > 26週線 > 52週線）、26週線の傾き +15.4%（20営業日前比）"
+   },
+   "momentum": {
+    "score": 0.0,
+    "rsi": 68.4,
+    "rsi_word": "中立",
+    "macd": {
+     "line": 845.22,
+     "signal": 887.92,
+     "hist": -42.7,
+     "word": "方向感なし",
+     "cross": {
+      "kind": "dead",
+      "date": "2026-11-11"
+     }
+    },
+    "value": "RSI 68（中立）、MACD のヒストグラム 方向感なし"
+   },
+   "position": {
+    "score": -1.0,
+    "position": 99.7,
+    "gap": 67.5,
+    "value": "52週レンジの位置 100%、26週線との差 +67.5%"
+   },
+   "volume": {
+    "ratio": 1.35,
+    "word": "平常",
+    "value": "出来高 1.35倍（20日平均÷60日平均、平常）"
+   },
+   "band": {
+    "upper": 12891.74,
+    "lower": 10759.76,
+    "percent_b": 94.8
+   },
+   "averages": {
+    "13週線": 9131.02,
+    "26週線": 7628.88,
+    "52週線": 6698.25
+   },
+   "levels": {
+    "supports": [
+     {
+      "label": "26週線",
+      "price": 7628.88,
+      "gap": -40.3
+     },
+     {
+      "label": "直近の安値（2026-09-29）",
+      "price": 7500.0,
+      "gap": -41.3
+     }
+    ],
+    "resistances": [
+     {
+      "label": "直近の高値（2026-11-09）",
+      "price": 12790.0,
+      "gap": 0.1
+     },
+     {
+      "label": "52週高値",
+      "price": 12810.0,
+      "gap": 0.2
+     }
+    ],
+    "stop": {
+     "label": "26週線の 1 ATR 下",
+     "price": 7073.26,
+     "gap": -44.7,
+     "basis": "最も近い支持線から1日の平均的な値幅（ATR 556）だけ下。52週安値が支持線でなければ、52週安値より下にはしない"
+    },
+    "atr": 555.62,
+    "lines": [
+     {
+      "label": "52週安値",
+      "price": 3780.0
+     },
+     {
+      "label": "直近の安値（2026-06-19）",
+      "price": 5138.0
+     },
+     {
+      "label": "直近の安値（2026-07-23）",
+      "price": 6137.0
+     },
+     {
+      "label": "直近の高値（2026-06-02）",
+      "price": 6315.0
+     },
+     {
+      "label": "52週線",
+      "price": 6698.25
+     },
+     {
+      "label": "直近の安値（2026-08-04）",
+      "price": 6810.0
+     },
+     {
+      "label": "直近の高値（2026-07-07）",
+      "price": 7011.0
+     },
+     {
+      "label": "直近の安値（2026-09-09）",
+      "price": 7106.0
+     },
+     {
+      "label": "直近の安値（2026-09-29）",
+      "price": 7500.0
+     },
+     {
+      "label": "26週線",
+      "price": 7628.88
+     },
+     {
+      "label": "直近の高値（2026-07-30）",
+      "price": 7728.0
+     },
+     {
+      "label": "直近の高値（2026-09-18）",
+      "price": 8013.0
+     },
+     {
+      "label": "直近の高値（2026-09-01）",
+      "price": 8270.0
+     },
+     {
+      "label": "直近の高値（2026-11-09）",
+      "price": 12790.0
+     },
+     {
+      "label": "52週高値",
+      "price": 12810.0
+     },
+     {
+      "label": "ボリンジャーバンド +2σ",
+      "price": 12891.74
+     }
+    ]
+   },
+   "signals": [
+    "MACD がシグナル線を下抜け 2026-11-11"
+   ],
+   "chart": {
+    "close": [
+     [
+      "2025-11-06",
+      6891.0
+     ],
+     [
+      "2025-11-07",
+      6840.0
+     ],
+     [
+      "2025-11-10",
+      6595.0
+     ],
+     [
+      "2025-11-11",
+      6428.0
+     ],
+     [
+      "2025-11-12",
+      6557.0
+     ],
+     [
+      "2025-11-13",
+      6770.0
+     ],
+     [
+      "2025-11-14",
+      6910.0
+     ],
+     [
+      "2025-11-17",
+      6963.0
+     ],
+     [
+      "2025-11-18",
+      6595.0
+     ],
+     [
+      "2025-11-19",
+      6573.0
+     ],
+     [
+      "2025-11-20",
+      6756.0
+     ],
+     [
+      "2025-11-21",
+      6844.0
+     ],
+     [
+      "2025-11-25",
+      6749.0
+     ],
+     [
+      "2025-11-26",
+      6711.0
+     ],
+     [
+      "2025-11-27",
+      6702.0
+     ],
+     [
+      "2025-11-28",
+      6837.0
+     ],
+     [
+      "2025-12-01",
+      6657.0
+     ],
+     [
+      "2025-12-02",
+      6471.0
+     ],
+     [
+      "2025-12-03",
+      6463.0
+     ],
+     [
+      "2025-12-04",
+      6704.0
+     ],
+     [
+      "2025-12-05",
+      6638.0
+     ],
+     [
+      "2025-12-08",
+      6808.0
+     ],
+     [
+      "2025-12-09",
+      6559.0
+     ],
+     [
+      "2025-12-10",
+      6543.0
+     ],
+     [
+      "2025-12-11",
+      6494.0
+     ],
+     [
+      "2025-12-12",
+      6661.0
+     ],
+     [
+      "2025-12-15",
+      6644.0
+     ],
+     [
+      "2025-12-16",
+      6619.0
+     ],
+     [
+      "2025-12-17",
+      6470.0
+     ],
+     [
+      "2025-12-18",
+      6744.0
+     ],
+     [
+      "2025-12-19",
+      6686.0
+     ],
+     [
+      "2025-12-22",
+      6610.0
+     ],
+     [
+      "2025-12-23",
+      6706.0
+     ],
+     [
+      "2025-12-24",
+      6569.0
+     ],
+     [
+      "2025-12-25",
+      6552.0
+     ],
+     [
+      "2025-12-26",
+      6600.0
+     ],
+     [
+      "2025-12-29",
+      6578.0
+     ],
+     [
+      "2025-12-30",
+      6500.0
+     ],
+     [
+      "2026-01-05",
+      6418.0
+     ],
+     [
+      "2026-01-06",
+      6605.0
+     ],
+     [
+      "2026-01-07",
+      6650.0
+     ],
+     [
+      "2026-01-08",
+      6793.0
+     ],
+     [
+      "2026-01-09",
+      6913.0
+     ],
+     [
+      "2026-01-13",
+      6828.0
+     ],
+     [
+      "2026-01-14",
+      6768.0
+     ],
+     [
+      "2026-01-15",
+      7203.0
+     ],
+     [
+      "2026-01-16",
+      6625.0
+     ],
+     [
+      "2026-01-19",
+      6641.0
+     ],
+     [
+      "2026-01-20",
+      6690.0
+     ],
+     [
+      "2026-01-21",
+      6246.0
+     ],
+     [
+      "2026-01-22",
+      6143.0
+     ],
+     [
+      "2026-01-23",
+      6065.0
+     ],
+     [
+      "2026-01-26",
+      6111.0
+     ],
+     [
+      "2026-01-27",
+      6220.0
+     ],
+     [
+      "2026-01-28",
+      6316.0
+     ],
+     [
+      "2026-01-29",
+      5800.0
+     ],
+     [
+      "2026-01-30",
+      5441.0
+     ],
+     [
+      "2026-02-02",
+      5503.0
+     ],
+     [
+      "2026-02-03",
+      5533.0
+     ],
+     [
+      "2026-02-04",
+      5063.0
+     ],
+     [
+      "2026-02-05",
+      5075.0
+     ],
+     [
+      "2026-02-06",
+      4822.0
+     ],
+     [
+      "2026-02-09",
+      4926.0
+     ],
+     [
+      "2026-02-10",
+      5040.0
+     ],
+     [
+      "2026-02-12",
+      4515.0
+     ],
+     [
+      "2026-02-13",
+      4292.0
+     ],
+     [
+      "2026-02-16",
+      4381.0
+     ],
+     [
+      "2026-02-17",
+      4344.0
+     ],
+     [
+      "2026-02-18",
+      4474.0
+     ],
+     [
+      "2026-02-19",
+      4549.0
+     ],
+     [
+      "2026-02-20",
+      4480.0
+     ],
+     [
+      "2026-02-24",
+      3861.0
+     ],
+     [
+      "2026-02-25",
+      4061.0
+     ],
+     [
+      "2026-02-26",
+      4325.0
+     ],
+     [
+      "2026-02-27",
+      4505.0
+     ],
+     [
+      "2026-03-02",
+      4291.0
+     ],
+     [
+      "2026-03-03",
+      4259.0
+     ],
+     [
+      "2026-03-04",
+      4498.0
+     ],
+     [
+      "2026-03-05",
+      4571.0
+     ],
+     [
+      "2026-03-06",
+      4766.0
+     ],
+     [
+      "2026-03-09",
+      4729.0
+     ],
+     [
+      "2026-03-10",
+      4678.0
+     ],
+     [
+      "2026-03-11",
+      4603.0
+     ],
+     [
+      "2026-03-12",
+      4615.0
+     ],
+     [
+      "2026-03-13",
+      4307.0
+     ],
+     [
+      "2026-03-16",
+      4385.0
+     ],
+     [
+      "2026-03-17",
+      4385.0
+     ],
+     [
+      "2026-03-18",
+      4428.0
+     ],
+     [
+      "2026-03-19",
+      4549.0
+     ],
+     [
+      "2026-03-23",
+      4506.0
+     ],
+     [
+      "2026-03-24",
+      4598.0
+     ],
+     [
+      "2026-03-25",
+      4543.0
+     ],
+     [
+      "2026-03-26",
+      4523.0
+     ],
+     [
+      "2026-03-27",
+      4559.0
+     ],
+     [
+      "2026-03-30",
+      4434.0
+     ],
+     [
+      "2026-03-31",
+      4539.0
+     ],
+     [
+      "2026-04-01",
+      4754.0
+     ],
+     [
+      "2026-04-02",
+      4622.0
+     ],
+     [
+      "2026-04-03",
+      4727.0
+     ],
+     [
+      "2026-04-06",
+      4766.0
+     ],
+     [
+      "2026-04-07",
+      4839.0
+     ],
+     [
+      "2026-04-08",
+      4864.0
+     ],
+     [
+      "2026-04-09",
+      4796.0
+     ],
+     [
+      "2026-04-10",
+      4516.0
+     ],
+     [
+      "2026-04-13",
+      4608.0
+     ],
+     [
+      "2026-04-14",
+      4887.0
+     ],
+     [
+      "2026-04-15",
+      5587.0
+     ],
+     [
+      "2026-04-16",
+      5300.0
+     ],
+     [
+      "2026-04-17",
+      5618.0
+     ],
+     [
+      "2026-04-20",
+      5693.0
+     ],
+     [
+      "2026-04-21",
+      5745.0
+     ],
+     [
+      "2026-04-22",
+      6000.0
+     ],
+     [
+      "2026-04-23",
+      5416.0
+     ],
+     [
+      "2026-04-24",
+      5362.0
+     ],
+     [
+      "2026-04-27",
+      5072.0
+     ],
+     [
+      "2026-04-28",
+      5241.0
+     ],
+     [
+      "2026-04-30",
+      5060.0
+     ],
+     [
+      "2026-05-01",
+      5088.0
+     ],
+     [
+      "2026-05-07",
+      5125.0
+     ],
+     [
+      "2026-05-08",
+      5275.0
+     ],
+     [
+      "2026-05-11",
+      5262.0
+     ],
+     [
+      "2026-05-12",
+      5031.0
+     ],
+     [
+      "2026-05-13",
+      5168.0
+     ],
+     [
+      "2026-05-14",
+      4999.0
+     ],
+     [
+      "2026-05-15",
+      5115.0
+     ],
+     [
+      "2026-05-18",
+      5318.0
+     ],
+     [
+      "2026-05-19",
+      5756.0
+     ],
+     [
+      "2026-05-20",
+      5472.0
+     ],
+     [
+      "2026-05-21",
+      5537.0
+     ],
+     [
+      "2026-05-22",
+      5767.0
+     ],
+     [
+      "2026-05-25",
+      5682.0
+     ],
+     [
+      "2026-05-26",
+      5673.0
+     ],
+     [
+      "2026-05-27",
+      5810.0
+     ],
+     [
+      "2026-05-28",
+      5445.0
+     ],
+     [
+      "2026-05-29",
+      5616.0
+     ],
+     [
+      "2026-06-01",
+      6048.0
+     ],
+     [
+      "2026-06-02",
+      6005.0
+     ],
+     [
+      "2026-06-03",
+      5950.0
+     ],
+     [
+      "2026-06-04",
+      5857.0
+     ],
+     [
+      "2026-06-05",
+      5971.0
+     ],
+     [
+      "2026-06-08",
+      5962.0
+     ],
+     [
+      "2026-06-09",
+      5893.0
+     ],
+     [
+      "2026-06-10",
+      5831.0
+     ],
+     [
+      "2026-06-11",
+      5758.0
+     ],
+     [
+      "2026-06-12",
+      5545.0
+     ],
+     [
+      "2026-06-15",
+      5484.0
+     ],
+     [
+      "2026-06-16",
+      5530.0
+     ],
+     [
+      "2026-06-17",
+      5585.0
+     ],
+     [
+      "2026-06-18",
+      5781.0
+     ],
+     [
+      "2026-06-19",
+      5437.0
+     ],
+     [
+      "2026-06-22",
+      5458.0
+     ],
+     [
+      "2026-06-23",
+      5353.0
+     ],
+     [
+      "2026-06-24",
+      5496.0
+     ],
+     [
+      "2026-06-25",
+      5506.0
+     ],
+     [
+      "2026-06-26",
+      5531.0
+     ],
+     [
+      "2026-06-29",
+      6068.0
+     ],
+     [
+      "2026-06-30",
+      6036.0
+     ],
+     [
+      "2026-07-01",
+      6288.0
+     ],
+     [
+      "2026-07-02",
+      6555.0
+     ],
+     [
+      "2026-07-03",
+      6671.0
+     ],
+     [
+      "2026-07-06",
+      6814.0
+     ],
+     [
+      "2026-07-07",
+      6900.0
+     ],
+     [
+      "2026-07-08",
+      6730.0
+     ],
+     [
+      "2026-07-09",
+      6670.0
+     ],
+     [
+      "2026-07-10",
+      6692.0
+     ],
+     [
+      "2026-07-13",
+      6711.0
+     ],
+     [
+      "2026-07-14",
+      6848.0
+     ],
+     [
+      "2026-07-15",
+      6383.0
+     ],
+     [
+      "2026-07-16",
+      6755.0
+     ],
+     [
+      "2026-07-17",
+      6554.0
+     ],
+     [
+      "2026-07-21",
+      6457.0
+     ],
+     [
+      "2026-07-22",
+      6220.0
+     ],
+     [
+      "2026-07-23",
+      6230.0
+     ],
+     [
+      "2026-07-24",
+      6522.0
+     ],
+     [
+      "2026-07-27",
+      7106.0
+     ],
+     [
+      "2026-07-28",
+      7186.0
+     ],
+     [
+      "2026-07-29",
+      7406.0
+     ],
+     [
+      "2026-07-30",
+      7329.0
+     ],
+     [
+      "2026-07-31",
+      7139.0
+     ],
+     [
+      "2026-08-03",
+      6990.0
+     ],
+     [
+      "2026-08-04",
+      6813.0
+     ],
+     [
+      "2026-08-05",
+      6972.0
+     ],
+     [
+      "2026-08-06",
+      7046.0
+     ],
+     [
+      "2026-08-07",
+      7122.0
+     ],
+     [
+      "2026-08-10",
+      7393.0
+     ],
+     [
+      "2026-08-12",
+      7379.0
+     ],
+     [
+      "2026-08-13",
+      7359.0
+     ],
+     [
+      "2026-08-14",
+      7687.0
+     ],
+     [
+      "2026-08-17",
+      7400.0
+     ],
+     [
+      "2026-08-18",
+      7368.0
+     ],
+     [
+      "2026-08-19",
+      7427.0
+     ],
+     [
+      "2026-08-20",
+      7715.0
+     ],
+     [
+      "2026-08-21",
+      7485.0
+     ],
+     [
+      "2026-08-24",
+      7795.0
+     ],
+     [
+      "2026-08-25",
+      7810.0
+     ],
+     [
+      "2026-08-26",
+      7771.0
+     ],
+     [
+      "2026-08-27",
+      7960.0
+     ],
+     [
+      "2026-08-28",
+      8126.0
+     ],
+     [
+      "2026-08-31",
+      8192.0
+     ],
+     [
+      "2026-09-01",
+      8143.0
+     ],
+     [
+      "2026-09-02",
+      7886.0
+     ],
+     [
+      "2026-09-03",
+      7861.0
+     ],
+     [
+      "2026-09-04",
+      7824.0
+     ],
+     [
+      "2026-09-07",
+      7403.0
+     ],
+     [
+      "2026-09-08",
+      7335.0
+     ],
+     [
+      "2026-09-09",
+      7215.0
+     ],
+     [
+      "2026-09-10",
+      7376.0
+     ],
+     [
+      "2026-09-11",
+      7337.0
+     ],
+     [
+      "2026-09-14",
+      7691.0
+     ],
+     [
+      "2026-09-15",
+      7710.0
+     ],
+     [
+      "2026-09-16",
+      7573.0
+     ],
+     [
+      "2026-09-17",
+      7840.0
+     ],
+     [
+      "2026-09-18",
+      7932.0
+     ],
+     [
+      "2026-09-24",
+      7671.0
+     ],
+     [
+      "2026-09-25",
+      7673.0
+     ],
+     [
+      "2026-09-28",
+      7634.0
+     ],
+     [
+      "2026-09-29",
+      7596.0
+     ],
+     [
+      "2026-09-30",
+      7690.0
+     ],
+     [
+      "2026-10-01",
+      7627.0
+     ],
+     [
+      "2026-10-02",
+      8096.0
+     ],
+     [
+      "2026-10-05",
+      8014.0
+     ],
+     [
+      "2026-10-06",
+      8180.0
+     ],
+     [
+      "2026-10-07",
+      8210.0
+     ],
+     [
+      "2026-10-08",
+      8346.0
+     ],
+     [
+      "2026-10-09",
+      8748.0
+     ],
+     [
+      "2026-10-13",
+      8586.0
+     ],
+     [
+      "2026-10-14",
+      8700.0
+     ],
+     [
+      "2026-10-15",
+      8695.0
+     ],
+     [
+      "2026-10-16",
+      10195.0
+     ],
+     [
+      "2026-10-19",
+      10740.0
+     ],
+     [
+      "2026-10-20",
+      10845.0
+     ],
+     [
+      "2026-10-21",
+      11025.0
+     ],
+     [
+      "2026-10-22",
+      11440.0
+     ],
+     [
+      "2026-10-23",
+      11500.0
+     ],
+     [
+      "2026-10-26",
+      11500.0
+     ],
+     [
+      "2026-10-27",
+      11625.0
+     ],
+     [
+      "2026-10-28",
+      11330.0
+     ],
+     [
+      "2026-10-29",
+      11630.0
+     ],
+     [
+      "2026-10-30",
+      11825.0
+     ],
+     [
+      "2026-11-02",
+      11630.0
+     ],
+     [
+      "2026-11-04",
+      11605.0
+     ],
+     [
+      "2026-11-05",
+      12270.0
+     ],
+     [
+      "2026-11-06",
+      11735.0
+     ],
+     [
+      "2026-11-09",
+      12765.0
+     ],
+     [
+      "2026-11-10",
+      12415.0
+     ],
+     [
+      "2026-11-11",
+      11970.0
+     ],
+     [
+      "2026-11-12",
+      11660.0
+     ],
+     [
+      "2026-11-13",
+      12325.0
+     ],
+     [
+      "2026-11-16",
+      12640.0
+     ],
+     [
+      "2026-11-17",
+      12780.0
+     ]
+    ],
+    "ma_short": [
+     [
+      "2025-11-06",
+      8261.71
+     ],
+     [
+      "2025-11-07",
+      8232.22
+     ],
+     [
+      "2025-11-10",
+      8199.46
+     ],
+     [
+      "2025-11-11",
+      8165.98
+     ],
+     [
+      "2025-11-12",
+      8134.6
+     ],
+     [
+      "2025-11-13",
+      8106.45
+     ],
+     [
+      "2025-11-14",
+      8079.65
+     ],
+     [
+      "2025-11-17",
+      8052.77
+     ],
+     [
+      "2025-11-18",
+      8022.08
+     ],
+     [
+      "2025-11-19",
+      7991.54
+     ],
+     [
+      "2025-11-20",
+      7964.38
+     ],
+     [
+      "2025-11-21",
+      7936.0
+     ],
+     [
+      "2025-11-25",
+      7911.52
+     ],
+     [
+      "2025-11-26",
+      7887.03
+     ],
+     [
+      "2025-11-27",
+      7862.69
+     ],
+     [
+      "2025-11-28",
+      7836.11
+     ],
+     [
+      "2025-12-01",
+      7805.02
+     ],
+     [
+      "2025-12-02",
+      7772.08
+     ],
+     [
+      "2025-12-03",
+      7740.65
+     ],
+     [
+      "2025-12-04",
+      7712.23
+     ],
+     [
+      "2025-12-05",
+      7685.54
+     ],
+     [
+      "2025-12-08",
+      7661.06
+     ],
+     [
+      "2025-12-09",
+      7634.23
+     ],
+     [
+      "2025-12-10",
+      7607.2
+     ],
+     [
+      "2025-12-11",
+      7579.49
+     ],
+     [
+      "2025-12-12",
+      7554.28
+     ],
+     [
+      "2025-12-15",
+      7529.17
+     ],
+     [
+      "2025-12-16",
+      7502.17
+     ],
+     [
+      "2025-12-17",
+      7470.49
+     ],
+     [
+      "2025-12-18",
+      7445.78
+     ],
+     [
+      "2025-12-19",
+      7418.03
+     ],
+     [
+      "2025-12-22",
+      7390.31
+     ],
+     [
+      "2025-12-23",
+      7362.72
+     ],
+     [
+      "2025-12-24",
+      7329.25
+     ],
+     [
+      "2025-12-25",
+      7294.89
+     ],
+     [
+      "2025-12-26",
+      7260.0
+     ],
+     [
+      "2025-12-29",
+      7227.48
+     ],
+     [
+      "2025-12-30",
+      7193.91
+     ],
+     [
+      "2026-01-05",
+      7156.43
+     ],
+     [
+      "2026-01-06",
+      7128.05
+     ],
+     [
+      "2026-01-07",
+      7096.51
+     ],
+     [
+      "2026-01-08",
+      7069.83
+     ],
+     [
+      "2026-01-09",
+      7048.55
+     ],
+     [
+      "2026-01-13",
+      7024.25
+     ],
+     [
+      "2026-01-14",
+      6988.75
+     ],
+     [
+      "2026-01-15",
+      6963.88
+     ],
+     [
+      "2026-01-16",
+      6932.71
+     ],
+     [
+      "2026-01-19",
+      6903.22
+     ],
+     [
+      "2026-01-20",
+      6874.51
+     ],
+     [
+      "2026-01-21",
+      6841.03
+     ],
+     [
+      "2026-01-22",
+      6806.97
+     ],
+     [
+      "2026-01-23",
+      6782.62
+     ],
+     [
+      "2026-01-26",
+      6760.22
+     ],
+     [
+      "2026-01-27",
+      6741.98
+     ],
+     [
+      "2026-01-28",
+      6724.23
+     ],
+     [
+      "2026-01-29",
+      6699.05
+     ],
+     [
+      "2026-01-30",
+      6669.4
+     ],
+     [
+      "2026-02-02",
+      6638.34
+     ],
+     [
+      "2026-02-03",
+      6605.02
+     ],
+     [
+      "2026-02-04",
+      6567.22
+     ],
+     [
+      "2026-02-05",
+      6536.02
+     ],
+     [
+      "2026-02-06",
+      6501.82
+     ],
+     [
+      "2026-02-09",
+      6468.91
+     ],
+     [
+      "2026-02-10",
+      6438.45
+     ],
+     [
+      "2026-02-12",
+      6399.23
+     ],
+     [
+      "2026-02-13",
+      6359.25
+     ],
+     [
+      "2026-02-16",
+      6321.42
+     ],
+     [
+      "2026-02-17",
+      6286.78
+     ],
+     [
+      "2026-02-18",
+      6256.72
+     ],
+     [
+      "2026-02-19",
+      6225.83
+     ],
+     [
+      "2026-02-20",
+      6190.6
+     ],
+     [
+      "2026-02-24",
+      6143.69
+     ],
+     [
+      "2026-02-25",
+      6099.05
+     ],
+     [
+      "2026-02-26",
+      6064.12
+     ],
+     [
+      "2026-02-27",
+      6032.31
+     ],
+     [
+      "2026-03-02",
+      5994.38
+     ],
+     [
+      "2026-03-03",
+      5954.62
+     ],
+     [
+      "2026-03-04",
+      5919.98
+     ],
+     [
+      "2026-03-05",
+      5887.06
+     ],
+     [
+      "2026-03-06",
+      5857.28
+     ],
+     [
+      "2026-03-09",
+      5824.85
+     ],
+     [
+      "2026-03-10",
+      5794.4
+     ],
+     [
+      "2026-03-11",
+      5765.66
+     ],
+     [
+      "2026-03-12",
+      5737.23
+     ],
+     [
+      "2026-03-13",
+      5700.35
+     ],
+     [
+      "2026-03-16",
+      5665.69
+     ],
+     [
+      "2026-03-17",
+      5628.42
+     ],
+     [
+      "2026-03-18",
+      5595.63
+     ],
+     [
+      "2026-03-19",
+      5564.95
+     ],
+     [
+      "2026-03-23",
+      5534.37
+     ],
+     [
+      "2026-03-24",
+      5502.63
+     ],
+     [
+      "2026-03-25",
+      5470.31
+     ],
+     [
+      "2026-03-26",
+      5438.06
+     ],
+     [
+      "2026-03-27",
+      5408.66
+     ],
+     [
+      "2026-03-30",
+      5373.12
+     ],
+     [
+      "2026-03-31",
+      5340.09
+     ],
+     [
+      "2026-04-01",
+      5311.54
+     ],
+     [
+      "2026-04-02",
+      5279.48
+     ],
+     [
+      "2026-04-03",
+      5251.14
+     ],
+     [
+      "2026-04-06",
+      5223.66
+     ],
+     [
+      "2026-04-07",
+      5196.57
+     ],
+     [
+      "2026-04-08",
+      5170.2
+     ],
+     [
+      "2026-04-09",
+      5143.98
+     ],
+     [
+      "2026-04-10",
+      5114.72
+     ],
+     [
+      "2026-04-13",
+      5084.0
+     ],
+     [
+      "2026-04-14",
+      5056.88
+     ],
+     [
+      "2026-04-15",
+      5038.32
+     ],
+     [
+      "2026-04-16",
+      5013.51
+     ],
+     [
+      "2026-04-17",
+      4994.89
+     ],
+     [
+      "2026-04-20",
+      4978.35
+     ],
+     [
+      "2026-04-21",
+      4955.92
+     ],
+     [
+      "2026-04-22",
+      4946.31
+     ],
+     [
+      "2026-04-23",
+      4927.46
+     ],
+     [
+      "2026-04-24",
+      4907.03
+     ],
+     [
+      "2026-04-27",
+      4888.97
+     ],
+     [
+      "2026-04-28",
+      4875.09
+     ],
+     [
+      "2026-04-30",
+      4859.63
+     ],
+     [
+      "2026-05-01",
+      4843.89
+     ],
+     [
+      "2026-05-07",
+      4827.05
+     ],
+     [
+      "2026-05-08",
+      4811.03
+     ],
+     [
+      "2026-05-11",
+      4802.75
+     ],
+     [
+      "2026-05-12",
+      4796.45
+     ],
+     [
+      "2026-05-13",
+      4791.29
+     ],
+     [
+      "2026-05-14",
+      4783.08
+     ],
+     [
+      "2026-05-15",
+      4783.88
+     ],
+     [
+      "2026-05-18",
+      4787.62
+     ],
+     [
+      "2026-05-19",
+      4801.98
+     ],
+     [
+      "2026-05-20",
+      4810.38
+     ],
+     [
+      "2026-05-21",
+      4818.03
+     ],
+     [
+      "2026-05-22",
+      4837.29
+     ],
+     [
+      "2026-05-25",
+      4858.68
+     ],
+     [
+      "2026-05-26",
+      4878.55
+     ],
+     [
+      "2026-05-27",
+      4901.11
+     ],
+     [
+      "2026-05-28",
+      4916.05
+     ],
+     [
+      "2026-05-29",
+      4932.46
+     ],
+     [
+      "2026-06-01",
+      4956.58
+     ],
+     [
+      "2026-06-02",
+      4989.57
+     ],
+     [
+      "2026-06-03",
+      5018.63
+     ],
+     [
+      "2026-06-04",
+      5042.2
+     ],
+     [
+      "2026-06-05",
+      5064.75
+     ],
+     [
+      "2026-06-08",
+      5090.46
+     ],
+     [
+      "2026-06-09",
+      5115.6
+     ],
+     [
+      "2026-06-10",
+      5136.11
+     ],
+     [
+      "2026-06-11",
+      5154.37
+     ],
+     [
+      "2026-06-12",
+      5166.35
+     ],
+     [
+      "2026-06-15",
+      5177.97
+     ],
+     [
+      "2026-06-16",
+      5191.08
+     ],
+     [
+      "2026-06-17",
+      5206.18
+     ],
+     [
+      "2026-06-18",
+      5224.12
+     ],
+     [
+      "2026-06-19",
+      5241.51
+     ],
+     [
+      "2026-06-22",
+      5258.02
+     ],
+     [
+      "2026-06-23",
+      5272.91
+     ],
+     [
+      "2026-06-24",
+      5289.34
+     ],
+     [
+      "2026-06-25",
+      5304.06
+     ],
+     [
+      "2026-06-26",
+      5319.83
+     ],
+     [
+      "2026-06-29",
+      5342.45
+     ],
+     [
+      "2026-06-30",
+      5365.42
+     ],
+     [
+      "2026-07-01",
+      5392.57
+     ],
+     [
+      "2026-07-02",
+      5423.28
+     ],
+     [
+      "2026-07-03",
+      5457.69
+     ],
+     [
+      "2026-07-06",
+      5492.69
+     ],
+     [
+      "2026-07-07",
+      5525.71
+     ],
+     [
+      "2026-07-08",
+      5558.14
+     ],
+     [
+      "2026-07-09",
+      5588.03
+     ],
+     [
+      "2026-07-10",
+      5617.66
+     ],
+     [
+      "2026-07-13",
+      5646.46
+     ],
+     [
+      "2026-07-14",
+      5676.98
+     ],
+     [
+      "2026-07-15",
+      5701.4
+     ],
+     [
+      "2026-07-16",
+      5735.85
+     ],
+     [
+      "2026-07-17",
+      5765.78
+     ],
+     [
+      "2026-07-21",
+      5789.94
+     ],
+     [
+      "2026-07-22",
+      5799.68
+     ],
+     [
+      "2026-07-23",
+      5813.98
+     ],
+     [
+      "2026-07-24",
+      5827.89
+     ],
+     [
+      "2026-07-27",
+      5849.63
+     ],
+     [
+      "2026-07-28",
+      5871.8
+     ],
+     [
+      "2026-07-29",
+      5893.43
+     ],
+     [
+      "2026-07-30",
+      5922.86
+     ],
+     [
+      "2026-07-31",
+      5950.2
+     ],
+     [
+      "2026-08-03",
+      5979.71
+     ],
+     [
+      "2026-08-04",
+      6003.89
+     ],
+     [
+      "2026-08-05",
+      6033.31
+     ],
+     [
+      "2026-08-06",
+      6063.43
+     ],
+     [
+      "2026-08-07",
+      6094.15
+     ],
+     [
+      "2026-08-10",
+      6126.74
+     ],
+     [
+      "2026-08-12",
+      6159.31
+     ],
+     [
+      "2026-08-13",
+      6195.12
+     ],
+     [
+      "2026-08-14",
+      6233.88
+     ],
+     [
+      "2026-08-17",
+      6270.82
+     ],
+     [
+      "2026-08-18",
+      6305.48
+     ],
+     [
+      "2026-08-19",
+      6337.92
+     ],
+     [
+      "2026-08-20",
+      6368.06
+     ],
+     [
+      "2026-08-21",
+      6399.03
+     ],
+     [
+      "2026-08-24",
+      6433.77
+     ],
+     [
+      "2026-08-25",
+      6465.2
+     ],
+     [
+      "2026-08-26",
+      6497.34
+     ],
+     [
+      "2026-08-27",
+      6532.52
+     ],
+     [
+      "2026-08-28",
+      6568.15
+     ],
+     [
+      "2026-08-31",
+      6610.42
+     ],
+     [
+      "2026-09-01",
+      6649.29
+     ],
+     [
+      "2026-09-02",
+      6677.57
+     ],
+     [
+      "2026-09-03",
+      6706.12
+     ],
+     [
+      "2026-09-04",
+      6734.95
+     ],
+     [
+      "2026-09-07",
+      6758.74
+     ],
+     [
+      "2026-09-08",
+      6779.72
+     ],
+     [
+      "2026-09-09",
+      6799.0
+     ],
+     [
+      "2026-09-10",
+      6821.82
+     ],
+     [
+      "2026-09-11",
+      6844.98
+     ],
+     [
+      "2026-09-14",
+      6874.72
+     ],
+     [
+      "2026-09-15",
+      6908.03
+     ],
+     [
+      "2026-09-16",
+      6940.17
+     ],
+     [
+      "2026-09-17",
+      6975.71
+     ],
+     [
+      "2026-09-18",
+      7011.82
+     ],
+     [
+      "2026-09-24",
+      7040.89
+     ],
+     [
+      "2026-09-25",
+      7075.29
+     ],
+     [
+      "2026-09-28",
+      7108.77
+     ],
+     [
+      "2026-09-29",
+      7143.28
+     ],
+     [
+      "2026-09-30",
+      7177.03
+     ],
+     [
+      "2026-10-01",
+      7209.66
+     ],
+     [
+      "2026-10-02",
+      7249.12
+     ],
+     [
+      "2026-10-05",
+      7279.06
+     ],
+     [
+      "2026-10-06",
+      7312.05
+     ],
+     [
+      "2026-10-07",
+      7341.62
+     ],
+     [
+      "2026-10-08",
+      7369.17
+     ],
+     [
+      "2026-10-09",
+      7401.12
+     ],
+     [
+      "2026-10-13",
+      7428.38
+     ],
+     [
+      "2026-10-14",
+      7456.08
+     ],
+     [
+      "2026-10-15",
+      7486.31
+     ],
+     [
+      "2026-10-16",
+      7540.54
+     ],
+     [
+      "2026-10-19",
+      7602.82
+     ],
+     [
+      "2026-10-20",
+      7666.42
+     ],
+     [
+      "2026-10-21",
+      7730.68
+     ],
+     [
+      "2026-10-22",
+      7808.48
+     ],
+     [
+      "2026-10-23",
+      7881.48
+     ],
+     [
+      "2026-10-26",
+      7957.57
+     ],
+     [
+      "2026-10-27",
+      8037.08
+     ],
+     [
+      "2026-10-28",
+      8115.69
+     ],
+     [
+      "2026-10-29",
+      8198.77
+     ],
+     [
+      "2026-10-30",
+      8280.35
+     ],
+     [
+      "2026-11-02",
+      8349.95
+     ],
+     [
+      "2026-11-04",
+      8417.94
+     ],
+     [
+      "2026-11-05",
+      8492.77
+     ],
+     [
+      "2026-11-06",
+      8560.55
+     ],
+     [
+      "2026-11-09",
+      8647.11
+     ],
+     [
+      "2026-11-10",
+      8730.57
+     ],
+     [
+      "2026-11-11",
+      8809.91
+     ],
+     [
+      "2026-11-12",
+      8882.03
+     ],
+     [
+      "2026-11-13",
+      8963.25
+     ],
+     [
+      "2026-11-16",
+      9048.14
+     ],
+     [
+      "2026-11-17",
+      9131.02
+     ]
+    ],
+    "ma_mid": [
+     [
+      "2025-11-06",
+      8050.68
+     ],
+     [
+      "2025-11-07",
+      8045.35
+     ],
+     [
+      "2025-11-10",
+      8036.93
+     ],
+     [
+      "2025-11-11",
+      8027.83
+     ],
+     [
+      "2025-11-12",
+      8019.16
+     ],
+     [
+      "2025-11-13",
+      8011.67
+     ],
+     [
+      "2025-11-14",
+      8002.93
+     ],
+     [
+      "2025-11-17",
+      7993.35
+     ],
+     [
+      "2025-11-18",
+      7981.45
+     ],
+     [
+      "2025-11-19",
+      7968.41
+     ],
+     [
+      "2025-11-20",
+      7958.02
+     ],
+     [
+      "2025-11-21",
+      7949.79
+     ],
+     [
+      "2025-11-25",
+      7942.16
+     ],
+     [
+      "2025-11-26",
+      7933.02
+     ],
+     [
+      "2025-11-27",
+      7923.14
+     ],
+     [
+      "2025-11-28",
+      7913.85
+     ],
+     [
+      "2025-12-01",
+      7902.31
+     ],
+     [
+      "2025-12-02",
+      7886.92
+     ],
+     [
+      "2025-12-03",
+      7871.28
+     ],
+     [
+      "2025-12-04",
+      7857.71
+     ],
+     [
+      "2025-12-05",
+      7844.38
+     ],
+     [
+      "2025-12-08",
+      7835.75
+     ],
+     [
+      "2025-12-09",
+      7827.11
+     ],
+     [
+      "2025-12-10",
+      7817.82
+     ],
+     [
+      "2025-12-11",
+      7808.69
+     ],
+     [
+      "2025-12-12",
+      7802.22
+     ],
+     [
+      "2025-12-15",
+      7797.38
+     ],
+     [
+      "2025-12-16",
+      7792.8
+     ],
+     [
+      "2025-12-17",
+      7785.79
+     ],
+     [
+      "2025-12-18",
+      7779.07
+     ],
+     [
+      "2025-12-19",
+      7771.66
+     ],
+     [
+      "2025-12-22",
+      7766.99
+     ],
+     [
+      "2025-12-23",
+      7762.12
+     ],
+     [
+      "2025-12-24",
+      7754.62
+     ],
+     [
+      "2025-12-25",
+      7747.35
+     ],
+     [
+      "2025-12-26",
+      7740.25
+     ],
+     [
+      "2025-12-29",
+      7733.71
+     ],
+     [
+      "2025-12-30",
+      7727.33
+     ],
+     [
+      "2026-01-05",
+      7720.72
+     ],
+     [
+      "2026-01-06",
+      7715.48
+     ],
+     [
+      "2026-01-07",
+      7709.56
+     ],
+     [
+      "2026-01-08",
+      7706.18
+     ],
+     [
+      "2026-01-09",
+      7702.28
+     ],
+     [
+      "2026-01-13",
+      7697.73
+     ],
+     [
+      "2026-01-14",
+      7693.64
+     ],
+     [
+      "2026-01-15",
+      7693.28
+     ],
+     [
+      "2026-01-16",
+      7688.15
+     ],
+     [
+      "2026-01-19",
+      7683.28
+     ],
+     [
+      "2026-01-20",
+      7676.75
+     ],
+     [
+      "2026-01-21",
+      7665.85
+     ],
+     [
+      "2026-01-22",
+      7653.96
+     ],
+     [
+      "2026-01-23",
+      7639.4
+     ],
+     [
+      "2026-01-26",
+      7624.31
+     ],
+     [
+      "2026-01-27",
+      7609.58
+     ],
+     [
+      "2026-01-28",
+      7596.06
+     ],
+     [
+      "2026-01-29",
+      7578.02
+     ],
+     [
+      "2026-01-30",
+      7554.78
+     ],
+     [
+      "2026-02-02",
+      7533.32
+     ],
+     [
+      "2026-02-03",
+      7512.17
+     ],
+     [
+      "2026-02-04",
+      7485.65
+     ],
+     [
+      "2026-02-05",
+      7458.77
+     ],
+     [
+      "2026-02-06",
+      7428.52
+     ],
+     [
+      "2026-02-09",
+      7400.67
+     ],
+     [
+      "2026-02-10",
+      7375.36
+     ],
+     [
+      "2026-02-12",
+      7344.2
+     ],
+     [
+      "2026-02-13",
+      7310.48
+     ],
+     [
+      "2026-02-16",
+      7276.82
+     ],
+     [
+      "2026-02-17",
+      7243.12
+     ],
+     [
+      "2026-02-18",
+      7211.35
+     ],
+     [
+      "2026-02-19",
+      7180.22
+     ],
+     [
+      "2026-02-20",
+      7148.52
+     ],
+     [
+      "2026-02-24",
+      7111.67
+     ],
+     [
+      "2026-02-25",
+      7075.91
+     ],
+     [
+      "2026-02-26",
+      7043.1
+     ],
+     [
+      "2026-02-27",
+      7011.92
+     ],
+     [
+      "2026-03-02",
+      6979.38
+     ],
+     [
+      "2026-03-03",
+      6945.31
+     ],
+     [
+      "2026-03-04",
+      6915.75
+     ],
+     [
+      "2026-03-05",
+      6887.05
+     ],
+     [
+      "2026-03-06",
+      6859.98
+     ],
+     [
+      "2026-03-09",
+      6830.48
+     ],
+     [
+      "2026-03-10",
+      6799.71
+     ],
+     [
+      "2026-03-11",
+      6768.87
+     ],
+     [
+      "2026-03-12",
+      6738.94
+     ],
+     [
+      "2026-03-13",
+      6706.29
+     ],
+     [
+      "2026-03-16",
+      6675.62
+     ],
+     [
+      "2026-03-17",
+      6644.74
+     ],
+     [
+      "2026-03-18",
+      6614.93
+     ],
+     [
+      "2026-03-19",
+      6586.08
+     ],
+     [
+      "2026-03-23",
+      6556.93
+     ],
+     [
+      "2026-03-24",
+      6528.45
+     ],
+     [
+      "2026-03-25",
+      6499.74
+     ],
+     [
+      "2026-03-26",
+      6470.12
+     ],
+     [
+      "2026-03-27",
+      6439.58
+     ],
+     [
+      "2026-03-30",
+      6409.45
+     ],
+     [
+      "2026-03-31",
+      6379.06
+     ],
+     [
+      "2026-04-01",
+      6350.92
+     ],
+     [
+      "2026-04-02",
+      6321.1
+     ],
+     [
+      "2026-04-03",
+      6290.19
+     ],
+     [
+      "2026-04-06",
+      6259.28
+     ],
+     [
+      "2026-04-07",
+      6228.28
+     ],
+     [
+      "2026-04-08",
+      6198.84
+     ],
+     [
+      "2026-04-09",
+      6168.95
+     ],
+     [
+      "2026-04-10",
+      6135.58
+     ],
+     [
+      "2026-04-13",
+      6106.02
+     ],
+     [
+      "2026-04-14",
+      6076.69
+     ],
+     [
+      "2026-04-15",
+      6054.08
+     ],
+     [
+      "2026-04-16",
+      6031.03
+     ],
+     [
+      "2026-04-17",
+      6009.57
+     ],
+     [
+      "2026-04-20",
+      5983.55
+     ],
+     [
+      "2026-04-21",
+      5959.9
+     ],
+     [
+      "2026-04-22",
+      5939.51
+     ],
+     [
+      "2026-04-23",
+      5915.34
+     ],
+     [
+      "2026-04-24",
+      5890.77
+     ],
+     [
+      "2026-04-27",
+      5865.0
+     ],
+     [
+      "2026-04-28",
+      5841.03
+     ],
+     [
+      "2026-04-30",
+      5821.12
+     ],
+     [
+      "2026-05-01",
+      5802.05
+     ],
+     [
+      "2026-05-07",
+      5784.52
+     ],
+     [
+      "2026-05-08",
+      5767.63
+     ],
+     [
+      "2026-05-11",
+      5750.9
+     ],
+     [
+      "2026-05-12",
+      5732.92
+     ],
+     [
+      "2026-05-13",
+      5714.82
+     ],
+     [
+      "2026-05-14",
+      5694.05
+     ],
+     [
+      "2026-05-15",
+      5675.55
+     ],
+     [
+      "2026-05-18",
+      5661.82
+     ],
+     [
+      "2026-05-19",
+      5651.9
+     ],
+     [
+      "2026-05-20",
+      5639.65
+     ],
+     [
+      "2026-05-21",
+      5628.24
+     ],
+     [
+      "2026-05-22",
+      5618.26
+     ],
+     [
+      "2026-05-25",
+      5608.96
+     ],
+     [
+      "2026-05-26",
+      5599.98
+     ],
+     [
+      "2026-05-27",
+      5593.95
+     ],
+     [
+      "2026-05-28",
+      5586.38
+     ],
+     [
+      "2026-05-29",
+      5579.15
+     ],
+     [
+      "2026-06-01",
+      5573.59
+     ],
+     [
+      "2026-06-02",
+      5566.63
+     ],
+     [
+      "2026-06-03",
+      5558.84
+     ],
+     [
+      "2026-06-04",
+      5553.16
+     ],
+     [
+      "2026-06-05",
+      5548.53
+     ],
+     [
+      "2026-06-08",
+      5542.42
+     ],
+     [
+      "2026-06-09",
+      5535.11
+     ],
+     [
+      "2026-06-10",
+      5528.05
+     ],
+     [
+      "2026-06-11",
+      5520.72
+     ],
+     [
+      "2026-06-12",
+      5511.82
+     ],
+     [
+      "2026-06-15",
+      5501.41
+     ],
+     [
+      "2026-06-16",
+      5492.74
+     ],
+     [
+      "2026-06-17",
+      5485.92
+     ],
+     [
+      "2026-06-18",
+      5480.68
+     ],
+     [
+      "2026-06-19",
+      5470.93
+     ],
+     [
+      "2026-06-22",
+      5461.85
+     ],
+     [
+      "2026-06-23",
+      5450.66
+     ],
+     [
+      "2026-06-24",
+      5442.48
+     ],
+     [
+      "2026-06-25",
+      5434.51
+     ],
+     [
+      "2026-06-26",
+      5427.1
+     ],
+     [
+      "2026-06-29",
+      5422.54
+     ],
+     [
+      "2026-06-30",
+      5417.86
+     ],
+     [
+      "2026-07-01",
+      5415.32
+     ],
+     [
+      "2026-07-02",
+      5415.97
+     ],
+     [
+      "2026-07-03",
+      5415.41
+     ],
+     [
+      "2026-07-06",
+      5416.39
+     ],
+     [
+      "2026-07-07",
+      5418.62
+     ],
+     [
+      "2026-07-08",
+      5418.81
+     ],
+     [
+      "2026-07-09",
+      5419.58
+     ],
+     [
+      "2026-07-10",
+      5420.66
+     ],
+     [
+      "2026-07-13",
+      5421.52
+     ],
+     [
+      "2026-07-14",
+      5423.59
+     ],
+     [
+      "2026-07-15",
+      5422.69
+     ],
+     [
+      "2026-07-16",
+      5425.28
+     ],
+     [
+      "2026-07-17",
+      5424.89
+     ],
+     [
+      "2026-07-21",
+      5423.41
+     ],
+     [
+      "2026-07-22",
+      5419.0
+     ],
+     [
+      "2026-07-23",
+      5413.75
+     ],
+     [
+      "2026-07-24",
+      5411.39
+     ],
+     [
+      "2026-07-27",
+      5413.99
+     ],
+     [
+      "2026-07-28",
+      5413.86
+     ],
+     [
+      "2026-07-29",
+      5419.87
+     ],
+     [
+      "2026-07-30",
+      5425.16
+     ],
+     [
+      "2026-07-31",
+      5428.62
+     ],
+     [
+      "2026-08-03",
+      5434.34
+     ],
+     [
+      "2026-08-04",
+      5439.49
+     ],
+     [
+      "2026-08-05",
+      5446.47
+     ],
+     [
+      "2026-08-06",
+      5453.66
+     ],
+     [
+      "2026-08-07",
+      5460.6
+     ],
+     [
+      "2026-08-10",
+      5468.88
+     ],
+     [
+      "2026-08-12",
+      5481.03
+     ],
+     [
+      "2026-08-13",
+      5495.78
+     ],
+     [
+      "2026-08-14",
+      5512.58
+     ],
+     [
+      "2026-08-17",
+      5526.95
+     ],
+     [
+      "2026-08-18",
+      5544.68
+     ],
+     [
+      "2026-08-19",
+      5562.77
+     ],
+     [
+      "2026-08-20",
+      5585.02
+     ],
+     [
+      "2026-08-21",
+      5604.71
+     ],
+     [
+      "2026-08-24",
+      5625.9
+     ],
+     [
+      "2026-08-25",
+      5651.25
+     ],
+     [
+      "2026-08-26",
+      5678.01
+     ],
+     [
+      "2026-08-27",
+      5705.54
+     ],
+     [
+      "2026-08-28",
+      5734.63
+     ],
+     [
+      "2026-08-31",
+      5763.23
+     ],
+     [
+      "2026-09-01",
+      5790.88
+     ],
+     [
+      "2026-09-02",
+      5817.08
+     ],
+     [
+      "2026-09-03",
+      5847.85
+     ],
+     [
+      "2026-09-04",
+      5876.79
+     ],
+     [
+      "2026-09-07",
+      5900.47
+     ],
+     [
+      "2026-09-08",
+      5922.24
+     ],
+     [
+      "2026-09-09",
+      5944.73
+     ],
+     [
+      "2026-09-10",
+      5968.71
+     ],
+     [
+      "2026-09-11",
+      5990.55
+     ],
+     [
+      "2026-09-14",
+      6014.55
+     ],
+     [
+      "2026-09-15",
+      6037.19
+     ],
+     [
+      "2026-09-16",
+      6059.07
+     ],
+     [
+      "2026-09-17",
+      6083.39
+     ],
+     [
+      "2026-09-18",
+      6109.0
+     ],
+     [
+      "2026-09-24",
+      6132.51
+     ],
+     [
+      "2026-09-25",
+      6158.4
+     ],
+     [
+      "2026-09-28",
+      6183.39
+     ],
+     [
+      "2026-09-29",
+      6208.09
+     ],
+     [
+      "2026-09-30",
+      6233.18
+     ],
+     [
+      "2026-10-01",
+      6256.86
+     ],
+     [
+      "2026-10-02",
+      6284.48
+     ],
+     [
+      "2026-10-05",
+      6310.75
+     ],
+     [
+      "2026-10-06",
+      6338.73
+     ],
+     [
+      "2026-10-07",
+      6367.09
+     ],
+     [
+      "2026-10-08",
+      6396.22
+     ],
+     [
+      "2026-10-09",
+      6429.41
+     ],
+     [
+      "2026-10-13",
+      6460.54
+     ],
+     [
+      "2026-10-14",
+      6490.89
+     ],
+     [
+      "2026-10-15",
+      6522.22
+     ],
+     [
+      "2026-10-16",
+      6564.28
+     ],
+     [
+      "2026-10-19",
+      6610.24
+     ],
+     [
+      "2026-10-20",
+      6656.44
+     ],
+     [
+      "2026-10-21",
+      6703.83
+     ],
+     [
+      "2026-10-22",
+      6754.94
+     ],
+     [
+      "2026-10-23",
+      6808.66
+     ],
+     [
+      "2026-10-26",
+      6861.68
+     ],
+     [
+      "2026-10-27",
+      6913.51
+     ],
+     [
+      "2026-10-28",
+      6957.68
+     ],
+     [
+      "2026-10-29",
+      7006.38
+     ],
+     [
+      "2026-10-30",
+      7054.12
+     ],
+     [
+      "2026-11-02",
+      7099.79
+     ],
+     [
+      "2026-11-04",
+      7144.87
+     ],
+     [
+      "2026-11-05",
+      7193.1
+     ],
+     [
+      "2026-11-06",
+      7241.71
+     ],
+     [
+      "2026-11-09",
+      7298.65
+     ],
+     [
+      "2026-11-10",
+      7355.14
+     ],
+     [
+      "2026-11-11",
+      7406.9
+     ],
+     [
+      "2026-11-12",
+      7457.67
+     ],
+     [
+      "2026-11-13",
+      7513.34
+     ],
+     [
+      "2026-11-16",
+      7571.15
+     ],
+     [
+      "2026-11-17",
+      7628.88
+     ]
+    ],
+    "bb_upper": [
+     [
+      "2025-11-06",
+      8741.51
+     ],
+     [
+      "2025-11-07",
+      8593.92
+     ],
+     [
+      "2025-11-10",
+      8459.15
+     ],
+     [
+      "2025-11-11",
+      8303.84
+     ],
+     [
+      "2025-11-12",
+      8125.98
+     ],
+     [
+      "2025-11-13",
+      7902.92
+     ],
+     [
+      "2025-11-14",
+      7836.65
+     ],
+     [
+      "2025-11-17",
+      7778.11
+     ],
+     [
+      "2025-11-18",
+      7752.23
+     ],
+     [
+      "2025-11-19",
+      7707.17
+     ],
+     [
+      "2025-11-20",
+      7650.62
+     ],
+     [
+      "2025-11-21",
+      7600.34
+     ],
+     [
+      "2025-11-25",
+      7508.99
+     ],
+     [
+      "2025-11-26",
+      7340.97
+     ],
+     [
+      "2025-11-27",
+      7195.05
+     ],
+     [
+      "2025-11-28",
+      7157.91
+     ],
+     [
+      "2025-12-01",
+      7124.32
+     ],
+     [
+      "2025-12-02",
+      7092.39
+     ],
+     [
+      "2025-12-03",
+      7061.7
+     ],
+     [
+      "2025-12-04",
+      7004.94
+     ],
+     [
+      "2025-12-05",
+      6980.4
+     ],
+     [
+      "2025-12-08",
+      6975.79
+     ],
+     [
+      "2025-12-09",
+      6976.69
+     ],
+     [
+      "2025-12-10",
+      6966.05
+     ],
+     [
+      "2025-12-11",
+      6970.28
+     ],
+     [
+      "2025-12-12",
+      6962.44
+     ],
+     [
+      "2025-12-15",
+      6929.13
+     ],
+     [
+      "2025-12-16",
+      6874.67
+     ],
+     [
+      "2025-12-17",
+      6881.03
+     ],
+     [
+      "2025-12-18",
+      6890.89
+     ],
+     [
+      "2025-12-19",
+      6883.28
+     ],
+     [
+      "2025-12-22",
+      6854.35
+     ],
+     [
+      "2025-12-23",
+      6848.58
+     ],
+     [
+      "2025-12-24",
+      6840.51
+     ],
+     [
+      "2025-12-25",
+      6832.8
+     ],
+     [
+      "2025-12-26",
+      6796.47
+     ],
+     [
+      "2025-12-29",
+      6791.71
+     ],
+     [
+      "2025-12-30",
+      6789.33
+     ],
+     [
+      "2026-01-05",
+      6795.11
+     ],
+     [
+      "2026-01-06",
+      6784.68
+     ],
+     [
+      "2026-01-07",
+      6785.84
+     ],
+     [
+      "2026-01-08",
+      6781.82
+     ],
+     [
+      "2026-01-09",
+      6843.66
+     ],
+     [
+      "2026-01-13",
+      6872.72
+     ],
+     [
+      "2026-01-14",
+      6884.63
+     ],
+     [
+      "2026-01-15",
+      7013.71
+     ],
+     [
+      "2026-01-16",
+      7013.18
+     ],
+     [
+      "2026-01-19",
+      7013.74
+     ],
+     [
+      "2026-01-20",
+      7011.78
+     ],
+     [
+      "2026-01-21",
+      7036.71
+     ],
+     [
+      "2026-01-22",
+      7070.99
+     ],
+     [
+      "2026-01-23",
+      7108.64
+     ],
+     [
+      "2026-01-26",
+      7120.01
+     ],
+     [
+      "2026-01-27",
+      7124.12
+     ],
+     [
+      "2026-01-28",
+      7122.03
+     ],
+     [
+      "2026-01-29",
+      7166.27
+     ],
+     [
+      "2026-01-30",
+      7254.49
+     ],
+     [
+      "2026-02-02",
+      7303.15
+     ],
+     [
+      "2026-02-03",
+      7334.32
+     ],
+     [
+      "2026-02-04",
+      7398.78
+     ],
+     [
+      "2026-02-05",
+      7421.04
+     ],
+     [
+      "2026-02-06",
+      7428.25
+     ],
+     [
+      "2026-02-09",
+      7367.57
+     ],
+     [
+      "2026-02-10",
+      7283.98
+     ],
+     [
+      "2026-02-12",
+      7239.8
+     ],
+     [
+      "2026-02-13",
+      7085.58
+     ],
+     [
+      "2026-02-16",
+      7002.62
+     ],
+     [
+      "2026-02-17",
+      6885.01
+     ],
+     [
+      "2026-02-18",
+      6708.59
+     ],
+     [
+      "2026-02-19",
+      6593.09
+     ],
+     [
+      "2026-02-20",
+      6479.72
+     ],
+     [
+      "2026-02-24",
+      6411.67
+     ],
+     [
+      "2026-02-25",
+      6279.02
+     ],
+     [
+      "2026-02-26",
+      6070.92
+     ],
+     [
+      "2026-02-27",
+      5783.43
+     ],
+     [
+      "2026-03-02",
+      5605.49
+     ],
+     [
+      "2026-03-03",
+      5492.69
+     ],
+     [
+      "2026-03-04",
+      5342.73
+     ],
+     [
+      "2026-03-05",
+      5155.79
+     ],
+     [
+      "2026-03-06",
+      5102.09
+     ],
+     [
+      "2026-03-09",
+      5035.65
+     ],
+     [
+      "2026-03-10",
+      5014.2
+     ],
+     [
+      "2026-03-11",
+      4961.26
+     ],
+     [
+      "2026-03-12",
+      4871.2
+     ],
+     [
+      "2026-03-13",
+      4863.08
+     ],
+     [
+      "2026-03-16",
+      4863.71
+     ],
+     [
+      "2026-03-17",
+      4863.81
+     ],
+     [
+      "2026-03-18",
+      4866.03
+     ],
+     [
+      "2026-03-19",
+      4872.27
+     ],
+     [
+      "2026-03-23",
+      4868.39
+     ],
+     [
+      "2026-03-24",
+      4879.55
+     ],
+     [
+      "2026-03-25",
+      4821.79
+     ],
+     [
+      "2026-03-26",
+      4785.78
+     ],
+     [
+      "2026-03-27",
+      4786.15
+     ],
+     [
+      "2026-03-30",
+      4784.88
+     ],
+     [
+      "2026-03-31",
+      4778.0
+     ],
+     [
+      "2026-04-01",
+      4790.94
+     ],
+     [
+      "2026-04-02",
+      4798.0
+     ],
+     [
+      "2026-04-03",
+      4817.13
+     ],
+     [
+      "2026-04-06",
+      4817.13
+     ],
+     [
+      "2026-04-07",
+      4840.88
+     ],
+     [
+      "2026-04-08",
+      4875.99
+     ],
+     [
+      "2026-04-09",
+      4900.45
+     ],
+     [
+      "2026-04-10",
+      4896.69
+     ],
+     [
+      "2026-04-13",
+      4885.38
+     ],
+     [
+      "2026-04-14",
+      4919.53
+     ],
+     [
+      "2026-04-15",
+      5181.18
+     ],
+     [
+      "2026-04-16",
+      5277.86
+     ],
+     [
+      "2026-04-17",
+      5447.3
+     ],
+     [
+      "2026-04-20",
+      5602.96
+     ],
+     [
+      "2026-04-21",
+      5746.72
+     ],
+     [
+      "2026-04-22",
+      5928.71
+     ],
+     [
+      "2026-04-23",
+      5969.32
+     ],
+     [
+      "2026-04-24",
+      5997.11
+     ],
+     [
+      "2026-04-27",
+      5985.17
+     ],
+     [
+      "2026-04-28",
+      5986.38
+     ],
+     [
+      "2026-04-30",
+      5985.89
+     ],
+     [
+      "2026-05-01",
+      5976.47
+     ],
+     [
+      "2026-05-07",
+      5972.33
+     ],
+     [
+      "2026-05-08",
+      5975.47
+     ],
+     [
+      "2026-05-11",
+      5978.33
+     ],
+     [
+      "2026-05-12",
+      5974.04
+     ],
+     [
+      "2026-05-13",
+      5965.88
+     ],
+     [
+      "2026-05-14",
+      5917.64
+     ],
+     [
+      "2026-05-15",
+      5871.24
+     ],
+     [
+      "2026-05-18",
+      5859.96
+     ],
+     [
+      "2026-05-19",
+      5889.65
+     ],
+     [
+      "2026-05-20",
+      5901.29
+     ],
+     [
+      "2026-05-21",
+      5890.3
+     ],
+     [
+      "2026-05-22",
+      5904.37
+     ],
+     [
+      "2026-05-25",
+      5892.78
+     ],
+     [
+      "2026-05-26",
+      5813.09
+     ],
+     [
+      "2026-05-27",
+      5876.07
+     ],
+     [
+      "2026-05-28",
+      5882.1
+     ],
+     [
+      "2026-05-29",
+      5906.38
+     ],
+     [
+      "2026-06-01",
+      6018.16
+     ],
+     [
+      "2026-06-02",
+      6094.81
+     ],
+     [
+      "2026-06-03",
+      6148.1
+     ],
+     [
+      "2026-06-04",
+      6177.86
+     ],
+     [
+      "2026-06-05",
+      6226.95
+     ],
+     [
+      "2026-06-08",
+      6266.31
+     ],
+     [
+      "2026-06-09",
+      6263.58
+     ],
+     [
+      "2026-06-10",
+      6258.84
+     ],
+     [
+      "2026-06-11",
+      6202.85
+     ],
+     [
+      "2026-06-12",
+      6145.39
+     ],
+     [
+      "2026-06-15",
+      6123.73
+     ],
+     [
+      "2026-06-16",
+      6124.96
+     ],
+     [
+      "2026-06-17",
+      6117.64
+     ],
+     [
+      "2026-06-18",
+      6117.16
+     ],
+     [
+      "2026-06-19",
+      6127.25
+     ],
+     [
+      "2026-06-22",
+      6135.12
+     ],
+     [
+      "2026-06-23",
+      6151.32
+     ],
+     [
+      "2026-06-24",
+      6143.5
+     ],
+     [
+      "2026-06-25",
+      6140.28
+     ],
+     [
+      "2026-06-26",
+      6140.96
+     ],
+     [
+      "2026-06-29",
+      6145.2
+     ],
+     [
+      "2026-06-30",
+      6151.18
+     ],
+     [
+      "2026-07-01",
+      6225.86
+     ],
+     [
+      "2026-07-02",
+      6376.82
+     ],
+     [
+      "2026-07-03",
+      6525.07
+     ],
+     [
+      "2026-07-06",
+      6691.09
+     ],
+     [
+      "2026-07-07",
+      6859.82
+     ],
+     [
+      "2026-07-08",
+      6971.7
+     ],
+     [
+      "2026-07-09",
+      7062.54
+     ],
+     [
+      "2026-07-10",
+      7144.42
+     ],
+     [
+      "2026-07-13",
+      7214.0
+     ],
+     [
+      "2026-07-14",
+      7295.16
+     ],
+     [
+      "2026-07-15",
+      7307.76
+     ],
+     [
+      "2026-07-16",
+      7364.71
+     ],
+     [
+      "2026-07-17",
+      7363.74
+     ],
+     [
+      "2026-07-21",
+      7342.01
+     ],
+     [
+      "2026-07-22",
+      7276.89
+     ],
+     [
+      "2026-07-23",
+      7216.88
+     ],
+     [
+      "2026-07-24",
+      7143.5
+     ],
+     [
+      "2026-07-27",
+      7117.51
+     ],
+     [
+      "2026-07-28",
+      7188.68
+     ],
+     [
+      "2026-07-29",
+      7289.92
+     ],
+     [
+      "2026-07-30",
+      7374.67
+     ],
+     [
+      "2026-07-31",
+      7421.12
+     ],
+     [
+      "2026-08-03",
+      7442.53
+     ],
+     [
+      "2026-08-04",
+      7442.48
+     ],
+     [
+      "2026-08-05",
+      7449.38
+     ],
+     [
+      "2026-08-06",
+      7474.12
+     ],
+     [
+      "2026-08-07",
+      7507.81
+     ],
+     [
+      "2026-08-10",
+      7582.89
+     ],
+     [
+      "2026-08-12",
+      7646.88
+     ],
+     [
+      "2026-08-13",
+      7698.82
+     ],
+     [
+      "2026-08-14",
+      7791.7
+     ],
+     [
+      "2026-08-17",
+      7836.32
+     ],
+     [
+      "2026-08-18",
+      7862.04
+     ],
+     [
+      "2026-08-19",
+      7876.49
+     ],
+     [
+      "2026-08-20",
+      7880.35
+     ],
+     [
+      "2026-08-21",
+      7802.47
+     ],
+     [
+      "2026-08-24",
+      7810.9
+     ],
+     [
+      "2026-08-25",
+      7882.31
+     ],
+     [
+      "2026-08-26",
+      7937.49
+     ],
+     [
+      "2026-08-27",
+      8020.84
+     ],
+     [
+      "2026-08-28",
+      8135.43
+     ],
+     [
+      "2026-08-31",
+      8246.42
+     ],
+     [
+      "2026-09-01",
+      8318.33
+     ],
+     [
+      "2026-09-02",
+      8306.36
+     ],
+     [
+      "2026-09-03",
+      8296.33
+     ],
+     [
+      "2026-09-04",
+      8277.44
+     ],
+     [
+      "2026-09-07",
+      8249.22
+     ],
+     [
+      "2026-09-08",
+      8253.31
+     ],
+     [
+      "2026-09-09",
+      8267.92
+     ],
+     [
+      "2026-09-10",
+      8266.88
+     ],
+     [
+      "2026-09-11",
+      8269.41
+     ],
+     [
+      "2026-09-14",
+      8270.84
+     ],
+     [
+      "2026-09-15",
+      8269.46
+     ],
+     [
+      "2026-09-16",
+      8266.0
+     ],
+     [
+      "2026-09-17",
+      8275.12
+     ],
+     [
+      "2026-09-18",
+      8294.37
+     ],
+     [
+      "2026-09-24",
+      8288.3
+     ],
+     [
+      "2026-09-25",
+      8280.85
+     ],
+     [
+      "2026-09-28",
+      8274.99
+     ],
+     [
+      "2026-09-29",
+      8247.81
+     ],
+     [
+      "2026-09-30",
+      8190.07
+     ],
+     [
+      "2026-10-01",
+      8104.53
+     ],
+     [
+      "2026-10-02",
+      8092.34
+     ],
+     [
+      "2026-10-05",
+      8115.63
+     ],
+     [
+      "2026-10-06",
+      8178.69
+     ],
+     [
+      "2026-10-07",
+      8246.8
+     ],
+     [
+      "2026-10-08",
+      8345.99
+     ],
+     [
+      "2026-10-09",
+      8530.77
+     ],
+     [
+      "2026-10-13",
+      8621.1
+     ],
+     [
+      "2026-10-14",
+      8731.64
+     ],
+     [
+      "2026-10-15",
+      8812.97
+     ],
+     [
+      "2026-10-16",
+      9366.65
+     ],
+     [
+      "2026-10-19",
+      9943.59
+     ],
+     [
+      "2026-10-20",
+      10411.14
+     ],
+     [
+      "2026-10-21",
+      10844.36
+     ],
+     [
+      "2026-10-22",
+      11311.07
+     ],
+     [
+      "2026-10-23",
+      11707.72
+     ],
+     [
+      "2026-10-26",
+      12039.48
+     ],
+     [
+      "2026-10-27",
+      12337.8
+     ],
+     [
+      "2026-10-28",
+      12524.94
+     ],
+     [
+      "2026-10-29",
+      12723.77
+     ],
+     [
+      "2026-10-30",
+      12896.56
+     ],
+     [
+      "2026-11-02",
+      13027.91
+     ],
+     [
+      "2026-11-04",
+      13101.51
+     ],
+     [
+      "2026-11-05",
+      13248.11
+     ],
+     [
+      "2026-11-06",
+      13254.07
+     ],
+     [
+      "2026-11-09",
+      13385.8
+     ],
+     [
+      "2026-11-10",
+      13437.9
+     ],
+     [
+      "2026-11-11",
+      13326.69
+     ],
+     [
+      "2026-11-12",
+      13105.58
+     ],
+     [
+      "2026-11-13",
+      12779.68
+     ],
+     [
+      "2026-11-16",
+      12795.37
+     ],
+     [
+      "2026-11-17",
+      12891.74
+     ]
+    ],
+    "bb_lower": [
+     [
+      "2025-11-06",
+      6495.29
+     ],
+     [
+      "2025-11-07",
+      6461.78
+     ],
+     [
+      "2025-11-10",
+      6400.25
+     ],
+     [
+      "2025-11-11",
+      6342.76
+     ],
+     [
+      "2025-11-12",
+      6334.12
+     ],
+     [
+      "2025-11-13",
+      6398.48
+     ],
+     [
+      "2025-11-14",
+      6390.95
+     ],
+     [
+      "2025-11-17",
+      6389.09
+     ],
+     [
+      "2025-11-18",
+      6333.97
+     ],
+     [
+      "2025-11-19",
+      6289.33
+     ],
+     [
+      "2025-11-20",
+      6277.78
+     ],
+     [
+      "2025-11-21",
+      6275.66
+     ],
+     [
+      "2025-11-25",
+      6289.71
+     ],
+     [
+      "2025-11-26",
+      6358.93
+     ],
+     [
+      "2025-11-27",
+      6423.05
+     ],
+     [
+      "2025-11-28",
+      6433.59
+     ],
+     [
+      "2025-12-01",
+      6428.38
+     ],
+     [
+      "2025-12-02",
+      6400.91
+     ],
+     [
+      "2025-12-03",
+      6375.9
+     ],
+     [
+      "2025-12-04",
+      6396.66
+     ],
+     [
+      "2025-12-05",
+      6395.9
+     ],
+     [
+      "2025-12-08",
+      6397.31
+     ],
+     [
+      "2025-12-09",
+      6392.81
+     ],
+     [
+      "2025-12-10",
+      6414.95
+     ],
+     [
+      "2025-12-11",
+      6404.42
+     ],
+     [
+      "2025-12-12",
+      6401.36
+     ],
+     [
+      "2025-12-15",
+      6408.07
+     ],
+     [
+      "2025-12-16",
+      6428.13
+     ],
+     [
+      "2025-12-17",
+      6409.27
+     ],
+     [
+      "2025-12-18",
+      6416.51
+     ],
+     [
+      "2025-12-19",
+      6417.12
+     ],
+     [
+      "2025-12-22",
+      6422.65
+     ],
+     [
+      "2025-12-23",
+      6424.12
+     ],
+     [
+      "2025-12-24",
+      6417.99
+     ],
+     [
+      "2025-12-25",
+      6410.7
+     ],
+     [
+      "2025-12-26",
+      6423.33
+     ],
+     [
+      "2025-12-29",
+      6420.19
+     ],
+     [
+      "2025-12-30",
+      6425.47
+     ],
+     [
+      "2026-01-05",
+      6415.19
+     ],
+     [
+      "2026-01-06",
+      6415.72
+     ],
+     [
+      "2026-01-07",
+      6415.76
+     ],
+     [
+      "2026-01-08",
+      6418.28
+     ],
+     [
+      "2026-01-09",
+      6391.84
+     ],
+     [
+      "2026-01-13",
+      6391.28
+     ],
+     [
+      "2026-01-14",
+      6406.77
+     ],
+     [
+      "2026-01-15",
+      6331.89
+     ],
+     [
+      "2026-01-16",
+      6330.52
+     ],
+     [
+      "2026-01-19",
+      6332.16
+     ],
+     [
+      "2026-01-20",
+      6356.12
+     ],
+     [
+      "2026-01-21",
+      6281.39
+     ],
+     [
+      "2026-01-22",
+      6192.81
+     ],
+     [
+      "2026-01-23",
+      6100.66
+     ],
+     [
+      "2026-01-26",
+      6029.79
+     ],
+     [
+      "2026-01-27",
+      5990.78
+     ],
+     [
+      "2026-01-28",
+      5969.27
+     ],
+     [
+      "2026-01-29",
+      5845.03
+     ],
+     [
+      "2026-01-30",
+      5643.11
+     ],
+     [
+      "2026-02-02",
+      5494.75
+     ],
+     [
+      "2026-02-03",
+      5375.08
+     ],
+     [
+      "2026-02-04",
+      5156.42
+     ],
+     [
+      "2026-02-05",
+      4976.66
+     ],
+     [
+      "2026-02-06",
+      4772.35
+     ],
+     [
+      "2026-02-09",
+      4634.33
+     ],
+     [
+      "2026-02-10",
+      4539.12
+     ],
+     [
+      "2026-02-12",
+      4358.0
+     ],
+     [
+      "2026-02-13",
+      4221.12
+     ],
+     [
+      "2026-02-16",
+      4079.68
+     ],
+     [
+      "2026-02-17",
+      3967.59
+     ],
+     [
+      "2026-02-18",
+      3922.41
+     ],
+     [
+      "2026-02-19",
+      3868.21
+     ],
+     [
+      "2026-02-20",
+      3815.28
+     ],
+     [
+      "2026-02-24",
+      3662.93
+     ],
+     [
+      "2026-02-25",
+      3590.58
+     ],
+     [
+      "2026-02-26",
+      3609.18
+     ],
+     [
+      "2026-02-27",
+      3715.57
+     ],
+     [
+      "2026-03-02",
+      3742.61
+     ],
+     [
+      "2026-03-03",
+      3737.21
+     ],
+     [
+      "2026-03-04",
+      3786.67
+     ],
+     [
+      "2026-03-05",
+      3877.41
+     ],
+     [
+      "2026-03-06",
+      3901.41
+     ],
+     [
+      "2026-03-09",
+      3933.25
+     ],
+     [
+      "2026-03-10",
+      3940.3
+     ],
+     [
+      "2026-03-11",
+      3960.94
+     ],
+     [
+      "2026-03-12",
+      4008.5
+     ],
+     [
+      "2026-03-13",
+      3995.82
+     ],
+     [
+      "2026-03-16",
+      4004.49
+     ],
+     [
+      "2026-03-17",
+      4004.79
+     ],
+     [
+      "2026-03-18",
+      4010.97
+     ],
+     [
+      "2026-03-19",
+      4012.23
+     ],
+     [
+      "2026-03-23",
+      4011.81
+     ],
+     [
+      "2026-03-24",
+      4012.45
+     ],
+     [
+      "2026-03-25",
+      4138.41
+     ],
+     [
+      "2026-03-26",
+      4220.62
+     ],
+     [
+      "2026-03-27",
+      4243.65
+     ],
+     [
+      "2026-03-30",
+      4237.82
+     ],
+     [
+      "2026-03-31",
+      4269.5
+     ],
+     [
+      "2026-04-01",
+      4306.06
+     ],
+     [
+      "2026-04-02",
+      4311.4
+     ],
+     [
+      "2026-04-03",
+      4307.87
+     ],
+     [
+      "2026-04-06",
+      4307.87
+     ],
+     [
+      "2026-04-07",
+      4295.12
+     ],
+     [
+      "2026-04-08",
+      4278.61
+     ],
+     [
+      "2026-04-09",
+      4273.45
+     ],
+     [
+      "2026-04-10",
+      4267.31
+     ],
+     [
+      "2026-04-13",
+      4308.72
+     ],
+     [
+      "2026-04-14",
+      4324.77
+     ],
+     [
+      "2026-04-15",
+      4183.32
+     ],
+     [
+      "2026-04-16",
+      4173.84
+     ],
+     [
+      "2026-04-17",
+      4111.3
+     ],
+     [
+      "2026-04-20",
+      4074.34
+     ],
+     [
+      "2026-04-21",
+      4045.28
+     ],
+     [
+      "2026-04-22",
+      4008.99
+     ],
+     [
+      "2026-04-23",
+      4057.68
+     ],
+     [
+      "2026-04-24",
+      4110.19
+     ],
+     [
+      "2026-04-27",
+      4185.93
+     ],
+     [
+      "2026-04-28",
+      4254.92
+     ],
+     [
+      "2026-04-30",
+      4286.01
+     ],
+     [
+      "2026-05-01",
+      4342.03
+     ],
+     [
+      "2026-05-07",
+      4385.97
+     ],
+     [
+      "2026-05-08",
+      4433.73
+     ],
+     [
+      "2026-05-11",
+      4473.17
+     ],
+     [
+      "2026-05-12",
+      4494.16
+     ],
+     [
+      "2026-05-13",
+      4539.52
+     ],
+     [
+      "2026-05-14",
+      4636.06
+     ],
+     [
+      "2026-05-15",
+      4733.16
+     ],
+     [
+      "2026-05-18",
+      4787.54
+     ],
+     [
+      "2026-05-19",
+      4774.75
+     ],
+     [
+      "2026-05-20",
+      4780.31
+     ],
+     [
+      "2026-05-21",
+      4783.2
+     ],
+     [
+      "2026-05-22",
+      4776.53
+     ],
+     [
+      "2026-05-25",
+      4781.82
+     ],
+     [
+      "2026-05-26",
+      4828.81
+     ],
+     [
+      "2026-05-27",
+      4805.23
+     ],
+     [
+      "2026-05-28",
+      4807.5
+     ],
+     [
+      "2026-05-29",
+      4837.62
+     ],
+     [
+      "2026-06-01",
+      4806.54
+     ],
+     [
+      "2026-06-02",
+      4824.39
+     ],
+     [
+      "2026-06-03",
+      4857.3
+     ],
+     [
+      "2026-06-04",
+      4900.74
+     ],
+     [
+      "2026-06-05",
+      4921.25
+     ],
+     [
+      "2026-06-08",
+      4951.89
+     ],
+     [
+      "2026-06-09",
+      5040.82
+     ],
+     [
+      "2026-06-10",
+      5111.86
+     ],
+     [
+      "2026-06-11",
+      5243.75
+     ],
+     [
+      "2026-06-12",
+      5344.21
+     ],
+     [
+      "2026-06-15",
+      5382.47
+     ],
+     [
+      "2026-06-16",
+      5358.64
+     ],
+     [
+      "2026-06-17",
+      5377.26
+     ],
+     [
+      "2026-06-18",
+      5402.14
+     ],
+     [
+      "2026-06-19",
+      5359.05
+     ],
+     [
+      "2026-06-22",
+      5328.78
+     ],
+     [
+      "2026-06-23",
+      5280.58
+     ],
+     [
+      "2026-06-24",
+      5257.0
+     ],
+     [
+      "2026-06-25",
+      5266.32
+     ],
+     [
+      "2026-06-26",
+      5257.14
+     ],
+     [
+      "2026-06-29",
+      5254.9
+     ],
+     [
+      "2026-06-30",
+      5252.02
+     ],
+     [
+      "2026-07-01",
+      5211.14
+     ],
+     [
+      "2026-07-02",
+      5129.98
+     ],
+     [
+      "2026-07-03",
+      5051.73
+     ],
+     [
+      "2026-07-06",
+      4970.91
+     ],
+     [
+      "2026-07-07",
+      4902.88
+     ],
+     [
+      "2026-07-08",
+      4880.9
+     ],
+     [
+      "2026-07-09",
+      4881.26
+     ],
+     [
+      "2026-07-10",
+      4914.08
+     ],
+     [
+      "2026-07-13",
+      4967.2
+     ],
+     [
+      "2026-07-14",
+      5017.84
+     ],
+     [
+      "2026-07-15",
+      5085.04
+     ],
+     [
+      "2026-07-16",
+      5125.49
+     ],
+     [
+      "2026-07-17",
+      5238.16
+     ],
+     [
+      "2026-07-21",
+      5359.79
+     ],
+     [
+      "2026-07-22",
+      5511.61
+     ],
+     [
+      "2026-07-23",
+      5645.02
+     ],
+     [
+      "2026-07-24",
+      5820.0
+     ],
+     [
+      "2026-07-27",
+      6003.49
+     ],
+     [
+      "2026-07-28",
+      6044.12
+     ],
+     [
+      "2026-07-29",
+      6079.88
+     ],
+     [
+      "2026-07-30",
+      6099.23
+     ],
+     [
+      "2026-07-31",
+      6111.18
+     ],
+     [
+      "2026-08-03",
+      6121.67
+     ],
+     [
+      "2026-08-04",
+      6121.62
+     ],
+     [
+      "2026-08-05",
+      6121.92
+     ],
+     [
+      "2026-08-06",
+      6128.78
+     ],
+     [
+      "2026-08-07",
+      6140.29
+     ],
+     [
+      "2026-08-10",
+      6135.31
+     ],
+     [
+      "2026-08-12",
+      6138.12
+     ],
+     [
+      "2026-08-13",
+      6137.28
+     ],
+     [
+      "2026-08-14",
+      6174.8
+     ],
+     [
+      "2026-08-17",
+      6194.68
+     ],
+     [
+      "2026-08-18",
+      6250.36
+     ],
+     [
+      "2026-08-19",
+      6332.91
+     ],
+     [
+      "2026-08-20",
+      6478.55
+     ],
+     [
+      "2026-08-21",
+      6681.93
+     ],
+     [
+      "2026-08-24",
+      6800.8
+     ],
+     [
+      "2026-08-25",
+      6799.79
+     ],
+     [
+      "2026-08-26",
+      6803.11
+     ],
+     [
+      "2026-08-27",
+      6775.16
+     ],
+     [
+      "2026-08-28",
+      6740.27
+     ],
+     [
+      "2026-08-31",
+      6734.58
+     ],
+     [
+      "2026-09-01",
+      6777.97
+     ],
+     [
+      "2026-09-02",
+      6897.24
+     ],
+     [
+      "2026-09-03",
+      6996.17
+     ],
+     [
+      "2026-09-04",
+      7092.86
+     ],
+     [
+      "2026-09-07",
+      7149.18
+     ],
+     [
+      "2026-09-08",
+      7139.29
+     ],
+     [
+      "2026-09-09",
+      7108.28
+     ],
+     [
+      "2026-09-10",
+      7111.02
+     ],
+     [
+      "2026-09-11",
+      7073.49
+     ],
+     [
+      "2026-09-14",
+      7101.16
+     ],
+     [
+      "2026-09-15",
+      7136.74
+     ],
+     [
+      "2026-09-16",
+      7154.8
+     ],
+     [
+      "2026-09-17",
+      7158.18
+     ],
+     [
+      "2026-09-18",
+      7183.63
+     ],
+     [
+      "2026-09-24",
+      7177.3
+     ],
+     [
+      "2026-09-25",
+      7171.05
+     ],
+     [
+      "2026-09-28",
+      7163.21
+     ],
+     [
+      "2026-09-29",
+      7153.99
+     ],
+     [
+      "2026-09-30",
+      7168.13
+     ],
+     [
+      "2026-10-01",
+      7197.17
+     ],
+     [
+      "2026-10-02",
+      7204.66
+     ],
+     [
+      "2026-10-05",
+      7194.17
+     ],
+     [
+      "2026-10-06",
+      7163.01
+     ],
+     [
+      "2026-10-07",
+      7133.5
+     ],
+     [
+      "2026-10-08",
+      7128.61
+     ],
+     [
+      "2026-10-09",
+      7085.13
+     ],
+     [
+      "2026-10-13",
+      7131.9
+     ],
+     [
+      "2026-10-14",
+      7153.76
+     ],
+     [
+      "2026-10-15",
+      7208.23
+     ],
+     [
+      "2026-10-16",
+      6904.95
+     ],
+     [
+      "2026-10-19",
+      6631.01
+     ],
+     [
+      "2026-10-20",
+      6490.66
+     ],
+     [
+      "2026-10-21",
+      6375.94
+     ],
+     [
+      "2026-10-22",
+      6260.03
+     ],
+     [
+      "2026-10-23",
+      6246.28
+     ],
+     [
+      "2026-10-26",
+      6297.22
+     ],
+     [
+      "2026-10-27",
+      6398.0
+     ],
+     [
+      "2026-10-28",
+      6584.26
+     ],
+     [
+      "2026-10-29",
+      6779.43
+     ],
+     [
+      "2026-10-30",
+      7026.44
+     ],
+     [
+      "2026-11-02",
+      7248.49
+     ],
+     [
+      "2026-11-04",
+      7533.99
+     ],
+     [
+      "2026-11-05",
+      7796.39
+     ],
+     [
+      "2026-11-06",
+      8142.93
+     ],
+     [
+      "2026-11-09",
+      8453.1
+     ],
+     [
+      "2026-11-10",
+      8767.7
+     ],
+     [
+      "2026-11-11",
+      9217.31
+     ],
+     [
+      "2026-11-12",
+      9734.42
+     ],
+     [
+      "2026-11-13",
+      10423.32
+     ],
+     [
+      "2026-11-16",
+      10652.13
+     ],
+     [
+      "2026-11-17",
+      10759.76
+     ]
+    ],
+    "rsi": [
+     [
+      "2025-11-06",
+      29.25
+     ],
+     [
+      "2025-11-07",
+      28.49
+     ],
+     [
+      "2025-11-10",
+      25.1
+     ],
+     [
+      "2025-11-11",
+      23.08
+     ],
+     [
+      "2025-11-12",
+      27.9
+     ],
+     [
+      "2025-11-13",
+      35.13
+     ],
+     [
+      "2025-11-14",
+      39.42
+     ],
+     [
+      "2025-11-17",
+      41.01
+     ],
+     [
+      "2025-11-18",
+      34.28
+     ],
+     [
+      "2025-11-19",
+      33.92
+     ],
+     [
+      "2025-11-20",
+      39.58
+     ],
+     [
+      "2025-11-21",
+      42.15
+     ],
+     [
+      "2025-11-25",
+      40.17
+     ],
+     [
+      "2025-11-26",
+      39.37
+     ],
+     [
+      "2025-11-27",
+      39.17
+     ],
+     [
+      "2025-11-28",
+      43.75
+     ],
+     [
+      "2025-12-01",
+      39.48
+     ],
+     [
+      "2025-12-02",
+      35.61
+     ],
+     [
+      "2025-12-03",
+      35.45
+     ],
+     [
+      "2025-12-04",
+      43.7
+     ],
+     [
+      "2025-12-05",
+      42.12
+     ],
+     [
+      "2025-12-08",
+      47.42
+     ],
+     [
+      "2025-12-09",
+      41.43
+     ],
+     [
+      "2025-12-10",
+      41.07
+     ],
+     [
+      "2025-12-11",
+      39.93
+     ],
+     [
+      "2025-12-12",
+      45.49
+     ],
+     [
+      "2025-12-15",
+      45.03
+     ],
+     [
+      "2025-12-16",
+      44.33
+     ],
+     [
+      "2025-12-17",
+      40.28
+     ],
+     [
+      "2025-12-18",
+      49.42
+     ],
+     [
+      "2025-12-19",
+      47.76
+     ],
+     [
+      "2025-12-22",
+      45.59
+     ],
+     [
+      "2025-12-23",
+      48.75
+     ],
+     [
+      "2025-12-24",
+      44.75
+     ],
+     [
+      "2025-12-25",
+      44.27
+     ],
+     [
+      "2025-12-26",
+      46.05
+     ],
+     [
+      "2025-12-29",
+      45.33
+     ],
+     [
+      "2025-12-30",
+      42.79
+     ],
+     [
+      "2026-01-05",
+      40.25
+     ],
+     [
+      "2026-01-06",
+      47.87
+     ],
+     [
+      "2026-01-07",
+      49.54
+     ],
+     [
+      "2026-01-08",
+      54.52
+     ],
+     [
+      "2026-01-09",
+      58.25
+     ],
+     [
+      "2026-01-13",
+      54.82
+     ],
+     [
+      "2026-01-14",
+      52.48
+     ],
+     [
+      "2026-01-15",
+      64.38
+     ],
+     [
+      "2026-01-16",
+      47.39
+     ],
+     [
+      "2026-01-19",
+      47.8
+     ],
+     [
+      "2026-01-20",
+      49.11
+     ],
+     [
+      "2026-01-21",
+      39.45
+     ],
+     [
+      "2026-01-22",
+      37.61
+     ],
+     [
+      "2026-01-23",
+      36.22
+     ],
+     [
+      "2026-01-26",
+      37.68
+     ],
+     [
+      "2026-01-27",
+      41.11
+     ],
+     [
+      "2026-01-28",
+      44.03
+     ],
+     [
+      "2026-01-29",
+      34.21
+     ],
+     [
+      "2026-01-30",
+      29.31
+     ],
+     [
+      "2026-02-02",
+      31.14
+     ],
+     [
+      "2026-02-03",
+      32.06
+     ],
+     [
+      "2026-02-04",
+      26.17
+     ],
+     [
+      "2026-02-05",
+      26.54
+     ],
+     [
+      "2026-02-06",
+      23.82
+     ],
+     [
+      "2026-02-09",
+      27.13
+     ],
+     [
+      "2026-02-10",
+      30.68
+     ],
+     [
+      "2026-02-12",
+      24.71
+     ],
+     [
+      "2026-02-13",
+      22.69
+     ],
+     [
+      "2026-02-16",
+      25.31
+     ],
+     [
+      "2026-02-17",
+      24.93
+     ],
+     [
+      "2026-02-18",
+      28.96
+     ],
+     [
+      "2026-02-19",
+      31.25
+     ],
+     [
+      "2026-02-20",
+      30.28
+     ],
+     [
+      "2026-02-24",
+      23.31
+     ],
+     [
+      "2026-02-25",
+      29.0
+     ],
+     [
+      "2026-02-26",
+      35.77
+     ],
+     [
+      "2026-02-27",
+      39.97
+     ],
+     [
+      "2026-03-02",
+      36.88
+     ],
+     [
+      "2026-03-03",
+      36.43
+     ],
+     [
+      "2026-03-04",
+      42.15
+     ],
+     [
+      "2026-03-05",
+      43.81
+     ],
+     [
+      "2026-03-06",
+      48.1
+     ],
+     [
+      "2026-03-09",
+      47.36
+     ],
+     [
+      "2026-03-10",
+      46.31
+     ],
+     [
+      "2026-03-11",
+      44.73
+     ],
+     [
+      "2026-03-12",
+      45.05
+     ],
+     [
+      "2026-03-13",
+      38.78
+     ],
+     [
+      "2026-03-16",
+      41.02
+     ],
+     [
+      "2026-03-17",
+      41.02
+     ],
+     [
+      "2026-03-18",
+      42.37
+     ],
+     [
+      "2026-03-19",
+      46.1
+     ],
+     [
+      "2026-03-23",
+      44.98
+     ],
+     [
+      "2026-03-24",
+      47.89
+     ],
+     [
+      "2026-03-25",
+      46.31
+     ],
+     [
+      "2026-03-26",
+      45.72
+     ],
+     [
+      "2026-03-27",
+      47.03
+     ],
+     [
+      "2026-03-30",
+      43.15
+     ],
+     [
+      "2026-03-31",
+      47.1
+     ],
+     [
+      "2026-04-01",
+      54.12
+     ],
+     [
+      "2026-04-02",
+      49.75
+     ],
+     [
+      "2026-04-03",
+      53.0
+     ],
+     [
+      "2026-04-06",
+      54.18
+     ],
+     [
+      "2026-04-07",
+      56.4
+     ],
+     [
+      "2026-04-08",
+      57.16
+     ],
+     [
+      "2026-04-09",
+      54.37
+     ],
+     [
+      "2026-04-10",
+      44.7
+     ],
+     [
+      "2026-04-13",
+      47.97
+     ],
+     [
+      "2026-04-14",
+      56.41
+     ],
+     [
+      "2026-04-15",
+      69.68
+     ],
+     [
+      "2026-04-16",
+      61.42
+     ],
+     [
+      "2026-04-17",
+      66.2
+     ],
+     [
+      "2026-04-20",
+      67.24
+     ],
+     [
+      "2026-04-21",
+      67.97
+     ],
+     [
+      "2026-04-22",
+      71.34
+     ],
+     [
+      "2026-04-23",
+      56.63
+     ],
+     [
+      "2026-04-24",
+      55.5
+     ],
+     [
+      "2026-04-27",
+      49.71
+     ],
+     [
+      "2026-04-28",
+      52.8
+     ],
+     [
+      "2026-04-30",
+      49.31
+     ],
+     [
+      "2026-05-01",
+      49.86
+     ],
+     [
+      "2026-05-07",
+      50.63
+     ],
+     [
+      "2026-05-08",
+      53.71
+     ],
+     [
+      "2026-05-11",
+      53.4
+     ],
+     [
+      "2026-05-12",
+      48.07
+     ],
+     [
+      "2026-05-13",
+      51.18
+     ],
+     [
+      "2026-05-14",
+      47.41
+     ],
+     [
+      "2026-05-15",
+      50.13
+     ],
+     [
+      "2026-05-18",
+      54.55
+     ],
+     [
+      "2026-05-19",
+      62.33
+     ],
+     [
+      "2026-05-20",
+      55.68
+     ],
+     [
+      "2026-05-21",
+      56.81
+     ],
+     [
+      "2026-05-22",
+      60.66
+     ],
+     [
+      "2026-05-25",
+      58.58
+     ],
+     [
+      "2026-05-26",
+      58.35
+     ],
+     [
+      "2026-05-27",
+      60.85
+     ],
+     [
+      "2026-05-28",
+      51.93
+     ],
+     [
+      "2026-05-29",
+      55.24
+     ],
+     [
+      "2026-06-01",
+      62.3
+     ],
+     [
+      "2026-06-02",
+      61.26
+     ],
+     [
+      "2026-06-03",
+      59.89
+     ],
+     [
+      "2026-06-04",
+      57.55
+     ],
+     [
+      "2026-06-05",
+      59.63
+     ],
+     [
+      "2026-06-08",
+      59.39
+     ],
+     [
+      "2026-06-09",
+      57.41
+     ],
+     [
+      "2026-06-10",
+      55.62
+     ],
+     [
+      "2026-06-11",
+      53.51
+     ],
+     [
+      "2026-06-12",
+      47.8
+     ],
+     [
+      "2026-06-15",
+      46.28
+     ],
+     [
+      "2026-06-16",
+      47.63
+     ],
+     [
+      "2026-06-17",
+      49.28
+     ],
+     [
+      "2026-06-18",
+      54.74
+     ],
+     [
+      "2026-06-19",
+      45.48
+     ],
+     [
+      "2026-06-22",
+      46.08
+     ],
+     [
+      "2026-06-23",
+      43.51
+     ],
+     [
+      "2026-06-24",
+      47.79
+     ],
+     [
+      "2026-06-25",
+      48.08
+     ],
+     [
+      "2026-06-26",
+      48.86
+     ],
+     [
+      "2026-06-29",
+      62.07
+     ],
+     [
+      "2026-06-30",
+      61.06
+     ],
+     [
+      "2026-07-01",
+      65.79
+     ],
+     [
+      "2026-07-02",
+      69.95
+     ],
+     [
+      "2026-07-03",
+      71.57
+     ],
+     [
+      "2026-07-06",
+      73.47
+     ],
+     [
+      "2026-07-07",
+      74.57
+     ],
+     [
+      "2026-07-08",
+      68.52
+     ],
+     [
+      "2026-07-09",
+      66.47
+     ],
+     [
+      "2026-07-10",
+      66.86
+     ],
+     [
+      "2026-07-13",
+      67.22
+     ],
+     [
+      "2026-07-14",
+      69.74
+     ],
+     [
+      "2026-07-15",
+      54.43
+     ],
+     [
+      "2026-07-16",
+      61.68
+     ],
+     [
+      "2026-07-17",
+      56.46
+     ],
+     [
+      "2026-07-21",
+      54.08
+     ],
+     [
+      "2026-07-22",
+      48.68
+     ],
+     [
+      "2026-07-23",
+      48.91
+     ],
+     [
+      "2026-07-24",
+      55.26
+     ],
+     [
+      "2026-07-27",
+      64.72
+     ],
+     [
+      "2026-07-28",
+      65.78
+     ],
+     [
+      "2026-07-29",
+      68.59
+     ],
+     [
+      "2026-07-30",
+      66.53
+     ],
+     [
+      "2026-07-31",
+      61.61
+     ],
+     [
+      "2026-08-03",
+      57.99
+     ],
+     [
+      "2026-08-04",
+      53.94
+     ],
+     [
+      "2026-08-05",
+      56.86
+     ],
+     [
+      "2026-08-06",
+      58.18
+     ],
+     [
+      "2026-08-07",
+      59.56
+     ],
+     [
+      "2026-08-10",
+      64.1
+     ],
+     [
+      "2026-08-12",
+      63.7
+     ],
+     [
+      "2026-08-13",
+      63.1
+     ],
+     [
+      "2026-08-14",
+      68.38
+     ],
+     [
+      "2026-08-17",
+      60.25
+     ],
+     [
+      "2026-08-18",
+      59.41
+     ],
+     [
+      "2026-08-19",
+      60.51
+     ],
+     [
+      "2026-08-20",
+      65.45
+     ],
+     [
+      "2026-08-21",
+      59.09
+     ],
+     [
+      "2026-08-24",
+      64.15
+     ],
+     [
+      "2026-08-25",
+      64.37
+     ],
+     [
+      "2026-08-26",
+      63.24
+     ],
+     [
+      "2026-08-27",
+      66.33
+     ],
+     [
+      "2026-08-28",
+      68.81
+     ],
+     [
+      "2026-08-31",
+      69.77
+     ],
+     [
+      "2026-09-01",
+      68.1
+     ],
+     [
+      "2026-09-02",
+      60.01
+     ],
+     [
+      "2026-09-03",
+      59.27
+     ],
+     [
+      "2026-09-04",
+      58.14
+     ],
+     [
+      "2026-09-07",
+      47.06
+     ],
+     [
+      "2026-09-08",
+      45.55
+     ],
+     [
+      "2026-09-09",
+      42.93
+     ],
+     [
+      "2026-09-10",
+      47.31
+     ],
+     [
+      "2026-09-11",
+      46.38
+     ],
+     [
+      "2026-09-14",
+      55.0
+     ],
+     [
+      "2026-09-15",
+      55.42
+     ],
+     [
+      "2026-09-16",
+      51.72
+     ],
+     [
+      "2026-09-17",
+      57.65
+     ],
+     [
+      "2026-09-18",
+      59.5
+     ],
+     [
+      "2026-09-24",
+      52.5
+     ],
+     [
+      "2026-09-25",
+      52.55
+     ],
+     [
+      "2026-09-28",
+      51.5
+     ],
+     [
+      "2026-09-29",
+      50.44
+     ],
+     [
+      "2026-09-30",
+      53.01
+     ],
+     [
+      "2026-10-01",
+      51.1
+     ],
+     [
+      "2026-10-02",
+      62.06
+     ],
+     [
+      "2026-10-05",
+      59.55
+     ],
+     [
+      "2026-10-06",
+      62.83
+     ],
+     [
+      "2026-10-07",
+      63.41
+     ],
+     [
+      "2026-10-08",
+      65.99
+     ],
+     [
+      "2026-10-09",
+      72.22
+     ],
+     [
+      "2026-10-13",
+      66.9
+     ],
+     [
+      "2026-10-14",
+      68.65
+     ],
+     [
+      "2026-10-15",
+      68.48
+     ],
+     [
+      "2026-10-16",
+      82.54
+     ],
+     [
+      "2026-10-19",
+      85.14
+     ],
+     [
+      "2026-10-20",
+      85.58
+     ],
+     [
+      "2026-10-21",
+      86.33
+     ],
+     [
+      "2026-10-22",
+      87.91
+     ],
+     [
+      "2026-10-23",
+      88.12
+     ],
+     [
+      "2026-10-26",
+      88.12
+     ],
+     [
+      "2026-10-27",
+      88.6
+     ],
+     [
+      "2026-10-28",
+      80.28
+     ],
+     [
+      "2026-10-29",
+      82.12
+     ],
+     [
+      "2026-10-30",
+      83.22
+     ],
+     [
+      "2026-11-02",
+      78.07
+     ],
+     [
+      "2026-11-04",
+      77.41
+     ],
+     [
+      "2026-11-05",
+      81.82
+     ],
+     [
+      "2026-11-06",
+      69.98
+     ],
+     [
+      "2026-11-09",
+      76.91
+     ],
+     [
+      "2026-11-10",
+      70.92
+     ],
+     [
+      "2026-11-11",
+      64.08
+     ],
+     [
+      "2026-11-12",
+      59.76
+     ],
+     [
+      "2026-11-13",
+      65.19
+     ],
+     [
+      "2026-11-16",
+      67.42
+     ],
+     [
+      "2026-11-17",
+      68.4
+     ]
+    ],
+    "macd_hist": [
+     [
+      "2025-11-06",
+      -52.95
+     ],
+     [
+      "2025-11-07",
+      -48.54
+     ],
+     [
+      "2025-11-10",
+      -55.82
+     ],
+     [
+      "2025-11-11",
+      -64.93
+     ],
+     [
+      "2025-11-12",
+      -55.67
+     ],
+     [
+      "2025-11-13",
+      -29.9
+     ],
+     [
+      "2025-11-14",
+      0.27
+     ],
+     [
+      "2025-11-17",
+      26.08
+     ],
+     [
+      "2025-11-18",
+      20.87
+     ],
+     [
+      "2025-11-19",
+      18.52
+     ],
+     [
+      "2025-11-20",
+      31.13
+     ],
+     [
+      "2025-11-21",
+      46.32
+     ],
+     [
+      "2025-11-25",
+      50.55
+     ],
+     [
+      "2025-11-26",
+      51.21
+     ],
+     [
+      "2025-11-27",
+      51.33
+     ],
+     [
+      "2025-11-28",
+      60.18
+     ],
+     [
+      "2025-12-01",
+      53.8
+     ],
+     [
+      "2025-12-02",
+      37.7
+     ],
+     [
+      "2025-12-03",
+      27.62
+     ],
+     [
+      "2025-12-04",
+      37.68
+     ],
+     [
+      "2025-12-05",
+      40.15
+     ],
+     [
+      "2025-12-08",
+      52.71
+     ],
+     [
+      "2025-12-09",
+      44.07
+     ],
+     [
+      "2025-12-10",
+      37.36
+     ],
+     [
+      "2025-12-11",
+      30.03
+     ],
+     [
+      "2025-12-12",
+      36.41
+     ],
+     [
+      "2025-12-15",
+      39.22
+     ],
+     [
+      "2025-12-16",
+      39.05
+     ],
+     [
+      "2025-12-17",
+      29.01
+     ],
+     [
+      "2025-12-18",
+      40.25
+     ],
+     [
+      "2025-12-19",
+      42.95
+     ],
+     [
+      "2025-12-22",
+      38.91
+     ],
+     [
+      "2025-12-23",
+      41.75
+     ],
+     [
+      "2025-12-24",
+      33.79
+     ],
+     [
+      "2025-12-25",
+      27.05
+     ],
+     [
+      "2025-12-26",
+      25.52
+     ],
+     [
+      "2025-12-29",
+      22.82
+     ],
+     [
+      "2025-12-30",
+      15.88
+     ],
+     [
+      "2026-01-05",
+      6.38
+     ],
+     [
+      "2026-01-06",
+      12.9
+     ],
+     [
+      "2026-01-07",
+      20.05
+     ],
+     [
+      "2026-01-08",
+      33.42
+     ],
+     [
+      "2026-01-09",
+      48.44
+     ],
+     [
+      "2026-01-13",
+      50.52
+     ],
+     [
+      "2026-01-14",
+      45.86
+     ],
+     [
+      "2026-01-15",
+      68.7
+     ],
+     [
+      "2026-01-16",
+      42.78
+     ],
+     [
+      "2026-01-19",
+      25.46
+     ],
+     [
+      "2026-01-20",
+      16.5
+     ],
+     [
+      "2026-01-21",
+      -18.26
+     ],
+     [
+      "2026-01-22",
+      -45.57
+     ],
+     [
+      "2026-01-23",
+      -65.07
+     ],
+     [
+      "2026-01-26",
+      -70.59
+     ],
+     [
+      "2026-01-27",
+      -62.89
+     ],
+     [
+      "2026-01-28",
+      -47.98
+     ],
+     [
+      "2026-01-29",
+      -68.28
+     ],
+     [
+      "2026-01-30",
+      -99.42
+     ],
+     [
+      "2026-02-02",
+      -108.62
+     ],
+     [
+      "2026-02-03",
+      -105.39
+     ],
+     [
+      "2026-02-04",
+      -126.19
+     ],
+     [
+      "2026-02-05",
+      -129.93
+     ],
+     [
+      "2026-02-06",
+      -139.39
+     ],
+     [
+      "2026-02-09",
+      -128.84
+     ],
+     [
+      "2026-02-10",
+      -105.36
+     ],
+     [
+      "2026-02-12",
+      -115.56
+     ],
+     [
+      "2026-02-13",
+      -126.79
+     ],
+     [
+      "2026-02-16",
+      -117.89
+     ],
+     [
+      "2026-02-17",
+      -104.59
+     ],
+     [
+      "2026-02-18",
+      -78.35
+     ],
+     [
+      "2026-02-19",
+      -48.7
+     ],
+     [
+      "2026-02-20",
+      -27.55
+     ],
+     [
+      "2026-02-24",
+      -47.87
+     ],
+     [
+      "2026-02-25",
+      -40.74
+     ],
+     [
+      "2026-02-26",
+      -12.61
+     ],
+     [
+      "2026-02-27",
+      21.89
+     ],
+     [
+      "2026-03-02",
+      33.37
+     ],
+     [
+      "2026-03-03",
+      41.36
+     ],
+     [
+      "2026-03-04",
+      63.94
+     ],
+     [
+      "2026-03-05",
+      83.75
+     ],
+     [
+      "2026-03-06",
+      108.38
+     ],
+     [
+      "2026-03-09",
+      119.68
+     ],
+     [
+      "2026-03-10",
+      120.87
+     ],
+     [
+      "2026-03-11",
+      113.85
+     ],
+     [
+      "2026-03-12",
+      107.36
+     ],
+     [
+      "2026-03-13",
+      80.85
+     ],
+     [
+      "2026-03-16",
+      67.66
+     ],
+     [
+      "2026-03-17",
+      58.35
+     ],
+     [
+      "2026-03-18",
+      54.59
+     ],
+     [
+      "2026-03-19",
+      59.36
+     ],
+     [
+      "2026-03-23",
+      58.61
+     ],
+     [
+      "2026-03-24",
+      62.94
+     ],
+     [
+      "2026-03-25",
+      60.68
+     ],
+     [
+      "2026-03-26",
+      56.53
+     ],
+     [
+      "2026-03-27",
+      54.83
+     ],
+     [
+      "2026-03-30",
+      44.38
+     ],
+     [
+      "2026-03-31",
+      43.55
+     ],
+     [
+      "2026-04-01",
+      55.73
+     ],
+     [
+      "2026-04-02",
+      53.15
+     ],
+     [
+      "2026-04-03",
+      56.45
+     ],
+     [
+      "2026-04-06",
+      58.93
+     ],
+     [
+      "2026-04-07",
+      62.79
+     ],
+     [
+      "2026-04-08",
+      64.12
+     ],
+     [
+      "2026-04-09",
+      57.71
+     ],
+     [
+      "2026-04-10",
+      33.12
+     ],
+     [
+      "2026-04-13",
+      22.09
+     ],
+     [
+      "2026-04-14",
+      32.02
+     ],
+     [
+      "2026-04-15",
+      81.37
+     ],
+     [
+      "2026-04-16",
+      89.65
+     ],
+     [
+      "2026-04-17",
+      110.17
+     ],
+     [
+      "2026-04-20",
+      121.53
+     ],
+     [
+      "2026-04-21",
+      124.81
+     ],
+     [
+      "2026-04-22",
+      135.51
+     ],
+     [
+      "2026-04-23",
+      96.46
+     ],
+     [
+      "2026-04-24",
+      61.88
+     ],
+     [
+      "2026-04-27",
+      16.7
+     ],
+     [
+      "2026-04-28",
+      -3.49
+     ],
+     [
+      "2026-04-30",
+      -29.29
+     ],
+     [
+      "2026-05-01",
+      -43.85
+     ],
+     [
+      "2026-05-07",
+      -49.93
+     ],
+     [
+      "2026-05-08",
+      -43.04
+     ],
+     [
+      "2026-05-11",
+      -38.7
+     ],
+     [
+      "2026-05-12",
+      -50.0
+     ],
+     [
+      "2026-05-13",
+      -46.92
+     ],
+     [
+      "2026-05-14",
+      -54.4
+     ],
+     [
+      "2026-05-15",
+      -49.8
+     ],
+     [
+      "2026-05-18",
+      -32.2
+     ],
+     [
+      "2026-05-19",
+      7.69
+     ],
+     [
+      "2026-05-20",
+      13.36
+     ],
+     [
+      "2026-05-21",
+      19.54
+     ],
+     [
+      "2026-05-22",
+      36.2
+     ],
+     [
+      "2026-05-25",
+      38.36
+     ],
+     [
+      "2026-05-26",
+      36.09
+     ],
+     [
+      "2026-05-27",
+      40.4
+     ],
+     [
+      "2026-05-28",
+      16.47
+     ],
+     [
+      "2026-05-29",
+      10.27
+     ],
+     [
+      "2026-06-01",
+      32.13
+     ],
+     [
+      "2026-06-02",
+      40.06
+     ],
+     [
+      "2026-06-03",
+      37.98
+     ],
+     [
+      "2026-06-04",
+      27.22
+     ],
+     [
+      "2026-06-05",
+      24.74
+     ],
+     [
+      "2026-06-08",
+      19.66
+     ],
+     [
+      "2026-06-09",
+      9.36
+     ],
+     [
+      "2026-06-10",
+      -3.26
+     ],
+     [
+      "2026-06-11",
+      -17.37
+     ],
+     [
+      "2026-06-12",
+      -40.55
+     ],
+     [
+      "2026-06-15",
+      -58.42
+     ],
+     [
+      "2026-06-16",
+      -65.07
+     ],
+     [
+      "2026-06-17",
+      -63.6
+     ],
+     [
+      "2026-06-18",
+      -47.99
+     ],
+     [
+      "2026-06-19",
+      -58.68
+     ],
+     [
+      "2026-06-22",
+      -61.86
+     ],
+     [
+      "2026-06-23",
+      -68.08
+     ],
+     [
+      "2026-06-24",
+      -59.89
+     ],
+     [
+      "2026-06-25",
+      -51.45
+     ],
+     [
+      "2026-06-26",
+      -42.22
+     ],
+     [
+      "2026-06-29",
+      -0.21
+     ],
+     [
+      "2026-06-30",
+      23.84
+     ],
+     [
+      "2026-07-01",
+      53.43
+     ],
+     [
+      "2026-07-02",
+      85.78
+     ],
+     [
+      "2026-07-03",
+      108.34
+     ],
+     [
+      "2026-07-06",
+      125.05
+     ],
+     [
+      "2026-07-07",
+      133.29
+     ],
+     [
+      "2026-07-08",
+      119.16
+     ],
+     [
+      "2026-07-09",
+      98.49
+     ],
+     [
+      "2026-07-10",
+      79.82
+     ],
+     [
+      "2026-07-13",
+      63.0
+     ],
+     [
+      "2026-07-14",
+      55.61
+     ],
+     [
+      "2026-07-15",
+      15.98
+     ],
+     [
+      "2026-07-16",
+      11.59
+     ],
+     [
+      "2026-07-17",
+      -7.07
+     ],
+     [
+      "2026-07-21",
+      -27.04
+     ],
+     [
+      "2026-07-22",
+      -55.67
+     ],
+     [
+      "2026-07-23",
+      -72.32
+     ],
+     [
+      "2026-07-24",
+      -62.44
+     ],
+     [
+      "2026-07-27",
+      -17.67
+     ],
+     [
+      "2026-07-28",
+      14.5
+     ],
+     [
+      "2026-07-29",
+      45.99
+     ],
+     [
+      "2026-07-30",
+      56.34
+     ],
+     [
+      "2026-07-31",
+      45.56
+     ],
+     [
+      "2026-08-03",
+      24.61
+     ],
+     [
+      "2026-08-04",
+      -3.45
+     ],
+     [
+      "2026-08-05",
+      -13.06
+     ],
+     [
+      "2026-08-06",
+      -15.98
+     ],
+     [
+      "2026-08-07",
+      -14.4
+     ],
+     [
+      "2026-08-10",
+      2.39
+     ],
+     [
+      "2026-08-12",
+      9.66
+     ],
+     [
+      "2026-08-13",
+      10.15
+     ],
+     [
+      "2026-08-14",
+      28.57
+     ],
+     [
+      "2026-08-17",
+      17.95
+     ],
+     [
+      "2026-08-18",
+      5.9
+     ],
+     [
+      "2026-08-19",
+      -0.6
+     ],
+     [
+      "2026-08-20",
+      11.32
+     ],
+     [
+      "2026-08-21",
+      1.09
+     ],
+     [
+      "2026-08-24",
+      11.96
+     ],
+     [
+      "2026-08-25",
+      16.64
+     ],
+     [
+      "2026-08-26",
+      13.7
+     ],
+     [
+      "2026-08-27",
+      20.67
+     ],
+     [
+      "2026-08-28",
+      31.96
+     ],
+     [
+      "2026-08-31",
+      38.92
+     ],
+     [
+      "2026-09-01",
+      35.38
+     ],
+     [
+      "2026-09-02",
+      12.07
+     ],
+     [
+      "2026-09-03",
+      -7.62
+     ],
+     [
+      "2026-09-04",
+      -24.76
+     ],
+     [
+      "2026-09-07",
+      -63.85
+     ],
+     [
+      "2026-09-08",
+      -91.97
+     ],
+     [
+      "2026-09-09",
+      -114.86
+     ],
+     [
+      "2026-09-10",
+      -115.08
+     ],
+     [
+      "2026-09-11",
+      -113.57
+     ],
+     [
+      "2026-09-14",
+      -85.72
+     ],
+     [
+      "2026-09-15",
+      -64.0
+     ],
+     [
+      "2026-09-16",
+      -57.07
+     ],
+     [
+      "2026-09-17",
+      -33.87
+     ],
+     [
+      "2026-09-18",
+      -12.78
+     ],
+     [
+      "2026-09-24",
+      -16.6
+     ],
+     [
+      "2026-09-25",
+      -19.03
+     ],
+     [
+      "2026-09-28",
+      -23.02
+     ],
+     [
+      "2026-09-29",
+      -27.67
+     ],
+     [
+      "2026-09-30",
+      -24.01
+     ],
+     [
+      "2026-10-01",
+      -25.28
+     ],
+     [
+      "2026-10-02",
+      4.42
+     ],
+     [
+      "2026-10-05",
+      16.81
+     ],
+     [
+      "2026-10-06",
+      33.48
+     ],
+     [
+      "2026-10-07",
+      43.22
+     ],
+     [
+      "2026-10-08",
+      54.75
+     ],
+     [
+      "2026-10-09",
+      83.66
+     ],
+     [
+      "2026-10-13",
+      85.77
+     ],
+     [
+      "2026-10-14",
+      88.38
+     ],
+     [
+      "2026-10-15",
+      83.37
+     ],
+     [
+      "2026-10-16",
+      169.71
+     ],
+     [
+      "2026-10-19",
+      247.45
+     ],
+     [
+      "2026-10-20",
+      287.07
+     ],
+     [
+      "2026-10-21",
+      304.85
+     ],
+     [
+      "2026-10-22",
+      322.33
+     ],
+     [
+      "2026-10-23",
+      315.29
+     ],
+     [
+      "2026-10-26",
+      288.73
+     ],
+     [
+      "2026-10-27",
+      258.62
+     ],
+     [
+      "2026-10-28",
+      200.49
+     ],
+     [
+      "2026-10-29",
+      165.36
+     ],
+     [
+      "2026-10-30",
+      139.39
+     ],
+     [
+      "2026-11-02",
+      95.34
+     ],
+     [
+      "2026-11-04",
+      52.88
+     ],
+     [
+      "2026-11-05",
+      57.57
+     ],
+     [
+      "2026-11-06",
+      14.84
+     ],
+     [
+      "2026-11-09",
+      44.48
+     ],
+     [
+      "2026-11-10",
+      29.76
+     ],
+     [
+      "2026-11-11",
+      -18.13
+     ],
+     [
+      "2026-11-12",
+      -75.65
+     ],
+     [
+      "2026-11-13",
+      -73.78
+     ],
+     [
+      "2026-11-16",
+      -56.97
+     ],
+     [
+      "2026-11-17",
+      -42.7
+     ]
+    ]
+   }
+  },
+  "positioning": {
+   "ok": false,
+   "text": "需給（信用残・空売り）: 材料なし（信用残・空売りのデータを集めていない）",
+   "notes": []
+  }
+ },
+ "outlook": {
+  "path": "market/report/2026-11-16_outlook.md",
+  "week": "2026-11-16",
+  "age_days": 1,
+  "stale": false,
+  "overall": "警戒",
+  "summary": "市場のストレスが高い（20日実現変動率32.2%、1年高値比−15.5%）。前回から変更なし",
+  "rows": {
+   "短期": {
+    "judgment": "警戒",
+    "scenario": "実現変動率高く、日銀12月会合（12-18）での利上げ観測が上値を抑える環境が継続",
+    "downside": "10月CPIが加速し12月利上げが確実視、円高・株安",
+    "watch": "全国CPI（11-20）、東京CPI（11-27）、日銀会合（12-18）"
+   },
+   "中期": {
+    "judgment": "注意",
+    "scenario": "日銀が段階的に利上げを続け、金融環境が引き締め方向に移行する前提で進む",
+    "downside": "日銀の利上げペース加速で金融環境が急速に引き締まる",
+    "watch": "日銀会合（12-18、1-22）、春闘2027の動向"
+   },
+   "長期": {
+    "judgment": "平常",
+    "scenario": "物価・賃金の好循環が定着し、金利正常化の中でも経済成長が維持される前提",
+    "downside": "海外景気悪化・原油高継続で個人消費の回復が腰折れ",
+    "watch": "2027年春闘の賃上げ率、2027年度政府予算案（12月下旬）"
+   }
+  }
+ },
+ "review": "次回決算発表予定日: 2026-12-下旬〜2027-01-上旬（FY2027 Q3）",
+ "step1": {
+  "grade": "B",
+  "pending": false,
+  "why": "A の条件を満たさない: 勝てる理由が明確、モートが狭い以上、SWOT が Yes",
+  "failed": [
+   "勝てる理由が明確",
+   "モートが狭い以上",
+   "SWOT が Yes"
+  ],
+  "rows": [
+   {
+    "condition": "業界の魅力度が中以上",
+    "value": "高",
+    "source": "1-1 ファイブフォース",
+    "ok": true
+   },
+   {
+    "condition": "勝てる理由が明確",
+    "value": "あいまい",
+    "source": "1-2 3C",
+    "ok": false
+   },
+   {
+    "condition": "モートが狭い以上",
+    "value": "なし",
+    "source": "1-3 モート",
+    "ok": false
+   },
+   {
+    "condition": "SWOT が Yes",
+    "value": "条件付き",
+    "source": "1-4 SWOT",
+    "ok": false
+   }
+  ]
+ },
+ "step2": {
+  "grade": "A",
+  "pending": false,
+  "score": 1.0,
+  "why": "平均点 +1.00（良好 +1・普通 0・懸念 −1。A は +0.5 以上、C は -0.25 以下）",
+  "rows": [
+   {
+    "condition": "収益性",
+    "value": "良好",
+    "source": "2-1 収益性分析",
+    "ok": true
+   },
+   {
+    "condition": "成長性",
+    "value": "良好",
+    "source": "2-2 成長性分析",
+    "ok": true
+   },
+   {
+    "condition": "安全性",
+    "value": "良好",
+    "source": "2-3 安全性分析",
+    "ok": true
+   },
+   {
+    "condition": "キャッシュフロー",
+    "value": "良好",
+    "source": "2-4 キャッシュフロー分析",
+    "ok": true
+   },
+   {
+    "condition": "STEP 1 との整合性",
+    "value": "食い違いなし",
+    "source": "整合性チェック",
+    "ok": true
+   },
+   {
+    "condition": "深刻な赤信号が無い",
+    "value": "なし",
+    "source": "キャッシュフロー・安全性",
+    "ok": true
+   }
+  ],
+  "mismatch": [],
+  "flags": [],
+  "cautions": []
+ },
+ "step3": {
+  "verdict": "割高",
+  "note": ""
+ },
+ "horizons": {
+  "short": {
+   "score": -0.25,
+   "rows": [
+    {
+     "key": "market",
+     "label": "地合い",
+     "weight": 25,
+     "score": -1.0,
+     "value": "警戒",
+     "reason": "実現変動率高く、日銀12月会合（12-18）での利上げ観測が上値を抑える環境が継続",
+     "source": "地合いレポート（2026-11-16 の週）の短期の見通し",
+     "pending": false,
+     "contribution": -0.25
+    },
+    {
+     "key": "price",
+     "label": "株価のテクニカル（トレンド・勢い・位置）",
+     "weight": 25,
+     "score": 0.0,
+     "value": "上昇トレンド。上昇の並び（株価 > 13週線 > 26週線 > 52週線）、26週線の傾き +15.4%（20営業日前比）、RSI 68（中立）、MACD のヒストグラム 方向感なし、52週レンジの位置 100%、26週線との差 +67.5%",
+     "reason": "トレンド（移動平均の並びと26週線の傾き ±1）・勢い（RSI 30 以下 +1・70 以上 −1、MACD の向きで ±0.5）・位置（52週レンジ 33% 以下 +1・67% 以上 −1、26週線との差 ±15% 超 −1）の平均",
+     "source": "株価のテクニカル（日々の株価）",
+     "pending": false,
+     "contribution": 0.0
+    },
+    {
+     "key": "progress",
+     "label": "直近の決算の進捗",
+     "weight": 20,
+     "score": 0.0,
+     "value": "第2四半期 46.1%（前年同期 45.7%）",
+     "reason": "前年同期の 110% 以上は +1、90% 未満は −1",
+     "source": "成長性分析（決算短信の四半期の進捗）",
+     "pending": false,
+     "contribution": 0.0
+    },
+    {
+     "key": "valuation",
+     "label": "株価の割安さ（STEP 3）",
+     "weight": 20,
+     "score": -0.5,
+     "value": "割高（4指標の平均点 -0.50）",
+     "reason": "PER 割高／PBR 妥当／PEG 妥当（悲観ケース：2.54倍）／EV/EBITDA 割高／STEP 3 割高（平均点：-0.50）",
+     "source": "3 バリュエーション分析（2026-11-17）",
+     "pending": false,
+     "contribution": -0.1
+    },
+    {
+     "key": "safety",
+     "label": "安全性",
+     "weight": 10,
+     "score": 1.0,
+     "value": "良好",
+     "reason": "3指標とも目安または同業平均をクリアし、悪化傾向なし",
+     "source": "2-3 安全性分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.1
+    }
+   ],
+   "good": [
+    {
+     "key": "safety",
+     "label": "安全性",
+     "weight": 10,
+     "score": 1.0,
+     "value": "良好",
+     "reason": "3指標とも目安または同業平均をクリアし、悪化傾向なし",
+     "source": "2-3 安全性分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.1
+    }
+   ],
+   "bad": [
+    {
+     "key": "market",
+     "label": "地合い",
+     "weight": 25,
+     "score": -1.0,
+     "value": "警戒",
+     "reason": "実現変動率高く、日銀12月会合（12-18）での利上げ観測が上値を抑える環境が継続",
+     "source": "地合いレポート（2026-11-16 の週）の短期の見通し",
+     "pending": false,
+     "contribution": -0.25
+    },
+    {
+     "key": "valuation",
+     "label": "株価の割安さ（STEP 3）",
+     "weight": 20,
+     "score": -0.5,
+     "value": "割高（4指標の平均点 -0.50）",
+     "reason": "PER 割高／PBR 妥当／PEG 妥当（悲観ケース：2.54倍）／EV/EBITDA 割高／STEP 3 割高（平均点：-0.50）",
+     "source": "3 バリュエーション分析（2026-11-17）",
+     "pending": false,
+     "contribution": -0.1
+    }
+   ],
+   "knockout": [],
+   "provisional": null,
+   "cautions": [],
+   "unknown": [],
+   "coverage": 1.0,
+   "verdict": "見送り",
+   "why": "重み付けの点数 -0.25（+0.25 以上 投資検討、-0.25 以下 見送り。ウォッチまであと +0.00（-0.25 を超えればウォッチ））。プラス: 安全性／マイナス: 地合い・株価の割安さ（STEP 3）",
+   "sensitivity": {
+    "to_up": 0.5,
+    "to_down": null,
+    "nearest": {
+     "to": "ウォッチ",
+     "gap": 0.0,
+     "text": "ウォッチまであと +0.00（-0.25 を超えればウォッチ）"
+    },
+    "movers": [
+     {
+      "key": "valuation",
+      "label": "株価の割安さ（STEP 3）",
+      "direction": "1段良くなれば",
+      "verdict": "ウォッチ",
+      "score": -0.15,
+      "to": 0.0
+     },
+     {
+      "key": "price",
+      "label": "株価のテクニカル（トレンド・勢い・位置）",
+      "direction": "1段良くなれば",
+      "verdict": "ウォッチ",
+      "score": 0.0,
+      "to": 1.0
+     },
+     {
+      "key": "progress",
+      "label": "直近の決算の進捗",
+      "direction": "1段良くなれば",
+      "verdict": "ウォッチ",
+      "score": -0.05,
+      "to": 1.0
+     },
+     {
+      "key": "market",
+      "label": "地合い",
+      "direction": "1段良くなれば",
+      "verdict": "ウォッチ",
+      "score": 0.0,
+      "to": 0.0
+     }
+    ]
+   }
+  },
+  "mid": {
+   "score": 0.3,
+   "rows": [
+    {
+     "key": "market",
+     "label": "地合い",
+     "weight": 10,
+     "score": 0.0,
+     "value": "注意",
+     "reason": "日銀が段階的に利上げを続け、金融環境が引き締め方向に移行する前提で進む",
+     "source": "地合いレポート（2026-11-16 の週）の中期の見通し",
+     "pending": false,
+     "contribution": 0.0
+    },
+    {
+     "key": "price",
+     "label": "株価のテクニカル（トレンド・勢い・位置）",
+     "weight": 10,
+     "score": 0.0,
+     "value": "上昇トレンド。上昇の並び（株価 > 13週線 > 26週線 > 52週線）、26週線の傾き +15.4%（20営業日前比）、RSI 68（中立）、MACD のヒストグラム 方向感なし、52週レンジの位置 100%、26週線との差 +67.5%",
+     "reason": "トレンド（移動平均の並びと26週線の傾き ±1）・勢い（RSI 30 以下 +1・70 以上 −1、MACD の向きで ±0.5）・位置（52週レンジ 33% 以下 +1・67% 以上 −1、26週線との差 ±15% 超 −1）の平均",
+     "source": "株価のテクニカル（日々の株価）",
+     "pending": false,
+     "contribution": 0.0
+    },
+    {
+     "key": "progress",
+     "label": "直近の決算の進捗",
+     "weight": 15,
+     "score": 0.0,
+     "value": "第2四半期 46.1%（前年同期 45.7%）",
+     "reason": "前年同期の 110% 以上は +1、90% 未満は −1",
+     "source": "成長性分析（決算短信の四半期の進捗）",
+     "pending": false,
+     "contribution": 0.0
+    },
+    {
+     "key": "valuation",
+     "label": "株価の割安さ（STEP 3）",
+     "weight": 20,
+     "score": -0.5,
+     "value": "割高（4指標の平均点 -0.50）",
+     "reason": "PER 割高／PBR 妥当／PEG 妥当（悲観ケース：2.54倍）／EV/EBITDA 割高／STEP 3 割高（平均点：-0.50）",
+     "source": "3 バリュエーション分析（2026-11-17）",
+     "pending": false,
+     "contribution": -0.1
+    },
+    {
+     "key": "growth",
+     "label": "成長性",
+     "weight": 15,
+     "score": 1.0,
+     "value": "良好",
+     "reason": "「成長の水準」は高成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））。ただし成長投資が良好（成長投資は良好: 売上に対する成長投資 -0.1%（2024-02〜2026-02、以前並み）、効率（増分 ROIC）は良好）なので一段上げた（差し引きで良好）",
+     "source": "2-2 成長性分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.15
+    },
+    {
+     "key": "profitability",
+     "label": "収益性",
+     "weight": 10,
+     "score": 1.0,
+     "value": "良好",
+     "reason": "「ROE の水準と安定性」が良好、営業利益率が同業平均以上、ROE の源泉が本業由来",
+     "source": "2-1 収益性分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.1
+    },
+    {
+     "key": "cash_flow",
+     "label": "キャッシュフロー",
+     "weight": 10,
+     "score": 1.0,
+     "value": "良好",
+     "reason": "「営業CF の安定性」〜4がすべて良好で、株主還元は問題なし",
+     "source": "2-4 キャッシュフロー分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.1
+    },
+    {
+     "key": "safety",
+     "label": "安全性",
+     "weight": 5,
+     "score": 1.0,
+     "value": "良好",
+     "reason": "3指標とも目安または同業平均をクリアし、悪化傾向なし",
+     "source": "2-3 安全性分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.05
+    },
+    {
+     "key": "swot",
+     "label": "強みで脅威に対抗できるか（SWOT）",
+     "weight": 5,
+     "score": 0.0,
+     "value": "条件付き",
+     "reason": "国内最大規模の案件実績（案件数YoY+20.7%）とCxOリレーションは採用時の知名度・ブランドとして機能しうるが、市場全体での人材争奪激化を直接打ち消せない。ただし現中計に採用・育成強化の施策が明示され、コンサルタント数がFY2024: 3,837名→FY2025: 5,590名へと計画（4,000名）を超過達成しており、施策が継続して機能すれば採用競争に耐えられる",
+     "source": "1-4 SWOT分析（2026-11-13）",
+     "pending": false,
+     "contribution": 0.0
+    }
+   ],
+   "good": [
+    {
+     "key": "growth",
+     "label": "成長性",
+     "weight": 15,
+     "score": 1.0,
+     "value": "良好",
+     "reason": "「成長の水準」は高成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））。ただし成長投資が良好（成長投資は良好: 売上に対する成長投資 -0.1%（2024-02〜2026-02、以前並み）、効率（増分 ROIC）は良好）なので一段上げた（差し引きで良好）",
+     "source": "2-2 成長性分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.15
+    },
+    {
+     "key": "profitability",
+     "label": "収益性",
+     "weight": 10,
+     "score": 1.0,
+     "value": "良好",
+     "reason": "「ROE の水準と安定性」が良好、営業利益率が同業平均以上、ROE の源泉が本業由来",
+     "source": "2-1 収益性分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.1
+    },
+    {
+     "key": "cash_flow",
+     "label": "キャッシュフロー",
+     "weight": 10,
+     "score": 1.0,
+     "value": "良好",
+     "reason": "「営業CF の安定性」〜4がすべて良好で、株主還元は問題なし",
+     "source": "2-4 キャッシュフロー分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.1
+    },
+    {
+     "key": "safety",
+     "label": "安全性",
+     "weight": 5,
+     "score": 1.0,
+     "value": "良好",
+     "reason": "3指標とも目安または同業平均をクリアし、悪化傾向なし",
+     "source": "2-3 安全性分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.05
+    }
+   ],
+   "bad": [
+    {
+     "key": "valuation",
+     "label": "株価の割安さ（STEP 3）",
+     "weight": 20,
+     "score": -0.5,
+     "value": "割高（4指標の平均点 -0.50）",
+     "reason": "PER 割高／PBR 妥当／PEG 妥当（悲観ケース：2.54倍）／EV/EBITDA 割高／STEP 3 割高（平均点：-0.50）",
+     "source": "3 バリュエーション分析（2026-11-17）",
+     "pending": false,
+     "contribution": -0.1
+    }
+   ],
+   "knockout": [],
+   "provisional": null,
+   "cautions": [],
+   "unknown": [],
+   "coverage": 1.0,
+   "verdict": "投資検討",
+   "why": "重み付けの点数 +0.30（+0.25 以上 投資検討、-0.25 以下 見送り。ウォッチまであと -0.05（+0.25 を下回ればウォッチ））。プラス: 成長性・収益性／マイナス: 株価の割安さ（STEP 3）",
+   "sensitivity": {
+    "to_up": null,
+    "to_down": 0.55,
+    "nearest": {
+     "to": "ウォッチ",
+     "gap": -0.05,
+     "text": "ウォッチまであと -0.05（+0.25 を下回ればウォッチ）"
+    },
+    "movers": [
+     {
+      "key": "growth",
+      "label": "成長性",
+      "direction": "1段悪くなれば",
+      "verdict": "ウォッチ",
+      "score": 0.15,
+      "to": 0.0
+     },
+     {
+      "key": "profitability",
+      "label": "収益性",
+      "direction": "1段悪くなれば",
+      "verdict": "ウォッチ",
+      "score": 0.2,
+      "to": 0.0
+     },
+     {
+      "key": "cash_flow",
+      "label": "キャッシュフロー",
+      "direction": "1段悪くなれば",
+      "verdict": "ウォッチ",
+      "score": 0.2,
+      "to": 0.0
+     },
+     {
+      "key": "valuation",
+      "label": "株価の割安さ（STEP 3）",
+      "direction": "1段悪くなれば",
+      "verdict": "ウォッチ",
+      "score": 0.2,
+      "to": -1.0
+     },
+     {
+      "key": "price",
+      "label": "株価のテクニカル（トレンド・勢い・位置）",
+      "direction": "1段悪くなれば",
+      "verdict": "ウォッチ",
+      "score": 0.2,
+      "to": -1.0
+     },
+     {
+      "key": "progress",
+      "label": "直近の決算の進捗",
+      "direction": "1段悪くなれば",
+      "verdict": "ウォッチ",
+      "score": 0.15,
+      "to": -1.0
+     },
+     {
+      "key": "market",
+      "label": "地合い",
+      "direction": "1段悪くなれば",
+      "verdict": "ウォッチ",
+      "score": 0.2,
+      "to": -1.0
+     }
+    ]
+   }
+  },
+  "long": {
+   "score": 0.475,
+   "rows": [
+    {
+     "key": "market",
+     "label": "地合い",
+     "weight": 5,
+     "score": 1.0,
+     "value": "平常",
+     "reason": "物価・賃金の好循環が定着し、金利正常化の中でも経済成長が維持される前提",
+     "source": "地合いレポート（2026-11-16 の週）の長期の見通し",
+     "pending": false,
+     "contribution": 0.05
+    },
+    {
+     "key": "valuation",
+     "label": "株価の割安さ（STEP 3）",
+     "weight": 15,
+     "score": -0.5,
+     "value": "割高（4指標の平均点 -0.50）",
+     "reason": "PER 割高／PBR 妥当／PEG 妥当（悲観ケース：2.54倍）／EV/EBITDA 割高／STEP 3 割高（平均点：-0.50）",
+     "source": "3 バリュエーション分析（2026-11-17）",
+     "pending": false,
+     "contribution": -0.075
+    },
+    {
+     "key": "growth",
+     "label": "成長性",
+     "weight": 20,
+     "score": 1.0,
+     "value": "良好",
+     "reason": "「成長の水準」は高成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））。ただし成長投資が良好（成長投資は良好: 売上に対する成長投資 -0.1%（2024-02〜2026-02、以前並み）、効率（増分 ROIC）は良好）なので一段上げた（差し引きで良好）",
+     "source": "2-2 成長性分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.2
+    },
+    {
+     "key": "profitability",
+     "label": "収益性",
+     "weight": 10,
+     "score": 1.0,
+     "value": "良好",
+     "reason": "「ROE の水準と安定性」が良好、営業利益率が同業平均以上、ROE の源泉が本業由来",
+     "source": "2-1 収益性分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.1
+    },
+    {
+     "key": "cash_flow",
+     "label": "キャッシュフロー",
+     "weight": 5,
+     "score": 1.0,
+     "value": "良好",
+     "reason": "「営業CF の安定性」〜4がすべて良好で、株主還元は問題なし",
+     "source": "2-4 キャッシュフロー分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.05
+    },
+    {
+     "key": "safety",
+     "label": "安全性",
+     "weight": 5,
+     "score": 1.0,
+     "value": "良好",
+     "reason": "3指標とも目安または同業平均をクリアし、悪化傾向なし",
+     "source": "2-3 安全性分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.05
+    },
+    {
+     "key": "five_forces",
+     "label": "業界の魅力度（ファイブフォース）",
+     "weight": 10,
+     "score": 1.0,
+     "value": "高",
+     "reason": "",
+     "source": "1-1 ファイブフォース分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.1
+    },
+    {
+     "key": "three_c",
+     "label": "勝てる理由（3C）",
+     "weight": 15,
+     "score": 0.0,
+     "value": "あいまい",
+     "reason": "最重要KBF（提案品質・実績（過去実績・課題適合））で自社と競合を比べる材料が無いため同程度とみなし、競合との比較「同等」で判定（材料不足のため保守的に判定。明確にはしない）（シェアの数値が無く、競合との比較は規則上「優位」に届かないため明確にはならない。証拠から否定されたのではない）",
+     "source": "1-2 3C分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.0
+    },
+    {
+     "key": "moat",
+     "label": "強みの持続性（モート）",
+     "weight": 10,
+     "score": 0.0,
+     "value": "なし（超過収益は弱い。それを守る源泉は特定できない）",
+     "reason": "超過収益はある（弱い）が、それを守る「強」「中」の源泉が無い（業態に共通する収益性や一時的な要因の可能性）（資本コストを上回る利益はあるため、モートが無いことは点数では中立に数えた。マイナスにするのは超過収益そのものが無いとき）",
+     "source": "1-3 モート分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.0
+    },
+    {
+     "key": "swot",
+     "label": "強みで脅威に対抗できるか（SWOT）",
+     "weight": 5,
+     "score": 0.0,
+     "value": "条件付き",
+     "reason": "国内最大規模の案件実績（案件数YoY+20.7%）とCxOリレーションは採用時の知名度・ブランドとして機能しうるが、市場全体での人材争奪激化を直接打ち消せない。ただし現中計に採用・育成強化の施策が明示され、コンサルタント数がFY2024: 3,837名→FY2025: 5,590名へと計画（4,000名）を超過達成しており、施策が継続して機能すれば採用競争に耐えられる",
+     "source": "1-4 SWOT分析（2026-11-13）",
+     "pending": false,
+     "contribution": 0.0
+    }
+   ],
+   "good": [
+    {
+     "key": "growth",
+     "label": "成長性",
+     "weight": 20,
+     "score": 1.0,
+     "value": "良好",
+     "reason": "「成長の水準」は高成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））。ただし成長投資が良好（成長投資は良好: 売上に対する成長投資 -0.1%（2024-02〜2026-02、以前並み）、効率（増分 ROIC）は良好）なので一段上げた（差し引きで良好）",
+     "source": "2-2 成長性分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.2
+    },
+    {
+     "key": "profitability",
+     "label": "収益性",
+     "weight": 10,
+     "score": 1.0,
+     "value": "良好",
+     "reason": "「ROE の水準と安定性」が良好、営業利益率が同業平均以上、ROE の源泉が本業由来",
+     "source": "2-1 収益性分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.1
+    },
+    {
+     "key": "five_forces",
+     "label": "業界の魅力度（ファイブフォース）",
+     "weight": 10,
+     "score": 1.0,
+     "value": "高",
+     "reason": "",
+     "source": "1-1 ファイブフォース分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.1
+    },
+    {
+     "key": "market",
+     "label": "地合い",
+     "weight": 5,
+     "score": 1.0,
+     "value": "平常",
+     "reason": "物価・賃金の好循環が定着し、金利正常化の中でも経済成長が維持される前提",
+     "source": "地合いレポート（2026-11-16 の週）の長期の見通し",
+     "pending": false,
+     "contribution": 0.05
+    },
+    {
+     "key": "cash_flow",
+     "label": "キャッシュフロー",
+     "weight": 5,
+     "score": 1.0,
+     "value": "良好",
+     "reason": "「営業CF の安定性」〜4がすべて良好で、株主還元は問題なし",
+     "source": "2-4 キャッシュフロー分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.05
+    },
+    {
+     "key": "safety",
+     "label": "安全性",
+     "weight": 5,
+     "score": 1.0,
+     "value": "良好",
+     "reason": "3指標とも目安または同業平均をクリアし、悪化傾向なし",
+     "source": "2-3 安全性分析（2026-11-17）",
+     "pending": false,
+     "contribution": 0.05
+    }
+   ],
+   "bad": [
+    {
+     "key": "valuation",
+     "label": "株価の割安さ（STEP 3）",
+     "weight": 15,
+     "score": -0.5,
+     "value": "割高（4指標の平均点 -0.50）",
+     "reason": "PER 割高／PBR 妥当／PEG 妥当（悲観ケース：2.54倍）／EV/EBITDA 割高／STEP 3 割高（平均点：-0.50）",
+     "source": "3 バリュエーション分析（2026-11-17）",
+     "pending": false,
+     "contribution": -0.075
+    }
+   ],
+   "knockout": [],
+   "provisional": null,
+   "cautions": [],
+   "unknown": [],
+   "coverage": 1.0,
+   "verdict": "投資検討",
+   "why": "重み付けの点数 +0.47（+0.25 以上 投資検討、-0.25 以下 見送り。ウォッチまであと -0.23（+0.25 を下回ればウォッチ））。プラス: 成長性・収益性／マイナス: 株価の割安さ（STEP 3）",
+   "sensitivity": {
+    "to_up": null,
+    "to_down": 0.725,
+    "nearest": {
+     "to": "ウォッチ",
+     "gap": -0.225,
+     "text": "ウォッチまであと -0.23（+0.25 を下回ればウォッチ）"
+    },
+    "movers": []
+   }
+  }
+ },
+ "matrix": {
+  "verdict": "見送り",
+  "note": "",
+  "why": "STEP 1・2 が B を含む、STEP 3 が割高（判定マトリクス）",
+  "disagree": "判定マトリクスは見送りだが、長期の判定は投資検討（重み付けの点数 +0.47）。マトリクスは STEP 1・2・3 の3つの総合だけを見るが、長期の判定は各分析の良い点・悪い点を重みで足し合わせるため、片方の総合が低くても他の強みで補われることがある。レポートの判定は長期の判定を使う"
+ },
+ "gaps": [
+  {
+   "label": "ファイブフォース",
+   "gap": "知的財産（特許件数）: 自社・競合とも raw に無い。次回収集時に有価証券報告書の知的財産の節を確認する"
+  },
+  {
+   "label": "ファイブフォース",
+   "gap": "新規参入の具体的社名（新興日系ファーム複数社）: 有料記事のため確認できず。公開情報で社名が確認できれば参入例の確度が上がる"
+  },
+  {
+   "label": "ファイブフォース",
+   "gap": "ベイカレントの同市場シェア数値: IDC・矢野経済研究所等の公表資料に記載なし"
+  },
+  {
+   "label": "ファイブフォース",
+   "gap": "業界全体の営業利益率の複数年推移（3年以上の一次データ）: 取得不可"
+  },
+  {
+   "label": "3C",
+   "gap": "提案品質・実績（KBF1）: ベイカレントの顧客継続率・顧客満足度指標（リピート率・NSI等）が非開示。開示があれば最重要KBFでの比較が可能になり判定が「明確」に変わる可能性がある。次に取りにいく: 決算説明会の質疑応答・IR資料（ 担当: ）"
+  },
+  {
+   "label": "3C",
+   "gap": "人材の質（KBF2）: ベイカレントの第三者評価・顧客推薦指数等が非開示。次に取りにいく: 同上"
+  },
+  {
+   "label": "3C",
+   "gap": "市場シェア: 両社のシェア数値なし。次に取りにいく: 矢野経済研究所・IDCの有料レポート（二次情報。WebSearch では取得不可）"
+  },
+  {
+   "label": "モート",
+   "gap": "事業概要: 知的財産（特許の件数）: raw に無い"
+  },
+  {
+   "label": "モート",
+   "gap": "競合: 知的財産（特許の件数）: raw に無い"
+  },
+  {
+   "label": "モート",
+   "gap": "シェアの推移: 不明（業界のシェアの時系列が無い）"
+  },
+  {
+   "label": "SWOT",
+   "gap": "中計: 中期経営計画に代わる開示: raw に無い"
+  },
+  {
+   "label": "SWOT",
+   "gap": "W2: 影響度が不明"
+  }
+ ],
+ "steps": [
+  {
+   "key": "five_forces",
+   "skill": "five-forces",
+   "label": "ファイブフォース",
+   "step": "1-1",
+   "result": "fresh",
+   "reason": "有効期限 2027-11-17 まで有効（再分析しない）",
+   "date": "2026-11-17",
+   "verdict": "高"
+  },
+  {
+   "key": "three_c",
+   "skill": "three-c",
+   "label": "3C",
+   "step": "1-2",
+   "result": "fresh",
+   "reason": "有効期限 2027-11-17 まで有効（再分析しない）",
+   "date": "2026-11-17",
+   "verdict": "あいまい"
+  },
+  {
+   "key": "moat",
+   "skill": "moat",
+   "label": "モート",
+   "step": "1-3",
+   "result": "fresh",
+   "reason": "有効期限 2027-11-17 まで有効（再分析しない）",
+   "date": "2026-11-17",
+   "verdict": "なし"
+  },
+  {
+   "key": "swot",
+   "skill": "swot",
+   "label": "SWOT",
+   "step": "1-4",
+   "result": "fresh",
+   "reason": "有効期限 2027-11-13 まで有効（再分析しない）",
+   "date": "2026-11-13",
+   "verdict": "条件付き"
+  },
+  {
+   "key": "profitability",
+   "skill": "profitability",
+   "label": "収益性",
+   "step": "2-1",
+   "result": "fresh",
+   "reason": "有効期限 2027-06-05 まで有効（再分析しない）",
+   "date": "2026-11-17",
+   "verdict": "良好"
+  },
+  {
+   "key": "growth",
+   "skill": "growth",
+   "label": "成長性",
+   "step": "2-2",
+   "result": "fresh",
+   "reason": "有効期限 2027-03-17 まで有効（再分析しない）",
+   "date": "2026-11-17",
+   "verdict": "良好"
+  },
+  {
+   "key": "safety",
+   "skill": "safety",
+   "label": "安全性",
+   "step": "2-3",
+   "result": "fresh",
+   "reason": "有効期限 2027-03-17 まで有効（再分析しない）",
+   "date": "2026-11-17",
+   "verdict": "良好"
+  },
+  {
+   "key": "cash_flow",
+   "skill": "cash-flow",
+   "label": "キャッシュフロー",
+   "step": "2-4",
+   "result": "fresh",
+   "reason": "有効期限 2027-06-05 まで有効（再分析しない）",
+   "date": "2026-11-17",
+   "verdict": "良好"
+  },
+  {
+   "key": "valuation",
+   "skill": "valuation",
+   "label": "バリュエーション",
+   "step": "3",
+   "result": "fresh",
+   "reason": "有効期限 2026-11-24 まで有効（再分析しない）",
+   "date": "2026-11-17",
+   "verdict": "割高"
+  }
+ ],
+ "materials": [
+  {
+   "key": "prices",
+   "label": "日々の株価",
+   "date": "2026-11-12",
+   "age_days": 5,
+   "max_days": 7,
+   "by": "prepare",
+   "item": "株価",
+   "stale": false,
+   "why": ""
+  },
+  {
+   "key": "news",
+   "label": "直近3か月の開示・ニュース",
+   "date": "2026-11-12",
+   "age_days": 5,
+   "max_days": 7,
+   "by": "collect-ir",
+   "item": "直近3か月の適時開示・決算・業績修正・主要ニュースの日付と見出し",
+   "stale": false,
+   "why": ""
+  },
+  {
+   "key": "consensus",
+   "label": "アナリスト予想・株価指標",
+   "date": "2026-11-13",
+   "age_days": 4,
+   "max_days": 30,
+   "by": "collect-peers-valuation",
+   "item": "アナリスト予想（今期・来期の予想EPS）と株価指標",
+   "stale": false,
+   "why": ""
+  },
+  {
+   "key": "market",
+   "label": "地合いレポート（指数・業種の値動き）",
+   "date": "2026-11-16",
+   "age_days": 1,
+   "max_days": 7,
+   "by": "market-report",
+   "item": "",
+   "stale": false,
+   "why": ""
+  },
+  {
+   "key": "governance",
+   "label": "大株主・役員・増資の履歴（有価証券報告書）",
+   "date": "2026-02-28",
+   "age_days": 262,
+   "max_days": 400,
+   "by": "collect-filings",
+   "item": "大株主・役員・発行済株式数の推移（有価証券報告書の XBRL から yuho_governance.py）",
+   "stale": false,
+   "why": ""
+  },
+  {
+   "key": "management",
+   "label": "経営者の目標と実績・発言",
+   "date": "2026-10-19",
+   "age_days": 29,
+   "max_days": 120,
+   "by": "collect-ir",
+   "item": "経営者の目標と実績・社長メッセージ（過去3〜4年の決算説明会資料）",
+   "stale": false,
+   "why": ""
+  }
+ ],
+ "stale": [],
+ "legends": {
+  "buffett": {
+   "name": "ウォーレン・バフェット",
+   "short": "バフェット",
+   "horizon": "長期",
+   "philosophy": "理解できる優れた事業を、妥当な価格で買い、長く持つ",
+   "doc": ".ai/knowledge/legendary-investors/buffett.md",
+   "verdict": "避ける",
+   "why": "モートが「なし」",
+   "checks": [
+    {
+     "id": "B1",
+     "item": "変化の速い業界ではないか",
+     "value": "5年以内に堀を崩しうる要因: 生成AI・AIエージェントによるコンサルタント業務の自動化・テクノロジー系企業（Salesforce・Google Cloud・AWS等）のコンサル参入",
+     "ok": false,
+     "source": "1-3 モート（崩しうる要因）"
+    },
+    {
+     "id": "B2",
+     "item": "長く続く競争優位（モート）",
+     "value": "なし",
+     "ok": false,
+     "source": "1-3 モート"
+    },
+    {
+     "id": "B3",
+     "item": "勝てる理由",
+     "value": "あいまい",
+     "ok": false,
+     "source": "1-2 3C"
+    },
+    {
+     "id": "B4",
+     "item": "借金に頼らない高い ROE",
+     "value": "収益性 良好（ROE 10年平均 39.6%、源泉 本業由来）・安全性 良好",
+     "ok": true,
+     "source": "2-1 収益性・2-3 安全性"
+    },
+    {
+     "id": "B5",
+     "item": "一貫した収益力",
+     "value": "成長性 良好",
+     "ok": true,
+     "source": "2-2 成長性"
+    },
+    {
+     "id": "B6",
+     "item": "利益が現金で裏付けられている",
+     "value": "キャッシュフロー 良好（営業CF対純利益 1.01倍、FCF 5年累計 116,068）",
+     "ok": true,
+     "source": "2-4 キャッシュフロー"
+    },
+    {
+     "id": "B7",
+     "item": "会社計画の信頼性（経営者）",
+     "value": "信頼できる",
+     "ok": true,
+     "source": "2-2 成長性（期初予想の達成率）"
+    },
+    {
+     "id": "B8",
+     "item": "価格に安全域があるか",
+     "value": "割高",
+     "ok": false,
+     "source": "3 バリュエーション"
+    },
+    {
+     "id": "B9",
+     "item": "市場の悲観で安くなっているか（添え書き）",
+     "value": "地合い 警戒、52週高値から -0.2%",
+     "ok": true,
+     "source": "地合い・株価の過去レンジ"
+    }
+   ],
+   "notes": [
+    "市場の悲観で株価が下がっている（事業が基準に合うときだけ好機に数える）"
+   ]
+  },
+  "soros": {
+   "name": "ジョージ・ソロス",
+   "short": "ソロス",
+   "horizon": "短期〜中期",
+   "philosophy": "市場の思い込みと現実のずれ（再帰性）に乗り、誤りに気づいたらすぐ引く",
+   "doc": ".ai/knowledge/legendary-investors/soros.md",
+   "verdict": "保留",
+   "why": "業績は上向きだが、地合いが逆回転を起こしやすいか、期待が高く株価が追いついていない",
+   "checks": [
+    {
+     "id": "S1",
+     "item": "現実の流れ（業績）の向き",
+     "value": "上向き（営業利益の進捗 第2四半期 46.1%（前年同期 45.7%）、売上 前年同期比 +35.7%）",
+     "ok": true,
+     "source": "2-2 成長性（四半期の進捗）"
+    },
+    {
+     "id": "S2",
+     "item": "市場の期待（評価倍率）の高さ",
+     "value": "高い（STEP 3 割高）",
+     "ok": false,
+     "source": "3 バリュエーション"
+    },
+    {
+     "id": "S3",
+     "item": "株価の流れの向き",
+     "value": "上向き（26週移動平均との差 67.5%）",
+     "ok": true,
+     "source": "株価の過去レンジ"
+    },
+    {
+     "id": "S5",
+     "item": "逆回転を起こしやすい地合いでないか",
+     "value": "注意の度合い 警戒",
+     "ok": false,
+     "source": "地合い"
+    },
+    {
+     "id": "S6",
+     "item": "借入に頼らず逆回転に強いか",
+     "value": "安全性 良好",
+     "ok": true,
+     "source": "2-3 安全性"
+    }
+   ],
+   "notes": []
+  },
+  "rogers": {
+   "name": "ジム・ロジャーズ",
+   "short": "ロジャーズ",
+   "horizon": "中期〜長期",
+   "philosophy": "誰も見向きしない安いものを、前向きな変化が見えたときに買い、何年も待つ",
+   "doc": ".ai/knowledge/legendary-investors/rogers.md",
+   "verdict": "避ける",
+   "why": "株価が高値圏で割高（熱狂）",
+   "checks": [
+    {
+     "id": "R1",
+     "item": "長い目で見て安いか",
+     "value": "5年 100%、10年 100%（STEP 3 割高）",
+     "ok": false,
+     "source": "株価の過去レンジ・3 バリュエーション"
+    },
+    {
+     "id": "R2",
+     "item": "熱狂していないか",
+     "value": "52週レンジの位置 100%、PER 割高",
+     "ok": false,
+     "source": "株価の過去レンジ・3 バリュエーション"
+    },
+    {
+     "id": "R3",
+     "item": "前向きな変化",
+     "value": "O1（影響度 大）・O2（影響度 大）・売上 前年同期比 +35.7%",
+     "ok": true,
+     "source": "1-4 SWOT（機会）・2-2 成長性（四半期の進捗）"
+    },
+    {
+     "id": "R4",
+     "item": "業界の需給（新規参入の脅威）",
+     "value": "中",
+     "ok": true,
+     "source": "1-1 ファイブフォース"
+    },
+    {
+     "id": "R6",
+     "item": "長期の地合い",
+     "value": "平常",
+     "ok": true,
+     "source": "地合い（長期の行）"
+    }
+   ],
+   "notes": [
+    "業界の需給（新規参入の脅威）: 中",
+    "長期の地合い: 平常"
+   ]
+  }
+ },
+ "scenarios": {
+  "ok": true,
+  "buys": [
+   {
+    "label": "今の株価",
+    "price": 12780.0,
+    "basis": "今の株価（2026-11-17 終値）",
+    "stop": {
+     "label": "以前の高値（2026-09-01）（今は下値の支えになりやすい）（8,270）の 1 ATR 下",
+     "price": 7714.38
+    },
+    "target1": null,
+    "target2": null,
+    "down": -39.6,
+    "up1": null,
+    "up2": null,
+    "rr": null,
+    "risks": [
+     "方向感が出ていない位置で、下の支持線を割ると損切りの目安（7,714）まで下がりうる",
+     "地合いが警戒（2026-11-16 の週）で、市場全体の下げに巻き込まれやすい",
+     "次の決算（次回決算発表予定日: 2026-12-下旬〜2027-01-上旬（FY2027 Q3））で業績予想が変わると値動きが大きくなる"
+    ]
+   },
+   {
+    "label": "PER が過去レンジの割安圏になる株価",
+    "price": 9751.87,
+    "basis": "PER が過去レンジの割安圏になる株価（バリュエーション）",
+    "stop": {
+     "label": "以前の高値（2026-09-01）（今は下値の支えになりやすい）（8,270）の 1 ATR 下",
+     "price": 7714.38
+    },
+    "target1": {
+     "label": "直近の高値（2026-11-09）",
+     "price": 12790.0
+    },
+    "target2": null,
+    "down": -20.9,
+    "up1": 31.2,
+    "up2": null,
+    "rr": 1.49,
+    "risks": [
+     "割安圏の株価は予想EPS・BPS から計算している。業績予想の下方修正があると割安圏の株価そのものが下がる",
+     "地合いが警戒（2026-11-16 の週）で、市場全体の下げに巻き込まれやすい",
+     "次の決算（次回決算発表予定日: 2026-12-下旬〜2027-01-上旬（FY2027 Q3））で業績予想が変わると値動きが大きくなる"
+    ]
+   },
+   {
+    "label": "以前の高値（2026-09-01）（今は下値の支えになりやすい）",
+    "price": 8270.0,
+    "basis": "下の支持線（以前の高値（2026-09-01）（今は下値の支えになりやすい））",
+    "stop": {
+     "label": "以前の高値（2026-09-18）（今は下値の支えになりやすい）（8,013）の 1 ATR 下",
+     "price": 7457.38
+    },
+    "target1": {
+     "label": "適正PBR の株価",
+     "price": 9836.74
+    },
+    "target2": {
+     "label": "直近の高値（2026-11-09）",
+     "price": 12790.0
+    },
+    "down": -9.8,
+    "up1": 18.9,
+    "up2": 54.7,
+    "rr": 1.93,
+    "risks": [
+     "支持線（以前の高値（2026-09-01）（今は下値の支えになりやすい））を終値で割り込むと、次の支持線まで下がりやすい",
+     "地合いが警戒（2026-11-16 の週）で、市場全体の下げに巻き込まれやすい",
+     "次の決算（次回決算発表予定日: 2026-12-下旬〜2027-01-上旬（FY2027 Q3））で業績予想が変わると値動きが大きくなる"
+    ]
+   }
+  ],
+  "holder": {
+   "take": [
+    {
+     "label": "PER が過去レンジの割高圏になる株価",
+     "price": 14959.78
+    }
+   ],
+   "exit": [
+    {
+     "label": "損切りの目安（26週線の 1 ATR 下）",
+     "price": 7073.26
+    },
+    {
+     "label": "52週安値を割る（1年の下値を更新）",
+     "price": 3780.0
+    }
+   ]
+  }
+ },
+ "projection": {
+  "ok": true,
+  "reason": null,
+  "eps0": 249.16,
+  "per": 30.38,
+  "per_basis": "有報の期末PER 5 期の平均",
+  "years": [
+   3,
+   5
+  ],
+  "cases": [
+   {
+    "name": "悲観",
+    "rate": 14.15,
+    "basis": "基本の半分"
+   },
+   {
+    "name": "基本",
+    "rate": 28.3,
+    "basis": "PEG の標準ケース（成長率の候補の最小）"
+   },
+   {
+    "name": "楽観",
+    "rate": 28.3,
+    "basis": "成長率の候補の最大 30.0% に上限（基本の 1.5 倍・25% の低い方）をかけた率"
+   }
+  ],
+  "rows": [
+   {
+    "years": 3,
+    "case": "悲観",
+    "eps": 370.60055867911495,
+    "price": 11258.844972671512,
+    "change": -3.440437627173998,
+    "annual": -1.160221624885649
+   },
+   {
+    "years": 5,
+    "case": "悲観",
+    "eps": 482.90077382131733,
+    "price": 14670.52550869162,
+    "change": 25.819258222055062,
+    "annual": 4.700661143757445
+   },
+   {
+    "years": 3,
+    "case": "基本",
+    "eps": 526.2090237129198,
+    "price": 15986.230140398504,
+    "change": 37.1031744459563,
+    "annual": 11.091927862699702
+   },
+   {
+    "years": 5,
+    "case": "基本",
+    "eps": 866.1868856345765,
+    "price": 26314.75758557843,
+    "change": 125.68402732056971,
+    "annual": 17.679323913658163
+   },
+   {
+    "years": 3,
+    "case": "楽観",
+    "eps": 526.2090237129198,
+    "price": 15986.230140398504,
+    "change": 37.1031744459563,
+    "annual": 11.091927862699702
+   },
+   {
+    "years": 5,
+    "case": "楽観",
+    "eps": 866.1868856345765,
+    "price": 26314.75758557843,
+    "change": 125.68402732056971,
+    "annual": 17.679323913658163
+   }
+  ],
+  "note": "今の EPS が各ケースの率で伸び、株価が過去5年の平均PER で評価されると仮定した水準。売りを考える目安の一つで、株価の予想ではない"
+ },
+ "winds": {
+  "ok": true,
+  "week": "2026-11-16",
+  "sector": "情報通信・サービスその他",
+  "market": "日本",
+  "strength": "中立",
+  "m6": 17.645619187469407,
+  "rel6": 18.080309117934334,
+  "m12": 8.461191335740082,
+  "rel12": -10.766905633498336,
+  "items": [],
+  "related": [],
+  "score": 0,
+  "verdict": "中立",
+  "why": "株価の強さ 中立（合計 +0）"
+ },
+ "moves": {
+  "ok": true,
+  "end": "2026-11-13",
+  "index_name": "日経平均",
+  "sector_name": "情報通信・サービスその他",
+  "returns": [
+   {
+    "label": "1か月",
+    "stock": 41.7,
+    "index": -9.7,
+    "sector": -2.7,
+    "vs_index": 51.4,
+    "vs_sector": 44.4
+   },
+   {
+    "label": "3か月",
+    "stock": 60.3,
+    "index": -11.0,
+    "sector": -1.0,
+    "vs_index": 71.3,
+    "vs_sector": 61.3
+   },
+   {
+    "label": "52週",
+    "stock": 82.1,
+    "index": 19.2,
+    "sector": 8.5,
+    "vs_index": 62.9,
+    "vs_sector": 73.6
+   }
+  ],
+  "beta": -0.23,
+  "split": {
+   "span": "3か月",
+   "stock": 60.3,
+   "market": 2.5,
+   "own": 57.8,
+   "beta": -0.23
+  },
+  "big_days": [
+   {
+    "date": "2026-10-02",
+    "change": 6.1,
+    "volume_ratio": 1.8,
+    "index_change": -0.9,
+    "news": []
+   }
+  ],
+  "consensus": [
+   "チャートの状態: 上昇トレンド",
+   "株価は 13週線（9,131）の上・26週線（7,629）の上・52週線（6,698）の上",
+   "RSI 68（中立）",
+   "出来高 1.35倍（20日平均÷60日平均、平常）"
+  ],
+  "notes": [
+   "指数・業種の系列は 2026-11-13 まで。騰落率の比較はその日までで揃えた"
+  ]
+ },
+ "phase": {
+  "phase": "上昇局面",
+  "verdict": "期待先行の上昇（割高・過熱の疑い）",
+  "checks": [
+   {
+    "item": "52週高値から -20% 以下、または長期の下降トレンド",
+    "value": "高値から -0.2%・長期 上昇トレンド",
+    "ok": false
+   },
+   {
+    "item": "（下落局面でないとき）52週安値から +30% 以上で上昇トレンド、長期の上昇トレンド、または52週レンジの上側",
+    "value": "安値から +238.1%・52週の位置 100%",
+    "ok": true
+   },
+   {
+    "item": "事業・財務の質（STEP 1・2 が A/B、赤信号なし）",
+    "value": "STEP 1 B・STEP 2 A",
+    "ok": true
+   },
+   {
+    "item": "割高（STEP 3 割高、または PER が過去レンジの上側）",
+    "value": "STEP 3 割高・PER の位置 68%",
+    "ok": true
+   },
+   {
+    "item": "過熱（RSI 70 以上、または26週線から +15% 以上）",
+    "value": "RSI 68・26週線との差 +67.5%",
+    "ok": true
+   },
+   {
+    "item": "株価の伸びが EPS の伸びを 5pt 超えて上回る",
+    "value": "株価 +54.5%・EPS +29.0%",
+    "ok": true
+   }
+  ]
+ },
+ "governance": {
+  "as_of": "2026-02-28",
+  "filed": "2026-05-26",
+  "owner": {
+   "ratio": 0,
+   "members": [],
+   "is_owner": false
+  },
+  "president": {
+   "name": "阿部　義之",
+   "title": "代表取締役会長兼社長",
+   "birth": "1966-04-04",
+   "age": 60,
+   "shares": 756330,
+   "career": "2008年９月旧㈱ベイカレント・コンサルティング入社同年11月同社執行役員2015年５月当社取締役コンサルティング＆ＩＴ事業本部長2016年12月当社代表取締役社長2025年５月当社取締役会長同年11月当社代表取締役会長兼社長(現任)"
+  },
+  "issuances": [
+   {
+    "period_end": "2016-02-29",
+    "from": 685000,
+    "to": 771000,
+    "change_pct": 12.6,
+    "kind": "公募増資"
+   },
+   {
+    "period_end": "2017-02-28",
+    "from": 771000,
+    "to": 15470000,
+    "change_pct": 1906.5,
+    "kind": "株式分割"
+   },
+   {
+    "period_end": "2023-02-28",
+    "from": 15541141,
+    "to": 155411410,
+    "change_pct": 900.0,
+    "kind": "株式分割"
+   }
+  ],
+  "offering_within_5y": false,
+  "offering_last": "2016-02-29"
+ },
+ "management": {
+  "file": "2026-11-12",
+  "rows": [
+   {
+    "year": "2025-02",
+    "kind": "期初予想",
+    "item": "売上収益（百万円）",
+    "target": "115,000",
+    "actual": "116,056",
+    "rate": 100.9,
+    "source": "FY2024決算補足説明 p.19（一次）"
+   },
+   {
+    "year": "2025-02",
+    "kind": "期初予想",
+    "item": "EBITDA（百万円）",
+    "target": "42,000",
+    "actual": "43,489",
+    "rate": 103.5,
+    "source": "同上"
+   },
+   {
+    "year": "2025-02",
+    "kind": "期初予想",
+    "item": "営業利益（百万円）",
+    "target": "41,100",
+    "actual": "42,615",
+    "rate": 103.7,
+    "source": "同上"
+   },
+   {
+    "year": "2025-02",
+    "kind": "期初予想",
+    "item": "当期利益（百万円）",
+    "target": "30,300",
+    "actual": "30,760",
+    "rate": 101.5,
+    "source": "同上"
+   },
+   {
+    "year": "2026-02",
+    "kind": "期初予想",
+    "item": "売上収益（百万円）",
+    "target": "143,000",
+    "actual": "148,332",
+    "rate": 103.7,
+    "source": "FY2026通期決算説明会資料 p.4（一次）"
+   },
+   {
+    "year": "2026-02",
+    "kind": "期初予想",
+    "item": "EBITDA（百万円）",
+    "target": "52,000",
+    "actual": "52,125",
+    "rate": 100.2,
+    "source": "同上"
+   },
+   {
+    "year": "2027-02",
+    "kind": "期初予想",
+    "item": "売上収益（百万円）",
+    "target": "190,000",
+    "actual": "—（進行中）",
+    "rate": null,
+    "source": "FY2026通期決算説明会資料 p.17（一次）"
+   },
+   {
+    "year": "2027-02",
+    "kind": "期初予想",
+    "item": "EBITDA（百万円）",
+    "target": "66,500",
+    "actual": "—（進行中）",
+    "rate": 46.2,
+    "source": "同上"
+   },
+   {
+    "year": "2024-02",
+    "kind": "中期経営計画（FY2022〜FY2026 目標FY2026）",
+    "item": "売上収益（百万円）",
+    "target": "100,000",
+    "actual": "93,909（3年目で概ね達成）",
+    "rate": 93.9,
+    "source": "FY2024決算補足説明 p.10（一次）"
+   },
+   {
+    "year": "2024-02",
+    "kind": "中期経営計画（FY2022〜FY2026 目標FY2026）",
+    "item": "EBITDA（百万円）",
+    "target": "30,000超",
+    "actual": "35,312",
+    "rate": 117.7,
+    "source": "同上"
+   }
+  ],
+  "messages": [
+   {
+    "date": "2026-10-15",
+    "summary": "「現中計は約1年前倒しとなる来期（FY2027）中の概ね達成を見込む。2030年に向け売上5,000億円・EBITDAマージン40%を目標とする新中計を策定。配当性向40%を維持しつつ余剰キャッシュは成長投資と自社株買いに機動的に配分する。」",
+    "source": "20261009548488.pdf.txt p.2（一次）"
+   },
+   {
+    "date": "2026-04-14",
+    "summary": "「FY2026通期は売上148,332百万円（YoY+27.8%）・EBITDAマージン35.1%と概ね計画通りに着地。FY2027は売上190,000百万円（+28.1%）・コンサルタント数約7,000名へ増強を目標とする。」",
+    "source": "20260408500168.pdf.txt p.5〜17（一次）"
+   },
+   {
+    "date": "2024-04-12",
+    "summary": "「旧中計（FY2022〜FY2026）の5年目標を3年で概ね達成。新5か年計画でFY2029（2030年2月期）に売上2,500億円・EBITDAマージン30〜40%を目標。毎年CAGR20%の成長を計画線とする。」",
+    "source": "153714.pdf.txt p.16〜17（一次）"
+   }
+  ],
+  "average": {
+   "期初予想": 94.2
+  }
+ }
+}

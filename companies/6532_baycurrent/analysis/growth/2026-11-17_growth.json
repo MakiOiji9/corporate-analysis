@@ -1,0 +1,354 @@
+{
+ "version": 2,
+ "company": "6532_baycurrent",
+ "name": "ベイカレント・コンサルティング（6532）",
+ "date": "2026-11-17",
+ "valid_until": "2027-03-17",
+ "verdict": "良好",
+ "verdict_reason": "手順1は高成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））。ただし成長投資が良好（成長投資は良好: 売上に対する成長投資 -0.1%（2024-02〜2026-02、以前並み）、効率（増分 ROIC）は良好）なので一段上げた（差し引きで良好）",
+ "step1": {
+  "rating": "高成長",
+  "basis": "売上 CAGR 5% 以上かつ EPS CAGR 7% 以上",
+  "sentence": "売上 CAGR 27.5%、営業利益 CAGR 28.6%、EPS CAGR 29.0%（全年の回帰）（2021-02〜2026-02）で高成長",
+  "years": 6,
+  "first": "2021-02",
+  "last": "2026-02",
+  "eps_basis": "eps",
+  "sales_cagr": 27.5,
+  "eps_cagr": 29.0,
+  "cagr": {
+   "sales": {
+    "value": 27.5,
+    "first": "2021-02",
+    "last": "2026-02",
+    "reason": ""
+   },
+   "operating_income": {
+    "value": 28.6,
+    "first": "2021-02",
+    "last": "2026-02",
+    "reason": ""
+   },
+   "eps": {
+    "value": 29.0,
+    "first": "2021-02",
+    "last": "2026-02",
+    "reason": ""
+   },
+   "net_income": {
+    "value": 28.7,
+    "first": "2021-02",
+    "last": "2026-02",
+    "reason": ""
+   }
+  }
+ },
+ "step3": {
+  "rating": "信頼できる",
+  "basis": "2年中 2年で達成率 90% 以上。直近2年の平均 102%、100% 未満の年 1（2026-02）",
+  "sentence": "計画達成率は平均102%（2年中 2年で達成率 90% 以上。直近2年の平均 102%、100% 未満の年 1（2026-02））で、計画は信頼できる",
+  "average": 101.8,
+  "rows": [
+   {
+    "year": "2025-02",
+    "metric": "営業利益",
+    "forecast": 41100.0,
+    "actual": 42615.0,
+    "rate": 103.7,
+    "sales_rate": 100.9,
+    "source": "2026-11-12_financials-historical.md「4. 会社計画（期初予想）と実績（ren」",
+    "primary": true
+   },
+   {
+    "year": "2026-02",
+    "metric": "営業利益",
+    "forecast": 51000.0,
+    "actual": 50931.0,
+    "rate": 99.9,
+    "sales_rate": 103.7,
+    "source": "2026-11-12_financials-historical.md「4. 会社計画（期初予想）と実績（ren」",
+    "primary": true
+   }
+  ]
+ },
+ "step4": {
+  "quality": "問題あり",
+  "sentence": "成長の質に問題あり: 直近3年は営業利益が売上ほど伸びていない（利益率が下がっている）",
+  "problems": [
+   "直近3年は営業利益が売上ほど伸びていない（利益率が下がっている）"
+  ],
+  "unknown": [],
+  "adjusted": null,
+  "checks": [
+   {
+    "name": "営業利益の伸び ≥ 売上の伸び（長期・直近3年）",
+    "status": "問題あり",
+    "detail": "長期（2021-02〜2026-02）: 営業利益 CAGR 28.6% / 売上 CAGR 27.5%、直近3年（2023-02〜2026-02）: 営業利益 CAGR 19.4% / 売上 CAGR 24.9%"
+   },
+   {
+    "name": "売上増が M&A 頼みでない",
+    "status": "問題なし",
+    "detail": "期間内の M&A なし"
+   },
+   {
+    "name": "EPS の伸びが自社株買い頼みでない",
+    "status": "問題なし",
+    "detail": "EPS CAGR 29.0% / 純利益 CAGR 28.7%（差 +0.2pt）"
+   }
+  ]
+ },
+ "step5": {
+  "verdict": "良好",
+  "sentence": "成長投資は良好: 売上に対する成長投資 -0.1%（2024-02〜2026-02、以前並み）、効率（増分 ROIC）は良好",
+  "notes": [
+   "設備投資が売上の 2.0% で 3% 未満: 投資不足の規則は使わない",
+   "研究開発費が取れない年がある（成長投資に 0 として数えた）"
+  ],
+  "ratio": {
+   "recent": -0.1,
+   "earlier": null,
+   "level": "標準",
+   "years": 3,
+   "past_level": "不明",
+   "recent_comparable": null,
+   "peer_own": -0.1,
+   "peer_median": 0.3,
+   "peer_level": "標準",
+   "peer_count": 1,
+   "peer_with_rnd": false,
+   "peers": [
+    {
+     "name": "シグマクシス HD",
+     "share": 0.3,
+     "share_capex": 0.3,
+     "years": 5
+    }
+   ],
+   "span": "2024-02〜2026-02",
+   "earlier_span": null,
+   "capex_share": 2.0,
+   "rnd_share": 0.0,
+   "capex_to_dep": 1.05,
+   "underinvest": false,
+   "asset_light": true,
+   "missing_rnd": true,
+   "missing_working_capital": false
+  },
+  "efficiency": {
+   "rating": "良好",
+   "basis": "増分 ROIC",
+   "sentence": "2021-02〜2026-02: 増分 ROIC 63.3%（税引後営業利益の増加 +14,523 ÷ 投下資本の増加 +22,946、3年平均どうし。期間が短く時間差は取れない）。資本コスト 7% に対して良好"
+  },
+  "incremental_roic": {
+   "rating": "良好",
+   "value": 63.3,
+   "span": "2021-02〜2026-02",
+   "lag": 0,
+   "hurdle": 7.0
+  },
+  "people": {
+   "employees_cagr": 26.7,
+   "per_employee_cagr": -2.1,
+   "people_share": null,
+   "intensive": false
+  },
+  "rows": [
+   {
+    "year": "2024-02",
+    "sales": 93909,
+    "capex": 3632,
+    "depreciation": 2415,
+    "net_capex": 1217,
+    "rnd": null,
+    "working_capital": null,
+    "acquisition": 0,
+    "capex_to_dep": 1.5,
+    "growth": 1217
+   },
+   {
+    "year": "2025-02",
+    "sales": 116056,
+    "capex": 866,
+    "depreciation": 2489,
+    "net_capex": -1623,
+    "rnd": null,
+    "working_capital": 250,
+    "acquisition": 0,
+    "capex_to_dep": 0.35,
+    "growth": -1373
+   },
+   {
+    "year": "2026-02",
+    "sales": 148332,
+    "capex": 2645,
+    "depreciation": 2525,
+    "net_capex": 120,
+    "rnd": null,
+    "working_capital": -295,
+    "acquisition": 0,
+    "capex_to_dep": 1.05,
+    "growth": -175
+   }
+  ]
+ },
+ "step2": {
+  "sentence": "減収・減益の年なし",
+  "structural": "減収・減益の年なし"
+ },
+ "rows": [
+  {
+   "year": "2021-02",
+   "sales": 42873.0,
+   "operating_income": 13551.0,
+   "net_income": 10014.0,
+   "eps": 65.45,
+   "source": "data/financials.csv",
+   "primary": true
+  },
+  {
+   "year": "2022-02",
+   "sales": 57642.0,
+   "operating_income": 21518.0,
+   "net_income": 15544.0,
+   "eps": 101.39,
+   "source": "data/financials.csv",
+   "primary": true
+  },
+  {
+   "year": "2023-02",
+   "sales": 76090.0,
+   "operating_income": 29916.0,
+   "net_income": 21910.0,
+   "eps": 142.96,
+   "source": "data/financials.csv",
+   "primary": true
+  },
+  {
+   "year": "2024-02",
+   "sales": 93909.0,
+   "operating_income": 34219.0,
+   "net_income": 25382.0,
+   "eps": 166.04,
+   "source": "data/financials.csv",
+   "primary": true
+  },
+  {
+   "year": "2025-02",
+   "sales": 116056.0,
+   "operating_income": 42615.0,
+   "net_income": 30760.0,
+   "eps": 202.16,
+   "source": "data/financials.csv",
+   "primary": true
+  },
+  {
+   "year": "2026-02",
+   "sales": 148332.0,
+   "operating_income": 50931.0,
+   "net_income": 37840.0,
+   "eps": 249.16,
+   "source": "data/financials.csv",
+   "primary": true
+  }
+ ],
+ "splits": [],
+ "progress": {
+  "fy": "2027-02",
+  "quarter": 2,
+  "filing_date": "",
+  "source": "raw（2026-11-12_financials-historical.md）",
+  "items": {
+   "sales": {
+    "name": "売上高",
+    "cum": 92913.0,
+    "prior": 68462.0,
+    "forecast": 190000.0,
+    "last_actual": 148332.0,
+    "yoy": 35.71470304694575,
+    "forecast_growth": 28.091039020575458,
+    "progress": 48.90157894736842,
+    "prior_progress": 46.15457217592967
+   },
+   "operating_income": {
+    "name": "営業利益",
+    "cum": 29892.0,
+    "prior": 23270.0,
+    "forecast": 64800.0,
+    "last_actual": 50931.0,
+    "yoy": 28.45724108293941,
+    "forecast_growth": 27.230959533486487,
+    "progress": 46.12962962962963,
+    "prior_progress": 45.689265869509725
+   }
+  }
+ },
+ "receivables": "—（売上債権の時系列が raw に無い）",
+ "declines": [],
+ "ma": [],
+ "borderline": [],
+ "consistency": [
+  {
+   "check": "市場成長性が高い ⇔ 売上成長",
+   "step1": "市場の成長性 高（3C の理由に CAGR の数値が無いため「成長性 高」の下限 3% 3.0%）",
+   "step2": "売上 CAGR 27.5%",
+   "result": "整合"
+  }
+ ],
+ "consistency_comment": "整合（売上が市場並み以上に伸びている）",
+ "mtp": "旧中計（FY2022〜FY2026）の数値目標（売上100,000百万円・コンサルタント数4,000名）を3年で概ね達成（FY2024実績93,909百万円、FY2025末5,590名と超過）し、現中計（FY2024〜FY2028、売上2,500億円・CAGR約20%）もFY2026末時点で約1年前倒しで進捗。FY2027中に概ね達成見込みと報告している（raw/ir/2026-11-12_mid-term-plan.md）",
+ "drivers": "CxOリレーションを通じた大企業向け受注増とコンサルタント増員（FY2024末3,837名→FY2025末5,590名）による稼働拡大が主因（raw/ir/2026-11-12_financials-historical.md）。M&AはゼロでEPS押し上げも軽微（EPS CAGR 29.0%、純利益 CAGR 28.7%、差0.3pt）。直近3年の営業利益率低下（成長の質 問題あり）の詳細要因は不明（brief に記載なし）",
+ "handoff": {
+  "report_points": "成長性は良好（手順1は高成長だが、成長の質に問題あり（直近3年は営業利益が売上ほど伸びていない（利益率が下がっている））。ただし成長投資が良好（成長投資は良好: 売上に対する成長投資 -0.1%（2024-02〜2026-02、以前並み）、効率（増分 ROIC）は良好）なので一段上げた（差し引きで良好））。売上 CAGR 27.5%、営業利益 CAGR 28.6%、EPS CAGR 29.0%（全年の回帰）（2021-02〜2026-02）で高成長。減収・減益の年なし。成長の質に問題あり: 直近3年は営業利益が売上ほど伸びていない（利益率が下がっている）。会社計画は信頼できる。",
+  "step3_hint": "会社計画は信頼できる（2年中 2年で達成率 90% 以上。直近2年の平均 102%、100% 未満の年 1（2026-02））。STEP 3 では会社計画の成長率をそのまま使える",
+  "step2_checks": "利益の伸びが売上の伸びに見合い、利益率が保たれているか（収益性）、成長に伴う運転資本・設備投資が営業CF・FCF を圧迫していないか（キャッシュフロー）、成長投資の資金を借入に頼っていないか（安全性）",
+  "triggers": "売上 CAGR が5%を下回るか EPS CAGR が7%を下回れば安定成長、減収・減益の年に構造要因が見つかれば懸念。"
+ },
+ "changes": [
+  "初回の分析"
+ ],
+ "gaps": [
+  "なし"
+ ],
+ "inputs": [
+  "companies/6532_baycurrent/raw/filings/2026-11-12_2026-02_yuho.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-12_financials-historical.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-12_mid-term-plan.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-13_financials-historical.md",
+  "companies/6532_baycurrent/raw/market/2026-11-17_competitors.md"
+ ],
+ "seen": [
+  "companies/6532_baycurrent/raw/filings/2026-11-12_2026-02_yuho.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-12_financials-historical.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-12_mid-term-plan.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-13_financials-historical.md"
+ ],
+ "input_digests": {
+  "self_pl": "d914e5d379d3e700d2031c166f7af297f977c394",
+  "summary": "5e87ef374e84a3832ae8fec7c240f7dc8eba1fdc",
+  "plan": "b4170f8832f385e167eb5364e1b6482376168a92",
+  "decline": "89ca6e1640f6afd82d3f9cc7bca3725bb038fdcd",
+  "ma": "67f9583006ca43bef882d199170e3c57623c9f65",
+  "self_return": "0cb4fca7c77ed49fa7a3e027a91b5ad3efe391b1",
+  "segment": "d00d38ea32a6f68b8fc2d1a2b7ccbfccf982db4e",
+  "risks": "bf08c7c33bff1c4b3350fc9fd17c1bd3088c502d",
+  "policy": "5edde25638f81b3eb3169e53fdfd7e6119978421",
+  "targets": "32ea5e73a43a1ddebeae7fe95cc2f0368f0541fc",
+  "mtp_result": "4739a77495d9677683c3873d10ae4099cb630bf4",
+  "peer_invest": "7a06d92b0a8aa532f68ca85ace90395bc9e7d0e8",
+  "yearly_series": "720965aeb89f86289869fd9324fcf8dd3ac779d5"
+ },
+ "three_c": {
+  "date": "2026-11-17",
+  "verdict": "あいまい",
+  "market_growth": "高"
+ },
+ "swot": {
+  "date": "2026-11-13",
+  "verdict": "条件付き"
+ },
+ "outlook": "market/report/2026-11-16_outlook.md",
+ "previous": null,
+ "md": "companies/6532_baycurrent/analysis/growth/2026-11-17_growth.md",
+ "downgraded": [],
+ "conservative": []
+}

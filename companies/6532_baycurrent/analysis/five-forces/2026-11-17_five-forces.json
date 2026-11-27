@@ -1,0 +1,603 @@
+{
+ "company": "6532_baycurrent",
+ "name": "ベイカレント・コンサルティング（6532）",
+ "date": "2026-11-17",
+ "valid_until": "2027-11-17",
+ "industry": "コンサルティング業界（単一セグメント：コンサルティング事業）",
+ "industry_source": "companies/6532_baycurrent/raw/filings/2026-11-12_2026-02_yuho.md 「2. 事業の内容・セグメント情報（p.17）」",
+ "factors": [
+  {
+   "key": "entry",
+   "name": "新規参入の脅威",
+   "rating": "中",
+   "points": 1,
+   "seen": "許認可は不要（有報 p.23 に「特別な許認可不要」と記載）。大手ファームは採用費に年間数十億円規模を投資（ベイカレントは45億円と報道）。AI・データ分析等の専門技術力とブランドが実質的な参入障壁（二次情報：jbpress 等）。過去5年の確認できた参入例: AIスタートアップ多数が生成AI・LLMを活用したサービスで参入（2023–2026年、社名・売上実績未確認）、新興日系ファーム複数社（2022年以降急成長、社名は有料記事のため不明）。いずれも資本力のある企業が中心。",
+   "source": "companies/6532_baycurrent/raw/market/2026-11-11_industry-overview.md 「3. 参入に必要な条件・過去10年の新規参入と撤退」; companies/6532_baycurrent/raw/filings/2026-11-12_2026-02_yuho.md 「6. 研究開発・特許・許認可（p.23）」",
+   "confidence": "二次",
+   "triggers": "AI系スタートアップで社名・売上が公開情報で確認できる参入事例が2件以上になれば「強」へ再評価する。",
+   "reason": "許認可は不要だが、AI・データ分析等の専門技術力とブランドが参入障壁として機能しており（技術: 二次情報）、判定基準の「有り」に当たる。確認できた参入例はいずれも資本力のある企業（AIスタートアップ・テクノロジー大手）が中心であり、判断基準の中「資本力のある異業種や海外企業の参入例がある」に当てはまる。迷った: 新興日系ファームの社名・売上実績が確認できず、強の条件（2件以上の具体例確認）を満たすか判断できないため不利な側（中）を採った。",
+   "tie_break": true,
+   "candidate": "",
+   "previous": "中",
+   "evidence": [
+    {
+     "raw": "2026-11-11_industry-overview.md",
+     "section": "3",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    },
+    {
+     "raw": "2026-11-12_2026-02_yuho.md",
+     "section": "6",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    }
+   ]
+  },
+  {
+   "key": "substitutes",
+   "name": "代替品の脅威",
+   "rating": "中",
+   "points": 1,
+   "seen": "生成AI・LLMによる知識業務の自動化: McKinseyレポートでコンサルタント業務の約60%が既存AI技術で自動化可能とされる（二次）。AIエージェントへの全社展開は23%（2025年時点、二次）だが、コンサル代替としての具体的な普及率は取得不可。コンサルファーム自身もAIを業務組み込みに移行しており、単純な代替ではない。企業の内製化: コンサル離れが進む可能性はあるが、内製化完了後のリピート案件減少は長期リスクの言及にとどまる。",
+   "source": "companies/6532_baycurrent/raw/market/2026-11-11_industry-overview.md 「4. 代替製品・代替手段と普及状況」「8. 業界構造を変えうる要因」",
+   "confidence": "二次",
+   "triggers": "生成AIを用いたコンサルティング業務の内製化率（または類似指標）が30%を超え、コンサル市場の成長率が5%を下回れば「強」へ再評価する。",
+   "reason": "生成AI・内製化という有力な代替手段は存在するが、コンサルティング代替としての具体的な普及率（導入率・シェア）を示す数値は取得できていない。AIエージェントの全社展開23%はコンサル代替の数値ではなく、コンサルファーム自身もAIを活用して生産性向上に使っており、単純な代替とはいえない。判断基準の中「代替手段はあるが普及途上」に当てはまる。",
+   "tie_break": false,
+   "candidate": "",
+   "previous": "中",
+   "evidence": [
+    {
+     "raw": "2026-11-11_industry-overview.md",
+     "section": "4",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    },
+    {
+     "raw": "2026-11-11_industry-overview.md",
+     "section": "8",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    }
+   ]
+  },
+  {
+   "key": "buyers",
+   "name": "買い手の交渉力",
+   "rating": "弱",
+   "points": 2,
+   "seen": "有報の「主要な販売先」に売上10%超の単一顧客の記載なし（有報 p.17）。補足資料にも上位顧客の売上比率・リピート率の開示なし。購買決定要因の調査（BtoB調査レポート2025、BtoBサービス発注トレンド2024）では1位が担当者の信頼感・品質（65.1%）、料金は3〜4位（38.5%）。ITコンサル選定調査（日経BP 2022）でも1位はコンサルタントのスキル（54.7%）。",
+   "source": "companies/6532_baycurrent/raw/filings/2026-11-12_2026-02_yuho.md 「3. 主要な販売先（p.17）」; companies/6532_baycurrent/raw/market/2026-11-13_industry-overview.md 「5. 顧客の購買決定要因」",
+   "confidence": "一次",
+   "triggers": "有報の「主要な販売先」に単一顧客が10%以上で登場した場合、または業界調査で価格が選定要因の1〜2位になれば「中」へ再評価する。",
+   "reason": "売上の10%超を占める単一顧客は有報上なく（判断基準の弱「単一顧客10%未満」を満たす）、複数の調査でサービス品質・担当者スキルが選定の最優先事項であり価格は3〜4位にとどまる（判断基準の弱「製品が差別化されている」を満たす）。弱の両条件が揃う。",
+   "tie_break": false,
+   "candidate": "弱",
+   "previous": "弱",
+   "evidence": [
+    {
+     "raw": "2026-11-12_2026-02_yuho.md",
+     "section": "3",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    },
+    {
+     "raw": "2026-11-13_industry-overview.md",
+     "section": "5",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    }
+   ]
+  },
+  {
+   "key": "suppliers",
+   "name": "売り手の交渉力",
+   "rating": "弱",
+   "points": 2,
+   "seen": "物的な調達先・原材料は存在しない。主要コストは人件費（売上の約60〜65%相当）。粗利率の推移: 2024-02 54.6%→2025-02 53.8%→2026-02 56.6%（financials.csv）。前年比の最大低下幅は0.8pt（2024-02→2025-02）。採用競争は激化（ベイカレント平均年収1,350万円、採用費45億円と報道）しているが、粗利率は安定〜改善傾向。",
+   "source": "companies/6532_baycurrent/data/financials.csv; companies/6532_baycurrent/raw/filings/2026-11-12_2026-02_yuho.md 「5. 主要な原材料・調達先（p.7-9）」; companies/6532_baycurrent/raw/market/2026-11-11_industry-overview.md 「6. 原材料・部品の調達構造、価格高騰の事例」",
+   "confidence": "一次",
+   "triggers": "粗利率の前年比低下幅が2ptを超える年度が続けば「中」へ、5ptを超えれば「強」へ再評価する。",
+   "reason": "コンサルティング業は物的な調達先を持たず、主要コストは人件費。採用競争は激化しているが、粗利率の前年比最大低下幅は0.8pt（判断基準の弱「2pt未満」を満たす）。コスト高騰を転嫁または吸収できており、供給側の交渉力は低い。",
+   "tie_break": false,
+   "candidate": "弱",
+   "previous": "弱",
+   "evidence": [
+    {
+     "raw": "2026-11-12_2026-02_yuho.md",
+     "section": "5",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    },
+    {
+     "raw": "2026-11-11_industry-overview.md",
+     "section": "6",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    }
+   ]
+  },
+  {
+   "key": "rivalry",
+   "name": "業界内の競争",
+   "rating": "中",
+   "points": 1,
+   "seen": "上位3社シェア合計（二次・推計）: アクセンチュア（日本法人）21.1%・デロイト トーマツ コンサルティング7.3%・PwCコンサルティング5.5%＝33.9%（過半に届かず）。ベイカレントの同市場シェアは取得不可（売上高ベースの試算で約5%）。市場成長率: 国内ビジネスコンサルティング市場9.8%（2025–2030年、IDC）、国内コンサルティング市場全体13%（2024–2030年、consul.global）。競合の営業利益率: シグマクシス 25.4%（2026年3月期、前年比+4.1pt上昇）、ベイカレント 34.3%（2026年2月期、前年比-2.4pt）。業界平均は上昇傾向との記載あり（2021年度約9.6%、定量推移は取得不可）。",
+   "source": "companies/6532_baycurrent/raw/market/2026-11-11_industry-overview.md 「1. 市場規模と成長率」「2. 上位企業とシェア分布・推移」「7. 業界全体の利益率の推移」; companies/6532_baycurrent/raw/market/2026-11-13_competitors.md 「2. 売上高・営業利益・営業利益率（最大10年推移）」「4. 市場シェア」",
+   "confidence": "二次",
+   "triggers": "市場成長率（IDC 等の公表値）が3%を下回り、かつ主要競合の営業利益率が過半で低下傾向に転じれば「強」へ再評価する。",
+   "reason": "上位3社シェア合計33.9%は過半に達せず、弱（寡占60%以上）の条件を満たさない。市場成長率9.8〜13%はいずれも5%以上であり、強の条件（3%未満または縮小）を満たさない。競合の利益率は上昇傾向（シグマクシス +4.1pt、ベイカレントは前年比-2.4ptだが業界平均の約9.6%を大きく上回る）。判断基準の中「上位数社が拮抗しているが、市場成長や差別化により価格競争は限定的」に当てはまる。",
+   "tie_break": false,
+   "candidate": "中",
+   "previous": "中",
+   "evidence": [
+    {
+     "raw": "2026-11-11_industry-overview.md",
+     "section": "1",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    },
+    {
+     "raw": "2026-11-11_industry-overview.md",
+     "section": "2",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    },
+    {
+     "raw": "2026-11-11_industry-overview.md",
+     "section": "7",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    },
+    {
+     "raw": "2026-11-13_competitors.md",
+     "section": "2",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    },
+    {
+     "raw": "2026-11-13_competitors.md",
+     "section": "4",
+     "status": "未検証",
+     "reason": "Front Matter なし",
+     "doc_id": null,
+     "title": null,
+     "url": null,
+     "published": null,
+     "period": null,
+     "confidence": null,
+     "pages": null,
+     "local_path": null
+    }
+   ]
+  }
+ ],
+ "version": 2,
+ "confidence": {
+  "primary": 2,
+  "reference": 0,
+  "unknown": 0,
+  "known": 5,
+  "total": 5,
+  "why": "一次資料 2/5・参考 0・不明 0/5",
+  "level": "中"
+ },
+ "counter": "外資系大手（アクセンチュア等）が日本市場への採用・AI投資をさらに積極化すると業界の集中度が高まり、競争は「強」に近づく可能性がある。また、生成AIによる知識労働の自動化が想定より早く進んだ場合は市場成長が鈍化し、代替品の脅威が「強」に転じて業界の魅力度は「中」に下がりうる。",
+ "total": 7,
+ "attractiveness": "高",
+ "attractiveness_by_points": "高",
+ "conservative_attractiveness": "高",
+ "conservative_verdict": "高",
+ "weighted_total": 7.0,
+ "low": 7,
+ "high": 7,
+ "segments": [],
+ "unknown_count": 0,
+ "downgraded": false,
+ "swot_threats": [],
+ "changes": [
+  "なし"
+ ],
+ "gaps": [
+  "知的財産（特許件数）: 自社・競合とも raw に無い。次回収集時に有価証券報告書の知的財産の節を確認する",
+  "新規参入の具体的社名（新興日系ファーム複数社）: 有料記事のため確認できず。公開情報で社名が確認できれば参入例の確度が上がる",
+  "ベイカレントの同市場シェア数値: IDC・矢野経済研究所等の公表資料に記載なし",
+  "業界全体の営業利益率の複数年推移（3年以上の一次データ）: 取得不可"
+ ],
+ "inputs": [
+  "companies/6532_baycurrent/raw/filings/2026-11-12_2026-02_yuho.md",
+  "companies/6532_baycurrent/raw/ir/2026-11-12_business-overview.md",
+  "companies/6532_baycurrent/raw/market/2026-11-11_industry-overview.md",
+  "companies/6532_baycurrent/raw/market/2026-11-13_competitors.md",
+  "companies/6532_baycurrent/raw/market/2026-11-13_industry-overview.md"
+ ],
+ "seen": [
+  "companies/6532_baycurrent/raw/filings/2026-11-12_2026-02_yuho.md",
+  "companies/6532_baycurrent/raw/market/2026-11-11_industry-overview.md",
+  "companies/6532_baycurrent/raw/market/2026-11-13_competitors.md",
+  "companies/6532_baycurrent/raw/market/2026-11-13_industry-overview.md"
+ ],
+ "input_digests": {
+  "segment": "d00d38ea32a6f68b8fc2d1a2b7ccbfccf982db4e",
+  "customers": "e53a7ffb4ad3cf472c7aa2a64d041dd912a9a407",
+  "procurement": "f7f6696aae1047dccf810d10c1169415a8f2d22f",
+  "ip": "6bad7c07420edc6a65518f320f74d73bc2ebe00c",
+  "patents": "",
+  "peer_patents": "",
+  "risks": "bf08c7c33bff1c4b3350fc9fd17c1bd3088c502d",
+  "customer_base": "98d46be12dd54b724ea255e92d7d7364c6d6fcfe",
+  "market_size": "ba02607174fb7d3ec54addaaed14f4e7664bb7e0",
+  "share": "5597b09052c852808dbbfff6fab1ded6679d3080",
+  "entry": "7473f3401228c9b5653c08236b7bd13a233e29a9",
+  "substitutes": "ac9fe08ecd18527554b2e2af914ea85eb07519c0",
+  "kbf": "1c16c051016fe3bb9fc52713c6522931eaeb56c3",
+  "supply": "324fd353d617a0a31f86ccaab44827544671a364",
+  "industry_margin": "3ae294f0ba5b37c2b729ad1d03dd6822ca7036d7",
+  "structural": "20d2eadeb1cc1d95e6bbd6d663ffd6ecccaf74ac",
+  "peers": "d10829fd170b9bb13a159e72ce9340a16931e45a",
+  "peer_share": "c2e981661ff2ad56c5c8cd7eee43b2edebc15571"
+ },
+ "outlook": "market/report/2026-11-16_outlook.md",
+ "previous": {
+  "date": "2026-11-13",
+  "attractiveness": "高"
+ },
+ "md": "companies/6532_baycurrent/analysis/five-forces/2026-11-17_five-forces.md",
+ "industry_evidence": [
+  {
+   "raw": "2026-11-12_2026-02_yuho.md",
+   "section": "2",
+   "status": "未検証",
+   "reason": "Front Matter なし",
+   "doc_id": null,
+   "title": null,
+   "url": null,
+   "published": null,
+   "period": null,
+   "confidence": null,
+   "pages": null,
+   "local_path": null
+  }
+ ],
+ "evidence": {
+  "claims": [
+   {
+    "claim": "1. 業界の定義",
+    "source": "companies/6532_baycurrent/raw/filings/2026-11-12_2026-02_yuho.md 「2. 事業の内容・セグメント情報（p.17）」",
+    "evidence": [
+     {
+      "raw": "2026-11-12_2026-02_yuho.md",
+      "section": "2",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "2.1 新規参入の脅威",
+    "source": "companies/6532_baycurrent/raw/market/2026-11-11_industry-overview.md 「3. 参入に必要な条件・過去10年の新規参入と撤退」; companies/6532_baycurrent/raw/filings/2026-11-12_2026-02_yuho.md 「6. 研究開発・特許・許認可（p.23）」",
+    "evidence": [
+     {
+      "raw": "2026-11-11_industry-overview.md",
+      "section": "3",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "raw": "2026-11-12_2026-02_yuho.md",
+      "section": "6",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "2.2 代替品の脅威",
+    "source": "companies/6532_baycurrent/raw/market/2026-11-11_industry-overview.md 「4. 代替製品・代替手段と普及状況」「8. 業界構造を変えうる要因」",
+    "evidence": [
+     {
+      "raw": "2026-11-11_industry-overview.md",
+      "section": "4",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "raw": "2026-11-11_industry-overview.md",
+      "section": "8",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "2.3 買い手の交渉力",
+    "source": "companies/6532_baycurrent/raw/filings/2026-11-12_2026-02_yuho.md 「3. 主要な販売先（p.17）」; companies/6532_baycurrent/raw/market/2026-11-13_industry-overview.md 「5. 顧客の購買決定要因」",
+    "evidence": [
+     {
+      "raw": "2026-11-12_2026-02_yuho.md",
+      "section": "3",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "raw": "2026-11-13_industry-overview.md",
+      "section": "5",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "2.4 売り手の交渉力",
+    "source": "companies/6532_baycurrent/data/financials.csv; companies/6532_baycurrent/raw/filings/2026-11-12_2026-02_yuho.md 「5. 主要な原材料・調達先（p.7-9）」; companies/6532_baycurrent/raw/market/2026-11-11_industry-overview.md 「6. 原材料・部品の調達構造、価格高騰の事例」",
+    "evidence": [
+     {
+      "raw": "2026-11-12_2026-02_yuho.md",
+      "section": "5",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "raw": "2026-11-11_industry-overview.md",
+      "section": "6",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   },
+   {
+    "claim": "2.5 業界内の競争",
+    "source": "companies/6532_baycurrent/raw/market/2026-11-11_industry-overview.md 「1. 市場規模と成長率」「2. 上位企業とシェア分布・推移」「7. 業界全体の利益率の推移」; companies/6532_baycurrent/raw/market/2026-11-13_competitors.md 「2. 売上高・営業利益・営業利益率（最大10年推移）」「4. 市場シェア」",
+    "evidence": [
+     {
+      "raw": "2026-11-11_industry-overview.md",
+      "section": "1",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "raw": "2026-11-11_industry-overview.md",
+      "section": "2",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "raw": "2026-11-11_industry-overview.md",
+      "section": "7",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "raw": "2026-11-13_competitors.md",
+      "section": "2",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     },
+     {
+      "raw": "2026-11-13_competitors.md",
+      "section": "4",
+      "status": "未検証",
+      "reason": "Front Matter なし",
+      "doc_id": null,
+      "title": null,
+      "url": null,
+      "published": null,
+      "period": null,
+      "confidence": null,
+      "pages": null,
+      "local_path": null
+     }
+    ]
+   }
+  ],
+  "summary": {
+   "verified": 0,
+   "unverified": 14,
+   "missing": 0,
+   "reasons": {
+    "Front Matter なし": 14
+   }
+  }
+ }
+}
